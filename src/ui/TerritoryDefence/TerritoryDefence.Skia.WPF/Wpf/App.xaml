@@ -1,0 +1,9 @@
+<Application x:Class="TerritoryDefence.WPF.App"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:local="clr-namespace:TerritoryDefence.WPF"
+			 StartupUri="Wpf/MainWindow.xaml">
+	<Application.Resources>
+
+	</Application.Resources>
+</Application>
