@@ -9,7 +9,7 @@
 	<local:App.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
-				<ResourceDictionary Source="ms-appx:///TerritoryDefence/AppResources.xaml" />
+                <ResourceDictionary Source="ms-appx:///TerritoryDefence.UI.Shared/AppResources.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 		</ResourceDictionary>
 	</local:App.Resources>

@@ -3,15 +3,13 @@
 		<OutputType Condition="'$(Configuration)'=='Release'">WinExe</OutputType>
 		<OutputType Condition="'$(Configuration)'=='Debug'">Exe</OutputType>
 		<TargetFramework>net7.0</TargetFramework>
-		<ApplicationManifest>app.manifest</ApplicationManifest>
 	</PropertyGroup>
 	<ItemGroup>
 		<EmbeddedResource Include="Package.appxmanifest" />
-		<Manifest Include="$(ApplicationManifest)" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Uno.WinUI.Skia.Gtk" />
+		<PackageReference Include="Uno.WinUI.Skia.Linux.FrameBuffer" />
 		<PackageReference Include="CommunityToolkit.Mvvm" />
 		<PackageReference Include="Uno.Extensions.Logging.WinUI" />
 		<PackageReference Include="Uno.Extensions.Logging.Serilog" />
@@ -25,11 +23,12 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" />
 		<PackageReference Include="SkiaSharp.Views.Uno.WinUI" />
 		<PackageReference Include="SkiaSharp.Skottie" />
-		<PackageReference Include="Uno.WinUI.RemoteControl" Condition="'$(Configuration)'=='Debug'" />
+		<PackageReference Include="Uno.WinUI.RemoteControl" />
 		<PackageReference Include="Uno.UI.Adapter.Microsoft.Extensions.Logging" />
 	</ItemGroup>
+
 	<ItemGroup>
-		<ProjectReference Include="..\TerritoryDefence\TerritoryDefence.csproj" />
+	  <ProjectReference Include="..\TerritoryDefence.UI.Shared\TerritoryDefence.UI.Shared.csproj" />
 	</ItemGroup>
-	<Import Project="..\TerritoryDefence.Base\base.props" />
+	<Import Project="..\TerritoryDefence.UI.Base\base.props" />
 </Project>
