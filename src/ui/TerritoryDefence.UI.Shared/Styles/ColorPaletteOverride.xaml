@@ -2,6 +2,7 @@
 <ResourceDictionary xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Light">
+      <Color x:Key="BackgroundBrush">#f0f4f9</Color>
       <Color x:Key="PrimaryColor">#5946D2</Color>
       <Color x:Key="OnPrimaryColor">#FFFFFF</Color>
       <Color x:Key="PrimaryContainerColor">#E5DEFF</Color>
