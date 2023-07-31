@@ -1,3 +1,6 @@
+using TerritoryDefence.UI.ViewModels;
+using TerritoryDefence.UI.Shared.Pages;
+
 namespace TerritoryDefence
 {
     public class App : Application
@@ -62,16 +65,14 @@ namespace TerritoryDefence
         {
             views.Register(
                 new ViewMap(ViewModel: typeof(ShellViewModel)),
-                new ViewMap<MainPage, MainViewModel>(),
-                new DataViewMap<SecondPage, SecondViewModel, Entity>()
+                new ViewMap<UnmannedVehiclesManagerPage, UnmannedVehiclesManagerViewModel>()
             );
 
             routes.Register(
                 new RouteMap("", View: views.FindByViewModel<ShellViewModel>(),
                     Nested: new RouteMap[]
                     {
-                    new RouteMap("Main", View: views.FindByViewModel<MainViewModel>()),
-                    new RouteMap("Second", View: views.FindByViewModel<SecondViewModel>()),
+                        new RouteMap("UnmannedVehiclesManager", View: views.FindByViewModel<UnmannedVehiclesManagerViewModel>())
                     }
                 )
             );

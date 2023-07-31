@@ -1,3 +1,5 @@
+using TerritoryDefence.UI.ViewModels;
+
 namespace TerritoryDefence.Presentation
 {
     public class ShellViewModel
@@ -13,7 +15,7 @@ namespace TerritoryDefence.Presentation
 
         public async Task Start()
         {
-            await _navigator.NavigateViewModelAsync<MainViewModel>(this);
+            await _navigator.NavigateViewModelAsync<UnmannedVehiclesManagerViewModel>(this);
         }
     }
 }
