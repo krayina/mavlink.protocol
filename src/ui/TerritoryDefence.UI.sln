@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerritoryDefence.UI.Skia.WP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerritoryDefence.UI.Wasm", "TerritoryDefence.UI.Wasm\TerritoryDefence.UI.Wasm.csproj", "{73322381-332C-44EB-9B9C-A0A712576278}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerritoryDefence.UI.ViewModels", "TerritoryDefence.UI.ViewModels\TerritoryDefence.UI.ViewModels.csproj", "{F319B478-8EE8-4DD4-9469-23AA75E862B4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,7 +49,6 @@ Global
 		{706A1F2E-198F-4A8D-9E93-CB23DCDBA6ED}.Release|x64.Build.0 = Release|Any CPU
 		{706A1F2E-198F-4A8D-9E93-CB23DCDBA6ED}.Release|x86.ActiveCfg = Release|Any CPU
 		{706A1F2E-198F-4A8D-9E93-CB23DCDBA6ED}.Release|x86.Build.0 = Release|Any CPU
-		
 		{E01F426A-F632-4CB6-9B31-4C7EED96C0EB}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{E01F426A-F632-4CB6-9B31-4C7EED96C0EB}.Debug|Any CPU.Build.0 = Debug|x64
 		{E01F426A-F632-4CB6-9B31-4C7EED96C0EB}.Debug|Any CPU.Deploy.0 = Debug|x64
@@ -71,8 +72,7 @@ Global
 		{E01F426A-F632-4CB6-9B31-4C7EED96C0EB}.Release|x64.Deploy.0 = Release|x64
 		{E01F426A-F632-4CB6-9B31-4C7EED96C0EB}.Release|x86.ActiveCfg = Release|x86
 		{E01F426A-F632-4CB6-9B31-4C7EED96C0EB}.Release|x86.Build.0 = Release|x86
-		{E01F426A-F632-4CB6-9B31-4C7EED96C0EB}.Release|x86.Deploy.0 = Release|x86		
-		
+		{E01F426A-F632-4CB6-9B31-4C7EED96C0EB}.Release|x86.Deploy.0 = Release|x86
 		{F9C0F42F-4E29-46F8-AE31-586A74C5CF92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F9C0F42F-4E29-46F8-AE31-586A74C5CF92}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9C0F42F-4E29-46F8-AE31-586A74C5CF92}.Debug|arm64.ActiveCfg = Debug|Any CPU
@@ -153,6 +153,22 @@ Global
 		{73322381-332C-44EB-9B9C-A0A712576278}.Release|x64.Build.0 = Release|Any CPU
 		{73322381-332C-44EB-9B9C-A0A712576278}.Release|x86.ActiveCfg = Release|Any CPU
 		{73322381-332C-44EB-9B9C-A0A712576278}.Release|x86.Build.0 = Release|Any CPU
+		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Debug|arm64.Build.0 = Debug|Any CPU
+		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Debug|x64.Build.0 = Debug|Any CPU
+		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Debug|x86.Build.0 = Debug|Any CPU
+		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Release|arm64.ActiveCfg = Release|Any CPU
+		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Release|arm64.Build.0 = Release|Any CPU
+		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Release|x64.ActiveCfg = Release|Any CPU
+		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Release|x64.Build.0 = Release|Any CPU
+		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Release|x86.ActiveCfg = Release|Any CPU
+		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
