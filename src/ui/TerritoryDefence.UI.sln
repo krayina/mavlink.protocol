@@ -19,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerritoryDefence.UI.Skia.WP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerritoryDefence.UI.Wasm", "TerritoryDefence.UI.Wasm\TerritoryDefence.UI.Wasm.csproj", "{73322381-332C-44EB-9B9C-A0A712576278}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerritoryDefence.UI.ViewModels", "TerritoryDefence.UI.ViewModels\TerritoryDefence.UI.ViewModels.csproj", "{F319B478-8EE8-4DD4-9469-23AA75E862B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerritoryDefence.UI.ViewModels", "TerritoryDefence.UI.ViewModels\TerritoryDefence.UI.ViewModels.csproj", "{F319B478-8EE8-4DD4-9469-23AA75E862B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerritoryDefence.Core", "..\shared\TerritoryDefence.Core\TerritoryDefence.Core.csproj", "{A684FA68-D413-40D1-A695-7702E4F32EAB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -169,6 +171,22 @@ Global
 		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Release|x64.Build.0 = Release|Any CPU
 		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Release|x86.ActiveCfg = Release|Any CPU
 		{F319B478-8EE8-4DD4-9469-23AA75E862B4}.Release|x86.Build.0 = Release|Any CPU
+		{A684FA68-D413-40D1-A695-7702E4F32EAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A684FA68-D413-40D1-A695-7702E4F32EAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A684FA68-D413-40D1-A695-7702E4F32EAB}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{A684FA68-D413-40D1-A695-7702E4F32EAB}.Debug|arm64.Build.0 = Debug|Any CPU
+		{A684FA68-D413-40D1-A695-7702E4F32EAB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A684FA68-D413-40D1-A695-7702E4F32EAB}.Debug|x64.Build.0 = Debug|Any CPU
+		{A684FA68-D413-40D1-A695-7702E4F32EAB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A684FA68-D413-40D1-A695-7702E4F32EAB}.Debug|x86.Build.0 = Debug|Any CPU
+		{A684FA68-D413-40D1-A695-7702E4F32EAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A684FA68-D413-40D1-A695-7702E4F32EAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A684FA68-D413-40D1-A695-7702E4F32EAB}.Release|arm64.ActiveCfg = Release|Any CPU
+		{A684FA68-D413-40D1-A695-7702E4F32EAB}.Release|arm64.Build.0 = Release|Any CPU
+		{A684FA68-D413-40D1-A695-7702E4F32EAB}.Release|x64.ActiveCfg = Release|Any CPU
+		{A684FA68-D413-40D1-A695-7702E4F32EAB}.Release|x64.Build.0 = Release|Any CPU
+		{A684FA68-D413-40D1-A695-7702E4F32EAB}.Release|x86.ActiveCfg = Release|Any CPU
+		{A684FA68-D413-40D1-A695-7702E4F32EAB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
