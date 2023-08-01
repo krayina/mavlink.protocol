@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) or '$(EnableWindowsTargeting)' == 'true'">$(TargetFrameworks);net7.0-windows10.0.19041</TargetFrameworks>
-    <TargetFrameworks>$(TargetFrameworks);net7.0;net7.0-ios;net7.0-maccatalyst;net7.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) or '$(EnableWindowsTargeting)' == 'true'">$(TargetFrameworks);net8.0-windows10.0.19041</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworks);net8.0;net8.0-ios;net8.0-maccatalyst;net8.0-android</TargetFrameworks>
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
   </PropertyGroup>
 
@@ -11,12 +11,12 @@
     <PackageReference Include="Uno.WinUI" />
   </ItemGroup>
 	
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net7.0-windows10.0.19041'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.19041'">
 	<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
   </PropertyGroup>	
 	
   <Choose>
-    <When Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <When Condition="$(IsWinAppSdk)">
       <ItemGroup>
         <PackageReference Include="Microsoft.WindowsAppSDK" />
         <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
@@ -35,5 +35,8 @@
   </Choose>
   <ItemGroup>
     <UpToDateCheckInput Include="**\*.xaml" Exclude="bin\**\*.xaml;obj\**\*.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\shared\TerritoryDefence.Core\TerritoryDefence.Core.csproj" />
   </ItemGroup>
 </Project>
