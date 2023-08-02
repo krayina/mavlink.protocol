@@ -19,6 +19,15 @@
 		<IsWinAppSdk>false</IsWinAppSdk>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<UnoVersion>4.10.0-dev.491</UnoVersion>
+		<WasmVersion>7.0.24</WasmVersion>
+	    <UnoToolkitVersion>3.0.4</UnoToolkitVersion>
+		<UnoExtensionsVersion>2.4.2</UnoExtensionsVersion>
+		<SkiaVersion>2.88.3</SkiaVersion>
+		<UnoMaterialVersion>2.6.1</UnoMaterialVersion>
+	</PropertyGroup>
+
 	<Choose>
 		<When Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
 			<PropertyGroup>
