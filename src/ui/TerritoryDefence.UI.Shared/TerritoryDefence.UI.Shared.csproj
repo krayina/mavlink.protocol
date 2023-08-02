@@ -53,18 +53,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Remove="Pages\UnmannedVehiclesManagerPage.xaml" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <UpToDateCheckInput Remove="Pages\UnmannedVehiclesManagerPage.xaml" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <AdditionalFiles Remove="Pages\UnmannedVehiclesManagerPage.xaml" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <ProjectReference Include="..\TerritoryDefence.UI.ViewModels\TerritoryDefence.UI.ViewModels.csproj" />
 	</ItemGroup>
 </Project>
