@@ -1,9 +1,10 @@
 using TerritoryDefence.UI.ViewModels;
 using TerritoryDefence.UI.Shared.Pages;
+using TerritoryDefence.UI.ViewModels.Presentation.UnmannedVehicles;
 
 namespace TerritoryDefence
 {
-    public class App : Application
+	public class App : Application
     {
         protected Window? MainWindow { get; private set; }
         protected IHost? Host { get; private set; }
