@@ -1,6 +1,7 @@
 using TerritoryDefence.UI.ViewModels.Presentation.UnmannedVehicles;
 
 namespace TerritoryDefence.UI.ViewModels;
+
 public class ShellViewModel
 {
 	private readonly INavigator _navigator;

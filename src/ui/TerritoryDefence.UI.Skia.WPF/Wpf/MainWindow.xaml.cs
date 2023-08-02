@@ -1,17 +1,13 @@
 using Window = System.Windows.Window;
 
-namespace TerritoryDefence.WPF
-{
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
-    {
-        public MainWindow()
-        {
-            InitializeComponent();
+namespace TerritoryDefence.WPF;
 
-            root.Content = new global::Uno.UI.Skia.Platform.WpfHost(Dispatcher, () => new AppHead());
-        }
-    }
+public partial class MainWindow : Window
+{
+	public MainWindow()
+	{
+		InitializeComponent();
+
+		root.Content = new global::Uno.UI.Skia.Platform.WpfHost(Dispatcher, () => new AppHead());
+	}
 }

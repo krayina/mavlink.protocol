@@ -1,8 +1,7 @@
 using WpfApp = System.Windows.Application;
 
-namespace TerritoryDefence.WPF
+namespace TerritoryDefence.WPF;
+
+public partial class App : WpfApp
 {
-    public partial class App : WpfApp
-    {
-    }
 }
