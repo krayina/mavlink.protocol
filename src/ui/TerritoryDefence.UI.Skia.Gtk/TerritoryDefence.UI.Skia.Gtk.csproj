@@ -30,7 +30,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\TerritoryDefence.UI.Shared\TerritoryDefence.UI.Shared.csproj" />
+	  <ProjectReference Include="..\TerritoryDefence.UI\TerritoryDefence.UI.csproj" />
 	</ItemGroup>
 	<Import Project="..\TerritoryDefence.UI.Base\base.props" />
 </Project>

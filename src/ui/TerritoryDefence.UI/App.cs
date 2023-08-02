@@ -1,5 +1,5 @@
 using TerritoryDefence.UI.ViewModels;
-using TerritoryDefence.UI.Shared.Pages;
+using TerritoryDefence.UI.Pages;
 using TerritoryDefence.UI.ViewModels.Presentation.UnmannedVehicles;
 
 namespace TerritoryDefence;

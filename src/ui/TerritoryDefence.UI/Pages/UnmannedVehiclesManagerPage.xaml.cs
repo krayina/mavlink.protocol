@@ -1,6 +1,6 @@
 ﻿using Mapsui.Tiling;
 
-namespace TerritoryDefence.UI.Shared.Pages;
+namespace TerritoryDefence.UI.Pages;
 
 public sealed partial class UnmannedVehiclesManagerPage : Page
 {
