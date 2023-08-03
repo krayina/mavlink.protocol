@@ -59,6 +59,8 @@
 	
     <PackageVersion Include="Uno.Dsp.Tasks" Version="1.1.0" />
     <PackageVersion Include="Uno.Resizetizer" Version="1.1.2" />
-    <PackageVersion Include="Uno.UniversalImageLoader" Version="1.9.36" />
+    <PackageVersion Include="Uno.UniversalImageLoader" Version="1.9.36" />    
+	<PackageVersion Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
+	<PackageVersion Include="Uno.CommunityToolkit.WinUI.UI.Controls" Version="7.1.200-dev.6.gf657bb2e91" />
   </ItemGroup>
 </Project>
