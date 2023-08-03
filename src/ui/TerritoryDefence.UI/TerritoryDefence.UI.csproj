@@ -53,6 +53,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\TerritoryDefence.UI.CustomControls\TerritoryDefence.UI.CustomControls.csproj" />
 	  <ProjectReference Include="..\TerritoryDefence.UI.ViewModels\TerritoryDefence.UI.ViewModels.csproj" />
 	</ItemGroup>
 </Project>

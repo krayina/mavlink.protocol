@@ -7,7 +7,7 @@
 		<MaterialToolkitTheme xmlns="using:Uno.Toolkit.UI.Material"
 			ColorOverrideSource="ms-appx:///TerritoryDefence.UI/Styles/ColorPaletteOverride.xaml"
 			FontOverrideSource="ms-appx:///TerritoryDefence.UI/Styles/MaterialFontsOverride.xaml" />
-
+		<ResourceDictionary Source="ms-appx:///TerritoryDefence.UI.CustomControls/Themes/Generic.xaml"/>
 	</ResourceDictionary.MergedDictionaries>
 	<!-- Add resources here -->
 
