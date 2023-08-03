@@ -9,7 +9,6 @@ global using Microsoft.UI.Xaml.Media;
 global using Microsoft.UI.Xaml.Navigation;
 global using System.Collections.Immutable;
 global using System.Windows.Input;
-global using TerritoryDefence.Business.Models;
 global using TerritoryDefence.Presentation;
 global using Uno.Extensions;
 global using Uno.Extensions.Hosting;
