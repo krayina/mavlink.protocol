@@ -1,12 +1,41 @@
 ﻿<Page x:Class="TerritoryDefence.UI.Pages.UnmannedVehiclesManagerPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
+	  xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
       xmlns:maps="using:Mapsui.UI.WinUI"
+	  xmlns:customControl="using:TerritoryDefence.UI.CustomControls.FlexibleItemsControl"
       NavigationCacheMode="Required">
 
-    <Grid RowDefinitions="100,*">
-        <Border Grid.Row="0"/>
+    <Grid RowDefinitions="*,*">
+		<ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+			<customControl:FlexibleItemsControl ItemsSource="{Binding UnmannedVehicles}">
+				<customControl:FlexibleItemsControl.ItemsPanel>
+					<ItemsPanelTemplate>
+						<RelativePanel/>
+					</ItemsPanelTemplate>
+				</customControl:FlexibleItemsControl.ItemsPanel>
 
-        <maps:MapControl x:Name="MapControl" Grid.Row="1" CornerRadius="20" BorderThickness="1" BorderBrush="#e2e6e9"
+				<customControl:FlexibleItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Border Height="200" Width="200" CornerRadius="20" Background="Blue"/>
+					</DataTemplate>
+				</customControl:FlexibleItemsControl.ItemTemplate>
+				<!--<customControl:FlexibleItemsControl.ItemContainerStyle>
+					<Style TargetType="ContentPresenter">
+						<Setter Property="controls:DockPanel.Dock" Value="Top"/>
+					</Style>
+				</customControl:FlexibleItemsControl.ItemContainerStyle>-->
+			</customControl:FlexibleItemsControl>
+		</ScrollViewer>
+
+		<!--<maps:MapControl x:Name="MapControl" Grid.Row="1" CornerRadius="20" BorderThickness="1" BorderBrush="#e2e6e9"
                          Width="200" Height="200" Margin="50"
-                         HorizontalAlignment="Left" VerticalAlignment="Top"/>
-    </Grid>
+                         HorizontalAlignment="Left" VerticalAlignment="Top"/>-->
+
+		<RelativePanel Grid.Row="1">
+			<Border Height="200" Width="200" CornerRadius="20" Background="Blue"/>
+			<Border Height="200" Width="200" CornerRadius="20" Background="Blue"/>
+			<Border Height="200" Width="200" CornerRadius="20" Background="Blue"/>
+			<Border Height="200" Width="200" CornerRadius="20" Background="Blue"/>
+			<Border Height="200" Width="200" CornerRadius="20" Background="Blue"/>
+		</RelativePanel>
+	</Grid>
 </Page>
