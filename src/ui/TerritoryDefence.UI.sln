@@ -25,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerritoryDefence.Business",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerritoryDefence.UI", "TerritoryDefence.UI\TerritoryDefence.UI.csproj", "{65761F27-BF26-4A89-B108-8B68BECB81F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerritoryDefence.UI.CustomControls", "TerritoryDefence.UI.CustomControls\TerritoryDefence.UI.CustomControls.csproj", "{48CC2D44-94C8-49B5-BC6C-FB4341404576}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerritoryDefence.UI.CustomControls", "TerritoryDefence.UI.CustomControls\TerritoryDefence.UI.CustomControls.csproj", "{48CC2D44-94C8-49B5-BC6C-FB4341404576}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
