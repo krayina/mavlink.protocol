@@ -3,13 +3,16 @@
 					xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls">
 
 	<Style TargetType="local:FlexibleItemsControl">
+		<!--<Setter Property="local:RelativeSourceBinding.AncestorType" Value="local:FlexibleItemsControl"/>-->
 		<Setter Property="RelativeModeTemplate">
 			<Setter.Value>
 				<DataTemplate>
 					<Grid Height="200" Width="200" Background="Red" 
 						  ColumnDefinitions="20,*,20" RowDefinitions="20,*,20">
 
-						<ContentPresenter Name="AAAAAAAAAAAAA" Grid.ColumnSpan="3" Grid.RowSpan="3">
+						<ContentPresenter Name="AAAAAAAAAAAAA" Grid.ColumnSpan="3" Grid.RowSpan="3" 
+										  local:RelativeSourceBinding.AncestorType="local:FlexibleItemsControl"
+										  ContentTemplate="{Binding Path=(local:RelativeSourceBinding.Ancestor).ItemTemplate, RelativeSource={RelativeSource Self}}">
 							<!--<ContentPresenter.ContentTemplate>
 								<DataTemplate>
 									<TextBox Text="{Binding}" Background="Pink" Margin="5"/>
