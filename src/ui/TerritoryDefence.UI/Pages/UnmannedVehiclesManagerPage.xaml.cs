@@ -13,4 +13,9 @@ public sealed partial class UnmannedVehiclesManagerPage : Page
 		//MapControl.UnSnapRotationDegrees = 30;
 		//MapControl.ReSnapRotationDegrees = 5;
 	}
+
+	private void Button_Click(object sender, RoutedEventArgs e)
+	{
+		FlexibleItemsControl.UpdateLayout();
+	}
 }

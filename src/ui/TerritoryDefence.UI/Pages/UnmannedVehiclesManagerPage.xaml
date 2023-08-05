@@ -6,7 +6,7 @@
 
     <Grid RowDefinitions="*,*">
 		<ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
-			<customControl:FlexibleItemsControl ItemsSource="{Binding UnmannedVehicles}">
+			<customControl:FlexibleItemsControl Name="FlexibleItemsControl" ItemsSource="{Binding UnmannedVehicles}">
 				<customControl:FlexibleItemsControl.ItemsPanel>
 					<ItemsPanelTemplate>
 						<RelativePanel/>
@@ -35,7 +35,8 @@
 			<Border Height="200" Width="200" CornerRadius="20" Background="Blue"/>
 			<Border Height="200" Width="200" CornerRadius="20" Background="Blue"/>
 			<Border Height="200" Width="200" CornerRadius="20" Background="Blue"/>
-			<Border Height="200" Width="200" CornerRadius="20" Background="Blue"/>
+			<Button Height="200" Width="200" CornerRadius="20" Background="Blue" Click="Button_Click"
+					Command="{Binding CreateUnmannedVehicle}"/>
 		</RelativePanel>
 	</Grid>
 </Page>
