@@ -8,29 +8,23 @@
 				<DataTemplate>
 					<Grid Height="200" Width="200" Background="Red" 
 						  ColumnDefinitions="20,*,20" RowDefinitions="20,*,20">
-						
-						<ContentControl Grid.ColumnSpan="3" Grid.RowSpan="3"
-									    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-									    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
-							<Border Width="200" Height="200" Background="Yellow"/>
-						</ContentControl>
-						
+
+						<ContentPresenter Name="AAAAAAAAAAAAA" Grid.ColumnSpan="3" Grid.RowSpan="3">
+							<!--<ContentPresenter.ContentTemplate>
+								<DataTemplate>
+									<TextBox Text="{Binding}" Background="Pink" Margin="5"/>
+								</DataTemplate>
+							</ContentPresenter.ContentTemplate>-->
+						</ContentPresenter>
 						<!-- Top -->
-						<Rectangle Fill="CornflowerBlue" RadiusX="4" RadiusY="4" Opacity="0.6" Grid.Column="1" Grid.Row="0" MaxWidth="60"/>
+						<Rectangle Fill="Orange" RadiusX="4" RadiusY="4" Opacity="1" Grid.Column="1" Grid.Row="0" MaxWidth="60"/>
 						<!-- Right -->
-						<Rectangle Fill="CornflowerBlue" RadiusX="4" RadiusY="4" Opacity="0.6" Grid.Column="2" Grid.Row="1" MaxHeight="60"/>
+						<Rectangle Fill="Orange" RadiusX="4" RadiusY="4" Opacity="1" Grid.Column="2" Grid.Row="1" MaxHeight="60"/>
 						<!-- Bottom -->
-						<Rectangle Fill="CornflowerBlue" RadiusX="4" RadiusY="4" Opacity="0.6" Grid.Column="1" Grid.Row="2" MaxWidth="60"/>
+						<Rectangle Fill="Orange" RadiusX="4" RadiusY="4" Opacity="1" Grid.Column="1" Grid.Row="2" MaxWidth="60"/>
 						<!-- Left -->
-						<Rectangle Fill="CornflowerBlue" RadiusX="4" RadiusY="4" Opacity="0.6" Grid.Column="0" Grid.Row="1" MaxHeight="60"/>
+						<Rectangle Fill="Orange" RadiusX="4" RadiusY="4" Opacity="1" Grid.Column="0" Grid.Row="1" MaxHeight="60"/>
 					</Grid>
-				</DataTemplate>
-			</Setter.Value>
-		</Setter>
-		<Setter Property="local:FlexibleItemsControl.ItemTemplate">
-			<Setter.Value>
-				<DataTemplate>
-					<Border Height="200" Width="200" CornerRadius="20" Background="Blue"/>
 				</DataTemplate>
 			</Setter.Value>
 		</Setter>

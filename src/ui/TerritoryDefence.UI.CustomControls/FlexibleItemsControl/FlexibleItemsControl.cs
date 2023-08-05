@@ -1,6 +1,10 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System.ComponentModel;
+using System.Reflection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
+using Windows.Devices.Enumeration;
 
 namespace TerritoryDefence.UI.CustomControls.FlexibleItemsControl;
 
@@ -11,13 +15,13 @@ public partial class FlexibleItemsControl : ItemsControl
 			typeof(DataTemplate),
 			typeof(FlexibleItemsControl),
 #if WINDOWS
-			new PropertyMetadata(default,
+			new PropertyMetadata(default
 #else
 			new FrameworkPropertyMetadata(
 					default,
-					FrameworkPropertyMetadataOptions.ValueDoesNotInheritDataContext,
+					FrameworkPropertyMetadataOptions.ValueDoesNotInheritDataContext
 #endif
-					(s, e) => ((FlexibleItemsControl)s)?.OnRelativeModeTemplateChanged((DataTemplate)e.OldValue, (DataTemplate)e.NewValue)
+					//(s, e) => ((FlexibleItemsControl)s)?.OnRelativeModeTemplateChanged((DataTemplate)e.OldValue, (DataTemplate)e.NewValue)
 				)
 			);
 
@@ -26,11 +30,11 @@ public partial class FlexibleItemsControl : ItemsControl
 		this.DefaultStyleKey = typeof(FlexibleItemsControl);
 	}
 
-	protected override void PrepareContainerForItemOverride(DependencyObject element, object item)
-	{
-		base.PrepareContainerForItemOverride(element, item);
-	}
-
+	//protected override DependencyObject GetContainerForItemOverride()
+	//{
+	//	DependencyObject a = base.GetContainerForItemOverride();
+	//	return a;
+	//}
 
 	public DataTemplate RelativeModeTemplate
 	{
@@ -38,54 +42,76 @@ public partial class FlexibleItemsControl : ItemsControl
 		set => SetValue(RelativeModeTemplateProperty, value);
 	}
 
-	protected override void OnApplyTemplate()
+	protected override void PrepareContainerForItemOverride(DependencyObject element, object item)
 	{
-		base.OnApplyTemplate();
-		WrapRelativeModeTemplate(ItemTemplate);
-	}
+		ContentPresenter defaultContentPresenter = element as ContentPresenter;
+		base.PrepareContainerForItemOverride(new ContentControl(), item);
+		//defaultContentPresenter.ContentTemplate = RelativeModeTemplate;
 
-	protected virtual void OnRelativeModeTemplateChanged(DataTemplate oldRelativeModeTemplate, DataTemplate newRelativeModeTemplate)
-	{
-		if (ItemTemplate == null || newRelativeModeTemplate == null || !IsLoaded)
-		{
-			return;
-		}
-		WrapRelativeModeTemplate(ItemTemplate);
-	}
+		//var relativeModeTemplateContent = RelativeModeTemplate.LoadContent() as FrameworkElement;
+		//var contentPresenter = FindVisualChild<ContentPresenter>(relativeModeTemplateContent);
+		//contentPresenter.ContentTemplate = null;
 
-	protected override void OnItemTemplateChanged(DataTemplate oldItemTemplate, DataTemplate newItemTemplate)
-	{
-		if (newItemTemplate == RelativeModeTemplate || newItemTemplate == null)
-		{
-			base.OnItemTemplateChanged(oldItemTemplate, newItemTemplate);
-			return;
-		}
+		//contentPresenter.LayoutUpdated += (s, e) =>
+		//{
+		//	if (contentPresenter.ContentTemplate != null) 
+		//	{
+		//		var aaa = contentPresenter.ContentTemplate.LoadContent() as FrameworkElement;
+		//	}
+		//};
+		//contentPresenter.SetBinding(ContentPresenter.ContentTemplateProperty,
+		//	new Binding
+		//	{
+		//		Path = new PropertyPath("ItemTemplate"),
+		//		Source = this
+		//	}
+		//);
 
-		if (RelativeModeTemplate == null)
-		{
-			return;
-		}
-		WrapRelativeModeTemplate(newItemTemplate);
-	}
 
-	protected void WrapRelativeModeTemplate(DataTemplate newItemTemplate)
-	{
-		if (RelativeModeTemplate?.LoadContent() is not Panel panel)
-		{
-			throw new TypeLoadException("RelativeModeTemplate content must be a Panel");
-		}
 
-		var testtt = newItemTemplate.LoadContent() as FrameworkElement;
+		//contentPresenter.ContentTemplate = ItemTemplate;
+		//TryRepairContentConnection(contentControl, item);
+		//SetContent(contentControl, FrameworkElement.DataContextProperty);
 
-		var contentControl = FindVisualChild<ContentControl>(panel);
-		if (contentControl != null && newItemTemplate != null)
-		{
-			contentControl.Content = testtt;
-			contentControl.UpdateLayout();
-			ItemTemplate = RelativeModeTemplate;
-			contentControl.UpdateLayout();
-		}
-		UpdateLayout();
+		//contentPresenter.ContentTemplate = ItemTemplate;
+		//contentPresenter.SetValue(ContentPresenter.ContentProperty, item);
+
+		//		void TryRepairContentConnection(ContentControl container, object item)
+		//		{
+		//			UIElement uIElement = item as UIElement;
+		//			if (uIElement != null && container.DataContext == uIElement && GetVisualTreeParent(uIElement) == null)
+		//			{
+		//				container.DataContext = null;
+		//			}
+		//		}
+
+		//		UIElement GetVisualTreeParent(UIElement uiElement)
+		//		{
+		//#if WINDOWS
+		//			return VisualTreeHelper.GetParent(uiElement) as UIElement;
+		//#else
+		//			UIElement VisualParent(FrameworkElement element) => ((IDependencyObjectStoreProvider)element).Store.Parent as UIElement;
+		//			return VisualParent(uiElement as FrameworkElement);
+		//#endif
+		//		}
+
+		//		void SetContent(FrameworkElement container, DependencyProperty contentProperty)
+		//		{
+		//			string displayMemberPath = DisplayMemberPath;
+		//			if (string.IsNullOrEmpty(displayMemberPath))
+		//			{
+		//				container.SetValue(contentProperty, item);
+		//			}
+		//			else
+		//			{
+		//				container.SetBinding(contentProperty, new Binding
+		//				{
+		//					Path = new PropertyPath(displayMemberPath),
+		//					Source = item
+		//				});
+		//				//container.SetValue(ItemHasManualBindingExpressionProperty, true);
+		//			}
+		//		}
 	}
 
 	private T? FindVisualChild<T>(DependencyObject? obj)
@@ -108,5 +134,21 @@ public partial class FlexibleItemsControl : ItemsControl
 			}
 		}
 		return default;
+	}
+
+	internal static void FindChildren<T>(List<T> results, DependencyObject startNode)
+		where T : DependencyObject
+	{
+		int count = VisualTreeHelper.GetChildrenCount(startNode);
+		for (int i = 0; i < count; i++)
+		{
+			DependencyObject current = VisualTreeHelper.GetChild(startNode, i);
+			if ((current.GetType()).Equals(typeof(T)) || (current.GetType().GetTypeInfo().IsSubclassOf(typeof(T))))
+			{
+				T asType = (T)current;
+				results.Add(asType);
+			}
+			FindChildren<T>(results, current);
+		}
 	}
 }
