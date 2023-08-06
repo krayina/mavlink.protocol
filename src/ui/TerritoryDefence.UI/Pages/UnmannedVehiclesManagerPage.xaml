@@ -9,16 +9,11 @@
 			<customControl:FlexibleItemsControl Name="FlexibleItemsControl" ItemsSource="{Binding UnmannedVehicles}">
 				<customControl:FlexibleItemsControl.ItemTemplate>
 					<DataTemplate>
-						<Border Height="200" Width="200" CornerRadius="20" Background="Blue">
+						<Border CornerRadius="20" Background="Blue">
 							<TextBlock Text="{Binding}" Foreground="Red" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 						</Border>
 					</DataTemplate>
 				</customControl:FlexibleItemsControl.ItemTemplate>
-				<!--<customControl:FlexibleItemsControl.ItemContainerStyle>
-					<Style TargetType="ContentPresenter">
-						<Setter Property="controls:DockPanel.Dock" Value="Top"/>
-					</Style>
-				</customControl:FlexibleItemsControl.ItemContainerStyle>-->
 			</customControl:FlexibleItemsControl>
 		</ScrollViewer>
 

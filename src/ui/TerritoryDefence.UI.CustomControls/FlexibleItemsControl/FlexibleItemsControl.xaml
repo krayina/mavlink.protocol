@@ -13,13 +13,10 @@
 		<Setter Property="RelativeModeTemplate">
 			<Setter.Value>
 				<DataTemplate>
-					<Grid Height="200" Width="200" Background="Red" 
-						  ColumnDefinitions="20,*,20" RowDefinitions="20,*,20">
-
+					<Grid ColumnDefinitions="20,*,20" RowDefinitions="20,*,20">
 						<ContentPresenter Grid.ColumnSpan="3" Grid.RowSpan="3"
 										  ap:RelativeSourceBinding.AncestorType="local:FlexibleItemsControl"
 										  ContentTemplate="{Binding Path=(ap:RelativeSourceBinding.Ancestor).ItemTemplate, RelativeSource={RelativeSource Self}}"/>
-
 						<!-- Top -->
 						<Rectangle Fill="Orange" RadiusX="4" RadiusY="4" Opacity="1" Grid.Column="1" Grid.Row="0" MaxWidth="60"/>
 						<!-- Right -->
