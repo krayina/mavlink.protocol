@@ -12,13 +12,6 @@
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.19041'">
 		<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
 	</PropertyGroup>
-
-	<ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
-		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" />
-	</ItemGroup>
-	<ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
-		<PackageReference Include="Uno.CommunityToolkit.WinUI.UI.Controls"/>
-	</ItemGroup>
 	
 	<Choose>
 		<When Condition="$(IsWinAppSdk)">
