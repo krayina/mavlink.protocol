@@ -1,0 +1,7 @@
+﻿<UserControl x:Class="TerritoryDefence.UI.UserControls.UnmannedAerialVehicle" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:maps="using:Mapsui.UI.WinUI">
+	
+	<Grid CornerRadius="20" BorderThickness="1" BorderBrush="#e2e6e9">
+		<maps:MapControl x:Name="MapControl"/>
+	</Grid>
+</UserControl>

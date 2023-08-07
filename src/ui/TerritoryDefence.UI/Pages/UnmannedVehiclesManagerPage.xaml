@@ -1,6 +1,5 @@
 ﻿<Page x:Class="TerritoryDefence.UI.Pages.UnmannedVehiclesManagerPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
 	  xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
-      xmlns:maps="using:Mapsui.UI.WinUI"
 	  xmlns:customControl="using:TerritoryDefence.UI.CustomControls.FlexibleItemsControl"
 	  xmlns:uc="using:TerritoryDefence.UI.UserControls"
       NavigationCacheMode="Required">
@@ -12,16 +11,14 @@
 			<customControl:FlexibleItemsControl Name="FlexibleItemsControl" ItemsSource="{Binding UnmannedVehicles}">
 				<customControl:FlexibleItemsControl.ItemTemplate>
 					<DataTemplate>
-						<Border CornerRadius="20" Background="Blue">
+						<Grid CornerRadius="20">
+							<uc:UnmannedAerialVehicle/>
 							<TextBlock Text="{Binding}" Foreground="Red" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-						</Border>
+						</Grid>
 					</DataTemplate>
 				</customControl:FlexibleItemsControl.ItemTemplate>
 			</customControl:FlexibleItemsControl>
 		</ScrollViewer>
-		<!--<maps:MapControl x:Name="MapControl" Grid.Row="1" CornerRadius="20" BorderThickness="1" BorderBrush="#e2e6e9"
-                         Width="200" Height="200" Margin="50"
-                         HorizontalAlignment="Left" VerticalAlignment="Top"/>-->
 
 		<StackPanel Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10">
 			<Button Content="Test Earial vehicle" Command="{Binding CreateUnmannedAerialVehicleCommand}"/>
