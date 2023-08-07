@@ -2,16 +2,12 @@
 	  xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
       xmlns:maps="using:Mapsui.UI.WinUI"
 	  xmlns:customControl="using:TerritoryDefence.UI.CustomControls.FlexibleItemsControl"
-	  xmlns:ui="using:CommunityToolkit.WinUI.UI"
-	  xmlns:i="using:Microsoft.Xaml.Interactivity"
-      xmlns:core="using:Microsoft.Xaml.Interactions.Core"
-	  xmlns:behaviors="using:TerritoryDefence.UI.Toolkit.Behaviors"
+	  xmlns:uc="using:TerritoryDefence.UI.UserControls"
       NavigationCacheMode="Required">
 
 	<Grid RowDefinitions="70,*">
-		<Border x:Name="NavigationPanel" Grid.Row="0" Background="#fafcfe" CornerRadius="10" Margin="10"
-				BorderBrush="#dce0e4" BorderThickness="2"/>
-
+		<uc:MenuBar Grid.Row="0"/>
+		
 		<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
 			<customControl:FlexibleItemsControl Name="FlexibleItemsControl" ItemsSource="{Binding UnmannedVehicles}">
 				<customControl:FlexibleItemsControl.ItemTemplate>
@@ -26,29 +22,5 @@
 		<!--<maps:MapControl x:Name="MapControl" Grid.Row="1" CornerRadius="20" BorderThickness="1" BorderBrush="#e2e6e9"
                          Width="200" Height="200" Margin="50"
                          HorizontalAlignment="Left" VerticalAlignment="Top"/>-->
-
-		<ScrollViewer Grid.RowSpan="2" VerticalAlignment="Top" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto" Margin="10">
-			<StackPanel Orientation="Horizontal">
-				<!-- Add new -->
-				<Grid x:Name="AddNewGrid" ColumnDefinitions="70,Auto,20" Height="{Binding ElementName=NavigationPanel, Path=ActualHeight}">
-					<FlyoutBase.AttachedFlyout>
-						<MenuFlyout>
-							<MenuFlyoutItem Text="UDP"/>
-							<MenuFlyoutItem Text="TCP"/>
-						</MenuFlyout>
-					</FlyoutBase.AttachedFlyout>
-					<i:Interaction.Behaviors>
-						<core:EventTriggerBehavior EventName="Tapped" SourceObject="{Binding ElementName=AddNewGrid}">
-							<behaviors:ShowAttachedFlyoutBehavior/>
-						</core:EventTriggerBehavior>
-					</i:Interaction.Behaviors>
-					<Image Grid.Column="0" Source="ms-appx:///TerritoryDefence.UI/Assets/Icons/new.svg"
-						   ui:VisualExtensions.Scale="0.5,0.5,0"
-						   ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
-						   Stretch="Uniform"/>
-					<TextBlock Grid.Column="1" Text="New" VerticalAlignment="Center"/>
-				</Grid>
-			</StackPanel>
-		</ScrollViewer>
 	</Grid>
 </Page>
