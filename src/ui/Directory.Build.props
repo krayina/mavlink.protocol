@@ -27,6 +27,8 @@
 		<UnoExtensionsLoggingVersion>1.6.0-dev.2</UnoExtensionsLoggingVersion>		
 		<UnoMaterialVersion>3.0.0-dev.254</UnoMaterialVersion>
 		<SkiaVersion>2.88.3</SkiaVersion>
+		<CommunityToolkitVersion>7.1.2</CommunityToolkitVersion>
+		<UnoCommunityToolkitVersion>7.1.200-dev.6.gf657bb2e91</UnoCommunityToolkitVersion>
 	</PropertyGroup>
 
 	<Choose>
