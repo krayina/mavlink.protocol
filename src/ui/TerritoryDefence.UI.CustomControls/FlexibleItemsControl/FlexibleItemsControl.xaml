@@ -41,17 +41,22 @@
 				<ControlTemplate TargetType="ItemsControl">
 					<Grid>
 						<ItemsPresenter/>
-						<Popup x:Name="PART_OptionPopup" Width="300" Height="70" IsLightDismissEnabled="False"
+						<Popup x:Name="PART_OptionPopup" 
+							   IsLightDismissEnabled="False"
+							   Width="300" Height="70" Margin="0,0,0,20"
 							   HorizontalAlignment="Center" VerticalAlignment="Bottom">
-							<ItemsRepeaterScrollHost>
-								<ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto" Background="#fcf9fc">
-									<ItemsRepeater x:Name="PART_OptionItemsRepeater" Margin="5">
-										<ItemsRepeater.Layout>
-											<StackLayout Orientation="Horizontal" Spacing="10"/>
-										</ItemsRepeater.Layout>
-									</ItemsRepeater>
+							<Grid Width="300" Height="70">
+								<Border Background="#fcf9fc" CornerRadius="10" Opacity="0.6"/>
+								<ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto">
+									<ItemsControl x:Name="PART_OptionItemsControl" Margin="5">
+										<ItemsControl.ItemsPanel>
+											<ItemsPanelTemplate>
+												<StackPanel Orientation="Horizontal"/>
+											</ItemsPanelTemplate>
+										</ItemsControl.ItemsPanel>
+									</ItemsControl>
 								</ScrollViewer>
-							</ItemsRepeaterScrollHost>
+							</Grid>
 						</Popup>
 					</Grid>
 				</ControlTemplate>

@@ -9,7 +9,7 @@ namespace TerritoryDefence.UI.CustomControls.FlexibleItemsControl;
 public partial class FlexibleItemsControl : ItemsControl
 {
 	private const string c_optionPopupName = "PART_OptionPopup";
-	private const string c_optionItemsRepeaterName = "PART_OptionItemsRepeater";
+	private const string c_optionItemsControlName = "PART_OptionItemsControl";
 
 	public static DependencyProperty OptionPanelItemTemplateProperty { get; } =
 	DependencyProperty.Register("OptionPanelItemTemplate",
@@ -42,8 +42,7 @@ public partial class FlexibleItemsControl : ItemsControl
 			);
 
 	private Popup _optionPopup;
-	private ItemsRepeater _optionItemsRepeater;
-	protected ObservableCollection<FrameworkElement> OptionElements => new ObservableCollection<FrameworkElement>();
+	private ItemsControl _optionItemsControl;
 
 	public FlexibleItemsControl() : base()
 	{
@@ -54,16 +53,9 @@ public partial class FlexibleItemsControl : ItemsControl
 	private void OnLoaded(object sender, RoutedEventArgs e)
 	{
 		_optionPopup = GetTemplateChild(c_optionPopupName) as Popup
-			?? throw new InvalidOperationException("OptionPopup is not found at Template.");
-		_optionItemsRepeater = GetTemplateChild(c_optionItemsRepeaterName) as ItemsRepeater
-			?? throw new InvalidOperationException("OptionItemsRepeater is not found at Template.");
-
-		Binding itemsSourceBinding = new Binding()
-		{
-			Path = new PropertyPath("OptionElements"),
-			Source = this
-		};
-		_optionItemsRepeater.SetBinding(ItemsRepeater.ItemsSourceProperty, itemsSourceBinding);
+			?? throw new InvalidOperationException("OptionPopup not found at Template.");
+		_optionItemsControl = GetTemplateChild(c_optionItemsControlName) as ItemsControl
+			?? throw new InvalidOperationException("OptionItemsControl not found at Template.");
 	}
 
 	public DataTemplate OptionPanelItemTemplate
@@ -84,20 +76,20 @@ public partial class FlexibleItemsControl : ItemsControl
 		if (Items.Count > 2)
 		{
 			defaultContentPresenter = new ContentPresenter();
+			SetRelativeContentPresenter(defaultContentPresenter, item, ItemTemplate);
 		}
 		else
 		{
 			defaultContentPresenter = element as ContentPresenter
 				?? throw new InvalidOperationException($"The element {element} should be ContentPresenter.");
+			SetRelativeContentPresenter(defaultContentPresenter, item, RelativeModeTemplate);
 		}
-
-		SetRelativeContentPresenter(defaultContentPresenter, item);
 		SetDefaultRelativePosition(defaultContentPresenter);
 	}
 
-	private void SetRelativeContentPresenter(ContentPresenter contentPresenter, object item)
+	private void SetRelativeContentPresenter(ContentPresenter contentPresenter, object item, DataTemplate template)
 	{
-		contentPresenter.ContentTemplate = RelativeModeTemplate;
+		contentPresenter.ContentTemplate = template;
 		SetContent(contentPresenter, ContentPresenter.ContentProperty);
 
 		void SetContent(ContentPresenter container, DependencyProperty contentProperty)
@@ -160,7 +152,18 @@ public partial class FlexibleItemsControl : ItemsControl
 
 	private void AddToOptionPanel(ContentPresenter container)
 	{
-		_optionPopup.IsOpen = true;
-		OptionElements.Add(container);
+		if (!_optionPopup.IsOpen)
+		{
+			_optionPopup.IsOpen = true;
+		}
+
+		SetPopupItemSize(container);
+		_optionItemsControl.Items.Add(container);
+	}
+
+	private void SetPopupItemSize(ContentPresenter container)
+	{
+		container.Height = 70;
+		container.Width = 70;
 	}
 }
