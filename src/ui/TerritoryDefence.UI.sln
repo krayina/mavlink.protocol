@@ -27,7 +27,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerritoryDefence.UI", "Terr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerritoryDefence.UI.CustomControls", "TerritoryDefence.UI.CustomControls\TerritoryDefence.UI.CustomControls.csproj", "{48CC2D44-94C8-49B5-BC6C-FB4341404576}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerritoryDefence.UI.Toolkit", "TerritoryDefence.UI.Toolkit\TerritoryDefence.UI.Toolkit.csproj", "{5BF92824-DFA9-47EE-9127-0D4B6A0F0C8B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerritoryDefence.UI.Toolkit", "TerritoryDefence.UI.Toolkit\TerritoryDefence.UI.Toolkit.csproj", "{5BF92824-DFA9-47EE-9127-0D4B6A0F0C8B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution items", "{70952840-CA6E-4EE0-80DC-1297178EC778}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
