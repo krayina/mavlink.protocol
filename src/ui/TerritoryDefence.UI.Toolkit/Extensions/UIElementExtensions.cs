@@ -28,4 +28,29 @@ public static class UIElementExtensions
 		}
 		return element as UIElement;
 	}
+
+	public static T? FindVisualChild<T>(this UIElement parent, string controlName) where T : FrameworkElement
+	{
+		if (parent == null)
+		{
+			return null;
+		}
+		if (parent is T && ((T)parent).Name == controlName)
+		{
+			return (T)parent;
+		}
+		T? result = null;
+		int count = VisualTreeHelper.GetChildrenCount(parent);
+		for (int i = 0; i < count; i++)
+		{
+			UIElement child = (UIElement)VisualTreeHelper.GetChild(parent, i);
+
+			if (FindVisualChild<T>(child, controlName) != null)
+			{
+				result = FindVisualChild<T>(child, controlName);
+				break;
+			}
+		}
+		return result;
+	}
 }
