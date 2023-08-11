@@ -93,13 +93,6 @@ public class MoveElementPositionBehavior : Behavior<FrameworkElement>
 		_previewPoint = position;
 	}
 
-	protected virtual void SetElementPosition(Point shift)
-	{
-		var transform = AssociatedObject.InitializeTransform();
-		transform.X += shift.X;
-		transform.Y += shift.Y;
-	}
-
 	private void OnMovementElementChanged(DependencyPropertyChangedEventArgs e)
 	{
 		if (e.OldValue != null)
@@ -117,5 +110,12 @@ public class MoveElementPositionBehavior : Behavior<FrameworkElement>
 
 		_movementElement = (FrameworkElement)e.NewValue;
 		SubscribeEvents(_movementElement);
+	}
+
+	protected virtual void SetElementPosition(Point shift)
+	{
+		var transform = AssociatedObject.InitializeTransform();
+		transform.X += shift.X;
+		transform.Y += shift.Y;
 	}
 }
