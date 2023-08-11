@@ -171,14 +171,14 @@
 				<DataTemplate>
 					<Grid ColumnDefinitions="20,*,20" RowDefinitions="20,*,20">
 						<i:Interaction.Behaviors>
-							<behaviors:MoveElementPositionBehavior MovementElement="{Binding ElementName=DragElement}"/>
+							<behaviors:MoveElementPositionBehavior MovementElement="{Binding ElementName=MovementElement}"/>
 						</i:Interaction.Behaviors>
 						
 						<ContentPresenter Grid.ColumnSpan="3" Grid.RowSpan="3"
 										  ap:RelativeSourceBinding.AncestorType="local:FlexibleItemsControl"
 										  ContentTemplate="{Binding Path=(ap:RelativeSourceBinding.Ancestor).ItemTemplate, RelativeSource={RelativeSource Self}}"/>
 
-						<ContentPresenter x:Name="DragElement" Grid.ColumnSpan="3" Grid.RowSpan="3"
+						<ContentPresenter x:Name="MovementElement" Grid.ColumnSpan="3" Grid.RowSpan="3"
 										  ContentTemplate="{StaticResource FlexibleItemTitelPanelTemplate}"
 										  VerticalAlignment="Top" Height="30"/>
 						<!-- Top -->
