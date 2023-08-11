@@ -36,18 +36,18 @@ public class MoveElementPositionBehavior : Behavior<FrameworkElement>
 
 	private void SubscribeEvents(FrameworkElement? movementElement)
 	{
-		if (_movementElement == null)
+		if (movementElement == null)
 		{
 			return;
 		}
 		UnsubscribeEvents(movementElement);
 
-		_movementElement?.AddHandler(UIElement.PointerPressedEvent, (PointerEventHandler)OnElementPointerPressed, true);
+		movementElement?.AddHandler(UIElement.PointerPressedEvent, (PointerEventHandler)OnElementPointerPressed, true);
 	}
 
 	private void UnsubscribeEvents(FrameworkElement? movementElement)
 	{
-		_movementElement?.RemoveHandler(UIElement.PointerPressedEvent, (PointerEventHandler)OnElementPointerPressed);
+		movementElement?.RemoveHandler(UIElement.PointerPressedEvent, (PointerEventHandler)OnElementPointerPressed);
 	}
 
 	private void OnElementPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -57,9 +57,10 @@ public class MoveElementPositionBehavior : Behavior<FrameworkElement>
 		{
 			return;
 		}
-		_movementElement.AddHandler(UIElement.PointerReleasedEvent, (PointerEventHandler)OnElementPointerReleased, true);
-		_movementElement.PointerMoved += OnMovementElementMoved;
-		_previewPoint = e.GetCurrentPoint(_movementElement).Position;
+		UIElement parent = AssociatedObject.GetTopUIElement()!;
+		parent.AddHandler(UIElement.PointerReleasedEvent, (PointerEventHandler)OnElementPointerReleased, true);
+		parent.PointerMoved += OnMovementElementMoved;
+		_previewPoint = e.GetCurrentPoint(parent).Position;
 		_pointerId = (int)e.Pointer.PointerId;
 	}
 
@@ -75,8 +76,9 @@ public class MoveElementPositionBehavior : Behavior<FrameworkElement>
 		{
 			_pointerId = -1;
 		}
-		_movementElement.RemoveHandler(UIElement.PointerReleasedEvent, (PointerEventHandler)OnElementPointerReleased);
-		_movementElement.PointerMoved -= OnMovementElementMoved;
+		UIElement parent = AssociatedObject.GetTopUIElement()!;
+		parent.RemoveHandler(UIElement.PointerReleasedEvent, (PointerEventHandler)OnElementPointerReleased);
+		parent.PointerMoved -= OnMovementElementMoved;
 	}
 
 	private void OnMovementElementMoved(object sender, PointerRoutedEventArgs e)
