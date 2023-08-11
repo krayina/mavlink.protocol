@@ -1,6 +1,8 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 					xmlns:local="using:TerritoryDefence.UI.CustomControls.FlexibleItemsControl"
-					xmlns:ap="using:TerritoryDefence.UI.Toolkit.AttachedProperties">
+					xmlns:ap="using:TerritoryDefence.UI.Toolkit.AttachedProperties"
+					xmlns:i="using:Microsoft.Xaml.Interactivity"
+					xmlns:behaviors="using:TerritoryDefence.UI.Toolkit.Behaviors">
 
 	<Style x:Key="TitleHideButtonStyle" TargetType="Button">
 		<Setter Property="Width" Value="45"/>
@@ -168,11 +170,15 @@
 			<Setter.Value>
 				<DataTemplate>
 					<Grid ColumnDefinitions="20,*,20" RowDefinitions="20,*,20">
+						<i:Interaction.Behaviors>
+							<behaviors:MoveElementPositionBehavior MovementElement="{Binding ElementName=DragElement}"/>
+						</i:Interaction.Behaviors>
+						
 						<ContentPresenter Grid.ColumnSpan="3" Grid.RowSpan="3"
 										  ap:RelativeSourceBinding.AncestorType="local:FlexibleItemsControl"
 										  ContentTemplate="{Binding Path=(ap:RelativeSourceBinding.Ancestor).ItemTemplate, RelativeSource={RelativeSource Self}}"/>
 
-						<ContentPresenter Grid.ColumnSpan="3" Grid.RowSpan="3"
+						<ContentPresenter x:Name="DragElement" Grid.ColumnSpan="3" Grid.RowSpan="3"
 										  ContentTemplate="{StaticResource FlexibleItemTitelPanelTemplate}"
 										  VerticalAlignment="Top" Height="30"/>
 						<!-- Top -->

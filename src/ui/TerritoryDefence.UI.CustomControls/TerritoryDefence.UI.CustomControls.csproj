@@ -13,6 +13,13 @@
 		<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
 	</PropertyGroup>
 	
+	<ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+		<PackageReference Include="CommunityToolkit.WinUI.UI.Behaviors" />
+	</ItemGroup>
+	<ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+		<PackageReference Include="Uno.CommunityToolkit.WinUI.UI.Behaviors" />
+	</ItemGroup>	
+	
 	<Choose>
 		<When Condition="$(IsWinAppSdk)">
 			<ItemGroup>
