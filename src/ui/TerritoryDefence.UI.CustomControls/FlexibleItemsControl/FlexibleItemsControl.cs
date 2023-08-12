@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System.Collections.ObjectModel;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
@@ -6,6 +7,8 @@ using Microsoft.Xaml.Interactivity;
 using TerritoryDefence.UI.Toolkit.Extensions;
 
 namespace TerritoryDefence.UI.CustomControls.FlexibleItemsControl;
+
+internal record FlexibleItemData(ContentPresenter ContentPresenter, Toolkit.Behaviors.MoveElementPositionBehavior MoveElementPositionBehavior);
 
 public partial class FlexibleItemsControl : ItemsControl
 {
@@ -45,20 +48,13 @@ public partial class FlexibleItemsControl : ItemsControl
 
 	private Popup _optionPopup;
 	private ItemsControl _optionItemsControl;
-	private Toolkit.Behaviors.MoveElementPositionBehavior _moveElementPositionBehavior;
+	private List<FlexibleItemData> _flexibleItems = new List<FlexibleItemData>();
+	internal IReadOnlyCollection<FlexibleItemData> FlexibleItems => new ReadOnlyCollection<FlexibleItemData>(_flexibleItems);
 
 	public FlexibleItemsControl() : base()
 	{
 		this.DefaultStyleKey = typeof(FlexibleItemsControl);
 		Loaded += OnLoaded;
-	}
-
-	private void OnLoaded(object sender, RoutedEventArgs e)
-	{
-		_optionPopup = GetTemplateChild(c_optionPopupName) as Popup
-			?? throw new InvalidOperationException("OptionPopup not found at Template.");
-		_optionItemsControl = GetTemplateChild(c_optionItemsControlName) as ItemsControl
-			?? throw new InvalidOperationException("OptionItemsControl not found at Template.");
 	}
 
 	public DataTemplate OptionPanelItemTemplate
@@ -71,6 +67,14 @@ public partial class FlexibleItemsControl : ItemsControl
 	{
 		get => (DataTemplate)GetValue(RelativeModeTemplateProperty);
 		set => SetValue(RelativeModeTemplateProperty, value);
+	}
+
+	private void OnLoaded(object sender, RoutedEventArgs e)
+	{
+		_optionPopup = GetTemplateChild(c_optionPopupName) as Popup
+			?? throw new InvalidOperationException("OptionPopup not found at Template.");
+		_optionItemsControl = GetTemplateChild(c_optionItemsControlName) as ItemsControl
+			?? throw new InvalidOperationException("OptionItemsControl not found at Template.");
 	}
 
 	protected override void PrepareContainerForItemOverride(DependencyObject element, object item)
@@ -111,21 +115,24 @@ public partial class FlexibleItemsControl : ItemsControl
 		{
 			var behaviors = Interaction.GetBehaviors(firstContentPresenterChild);
 			var existingMoveElementPositionBehavior = behaviors.FirstOrDefault(x => x is Toolkit.Behaviors.MoveElementPositionBehavior);
+			Toolkit.Behaviors.MoveElementPositionBehavior moveElementPositionBehavior;
+
 			if (existingMoveElementPositionBehavior != null)
 			{
-				_moveElementPositionBehavior = (Toolkit.Behaviors.MoveElementPositionBehavior)existingMoveElementPositionBehavior;
-				return;
+				moveElementPositionBehavior = (Toolkit.Behaviors.MoveElementPositionBehavior)existingMoveElementPositionBehavior;
 			}
-
-			Toolkit.Behaviors.MoveElementPositionBehavior moveElementPositionBehavior = new();
-			BindingOperations.SetBinding(moveElementPositionBehavior,
-				Toolkit.Behaviors.MoveElementPositionBehavior.MovementElementProperty,
-					new Binding()
-					{
-						ElementName = c_movementElementName,
-					});
-			behaviors.Add(moveElementPositionBehavior);
-			_moveElementPositionBehavior = moveElementPositionBehavior;
+			else
+			{
+				moveElementPositionBehavior = new();
+				BindingOperations.SetBinding(moveElementPositionBehavior,
+					Toolkit.Behaviors.MoveElementPositionBehavior.MovementElementProperty,
+						new Binding()
+						{
+							ElementName = c_movementElementName,
+						});
+				behaviors.Add(moveElementPositionBehavior);
+			}
+			_flexibleItems.Add(new FlexibleItemData(container, moveElementPositionBehavior));
 		}
 	}
 
