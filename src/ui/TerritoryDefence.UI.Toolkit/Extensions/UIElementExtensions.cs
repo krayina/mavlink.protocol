@@ -53,4 +53,15 @@ public static class UIElementExtensions
 		}
 		return result;
 	}
+
+	public static FrameworkElement? GetFirstVisualChild(this UIElement element)
+	{
+		int childrenCount = VisualTreeHelper.GetChildrenCount(element);
+
+		if (childrenCount > 0)
+		{
+			return (FrameworkElement)VisualTreeHelper.GetChild(element, 0);
+		}
+		return null;
+	}
 }
