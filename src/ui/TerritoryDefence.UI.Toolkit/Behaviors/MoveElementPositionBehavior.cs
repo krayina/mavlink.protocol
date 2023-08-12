@@ -15,12 +15,26 @@ public class MoveElementPositionBehavior : Behavior<FrameworkElement>
 	private FrameworkElement? _movementElement;
 	private Point _previewPoint;
 	private int _pointerId = -1;
+	private bool _isMoving;
 
 	public FrameworkElement MovementElement
 	{
 		get => (FrameworkElement)this.GetValue(MovementElementProperty);
 		set => this.SetValue(MovementElementProperty, value);
 	}
+
+	public event EventHandler<bool>? MovingStateChanged;
+
+	public bool IsMoving
+	{
+		get => _isMoving;
+		protected set
+		{
+			_isMoving = value;
+			MovingStateChanged?.Invoke(this, value);
+		}
+	}
+
 
 	protected override void OnAttached()
 	{
@@ -66,7 +80,10 @@ public class MoveElementPositionBehavior : Behavior<FrameworkElement>
 
 	private void OnElementPointerReleased(object sender, PointerRoutedEventArgs e)
 	{
-		System.Diagnostics.Debug.WriteLine("___OnElementPointerReleased");
+		if (IsMoving)
+		{
+			IsMoving = false;
+		}
 		if (_movementElement == null)
 		{
 			return;
@@ -83,7 +100,10 @@ public class MoveElementPositionBehavior : Behavior<FrameworkElement>
 
 	private void OnMovementElementMoved(object sender, PointerRoutedEventArgs e)
 	{
-		System.Diagnostics.Debug.WriteLine("___OnMovementElementMoved");
+		if (!IsMoving)
+		{
+			IsMoving = true;
+		}
 		double zoomFactor = 1;
 		var position = e.GetCurrentPoint((UIElement)sender).Position;
 		SetElementPosition(
@@ -120,4 +140,8 @@ public class MoveElementPositionBehavior : Behavior<FrameworkElement>
 		transform.X += shift.X;
 		transform.Y += shift.Y;
 	}
+
+	protected virtual void OnMovementActivated() { }
+
+	protected virtual void OnMovementDeactivated() { }
 }
