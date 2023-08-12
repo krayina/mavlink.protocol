@@ -169,16 +169,16 @@
 		<Setter Property="RelativeModeTemplate">
 			<Setter.Value>
 				<DataTemplate>
-					<Grid ColumnDefinitions="20,*,20" RowDefinitions="20,*,20">
+					<Grid x:Name="PART_GridTest" ColumnDefinitions="20,*,20" RowDefinitions="20,*,20">
 						<i:Interaction.Behaviors>
-							<behaviors:MoveElementPositionBehavior MovementElement="{Binding ElementName=MovementElement}"/>
+							<behaviors:MoveElementPositionBehavior MovementElement="{Binding ElementName=PART_MovementElement}"/>
 						</i:Interaction.Behaviors>
 						
 						<ContentPresenter Grid.ColumnSpan="3" Grid.RowSpan="3"
 										  ap:RelativeSourceBinding.AncestorType="local:FlexibleItemsControl"
 										  ContentTemplate="{Binding Path=(ap:RelativeSourceBinding.Ancestor).ItemTemplate, RelativeSource={RelativeSource Self}}"/>
 
-						<ContentPresenter x:Name="MovementElement" Grid.ColumnSpan="3" Grid.RowSpan="3"
+						<ContentPresenter x:Name="PART_MovementElement" Grid.ColumnSpan="3" Grid.RowSpan="3"
 										  ContentTemplate="{StaticResource FlexibleItemTitelPanelTemplate}"
 										  VerticalAlignment="Top" Height="30"/>
 						<!-- Top -->

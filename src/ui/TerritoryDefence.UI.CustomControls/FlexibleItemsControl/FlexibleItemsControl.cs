@@ -1,8 +1,9 @@
-﻿using System.Collections.ObjectModel;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.Xaml.Interactivity;
+using TerritoryDefence.UI.Toolkit.Extensions;
 
 namespace TerritoryDefence.UI.CustomControls.FlexibleItemsControl;
 
@@ -10,6 +11,7 @@ public partial class FlexibleItemsControl : ItemsControl
 {
 	private const string c_optionPopupName = "PART_OptionPopup";
 	private const string c_optionItemsControlName = "PART_OptionItemsControl";
+	private const string c_movementElementName = "PART_MovementElement";
 
 	public static DependencyProperty OptionPanelItemTemplateProperty { get; } =
 	DependencyProperty.Register("OptionPanelItemTemplate",
@@ -43,6 +45,7 @@ public partial class FlexibleItemsControl : ItemsControl
 
 	private Popup _optionPopup;
 	private ItemsControl _optionItemsControl;
+	private Toolkit.Behaviors.MoveElementPositionBehavior _moveElementPositionBehavior;
 
 	public FlexibleItemsControl() : base()
 	{
@@ -72,19 +75,58 @@ public partial class FlexibleItemsControl : ItemsControl
 
 	protected override void PrepareContainerForItemOverride(DependencyObject element, object item)
 	{
-		ContentPresenter defaultContentPresenter;
+		ContentPresenter container;
 		if (Items.Count > 2)
 		{
-			defaultContentPresenter = new ContentPresenter();
-			SetRelativeContentPresenter(defaultContentPresenter, item, ItemTemplate);
+			container = new ContentPresenter();
+			SetRelativeContentPresenter(container, item, ItemTemplate);
 		}
 		else
 		{
-			defaultContentPresenter = element as ContentPresenter
+			container = element as ContentPresenter
 				?? throw new InvalidOperationException($"The element {element} should be ContentPresenter.");
-			SetRelativeContentPresenter(defaultContentPresenter, item, RelativeModeTemplate);
+			SetRelativeContentPresenter(container, item, RelativeModeTemplate);
 		}
-		SetDefaultRelativePosition(defaultContentPresenter);
+		SetMoveElementPositionBehaviorAfterLoaded(container);
+		SetDefaultRelativePosition(container);
+	}
+
+	private void SetMoveElementPositionBehaviorAfterLoaded(ContentPresenter container)
+	{
+		RoutedEventHandler? handler = null;
+		handler = (sender, e) =>
+		{
+			container.Loaded -= handler;
+			InitializeMoveElementPositionBehavior(container);
+		};
+		container.Loaded += handler;
+	}
+
+	private void InitializeMoveElementPositionBehavior(ContentPresenter container)
+	{
+		System.Diagnostics.Debug.WriteLine("SetMoveElementPositionBehavior");
+		var movementElement = container.FindVisualChild<FrameworkElement>(c_movementElementName);
+		var firstContentPresenterChild = container.GetFirstVisualChild();
+		if (movementElement != null && firstContentPresenterChild != null)
+		{
+			var behaviors = Interaction.GetBehaviors(firstContentPresenterChild);
+			var existingMoveElementPositionBehavior = behaviors.FirstOrDefault(x => x is Toolkit.Behaviors.MoveElementPositionBehavior);
+			if (existingMoveElementPositionBehavior != null)
+			{
+				_moveElementPositionBehavior = (Toolkit.Behaviors.MoveElementPositionBehavior)existingMoveElementPositionBehavior;
+				return;
+			}
+
+			Toolkit.Behaviors.MoveElementPositionBehavior moveElementPositionBehavior = new();
+			BindingOperations.SetBinding(moveElementPositionBehavior,
+				Toolkit.Behaviors.MoveElementPositionBehavior.MovementElementProperty,
+					new Binding()
+					{
+						ElementName = c_movementElementName,
+					});
+			behaviors.Add(moveElementPositionBehavior);
+			_moveElementPositionBehavior = moveElementPositionBehavior;
+		}
 	}
 
 	private void SetRelativeContentPresenter(ContentPresenter contentPresenter, object item, DataTemplate template)
