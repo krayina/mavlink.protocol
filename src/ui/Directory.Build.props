@@ -20,13 +20,13 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<UnoVersion>5.0.0-dev.1752</UnoVersion>
-		<WasmVersion>8.0.0-dev.235</WasmVersion>
+		<UnoVersion>5.0.0-dev.2280</UnoVersion>
+		<WasmVersion>8.0.0-dev.252</WasmVersion>
 	    <UnoToolkitVersion>4.0.0-dev.64</UnoToolkitVersion>
-		<UnoExtensionsVersion>3.0.0-dev.2112</UnoExtensionsVersion>
-		<UnoExtensionsLoggingVersion>1.6.0-dev.2</UnoExtensionsLoggingVersion>		
+		<UnoExtensionsVersion>3.0.0-dev.2235</UnoExtensionsVersion>
+		<UnoExtensionsLoggingVersion>1.6.0</UnoExtensionsLoggingVersion>		
 		<UnoMaterialVersion>3.0.0-dev.254</UnoMaterialVersion>
-		<SkiaVersion>2.88.3</SkiaVersion>
+		<SkiaVersion>2.88.5</SkiaVersion>
 		<CommunityToolkitVersion>7.1.2</CommunityToolkitVersion>
 		<UnoCommunityToolkitVersion>7.1.200-dev.6.gf657bb2e91</UnoCommunityToolkitVersion>
 	</PropertyGroup>
