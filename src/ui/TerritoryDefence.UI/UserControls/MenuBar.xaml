@@ -16,7 +16,7 @@
 				</FlyoutBase.AttachedFlyout>
 				<i:Interaction.Behaviors>
 					<core:EventTriggerBehavior EventName="Tapped" SourceObject="{Binding ElementName=AddNewGrid}">
-						<!--<behaviors:ShowAttachedFlyoutBehavior/>-->
+						<behaviors:ShowAttachedFlyoutAction/>
 					</core:EventTriggerBehavior>
 				</i:Interaction.Behaviors>
 				<Image Grid.Column="0" Stretch="Uniform"
