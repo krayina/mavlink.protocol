@@ -1,5 +1,6 @@
 <Project>
 	<PropertyGroup>
+		<DotNetVersion>net8.0</DotNetVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
@@ -7,8 +8,11 @@
 		<DebugSymbols>True</DebugSymbols>
 
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-
-		<NoWarn>$(NoWarn);CA1416;NU1507</NoWarn>
+		
+		<!-- Required for Hot Reload (See https://github.com/dotnet/sdk/issues/36666) -->
+		<IncludeSourceRevisionInInformationalVersion Condition="'$(Configuration)'=='Debug'">false</IncludeSourceRevisionInInformationalVersion>
+		
+		<NoWarn>$(NoWarn);CA1416;NU1507;NETSDK1201;PRI257</NoWarn>
 
 		<DefaultLanguage>en</DefaultLanguage>
 
@@ -20,13 +24,13 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<UnoVersion>5.0.0-dev.2319</UnoVersion>
-		<WasmVersion>8.0.0-dev.252</WasmVersion>
-	    <UnoToolkitVersion>4.0.0-dev.98</UnoToolkitVersion>
-		<UnoExtensionsVersion>3.0.0-dev.2239</UnoExtensionsVersion>
-		<UnoExtensionsLoggingVersion>1.6.0</UnoExtensionsLoggingVersion>		
-		<UnoMaterialVersion>3.0.0-dev.352</UnoMaterialVersion>
-		<SkiaVersion>2.88.5</SkiaVersion>
+		<UnoVersion>5.1.104</UnoVersion>
+		<WasmVersion>8.0.13</WasmVersion>
+	    <UnoToolkitVersion>5.1.7</UnoToolkitVersion>
+		<UnoExtensionsVersion>4.0.0</UnoExtensionsVersion>
+		<UnoExtensionsLoggingVersion>1.7.0</UnoExtensionsLoggingVersion>		
+		<UnoMaterialVersion>4.1.1</UnoMaterialVersion>
+		<SkiaVersion>2.88.7</SkiaVersion>
 		<CommunityToolkitVersion>7.1.2</CommunityToolkitVersion>
 		<UnoCommunityToolkitVersion>7.1.200-dev.6.gf657bb2e91</UnoCommunityToolkitVersion>
 	</PropertyGroup>

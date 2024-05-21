@@ -1,13 +1,6 @@
 {
-	"sdk": {
-		"version": "8.0.100-preview.6.23330.14",
-		"allowPrerelease": true,
-		"rollForward": "latestPatch"
-	},
-	"tools": {
-		"dotnet": "8.0.100-preview.6.23330.14"
-	},
 	"msbuild-sdks": {
-		"MSBuild.Sdk.Extras": "3.0.44"
+		"Uno.Sdk": "5.1.104",
+		"Microsoft.Build.NoTargets": "3.7.56"
 	}
 }
