@@ -1,6 +1,19 @@
 <Project ToolsVersion="15.0">
+  <PropertyGroup>
+    <xunitVersion>2.8.0</xunitVersion>
+  </PropertyGroup>
+  
   <ItemGroup>
+    <!-- CodeAnalysis -->
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
+    
+    <!-- Tests -->
+    <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
+    <PackageVersion Include="xunit" Version="$(xunitVersion)" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="$(xunitVersion)" />
+    <PackageVersion Include="Verify.Xunit" Version="24.2.0" />
+    <PackageVersion Include="Verify.SourceGenerators" Version="2.2.0" />
   </ItemGroup>
 </Project>
