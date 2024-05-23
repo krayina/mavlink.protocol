@@ -25,10 +25,12 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="Unit\Snapshots\" />
-  </ItemGroup>
-  
-  <ItemGroup>
     <ProjectReference Include="..\Shmyndra.Mavlink.SourceGenerators\Shmyndra.Mavlink.SourceGenerators.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="Stubs\*.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AdditionalFiles>
   </ItemGroup>
 </Project>
