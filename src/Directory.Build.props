@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <DotNetVersion>net8.0</DotNetVersion>
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <ImplicitUsings>enable</ImplicitUsings>
