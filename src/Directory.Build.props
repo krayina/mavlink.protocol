@@ -1,29 +1,28 @@
 <Project>
-	<PropertyGroup>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
 
-		<DebugType>portable</DebugType>
-		<DebugSymbols>True</DebugSymbols>
-	</PropertyGroup>
-		
-	<PropertyGroup>
-		<Copyright>Copyright © limeniye 2023</Copyright>
-		<Authors>limeniye</Authors>
-	</PropertyGroup>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>True</DebugSymbols>
+  </PropertyGroup>
 
-	<!-- Common Project Properties -->
-	<PropertyGroup>
-		<LangVersion>latest</LangVersion>
-		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-	</PropertyGroup>
+  <PropertyGroup>
+    <Copyright>Copyright © limeniye 2023</Copyright>
+    <Authors>limeniye</Authors>
+  </PropertyGroup>
 
-	<PropertyGroup>
-		<DebugType>portable</DebugType>
-		<DebugSymbols>True</DebugSymbols>
-		<NoWarn>Uno0001;CS1998;CA1416;NU1504;NU1505;NU1507</NoWarn>
-		<SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
-	</PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>True</DebugSymbols>
+    <NoWarn>Uno0001;CS1998;CA1416;NU1504;NU1505;NU1507</NoWarn>
+    <SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
+  </PropertyGroup>
 </Project>
