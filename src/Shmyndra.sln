@@ -3,6 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.33808.371
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mavlink", "mavlink", "{6AB13417-C239-4754-B583-6644C50A9D4E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.SourceGenerators", "mavlink\Shmyndra.Mavlink.SourceGenerators\Shmyndra.Mavlink.SourceGenerators.csproj", "{57DC8895-A668-45D9-A73E-62BF136B3CFE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.SourceGenerators.Tests", "mavlink\Shmyndra.Mavlink.SourceGenerators.Tests\Shmyndra.Mavlink.SourceGenerators.Tests.csproj", "{5002E1C7-3FAE-4773-B3FD-D4988F469823}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.Protocol.v3_0", "mavlink\Shmyndra.Mavlink.Protocol.v3_0\Shmyndra.Mavlink.Protocol.v3_0.csproj", "{B3C96638-9981-4D74-A969-B765673AB5F4}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{2ABC6460-2DF6-4827-BE09-89A6020E8D04}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.props = Directory.Build.props
@@ -10,8 +18,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{2ABC64
 	EndProjectSection
 EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{57DC8895-A668-45D9-A73E-62BF136B3CFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57DC8895-A668-45D9-A73E-62BF136B3CFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57DC8895-A668-45D9-A73E-62BF136B3CFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57DC8895-A668-45D9-A73E-62BF136B3CFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5002E1C7-3FAE-4773-B3FD-D4988F469823}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5002E1C7-3FAE-4773-B3FD-D4988F469823}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5002E1C7-3FAE-4773-B3FD-D4988F469823}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5002E1C7-3FAE-4773-B3FD-D4988F469823}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3C96638-9981-4D74-A969-B765673AB5F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3C96638-9981-4D74-A969-B765673AB5F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3C96638-9981-4D74-A969-B765673AB5F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3C96638-9981-4D74-A969-B765673AB5F4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{57DC8895-A668-45D9-A73E-62BF136B3CFE} = {6AB13417-C239-4754-B583-6644C50A9D4E}
+		{5002E1C7-3FAE-4773-B3FD-D4988F469823} = {6AB13417-C239-4754-B583-6644C50A9D4E}
+		{B3C96638-9981-4D74-A969-B765673AB5F4} = {6AB13417-C239-4754-B583-6644C50A9D4E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {925CC2D9-D9C9-4CBE-AEBB-AFA759F1CF5E}
