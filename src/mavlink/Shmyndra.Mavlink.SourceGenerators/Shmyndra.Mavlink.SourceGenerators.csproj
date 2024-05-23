@@ -17,6 +17,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <InternalsVisibleTo Include="UIMarkup.Protocol.SourceGenerators.Tests" />
+    <InternalsVisibleTo Include="Shmyndra.Mavlink.SourceGenerators.Tests" />
+  </ItemGroup>
   </ItemGroup>
 </Project>
