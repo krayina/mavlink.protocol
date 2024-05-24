@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+<mavlink>
+  <include>test-mavlink-standard.xml</include>
+  <version>3</version>
+  <dialect>0</dialect>
+  <enums>
+    <enum name="FIRMWARE_VERSION_TYPE">
+      <description>These values define the type of firmware release.  These values indicate the first version or release of this type.  For example the first alpha release would be 64, the second would be 65.</description>
+      <entry value="0" name="FIRMWARE_VERSION_TYPE_DEV">
+        <description>development release</description>
+      </entry>
+      <entry value="64" name="FIRMWARE_VERSION_TYPE_ALPHA">
+        <description>alpha release</description>
+      </entry>
+      <entry value="128" name="FIRMWARE_VERSION_TYPE_BETA">
+        <description>beta release</description>
+      </entry>
+      <entry value="192" name="FIRMWARE_VERSION_TYPE_RC">
+        <description>release candidate</description>
+      </entry>
+      <entry value="255" name="FIRMWARE_VERSION_TYPE_OFFICIAL">
+        <description>official stable release</description>
+      </entry>
+    </enum>
+    <enum name="HL_FAILURE_FLAG" bitmask="true">
+      <description>Flags to report failure cases over the high latency telemetry.</description>
+      <entry value="1" name="HL_FAILURE_FLAG_GPS">
+        <description>GPS failure.</description>
+      </entry>
+      <entry value="2" name="HL_FAILURE_FLAG_DIFFERENTIAL_PRESSURE">
+        <description>Differential pressure sensor failure.</description>
+      </entry>
+      <entry value="4" name="HL_FAILURE_FLAG_ABSOLUTE_PRESSURE">
+        <description>Absolute pressure sensor failure.</description>
+      </entry>
+      <entry value="8" name="HL_FAILURE_FLAG_3D_ACCEL">
+        <description>Accelerometer sensor failure.</description>
+      </entry>
+      <entry value="16" name="HL_FAILURE_FLAG_3D_GYRO">
+        <description>Gyroscope sensor failure.</description>
+      </entry>
+      <entry value="32" name="HL_FAILURE_FLAG_3D_MAG">
+        <description>Magnetometer sensor failure.</description>
+      </entry>
+      <entry value="64" name="HL_FAILURE_FLAG_TERRAIN">
+        <description>Terrain subsystem failure.</description>
+      </entry>
+      <entry value="128" name="HL_FAILURE_FLAG_BATTERY">
+        <description>Battery failure/critical low battery.</description>
+      </entry>
+      <entry value="256" name="HL_FAILURE_FLAG_RC_RECEIVER">
+        <description>RC receiver failure/no RC connection.</description>
+      </entry>
+      <entry value="512" name="HL_FAILURE_FLAG_OFFBOARD_LINK">
+        <description>Offboard link failure.</description>
+      </entry>
+      <entry value="1024" name="HL_FAILURE_FLAG_ENGINE">
+        <description>Engine failure.</description>
+      </entry>
+      <entry value="2048" name="HL_FAILURE_FLAG_GEOFENCE">
+        <description>Geofence violation.</description>
+      </entry>
+      <entry value="4096" name="HL_FAILURE_FLAG_ESTIMATOR">
+        <description>Estimator failure, for example measurement rejection or large variances.</description>
+      </entry>
+      <entry value="8192" name="HL_FAILURE_FLAG_MISSION">
+        <description>Mission failure.</description>
+      </entry>
+    </enum>
+    <enum name="MAV_GOTO">
+      <description>Actions that may be specified in MAV_CMD_OVERRIDE_GOTO to override mission execution.</description>
+      <entry value="0" name="MAV_GOTO_DO_HOLD">
+        <description>Hold at the current position.</description>
+      </entry>
+      <entry value="1" name="MAV_GOTO_DO_CONTINUE">
+        <description>Continue with the next item in mission execution.</description>
+      </entry>
+      <entry value="2" name="MAV_GOTO_HOLD_AT_CURRENT_POSITION">
+        <description>Hold at the current position of the system</description>
+      </entry>
+      <entry value="3" name="MAV_GOTO_HOLD_AT_SPECIFIED_POSITION">
+        <description>Hold at the position specified in the parameters of the DO_HOLD action</description>
+      </entry>
+    </enum>
+    <enum name="MAV_MODE">
+      <description>
+        These defines are predefined OR-combined mode flags. There is no need to use values from this enum, but it
+        simplifies the use of the mode flags. Note that manual input is enabled in all modes as a safety override.
+      </description>
+      <entry value="0" name="MAV_MODE_PREFLIGHT">
+        <description>System is not ready to fly, booting, calibrating, etc. No flag is set.</description>
+      </entry>
+      <entry value="80" name="MAV_MODE_STABILIZE_DISARMED">
+        <description>System is allowed to be active, under assisted RC control.</description>
+      </entry>
+      <entry value="208" name="MAV_MODE_STABILIZE_ARMED">
+        <description>System is allowed to be active, under assisted RC control.</description>
+      </entry>
+      <entry value="64" name="MAV_MODE_MANUAL_DISARMED">
+        <description>System is allowed to be active, under manual (RC) control, no stabilization</description>
+      </entry>
+      <entry value="192" name="MAV_MODE_MANUAL_ARMED">
+        <description>System is allowed to be active, under manual (RC) control, no stabilization</description>
+      </entry>
+      <entry value="88" name="MAV_MODE_GUIDED_DISARMED">
+        <description>System is allowed to be active, under autonomous control, manual setpoint</description>
+      </entry>
+      <entry value="216" name="MAV_MODE_GUIDED_ARMED">
+        <description>System is allowed to be active, under autonomous control, manual setpoint</description>
+      </entry>
+      <entry value="92" name="MAV_MODE_AUTO_DISARMED">
+        <description>System is allowed to be active, under autonomous control and navigation (the trajectory is decided onboard and not pre-programmed by waypoints)</description>
+      </entry>
+      <entry value="220" name="MAV_MODE_AUTO_ARMED">
+        <description>System is allowed to be active, under autonomous control and navigation (the trajectory is decided onboard and not pre-programmed by waypoints)</description>
+      </entry>
+      <entry value="66" name="MAV_MODE_TEST_DISARMED">
+        <description>UNDEFINED mode. This solely depends on the autopilot - use with caution, intended for developers only.</description>
+      </entry>
+      <entry value="194" name="MAV_MODE_TEST_ARMED">
+        <description>UNDEFINED mode. This solely depends on the autopilot - use with caution, intended for developers only.</description>
+      </entry>
+    </enum>
+  </enums>
+  <messages>
+    <message id="1" name="SYS_STATUS">
+      <description>The general system state. If the system is following the MAVLink standard, the system state is mainly defined by three orthogonal states/modes: The system mode, which is either LOCKED (motors shut down and locked), MANUAL (system under RC control), GUIDED (system with autonomous position control, position setpoint controlled manually) or AUTO (system guided by path/waypoint planner). The NAV_MODE defined the current flight state: LIFTOFF (often an open-loop maneuver), LANDING, WAYPOINTS or VECTOR. This represents the internal navigation state machine. The system status shows whether the system is currently active or not and if an emergency occurred. During the CRITICAL and EMERGENCY states the MAV is still considered to be active, but should start emergency procedures autonomously. After a failure occurred it should first move from active to critical to allow manual intervention and then move to emergency after a certain timeout.</description>
+      <field type="uint32_t" name="onboard_control_sensors_present" enum="MAV_SYS_STATUS_SENSOR" display="bitmask" print_format="0x%04x">Bitmap showing which onboard controllers and sensors are present. Value of 0: not present. Value of 1: present.</field>
+      <field type="uint32_t" name="onboard_control_sensors_enabled" enum="MAV_SYS_STATUS_SENSOR" display="bitmask" print_format="0x%04x">Bitmap showing which onboard controllers and sensors are enabled:  Value of 0: not enabled. Value of 1: enabled.</field>
+      <field type="uint32_t" name="onboard_control_sensors_health" enum="MAV_SYS_STATUS_SENSOR" display="bitmask" print_format="0x%04x">Bitmap showing which onboard controllers and sensors have an error (or are operational). Value of 0: error. Value of 1: healthy.</field>
+      <field type="uint16_t" name="load" units="d%">Maximum usage in percent of the mainloop time. Values: [0-1000] - should always be below 1000</field>
+      <field type="uint16_t" name="voltage_battery" units="mV" invalid="UINT16_MAX">Battery voltage, UINT16_MAX: Voltage not sent by autopilot</field>
+      <field type="int16_t" name="current_battery" units="cA" invalid="-1">Battery current, -1: Current not sent by autopilot</field>
+      <field type="int8_t" name="battery_remaining" units="%" invalid="-1">Battery energy remaining, -1: Battery remaining energy not sent by autopilot</field>
+      <field type="uint16_t" name="drop_rate_comm" units="c%">Communication drop rate, (UART, I2C, SPI, CAN), dropped packets on all links (packets that were corrupted on reception on the MAV)</field>
+      <field type="uint16_t" name="errors_comm">Communication errors (UART, I2C, SPI, CAN), dropped packets on all links (packets that were corrupted on reception on the MAV)</field>
+      <field type="uint16_t" name="errors_count1">Autopilot-specific errors</field>
+      <field type="uint16_t" name="errors_count2">Autopilot-specific errors</field>
+      <field type="uint16_t" name="errors_count3">Autopilot-specific errors</field>
+      <field type="uint16_t" name="errors_count4">Autopilot-specific errors</field>
+      <extensions/>
+      <field type="uint32_t" name="onboard_control_sensors_present_extended" enum="MAV_SYS_STATUS_SENSOR_EXTENDED" display="bitmask" print_format="0x%04x">Bitmap showing which onboard controllers and sensors are present. Value of 0: not present. Value of 1: present.</field>
+      <field type="uint32_t" name="onboard_control_sensors_enabled_extended" enum="MAV_SYS_STATUS_SENSOR_EXTENDED" display="bitmask" print_format="0x%04x">Bitmap showing which onboard controllers and sensors are enabled:  Value of 0: not enabled. Value of 1: enabled.</field>
+      <field type="uint32_t" name="onboard_control_sensors_health_extended" enum="MAV_SYS_STATUS_SENSOR_EXTENDED" display="bitmask" print_format="0x%04x">Bitmap showing which onboard controllers and sensors have an error (or are operational). Value of 0: error. Value of 1: healthy.</field>
+    </message>
+    <message id="2" name="SYSTEM_TIME">
+      <description>The system time is the time of the master clock, typically the computer clock of the main onboard computer.</description>
+      <field type="uint64_t" name="time_unix_usec" units="us">Timestamp (UNIX epoch time).</field>
+      <field type="uint32_t" name="time_boot_ms" units="ms">Timestamp (time since system boot).</field>
+    </message>
+    <message id="4" name="PING">
+      <deprecated since="2011-08" replaced_by="SYSTEM_TIME">to be removed / merged with SYSTEM_TIME</deprecated>
+      <description>A ping message either requesting or responding to a ping. This allows to measure the system latencies, including serial port, radio modem and UDP connections. The ping microservice is documented at https://mavlink.io/en/services/ping.html</description>
+      <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.</field>
+      <field type="uint32_t" name="seq">PING sequence</field>
+      <field type="uint8_t" name="target_system">0: request ping from all receiving systems. If greater than 0: message is a ping response and number is the system id of the requesting system</field>
+      <field type="uint8_t" name="target_component">0: request ping from all receiving components. If greater than 0: message is a ping response and number is the component id of the requesting component.</field>
+    </message>
+    <message id="5" name="CHANGE_OPERATOR_CONTROL">
+      <description>Request to control this MAV</description>
+      <field type="uint8_t" name="target_system">System the GCS requests control for</field>
+      <field type="uint8_t" name="control_request">0: request control of this MAV, 1: Release control of this MAV</field>
+      <field type="uint8_t" name="version" units="rad">0: key as plaintext, 1-255: future, different hashing/encryption variants. The GCS should in general use the safest mode possible initially and then gradually move down the encryption level if it gets a NACK message indicating an encryption mismatch.</field>
+      <field type="char[25]" name="passkey">Password / Key, depending on version plaintext or encrypted. 25 or less characters, NULL terminated. The characters may involve A-Z, a-z, 0-9, and "!?,.-"</field>
+    </message>
+  </messages>
+</mavlink>
