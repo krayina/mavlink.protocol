@@ -11,6 +11,10 @@ public class MavlinkGenerator : IIncrementalGenerator
 {
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
+		if (!System.Diagnostics.Debugger.IsAttached)
+		{
+			System.Diagnostics.Debugger.Launch();
+		}
 		new Generator().Generate(context);
 	}
 
