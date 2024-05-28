@@ -30,7 +30,7 @@ public static class TestsHelper
 		IEnumerable<PortableExecutableReference>? references = null)
 	{
 		var compilation = CSharpCompilation.Create(
-			assemblyName: "UIMarkup.Protocol.SourceGenerators",
+			assemblyName: "Shmyndra.Mavlink.SourceGenerators",
 			references: references);
 
 		var driver = CSharpGeneratorDriver.Create(generator);
@@ -41,5 +41,32 @@ public static class TestsHelper
 				.RunGenerators(compilation);
 		}
 		return driver.RunGenerators(compilation);
+	}
+
+	public static CSharpGeneratorDriver RunIncrementalGeneratorDriver(
+	this IIncrementalGenerator generator,
+	ImmutableArray<AdditionalText>? additional = null,
+	IEnumerable<PortableExecutableReference>? references = null,
+	params SyntaxTree[] syntaxTrees)
+	{
+		var referencesList = new List<PortableExecutableReference>(references ?? Enumerable.Empty<PortableExecutableReference>())
+		{
+			MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(Console).Assembly.Location)
+		};
+
+		var compilation = CSharpCompilation.Create(
+			assemblyName: "Shmyndra.Mavlink.SourceGenerators",
+			syntaxTrees: syntaxTrees,
+			references: referencesList,
+			options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+		var driver = CSharpGeneratorDriver.Create(new IIncrementalGenerator[] { generator });
+		if (additional != null)
+		{
+			driver = (CSharpGeneratorDriver)driver.AddAdditionalTexts(additional.Value);
+		}
+
+		return (CSharpGeneratorDriver)driver.RunGenerators(compilation);
 	}
 }
