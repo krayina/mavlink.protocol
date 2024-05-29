@@ -37,29 +37,57 @@ public class MavlinkGenerator : IIncrementalGenerator
 		private static IEnumerable<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> ParseEnums(IEnumerable<string> xmlContents)
 		{
 			var serializer = new XmlSerializer(typeof(Mavlink));
+			var enumDict = new Dictionary<string, (string? Description, List<(string Name, string Value, string? Description)> Entries)>();
+
 			foreach (var xmlContent in xmlContents)
 			{
 				using var reader = new StringReader(xmlContent);
 				var mavlink = (Mavlink)serializer.Deserialize(reader);
 				foreach (var e in mavlink.Enums)
 				{
-					yield return (ToCamelCase(e.Name), e.Description ?? "No description available", e.Entry.Select(entry => (ToCamelCase(entry.Name), entry.Value, entry.Description ?? "No description available")).ToList());
+					var name = ToCamelCase(e.Name);
+					var entries = e.Entry.Select(entry => (ToCamelCase(entry.Name), entry.Value, entry.Description)).ToList();
+
+					if (enumDict.ContainsKey(name))
+					{
+						enumDict[name].Entries.AddRange(entries);
+					}
+					else
+					{
+						enumDict[name] = (e.Description, entries);
+					}
 				}
 			}
+
+			return enumDict.Select(kv => (kv.Key, kv.Value.Description, kv.Value.Entries));
 		}
 
 		private static IEnumerable<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> ParseMessages(IEnumerable<string> xmlContents)
 		{
 			var serializer = new XmlSerializer(typeof(Mavlink));
+			var messageDict = new Dictionary<string, (string? Description, List<(string Type, string Name, string? Description)> Fields)>();
+
 			foreach (var xmlContent in xmlContents)
 			{
 				using var reader = new StringReader(xmlContent);
 				var mavlink = (Mavlink)serializer.Deserialize(reader);
 				foreach (var m in mavlink.Messages)
 				{
-					yield return (ToCamelCase(m.Name), m.Description, m.Field.Select(field => (ConvertType(field.Type), ToCamelCase(field.Name), field.Description)).ToList());
+					var name = ToCamelCase(m.Name);
+					var fields = m.Field.Select(field => (ConvertType(field.Type), ToCamelCase(field.Name), field.Description)).ToList();
+
+					if (messageDict.ContainsKey(name))
+					{
+						messageDict[name].Fields.AddRange(fields);
+					}
+					else
+					{
+						messageDict[name] = (m.Description, fields);
+					}
 				}
 			}
+
+			return messageDict.Select(kv => (kv.Key, kv.Value.Description, kv.Value.Fields));
 		}
 
 		private static string ConvertType(string xmlType)
@@ -90,7 +118,8 @@ public class MavlinkGenerator : IIncrementalGenerator
 				.AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName("GeneratedMavlink"))
 					.AddMembers(enums.Select(CreateEnum).ToArray()));
 
-			context.AddSource("MavlinkEnums.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
+			var code = compilationUnit.NormalizeWhitespace().ToFullString();
+			context.AddSource("MavlinkEnums.g.cs", SourceText.From(code, Encoding.UTF8));
 		}
 
 		private static void GenerateMessageFile(SourceProductionContext context, ImmutableArray<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> messages)
@@ -103,7 +132,8 @@ public class MavlinkGenerator : IIncrementalGenerator
 				.AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName("GeneratedMavlink"))
 					.AddMembers(messages.Select(CreateRecordStruct).ToArray()));
 
-			context.AddSource("MavlinkMessages.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
+			var code = compilationUnit.NormalizeWhitespace().ToFullString();
+			context.AddSource("MavlinkMessages.g.cs", SourceText.From(code, Encoding.UTF8));
 		}
 
 		private static EnumDeclarationSyntax CreateEnum((string Name, string? Description, List<(string Name, string Value, string? Description)> Entries) enumData)
