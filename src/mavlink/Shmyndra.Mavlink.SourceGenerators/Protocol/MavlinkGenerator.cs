@@ -140,7 +140,8 @@ public class MavlinkGenerator : IIncrementalGenerator
 		{
 			var enumMembers = enumData.Entries.Select(entry =>
 			{
-				var enumMember = SyntaxFactory.EnumMemberDeclaration(entry.Name)
+				var entryName = entry.Name == enumData.Name ? "_" + entry.Name : entry.Name;
+				var enumMember = SyntaxFactory.EnumMemberDeclaration(entryName)
 					.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value)));
 				return string.IsNullOrEmpty(entry.Description)
 					? enumMember
@@ -160,7 +161,8 @@ public class MavlinkGenerator : IIncrementalGenerator
 		{
 			var properties = messageData.Fields.Select(field =>
 			{
-				var property = SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName(field.Type), field.Name)
+				var fieldName = field.Name == messageData.Name ? "_" + field.Name : field.Name;
+				var property = SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName(field.Type), fieldName)
 					.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
 					.AddAccessorListAccessors(
 						SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
