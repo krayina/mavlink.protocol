@@ -2,6 +2,8 @@
 using System.Text;
 using System.Xml.Serialization;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
@@ -83,30 +85,12 @@ public class MavlinkGenerator : IIncrementalGenerator
 			if (enums.IsDefaultOrEmpty)
 				return;
 
-			var enumSource = new StringBuilder(@"
-namespace GeneratedMavlink
-{
-");
-			foreach (var @enum in enums)
-			{
-				enumSource.AppendLine($@"
-    /// <summary>
-    /// {@enum.Description}
-    /// </summary>
-    public enum {@enum.Name}
-    {{
-        {string.Join(",\n        ", @enum.Entries.Select(entry => $@"
-        /// <summary>
-        /// {entry.Description}
-        /// </summary>
-        {entry.Name} = {entry.Value}"))}
-    }}
-");
-			}
+			var compilationUnit = SyntaxFactory.CompilationUnit()
+				.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System")))
+				.AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName("GeneratedMavlink"))
+					.AddMembers(enums.Select(CreateEnum).ToArray()));
 
-			enumSource.AppendLine("}");
-
-			context.AddSource("MavlinkEnums.g.cs", SourceText.From(enumSource.ToString(), Encoding.UTF8));
+			context.AddSource("MavlinkEnums.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
 		}
 
 		private static void GenerateMessageFile(SourceProductionContext context, ImmutableArray<(string Name, string Description, List<(string Type, string Name, string Description)> Fields)> messages)
@@ -114,30 +98,70 @@ namespace GeneratedMavlink
 			if (messages.IsDefaultOrEmpty)
 				return;
 
-			var messageSource = new StringBuilder(@"
-namespace GeneratedMavlink
-{
-");
-			foreach (var message in messages)
-			{
-				messageSource.AppendLine($@"
-    /// <summary>
-    /// {message.Description}
-    /// </summary>
-    public record struct {message.Name}
-    {{
-        {string.Join("\n        ", message.Fields.Select(field => $@"
-        /// <summary>
-        /// {field.Description}
-        /// </summary>
-        public {field.Type} {field.Name} {{ get; init; }}"))}
-    }}
-");
-			}
+			var compilationUnit = SyntaxFactory.CompilationUnit()
+				.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System")))
+				.AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName("GeneratedMavlink"))
+					.AddMembers(messages.Select(CreateRecordStruct).ToArray()));
 
-			messageSource.AppendLine("}");
+			context.AddSource("MavlinkMessages.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
+		}
 
-			context.AddSource("MavlinkMessages.g.cs", SourceText.From(messageSource.ToString(), Encoding.UTF8));
+		private static EnumDeclarationSyntax CreateEnum((string Name, string Description, List<(string Name, string Value, string Description)> Entries) enumData)
+		{
+			var enumMembers = enumData.Entries.Select(entry =>
+				SyntaxFactory.EnumMemberDeclaration(entry.Name)
+					.WithLeadingTrivia(CreateSummaryTrivia(entry.Description))
+					.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value))));
+
+			return SyntaxFactory.EnumDeclaration(enumData.Name)
+				.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
+				.WithMembers(new SeparatedSyntaxList<EnumMemberDeclarationSyntax>().AddRange(enumMembers))
+				.WithLeadingTrivia(CreateSummaryTrivia(enumData.Description));
+		}
+
+		private static RecordDeclarationSyntax CreateRecordStruct((string Name, string Description, List<(string Type, string Name, string Description)> Fields) messageData)
+		{
+			var properties = messageData.Fields.Select(field =>
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName(field.Type), field.Name)
+					.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
+					.AddAccessorListAccessors(
+						SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
+						SyntaxFactory.AccessorDeclaration(SyntaxKind.InitAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)))
+					.WithLeadingTrivia(CreateSummaryTrivia(field.Description)))
+				.ToArray();
+
+			return SyntaxFactory
+				.RecordDeclaration(
+					kind: SyntaxKind.RecordStructDeclaration,
+					attributeLists: default,
+					modifiers: default,
+					keyword: SyntaxFactory.Token(SyntaxKind.RecordKeyword),
+					classOrStructKeyword: SyntaxFactory.Token(SyntaxKind.StructKeyword),
+					identifier: SyntaxFactory.Identifier(messageData.Name),
+					typeParameterList: null,
+					parameterList: null,
+					baseList: null,
+					constraintClauses: default,
+					openBraceToken: SyntaxFactory.Token(SyntaxKind.OpenBraceToken),
+					members: SyntaxFactory.List<MemberDeclarationSyntax>(properties),
+					closeBraceToken: SyntaxFactory.Token(SyntaxKind.CloseBraceToken),
+					semicolonToken: default)
+				.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
+				//.AddMembers(properties.ToArray())
+				//.WithCloseBraceToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
+				.WithLeadingTrivia(CreateSummaryTrivia(messageData.Description));
+		}
+
+		private static SyntaxTriviaList CreateSummaryTrivia(string description)
+		{
+			var summaryStart = SyntaxFactory.Comment("/// <summary>");
+			var summaryContent = description.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+											.Select(line => SyntaxFactory.Comment($"/// {line.Trim()}"));
+			var summaryEnd = SyntaxFactory.Comment("/// </summary>");
+
+			return SyntaxFactory.TriviaList(summaryStart)
+								.AddRange(summaryContent)
+								.Add(summaryEnd);
 		}
 
 		private static string ToCamelCase(string input)
