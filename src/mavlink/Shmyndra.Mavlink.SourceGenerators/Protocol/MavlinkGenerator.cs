@@ -34,7 +34,7 @@ public class MavlinkGenerator : IIncrementalGenerator
 			context.RegisterSourceOutput(messages.Collect(), GenerateMessageFile);
 		}
 
-		private static IEnumerable<(string Name, string Description, List<(string Name, string Value, string Description)> Entries)> ParseEnums(IEnumerable<string> xmlContents)
+		private static IEnumerable<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> ParseEnums(IEnumerable<string> xmlContents)
 		{
 			var serializer = new XmlSerializer(typeof(Mavlink));
 			foreach (var xmlContent in xmlContents)
@@ -48,7 +48,7 @@ public class MavlinkGenerator : IIncrementalGenerator
 			}
 		}
 
-		private static IEnumerable<(string Name, string Description, List<(string Type, string Name, string Description)> Fields)> ParseMessages(IEnumerable<string> xmlContents)
+		private static IEnumerable<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> ParseMessages(IEnumerable<string> xmlContents)
 		{
 			var serializer = new XmlSerializer(typeof(Mavlink));
 			foreach (var xmlContent in xmlContents)
@@ -57,7 +57,7 @@ public class MavlinkGenerator : IIncrementalGenerator
 				var mavlink = (Mavlink)serializer.Deserialize(reader);
 				foreach (var m in mavlink.Messages)
 				{
-					yield return (ToCamelCase(m.Name), m.Description ?? "No description available", m.Field.Select(field => (ConvertType(field.Type), ToCamelCase(field.Name), field.Description ?? "No description available")).ToList());
+					yield return (ToCamelCase(m.Name), m.Description, m.Field.Select(field => (ConvertType(field.Type), ToCamelCase(field.Name), field.Description)).ToList());
 				}
 			}
 		}
@@ -80,7 +80,7 @@ public class MavlinkGenerator : IIncrementalGenerator
 			};
 		}
 
-		private static void GenerateEnumFile(SourceProductionContext context, ImmutableArray<(string Name, string Description, List<(string Name, string Value, string Description)> Entries)> enums)
+		private static void GenerateEnumFile(SourceProductionContext context, ImmutableArray<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> enums)
 		{
 			if (enums.IsDefaultOrEmpty)
 				return;
@@ -93,7 +93,7 @@ public class MavlinkGenerator : IIncrementalGenerator
 			context.AddSource("MavlinkEnums.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
 		}
 
-		private static void GenerateMessageFile(SourceProductionContext context, ImmutableArray<(string Name, string Description, List<(string Type, string Name, string Description)> Fields)> messages)
+		private static void GenerateMessageFile(SourceProductionContext context, ImmutableArray<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> messages)
 		{
 			if (messages.IsDefaultOrEmpty)
 				return;
@@ -106,31 +106,41 @@ public class MavlinkGenerator : IIncrementalGenerator
 			context.AddSource("MavlinkMessages.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
 		}
 
-		private static EnumDeclarationSyntax CreateEnum((string Name, string Description, List<(string Name, string Value, string Description)> Entries) enumData)
+		private static EnumDeclarationSyntax CreateEnum((string Name, string? Description, List<(string Name, string Value, string? Description)> Entries) enumData)
 		{
 			var enumMembers = enumData.Entries.Select(entry =>
-				SyntaxFactory.EnumMemberDeclaration(entry.Name)
-					.WithLeadingTrivia(CreateSummaryTrivia(entry.Description))
-					.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value))));
+			{
+				var enumMember = SyntaxFactory.EnumMemberDeclaration(entry.Name)
+					.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value)));
+				return string.IsNullOrEmpty(entry.Description)
+					? enumMember
+					: enumMember.WithLeadingTrivia(CreateSummaryTrivia(entry.Description!));
+			});
 
-			return SyntaxFactory.EnumDeclaration(enumData.Name)
+			var enumDeclaration = SyntaxFactory.EnumDeclaration(enumData.Name)
 				.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
-				.WithMembers(new SeparatedSyntaxList<EnumMemberDeclarationSyntax>().AddRange(enumMembers))
-				.WithLeadingTrivia(CreateSummaryTrivia(enumData.Description));
+				.WithMembers(new SeparatedSyntaxList<EnumMemberDeclarationSyntax>().AddRange(enumMembers));
+
+			return string.IsNullOrEmpty(enumData.Description)
+				? enumDeclaration
+				: enumDeclaration.WithLeadingTrivia(CreateSummaryTrivia(enumData.Description!));
 		}
 
-		private static RecordDeclarationSyntax CreateRecordStruct((string Name, string Description, List<(string Type, string Name, string Description)> Fields) messageData)
+		private static RecordDeclarationSyntax CreateRecordStruct((string Name, string? Description, List<(string Type, string Name, string? Description)> Fields) messageData)
 		{
 			var properties = messageData.Fields.Select(field =>
-				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName(field.Type), field.Name)
+			{
+				var property = SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName(field.Type), field.Name)
 					.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
 					.AddAccessorListAccessors(
 						SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
-						SyntaxFactory.AccessorDeclaration(SyntaxKind.InitAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)))
-					.WithLeadingTrivia(CreateSummaryTrivia(field.Description)))
-				.ToArray();
+						SyntaxFactory.AccessorDeclaration(SyntaxKind.InitAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
+				return string.IsNullOrEmpty(field.Description)
+					? property
+					: property.WithLeadingTrivia(CreateSummaryTrivia(field.Description!));
+			}).ToArray();
 
-			return SyntaxFactory
+			var recordStruct = SyntaxFactory
 				.RecordDeclaration(
 					kind: SyntaxKind.RecordStructDeclaration,
 					attributeLists: default,
@@ -146,10 +156,11 @@ public class MavlinkGenerator : IIncrementalGenerator
 					members: SyntaxFactory.List<MemberDeclarationSyntax>(properties),
 					closeBraceToken: SyntaxFactory.Token(SyntaxKind.CloseBraceToken),
 					semicolonToken: default)
-				.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
-				//.AddMembers(properties.ToArray())
-				//.WithCloseBraceToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
-				.WithLeadingTrivia(CreateSummaryTrivia(messageData.Description));
+				.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
+
+			return string.IsNullOrEmpty(messageData.Description)
+				? recordStruct
+				: recordStruct.WithLeadingTrivia(CreateSummaryTrivia(messageData.Description!));
 		}
 
 		private static SyntaxTriviaList CreateSummaryTrivia(string description)

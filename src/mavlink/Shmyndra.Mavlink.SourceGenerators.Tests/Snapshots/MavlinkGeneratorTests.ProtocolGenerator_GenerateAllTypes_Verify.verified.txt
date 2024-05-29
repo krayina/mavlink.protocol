@@ -524,9 +524,6 @@ namespace GeneratedMavlink
         MavModeFlagDecodePositionCustomMode = 1
     }
 
-    /// <summary>
-    /// No description available
-    /// </summary>
     public enum MavState
     {
         /// <summary>
@@ -1129,69 +1126,21 @@ namespace GeneratedMavlink
     /// </summary>
     public record struct SysStatus
     {
-        /// <summary>
-        /// No description available
-        /// </summary>
         public uint OnboardControlSensorsPresent { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public uint OnboardControlSensorsEnabled { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public uint OnboardControlSensorsHealth { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public ushort Load { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public ushort VoltageBattery { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public short CurrentBattery { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public sbyte BatteryRemaining { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public ushort DropRateComm { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public ushort ErrorsComm { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public ushort ErrorsCount1 { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public ushort ErrorsCount2 { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public ushort ErrorsCount3 { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public ushort ErrorsCount4 { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public uint OnboardControlSensorsPresentExtended { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public uint OnboardControlSensorsEnabledExtended { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public uint OnboardControlSensorsHealthExtended { get; init; }
     }
 
@@ -1200,13 +1149,7 @@ namespace GeneratedMavlink
     /// </summary>
     public record struct SystemTime
     {
-        /// <summary>
-        /// No description available
-        /// </summary>
         public ulong TimeUnixUsec { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public uint TimeBootMs { get; init; }
     }
 
@@ -1215,21 +1158,9 @@ namespace GeneratedMavlink
     /// </summary>
     public record struct Ping
     {
-        /// <summary>
-        /// No description available
-        /// </summary>
         public ulong TimeUsec { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public uint Seq { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public byte TargetSystem { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public byte TargetComponent { get; init; }
     }
 
@@ -1238,21 +1169,9 @@ namespace GeneratedMavlink
     /// </summary>
     public record struct ChangeOperatorControl
     {
-        /// <summary>
-        /// No description available
-        /// </summary>
         public byte TargetSystem { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public byte ControlRequest { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public byte Version { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public object Passkey { get; init; }
     }
 
@@ -1261,29 +1180,11 @@ namespace GeneratedMavlink
     /// </summary>
     public record struct Heartbeat
     {
-        /// <summary>
-        /// No description available
-        /// </summary>
         public byte Type { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public byte Autopilot { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public byte BaseMode { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public uint CustomMode { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public byte SystemStatus { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public object MavlinkVersion { get; init; }
     }
 
@@ -1292,25 +1193,10 @@ namespace GeneratedMavlink
     /// </summary>
     public record struct ProtocolVersion
     {
-        /// <summary>
-        /// No description available
-        /// </summary>
         public ushort Version { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public ushort MinVersion { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public ushort MaxVersion { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public object SpecVersionHash { get; init; }
-        /// <summary>
-        /// No description available
-        /// </summary>
         public object LibraryVersionHash { get; init; }
     }
 }
