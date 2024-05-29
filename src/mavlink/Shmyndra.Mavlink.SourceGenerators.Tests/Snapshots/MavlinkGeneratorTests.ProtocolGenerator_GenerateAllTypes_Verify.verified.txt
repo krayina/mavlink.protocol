@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GeneratedMavlink
+﻿namespace GeneratedMavlink
 {
     /// <summary>
     /// These values define the type of firmware release.  These values indicate the first version or release of this type.  For example the first alpha release would be 64, the second would be 65.
@@ -1117,8 +1115,6 @@ namespace GeneratedMavlink
         MavCompIdSystemControl = 250
     }
 }
-using System;
-
 namespace GeneratedMavlink
 {
     /// <summary>

@@ -44,7 +44,6 @@ internal static class MessageProcessor
 			return;
 
 		var compilationUnit = SyntaxFactory.CompilationUnit()
-			.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System")))
 			.AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName("GeneratedMavlink"))
 				.AddMembers(messages.Select(CreateRecordStruct).ToArray()));
 

@@ -44,7 +44,6 @@ internal static class EnumProcessor
 			return;
 
 		var compilationUnit = SyntaxFactory.CompilationUnit()
-			.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System")))
 			.AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName("GeneratedMavlink"))
 				.AddMembers(enums.Select(CreateEnum).ToArray()));
 
