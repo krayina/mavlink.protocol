@@ -34,7 +34,7 @@ public class MavlinkGenerator : IIncrementalGenerator
 			context.RegisterSourceOutput(messages.Collect(), GenerateMessageFile);
 		}
 
-		private static IEnumerable<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> ParseEnums(IEnumerable<string> xmlContents)
+		public static IEnumerable<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> ParseEnums(IEnumerable<string> xmlContents)
 		{
 			var serializer = new XmlSerializer(typeof(Mavlink));
 			var enumDict = new Dictionary<string, (string? Description, List<(string Name, string Value, string? Description)> Entries)>();
@@ -108,7 +108,7 @@ public class MavlinkGenerator : IIncrementalGenerator
 			};
 		}
 
-		private static void GenerateEnumFile(SourceProductionContext context, ImmutableArray<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> enums)
+		public static void GenerateEnumFile(SourceProductionContext context, ImmutableArray<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> enums)
 		{
 			if (enums.IsDefaultOrEmpty)
 				return;
@@ -118,8 +118,7 @@ public class MavlinkGenerator : IIncrementalGenerator
 				.AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName("GeneratedMavlink"))
 					.AddMembers(enums.Select(CreateEnum).ToArray()));
 
-			var code = compilationUnit.NormalizeWhitespace().ToFullString();
-			context.AddSource("MavlinkEnums.g.cs", SourceText.From(code, Encoding.UTF8));
+			context.AddSource("MavlinkEnums.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
 		}
 
 		private static void GenerateMessageFile(SourceProductionContext context, ImmutableArray<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> messages)
@@ -138,6 +137,10 @@ public class MavlinkGenerator : IIncrementalGenerator
 
 		private static EnumDeclarationSyntax CreateEnum((string Name, string? Description, List<(string Name, string Value, string? Description)> Entries) enumData)
 		{
+			// Collect all values to determine the appropriate enum base type
+			var allValues = enumData.Entries.Select(entry => ulong.Parse(entry.Value)).ToList();
+			string enumBaseType = GetEnumBaseType(allValues);
+
 			var enumMembers = enumData.Entries.Select(entry =>
 			{
 				var entryName = entry.Name == enumData.Name ? "_" + entry.Name : entry.Name;
@@ -151,6 +154,12 @@ public class MavlinkGenerator : IIncrementalGenerator
 			var enumDeclaration = SyntaxFactory.EnumDeclaration(enumData.Name)
 				.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
 				.WithMembers(new SeparatedSyntaxList<EnumMemberDeclarationSyntax>().AddRange(enumMembers));
+
+			if (enumBaseType != "int")
+			{
+				enumDeclaration = enumDeclaration.WithBaseList(SyntaxFactory.BaseList(SyntaxFactory.SingletonSeparatedList<BaseTypeSyntax>(
+					SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(enumBaseType)))));
+			}
 
 			return string.IsNullOrEmpty(enumData.Description)
 				? enumDeclaration
@@ -205,6 +214,15 @@ public class MavlinkGenerator : IIncrementalGenerator
 			return SyntaxFactory.TriviaList(summaryStart)
 								.AddRange(summaryContent)
 								.Add(summaryEnd);
+		}
+
+		public static string GetEnumBaseType(List<ulong> values)
+		{
+			var maxValue = values.Max();
+			if (maxValue <= byte.MaxValue) return "byte";
+			if (maxValue <= ushort.MaxValue) return "ushort";
+			if (maxValue <= uint.MaxValue) return "uint";
+			return "ulong";
 		}
 
 		private static string ToCamelCase(string input)

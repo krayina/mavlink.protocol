@@ -5,7 +5,7 @@ namespace GeneratedMavlink
     /// <summary>
     /// These values define the type of firmware release.  These values indicate the first version or release of this type.  For example the first alpha release would be 64, the second would be 65.
     /// </summary>
-    public enum FirmwareVersionType
+    public enum FirmwareVersionType : byte
     {
         /// <summary>
         /// development release
@@ -32,7 +32,7 @@ namespace GeneratedMavlink
     /// <summary>
     /// Flags to report failure cases over the high latency telemetry.
     /// </summary>
-    public enum HlFailureFlag
+    public enum HlFailureFlag : ushort
     {
         /// <summary>
         /// GPS failure.
@@ -95,7 +95,7 @@ namespace GeneratedMavlink
     /// <summary>
     /// Actions that may be specified in MAV_CMD_OVERRIDE_GOTO to override mission execution.
     /// </summary>
-    public enum MavGoto
+    public enum MavGoto : byte
     {
         /// <summary>
         /// Hold at the current position.
@@ -120,7 +120,7 @@ namespace GeneratedMavlink
     /// simplifies the use of the mode flags. Note that manual input is enabled in all modes as a safety override.
     /// 
     /// </summary>
-    public enum MavMode
+    public enum MavMode : byte
     {
         /// <summary>
         /// System is not ready to fly, booting, calibrating, etc. No flag is set.
@@ -171,7 +171,7 @@ namespace GeneratedMavlink
     /// <summary>
     /// Micro air vehicle / autopilot classes. This identifies the individual model.
     /// </summary>
-    public enum MavAutopilot
+    public enum MavAutopilot : byte
     {
         /// <summary>
         /// Generic autopilot, full support for everything
@@ -262,7 +262,7 @@ namespace GeneratedMavlink
     /// <summary>
     /// MAVLINK component type reported in HEARTBEAT message. Flight controllers must report the type of the vehicle on which they are mounted (e.g. MAV_TYPE_OCTOROTOR). All other components must report a value appropriate for their type (e.g. a camera must use MAV_TYPE_CAMERA).
     /// </summary>
-    public enum MavType
+    public enum MavType : byte
     {
         /// <summary>
         /// Generic micro air vehicle
@@ -449,7 +449,7 @@ namespace GeneratedMavlink
     /// <summary>
     /// These flags encode the MAV mode.
     /// </summary>
-    public enum MavModeFlag
+    public enum MavModeFlag : byte
     {
         /// <summary>
         /// 0b10000000 MAV safety set to armed. Motors are enabled / running / can start. Ready to fly. Additional note: this flag is to be ignore when sent in the command MAV_CMD_DO_SET_MODE and MAV_CMD_COMPONENT_ARM_DISARM shall be used instead. The flag can still be used to report the armed state.
@@ -488,7 +488,7 @@ namespace GeneratedMavlink
     /// <summary>
     /// These values encode the bit positions of the decode position. These values can be used to read the value of a flag bit by combining the base_mode variable with AND with the flag position value. The result will be either 0 or 1, depending on if the flag is set or not.
     /// </summary>
-    public enum MavModeFlagDecodePosition
+    public enum MavModeFlagDecodePosition : byte
     {
         /// <summary>
         /// First bit:  10000000
@@ -524,7 +524,7 @@ namespace GeneratedMavlink
         MavModeFlagDecodePositionCustomMode = 1
     }
 
-    public enum MavState
+    public enum MavState : byte
     {
         /// <summary>
         /// Uninitialized system, state is unknown.
@@ -569,7 +569,7 @@ namespace GeneratedMavlink
     /// Components must use the appropriate ID in their source address when sending messages. Components can also use IDs to determine if they are the intended recipient of an incoming message. The MAV_COMP_ID_ALL value is used to indicate messages that must be processed by all components.
     /// When creating new entries, components that can have multiple instances (e.g. cameras, servos etc.) should be allocated sequential values. An appropriate number of values should be left free after these components to allow the number of instances to be expanded.
     /// </summary>
-    public enum MavComponent
+    public enum MavComponent : byte
     {
         /// <summary>
         /// Target id (target_component) used to broadcast messages to all components of the receiving system. Components should attempt to process messages with this component ID and forward to components on any other interfaces. Note: This is not a valid *source* component id for a message.
