@@ -42,7 +42,6 @@ public class MavlinkGenerator : IIncrementalGenerator
 			}
 			catch (Exception ex)
 			{
-				// TODO: https://github.com/dotnet/runtime/discussions/102985
 				var rootException = ex;
 				while (rootException.InnerException is not null)
 				{
@@ -52,6 +51,7 @@ public class MavlinkGenerator : IIncrementalGenerator
 				if (rootException.Message.Contains("System.ComponentModel.Annotations"))
 				{
 					// Generation already started
+					// TODO: https://github.com/dotnet/runtime/discussions/102985
 					return;
 				}
 				else
