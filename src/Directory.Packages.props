@@ -1,14 +1,17 @@
 <Project ToolsVersion="15.0">
-  
+
   <PropertyGroup>
     <xunitVersion>2.8.0</xunitVersion>
+    <MicrosoftBuildVersion>17.10.4</MicrosoftBuildVersion>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <!-- CodeAnalysis -->
+    <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
-    <PackageVersion Include="System.ComponentModel.Annotations" Version="4.4.1" />
+    <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0" />
 
     <!-- Tests -->
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
@@ -18,5 +21,5 @@
     <PackageVersion Include="Verify.Xunit" Version="24.2.0" />
     <PackageVersion Include="Verify.SourceGenerators" Version="2.2.0" />
   </ItemGroup>
-  
+
 </Project>
