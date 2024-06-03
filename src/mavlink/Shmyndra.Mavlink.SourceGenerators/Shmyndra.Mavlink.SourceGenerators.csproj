@@ -4,18 +4,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!--<IsRoslynComponent>true</IsRoslynComponent>-->
+    <IsRoslynComponent>true</IsRoslynComponent>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-    <!--<AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>-->
-    <!--<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>-->
 
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
   
   <ItemGroup>
