@@ -22,11 +22,49 @@ public class MavlinkGenerator : IIncrementalGenerator
 			var additionalTexts = context.AdditionalTextsProvider.Where(file => file.Path.EndsWith(".xml"));
 			var xmlFiles = additionalTexts.Select((file, _) => file.GetText()!.ToString()).Collect();
 
-			var enums = xmlFiles.SelectMany((files, _) => EnumProcessor.ParseEnums(files).ToImmutableArray());
-			var messages = xmlFiles.SelectMany((files, _) => MessageProcessor.ParseMessages(files).ToImmutableArray());
+			context.RegisterSourceOutput(xmlFiles, (sourceProductionContext, files) =>
+			{
+				ProcessAndReport(sourceProductionContext, files, EnumProcessor.ParseEnums, EnumProcessor.GenerateEnumFile);
+				ProcessAndReport(sourceProductionContext, files, MessageProcessor.ParseMessages, MessageProcessor.GenerateMessageFile);
+			});
+		}
 
-			context.RegisterSourceOutput(enums.Collect(), EnumProcessor.GenerateEnumFile);
-			context.RegisterSourceOutput(messages.Collect(), MessageProcessor.GenerateMessageFile);
+		private static void ProcessAndReport<T>(
+			SourceProductionContext context,
+			ImmutableArray<string> files,
+			Func<IEnumerable<string>, IEnumerable<T>> parseFunc,
+			Action<SourceProductionContext, ImmutableArray<T>> generateFunc)
+		{
+			try
+			{
+				var items = parseFunc(files).ToImmutableArray();
+				generateFunc(context, items);
+			}
+			catch (Exception ex)
+			{
+				// TODO: https://github.com/dotnet/runtime/discussions/102985
+				var rootException = ex;
+				while (rootException.InnerException is not null)
+				{
+					rootException = rootException.InnerException;
+				}
+
+				if (rootException.Message.Contains("System.ComponentModel.Annotations"))
+				{
+					// Generation already started
+					return;
+				}
+				else
+				{
+					context.ReportDiagnostic(
+						Diagnostic.Create(
+							MavlinkGeneratorDiagnostics.GenericProtocolErrorRule,
+							Location.None,
+							ex.Message
+						)
+					);
+				}
+			}
 		}
 	}
 }
