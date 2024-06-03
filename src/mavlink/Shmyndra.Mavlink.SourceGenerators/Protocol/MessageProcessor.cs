@@ -79,7 +79,12 @@ internal static class MessageProcessor
 				members: SyntaxFactory.List<MemberDeclarationSyntax>(properties),
 				closeBraceToken: SyntaxFactory.Token(SyntaxKind.CloseBraceToken),
 				semicolonToken: default)
-			.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
+			.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
+			.AddAttributeLists(
+				SyntaxFactory.AttributeList(
+					SyntaxFactory.SingletonSeparatedList(
+						SyntaxFactory.Attribute(
+							SyntaxFactory.ParseName("Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType")))));
 
 		return Utilities.AddSummaryTriviaIfNotNull(recordStruct, messageData.Description);
 	}

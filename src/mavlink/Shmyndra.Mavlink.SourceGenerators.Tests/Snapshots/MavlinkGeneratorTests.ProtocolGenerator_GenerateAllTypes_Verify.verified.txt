@@ -3,6 +3,7 @@
     /// <summary>
     /// These values define the type of firmware release.  These values indicate the first version or release of this type.  For example the first alpha release would be 64, the second would be 65.
     /// </summary>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public enum FirmwareVersionType : byte
     {
         /// <summary>
@@ -30,6 +31,7 @@
     /// <summary>
     /// Flags to report failure cases over the high latency telemetry.
     /// </summary>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public enum HlFailureFlag : ushort
     {
         /// <summary>
@@ -93,6 +95,7 @@
     /// <summary>
     /// Actions that may be specified in MAV_CMD_OVERRIDE_GOTO to override mission execution.
     /// </summary>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public enum MavGoto : byte
     {
         /// <summary>
@@ -118,6 +121,7 @@
     /// simplifies the use of the mode flags. Note that manual input is enabled in all modes as a safety override.
     /// 
     /// </summary>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public enum MavMode : byte
     {
         /// <summary>
@@ -169,6 +173,7 @@
     /// <summary>
     /// Micro air vehicle / autopilot classes. This identifies the individual model.
     /// </summary>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public enum MavAutopilot : byte
     {
         /// <summary>
@@ -260,6 +265,7 @@
     /// <summary>
     /// MAVLINK component type reported in HEARTBEAT message. Flight controllers must report the type of the vehicle on which they are mounted (e.g. MAV_TYPE_OCTOROTOR). All other components must report a value appropriate for their type (e.g. a camera must use MAV_TYPE_CAMERA).
     /// </summary>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public enum MavType : byte
     {
         /// <summary>
@@ -447,6 +453,7 @@
     /// <summary>
     /// These flags encode the MAV mode.
     /// </summary>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public enum MavModeFlag : byte
     {
         /// <summary>
@@ -486,6 +493,7 @@
     /// <summary>
     /// These values encode the bit positions of the decode position. These values can be used to read the value of a flag bit by combining the base_mode variable with AND with the flag position value. The result will be either 0 or 1, depending on if the flag is set or not.
     /// </summary>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public enum MavModeFlagDecodePosition : byte
     {
         /// <summary>
@@ -522,6 +530,7 @@
         MavModeFlagDecodePositionCustomMode = 1
     }
 
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public enum MavState : byte
     {
         /// <summary>
@@ -567,6 +576,7 @@
     /// Components must use the appropriate ID in their source address when sending messages. Components can also use IDs to determine if they are the intended recipient of an incoming message. The MAV_COMP_ID_ALL value is used to indicate messages that must be processed by all components.
     /// When creating new entries, components that can have multiple instances (e.g. cameras, servos etc.) should be allocated sequential values. An appropriate number of values should be left free after these components to allow the number of instances to be expanded.
     /// </summary>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public enum MavComponent : byte
     {
         /// <summary>
@@ -1120,6 +1130,7 @@ namespace GeneratedMavlink
     /// <summary>
     /// The general system state. If the system is following the MAVLink standard, the system state is mainly defined by three orthogonal states/modes: The system mode, which is either LOCKED (motors shut down and locked), MANUAL (system under RC control), GUIDED (system with autonomous position control, position setpoint controlled manually) or AUTO (system guided by path/waypoint planner). The NAV_MODE defined the current flight state: LIFTOFF (often an open-loop maneuver), LANDING, WAYPOINTS or VECTOR. This represents the internal navigation state machine. The system status shows whether the system is currently active or not and if an emergency occurred. During the CRITICAL and EMERGENCY states the MAV is still considered to be active, but should start emergency procedures autonomously. After a failure occurred it should first move from active to critical to allow manual intervention and then move to emergency after a certain timeout.
     /// </summary>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public record struct SysStatus
     {
         public uint OnboardControlSensorsPresent { get; init; }
@@ -1143,6 +1154,7 @@ namespace GeneratedMavlink
     /// <summary>
     /// The system time is the time of the master clock, typically the computer clock of the main onboard computer.
     /// </summary>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public record struct SystemTime
     {
         public ulong TimeUnixUsec { get; init; }
@@ -1152,6 +1164,7 @@ namespace GeneratedMavlink
     /// <summary>
     /// A ping message either requesting or responding to a ping. This allows to measure the system latencies, including serial port, radio modem and UDP connections. The ping microservice is documented at https://mavlink.io/en/services/ping.html
     /// </summary>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public record struct Ping
     {
         public ulong TimeUsec { get; init; }
@@ -1163,6 +1176,7 @@ namespace GeneratedMavlink
     /// <summary>
     /// Request to control this MAV
     /// </summary>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public record struct ChangeOperatorControl
     {
         public byte TargetSystem { get; init; }
@@ -1174,6 +1188,7 @@ namespace GeneratedMavlink
     /// <summary>
     /// The heartbeat message shows that a system or component is present and responding. The type and autopilot fields (along with the message component id), allow the receiving system to treat further messages from this system appropriately (e.g. by laying out the user interface based on the autopilot). This microservice is documented at https://mavlink.io/en/services/heartbeat.html
     /// </summary>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public record struct Heartbeat
     {
         public byte Type { get; init; }
@@ -1187,6 +1202,7 @@ namespace GeneratedMavlink
     /// <summary>
     /// Version and capability of protocol version. This message can be requested with MAV_CMD_REQUEST_MESSAGE and is used as part of the handshaking to establish which MAVLink version should be used on the network. Every node should respond to a request for PROTOCOL_VERSION to enable the handshaking. Library implementers should consider adding this into the default decoding state machine to allow the protocol core to respond directly.
     /// </summary>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public record struct ProtocolVersion
     {
         public ushort Version { get; init; }

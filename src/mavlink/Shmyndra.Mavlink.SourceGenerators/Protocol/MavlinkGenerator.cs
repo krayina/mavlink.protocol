@@ -24,12 +24,12 @@ public class MavlinkGenerator : IIncrementalGenerator
 
 			context.RegisterSourceOutput(xmlFiles, (sourceProductionContext, files) =>
 			{
-				ProcessAndReport(sourceProductionContext, files, EnumProcessor.ParseEnums, EnumProcessor.GenerateEnumFile);
-				ProcessAndReport(sourceProductionContext, files, MessageProcessor.ParseMessages, MessageProcessor.GenerateMessageFile);
+				ProcessFiles(sourceProductionContext, files, EnumProcessor.ParseEnums, EnumProcessor.GenerateEnumFile);
+				ProcessFiles(sourceProductionContext, files, MessageProcessor.ParseMessages, MessageProcessor.GenerateMessageFile);
 			});
 		}
 
-		private static void ProcessAndReport<T>(
+		private static void ProcessFiles<T>(
 			SourceProductionContext context,
 			ImmutableArray<string> files,
 			Func<IEnumerable<string>, IEnumerable<T>> parseFunc,
@@ -42,29 +42,38 @@ public class MavlinkGenerator : IIncrementalGenerator
 			}
 			catch (Exception ex)
 			{
-				var rootException = ex;
-				while (rootException.InnerException is not null)
-				{
-					rootException = rootException.InnerException;
-				}
-
-				if (rootException.Message.Contains("System.ComponentModel.Annotations"))
-				{
-					// Generation already started
-					// TODO: https://github.com/dotnet/runtime/discussions/102985
-					return;
-				}
-				else
-				{
-					context.ReportDiagnostic(
-						Diagnostic.Create(
-							MavlinkGeneratorDiagnostics.GenericProtocolErrorRule,
-							Location.None,
-							ex.Message
-						)
-					);
-				}
+				HandleException(context, ex);
 			}
+		}
+
+		private static void HandleException(SourceProductionContext context, Exception ex)
+		{
+			var rootException = GetRootException(ex);
+
+			if (rootException.Message.Contains("System.ComponentModel.Annotations"))
+			{
+				// Generation already started
+				// TODO: https://github.com/dotnet/runtime/discussions/102985
+				return;
+			}
+
+			context.ReportDiagnostic(
+				Diagnostic.Create(
+					MavlinkGeneratorDiagnostics.GenericProtocolErrorRule,
+					Location.None,
+					ex.Message
+				)
+			);
+		}
+
+		private static Exception GetRootException(Exception ex)
+		{
+			var rootException = ex;
+			while (rootException.InnerException is not null)
+			{
+				rootException = rootException.InnerException;
+			}
+			return rootException;
 		}
 	}
 }

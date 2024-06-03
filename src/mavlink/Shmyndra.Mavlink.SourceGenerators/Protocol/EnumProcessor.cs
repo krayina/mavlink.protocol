@@ -66,6 +66,11 @@ internal static class EnumProcessor
 
 		var enumDeclaration = SyntaxFactory.EnumDeclaration(enumData.Name)
 			.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
+			.AddAttributeLists(
+				SyntaxFactory.AttributeList(
+					SyntaxFactory.SingletonSeparatedList(
+						SyntaxFactory.Attribute(
+							SyntaxFactory.ParseName("Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType")))))
 			.WithMembers(new SeparatedSyntaxList<EnumMemberDeclarationSyntax>().AddRange(enumMembers));
 
 		if (enumBaseType != "int")
