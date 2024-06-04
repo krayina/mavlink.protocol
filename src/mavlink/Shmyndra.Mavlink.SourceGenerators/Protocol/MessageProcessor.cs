@@ -21,8 +21,8 @@ internal static class MessageProcessor
 			var mavlink = (Mavlink)serializer.Deserialize(reader);
 			foreach (var m in mavlink.Messages)
 			{
-				var name = Utilities.ToCamelCase(m.Name);
-				var fields = m.Field.Select(field => (ConvertType(field.Type), Utilities.ToCamelCase(field.Name), field.Description)).ToList();
+				var name = m.Name;
+				var fields = m.Field.Select(field => (ConvertType(field.Type), field.Name, field.Description)).ToList();
 
 				if (messageDict.ContainsKey(name))
 				{
@@ -52,15 +52,20 @@ internal static class MessageProcessor
 
 	private static RecordDeclarationSyntax CreateRecordStruct((string Name, string? Description, List<(string Type, string Name, string? Description)> Fields) messageData)
 	{
+		var normalizedName = Utilities.ToCamelCase(messageData.Name);
+
 		var properties = messageData.Fields.Select(field =>
 		{
-			var fieldName = field.Name == messageData.Name ? "_" + field.Name : field.Name;
+			var normalizedFiledName = Utilities.ToCamelCase(field.Name);
+			var fieldName = normalizedFiledName == normalizedName ? "_" + normalizedFiledName : normalizedFiledName;
 			var property = SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName(field.Type), fieldName)
 				.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
 				.AddAccessorListAccessors(
 					SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
-					SyntaxFactory.AccessorDeclaration(SyntaxKind.InitAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
-			return Utilities.AddSummaryTriviaIfNotNull(property, field.Description);
+					SyntaxFactory.AccessorDeclaration(SyntaxKind.InitAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)))
+				.AddSummaryTriviaIfNotNull(field.Description)
+				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {field.Name}");
+			return property;
 		}).ToArray();
 
 		var recordStruct = SyntaxFactory
@@ -70,7 +75,7 @@ internal static class MessageProcessor
 				modifiers: default,
 				keyword: SyntaxFactory.Token(SyntaxKind.RecordKeyword),
 				classOrStructKeyword: SyntaxFactory.Token(SyntaxKind.StructKeyword),
-				identifier: SyntaxFactory.Identifier(messageData.Name),
+				identifier: SyntaxFactory.Identifier(normalizedName),
 				typeParameterList: null,
 				parameterList: null,
 				baseList: null,
@@ -84,9 +89,11 @@ internal static class MessageProcessor
 				SyntaxFactory.AttributeList(
 					SyntaxFactory.SingletonSeparatedList(
 						SyntaxFactory.Attribute(
-							SyntaxFactory.ParseName("Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType")))));
+							SyntaxFactory.ParseName("Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType")))))
+			.AddSummaryTriviaIfNotNull(messageData.Description)
+			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {messageData.Name}");
 
-		return Utilities.AddSummaryTriviaIfNotNull(recordStruct, messageData.Description);
+		return recordStruct;
 	}
 
 	private static string ConvertType(string xmlType)

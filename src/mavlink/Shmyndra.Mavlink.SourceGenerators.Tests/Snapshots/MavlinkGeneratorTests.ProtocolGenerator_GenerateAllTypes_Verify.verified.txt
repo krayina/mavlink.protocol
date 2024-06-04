@@ -1943,85 +1943,214 @@ namespace GeneratedMavlink
     /// <summary>
     /// The general system state. If the system is following the MAVLink standard, the system state is mainly defined by three orthogonal states/modes: The system mode, which is either LOCKED (motors shut down and locked), MANUAL (system under RC control), GUIDED (system with autonomous position control, position setpoint controlled manually) or AUTO (system guided by path/waypoint planner). The NAV_MODE defined the current flight state: LIFTOFF (often an open-loop maneuver), LANDING, WAYPOINTS or VECTOR. This represents the internal navigation state machine. The system status shows whether the system is currently active or not and if an emergency occurred. During the CRITICAL and EMERGENCY states the MAV is still considered to be active, but should start emergency procedures autonomously. After a failure occurred it should first move from active to critical to allow manual intervention and then move to emergency after a certain timeout.
     /// </summary>
+    /// <remarks>
+    /// Original name: SYS_STATUS
+    /// </remarks>
     [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public record struct SysStatus
     {
+        /// <remarks>
+        /// Original name: onboard_control_sensors_present
+        /// </remarks>
         public uint OnboardControlSensorsPresent { get; init; }
+        /// <remarks>
+        /// Original name: onboard_control_sensors_enabled
+        /// </remarks>
         public uint OnboardControlSensorsEnabled { get; init; }
+        /// <remarks>
+        /// Original name: onboard_control_sensors_health
+        /// </remarks>
         public uint OnboardControlSensorsHealth { get; init; }
+        /// <remarks>
+        /// Original name: load
+        /// </remarks>
         public ushort Load { get; init; }
+        /// <remarks>
+        /// Original name: voltage_battery
+        /// </remarks>
         public ushort VoltageBattery { get; init; }
+        /// <remarks>
+        /// Original name: current_battery
+        /// </remarks>
         public short CurrentBattery { get; init; }
+        /// <remarks>
+        /// Original name: battery_remaining
+        /// </remarks>
         public sbyte BatteryRemaining { get; init; }
+        /// <remarks>
+        /// Original name: drop_rate_comm
+        /// </remarks>
         public ushort DropRateComm { get; init; }
+        /// <remarks>
+        /// Original name: errors_comm
+        /// </remarks>
         public ushort ErrorsComm { get; init; }
+        /// <remarks>
+        /// Original name: errors_count1
+        /// </remarks>
         public ushort ErrorsCount1 { get; init; }
+        /// <remarks>
+        /// Original name: errors_count2
+        /// </remarks>
         public ushort ErrorsCount2 { get; init; }
+        /// <remarks>
+        /// Original name: errors_count3
+        /// </remarks>
         public ushort ErrorsCount3 { get; init; }
+        /// <remarks>
+        /// Original name: errors_count4
+        /// </remarks>
         public ushort ErrorsCount4 { get; init; }
+        /// <remarks>
+        /// Original name: onboard_control_sensors_present_extended
+        /// </remarks>
         public uint OnboardControlSensorsPresentExtended { get; init; }
+        /// <remarks>
+        /// Original name: onboard_control_sensors_enabled_extended
+        /// </remarks>
         public uint OnboardControlSensorsEnabledExtended { get; init; }
+        /// <remarks>
+        /// Original name: onboard_control_sensors_health_extended
+        /// </remarks>
         public uint OnboardControlSensorsHealthExtended { get; init; }
     }
 
     /// <summary>
     /// The system time is the time of the master clock, typically the computer clock of the main onboard computer.
     /// </summary>
+    /// <remarks>
+    /// Original name: SYSTEM_TIME
+    /// </remarks>
     [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public record struct SystemTime
     {
+        /// <remarks>
+        /// Original name: time_unix_usec
+        /// </remarks>
         public ulong TimeUnixUsec { get; init; }
+        /// <remarks>
+        /// Original name: time_boot_ms
+        /// </remarks>
         public uint TimeBootMs { get; init; }
     }
 
     /// <summary>
     /// A ping message either requesting or responding to a ping. This allows to measure the system latencies, including serial port, radio modem and UDP connections. The ping microservice is documented at https://mavlink.io/en/services/ping.html
     /// </summary>
+    /// <remarks>
+    /// Original name: PING
+    /// </remarks>
     [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public record struct Ping
     {
+        /// <remarks>
+        /// Original name: time_usec
+        /// </remarks>
         public ulong TimeUsec { get; init; }
+        /// <remarks>
+        /// Original name: seq
+        /// </remarks>
         public uint Seq { get; init; }
+        /// <remarks>
+        /// Original name: target_system
+        /// </remarks>
         public byte TargetSystem { get; init; }
+        /// <remarks>
+        /// Original name: target_component
+        /// </remarks>
         public byte TargetComponent { get; init; }
     }
 
     /// <summary>
     /// Request to control this MAV
     /// </summary>
+    /// <remarks>
+    /// Original name: CHANGE_OPERATOR_CONTROL
+    /// </remarks>
     [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public record struct ChangeOperatorControl
     {
+        /// <remarks>
+        /// Original name: target_system
+        /// </remarks>
         public byte TargetSystem { get; init; }
+        /// <remarks>
+        /// Original name: control_request
+        /// </remarks>
         public byte ControlRequest { get; init; }
+        /// <remarks>
+        /// Original name: version
+        /// </remarks>
         public byte Version { get; init; }
+        /// <remarks>
+        /// Original name: passkey
+        /// </remarks>
         public object Passkey { get; init; }
     }
 
     /// <summary>
     /// The heartbeat message shows that a system or component is present and responding. The type and autopilot fields (along with the message component id), allow the receiving system to treat further messages from this system appropriately (e.g. by laying out the user interface based on the autopilot). This microservice is documented at https://mavlink.io/en/services/heartbeat.html
     /// </summary>
+    /// <remarks>
+    /// Original name: HEARTBEAT
+    /// </remarks>
     [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public record struct Heartbeat
     {
+        /// <remarks>
+        /// Original name: type
+        /// </remarks>
         public byte Type { get; init; }
+        /// <remarks>
+        /// Original name: autopilot
+        /// </remarks>
         public byte Autopilot { get; init; }
+        /// <remarks>
+        /// Original name: base_mode
+        /// </remarks>
         public byte BaseMode { get; init; }
+        /// <remarks>
+        /// Original name: custom_mode
+        /// </remarks>
         public uint CustomMode { get; init; }
+        /// <remarks>
+        /// Original name: system_status
+        /// </remarks>
         public byte SystemStatus { get; init; }
+        /// <remarks>
+        /// Original name: mavlink_version
+        /// </remarks>
         public object MavlinkVersion { get; init; }
     }
 
     /// <summary>
     /// Version and capability of protocol version. This message can be requested with MAV_CMD_REQUEST_MESSAGE and is used as part of the handshaking to establish which MAVLink version should be used on the network. Every node should respond to a request for PROTOCOL_VERSION to enable the handshaking. Library implementers should consider adding this into the default decoding state machine to allow the protocol core to respond directly.
     /// </summary>
+    /// <remarks>
+    /// Original name: PROTOCOL_VERSION
+    /// </remarks>
     [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
     public record struct ProtocolVersion
     {
+        /// <remarks>
+        /// Original name: version
+        /// </remarks>
         public ushort Version { get; init; }
+        /// <remarks>
+        /// Original name: min_version
+        /// </remarks>
         public ushort MinVersion { get; init; }
+        /// <remarks>
+        /// Original name: max_version
+        /// </remarks>
         public ushort MaxVersion { get; init; }
+        /// <remarks>
+        /// Original name: spec_version_hash
+        /// </remarks>
         public object SpecVersionHash { get; init; }
+        /// <remarks>
+        /// Original name: library_version_hash
+        /// </remarks>
         public object LibraryVersionHash { get; init; }
     }
 }
