@@ -64,7 +64,7 @@ internal static class MessageProcessor
 					SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
 					SyntaxFactory.AccessorDeclaration(SyntaxKind.InitAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)))
 				.AddSummaryTriviaIfNotNull(field.Description)
-				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {field.Name}");
+				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {field.Name.ToUpper()}");
 			return property;
 		}).ToArray();
 
@@ -91,7 +91,7 @@ internal static class MessageProcessor
 						SyntaxFactory.Attribute(
 							SyntaxFactory.ParseName("Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType")))))
 			.AddSummaryTriviaIfNotNull(messageData.Description)
-			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {messageData.Name}");
+			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {messageData.Name.ToUpper()}");
 
 		return recordStruct;
 	}

@@ -1950,67 +1950,67 @@ namespace GeneratedMavlink
     public record struct SysStatus
     {
         /// <remarks>
-        /// Original name: onboard_control_sensors_present
+        /// Original name: ONBOARD_CONTROL_SENSORS_PRESENT
         /// </remarks>
         public uint OnboardControlSensorsPresent { get; init; }
         /// <remarks>
-        /// Original name: onboard_control_sensors_enabled
+        /// Original name: ONBOARD_CONTROL_SENSORS_ENABLED
         /// </remarks>
         public uint OnboardControlSensorsEnabled { get; init; }
         /// <remarks>
-        /// Original name: onboard_control_sensors_health
+        /// Original name: ONBOARD_CONTROL_SENSORS_HEALTH
         /// </remarks>
         public uint OnboardControlSensorsHealth { get; init; }
         /// <remarks>
-        /// Original name: load
+        /// Original name: LOAD
         /// </remarks>
         public ushort Load { get; init; }
         /// <remarks>
-        /// Original name: voltage_battery
+        /// Original name: VOLTAGE_BATTERY
         /// </remarks>
         public ushort VoltageBattery { get; init; }
         /// <remarks>
-        /// Original name: current_battery
+        /// Original name: CURRENT_BATTERY
         /// </remarks>
         public short CurrentBattery { get; init; }
         /// <remarks>
-        /// Original name: battery_remaining
+        /// Original name: BATTERY_REMAINING
         /// </remarks>
         public sbyte BatteryRemaining { get; init; }
         /// <remarks>
-        /// Original name: drop_rate_comm
+        /// Original name: DROP_RATE_COMM
         /// </remarks>
         public ushort DropRateComm { get; init; }
         /// <remarks>
-        /// Original name: errors_comm
+        /// Original name: ERRORS_COMM
         /// </remarks>
         public ushort ErrorsComm { get; init; }
         /// <remarks>
-        /// Original name: errors_count1
+        /// Original name: ERRORS_COUNT1
         /// </remarks>
         public ushort ErrorsCount1 { get; init; }
         /// <remarks>
-        /// Original name: errors_count2
+        /// Original name: ERRORS_COUNT2
         /// </remarks>
         public ushort ErrorsCount2 { get; init; }
         /// <remarks>
-        /// Original name: errors_count3
+        /// Original name: ERRORS_COUNT3
         /// </remarks>
         public ushort ErrorsCount3 { get; init; }
         /// <remarks>
-        /// Original name: errors_count4
+        /// Original name: ERRORS_COUNT4
         /// </remarks>
         public ushort ErrorsCount4 { get; init; }
         /// <remarks>
-        /// Original name: onboard_control_sensors_present_extended
+        /// Original name: ONBOARD_CONTROL_SENSORS_PRESENT_EXTENDED
         /// </remarks>
         public uint OnboardControlSensorsPresentExtended { get; init; }
         /// <remarks>
-        /// Original name: onboard_control_sensors_enabled_extended
+        /// Original name: ONBOARD_CONTROL_SENSORS_ENABLED_EXTENDED
         /// </remarks>
         public uint OnboardControlSensorsEnabledExtended { get; init; }
         /// <remarks>
-        /// Original name: onboard_control_sensors_health_extended
+        /// Original name: ONBOARD_CONTROL_SENSORS_HEALTH_EXTENDED
         /// </remarks>
         public uint OnboardControlSensorsHealthExtended { get; init; }
     }
@@ -2025,11 +2025,11 @@ namespace GeneratedMavlink
     public record struct SystemTime
     {
         /// <remarks>
-        /// Original name: time_unix_usec
+        /// Original name: TIME_UNIX_USEC
         /// </remarks>
         public ulong TimeUnixUsec { get; init; }
         /// <remarks>
-        /// Original name: time_boot_ms
+        /// Original name: TIME_BOOT_MS
         /// </remarks>
         public uint TimeBootMs { get; init; }
     }
@@ -2044,19 +2044,19 @@ namespace GeneratedMavlink
     public record struct Ping
     {
         /// <remarks>
-        /// Original name: time_usec
+        /// Original name: TIME_USEC
         /// </remarks>
         public ulong TimeUsec { get; init; }
         /// <remarks>
-        /// Original name: seq
+        /// Original name: SEQ
         /// </remarks>
         public uint Seq { get; init; }
         /// <remarks>
-        /// Original name: target_system
+        /// Original name: TARGET_SYSTEM
         /// </remarks>
         public byte TargetSystem { get; init; }
         /// <remarks>
-        /// Original name: target_component
+        /// Original name: TARGET_COMPONENT
         /// </remarks>
         public byte TargetComponent { get; init; }
     }
@@ -2071,19 +2071,19 @@ namespace GeneratedMavlink
     public record struct ChangeOperatorControl
     {
         /// <remarks>
-        /// Original name: target_system
+        /// Original name: TARGET_SYSTEM
         /// </remarks>
         public byte TargetSystem { get; init; }
         /// <remarks>
-        /// Original name: control_request
+        /// Original name: CONTROL_REQUEST
         /// </remarks>
         public byte ControlRequest { get; init; }
         /// <remarks>
-        /// Original name: version
+        /// Original name: VERSION
         /// </remarks>
         public byte Version { get; init; }
         /// <remarks>
-        /// Original name: passkey
+        /// Original name: PASSKEY
         /// </remarks>
         public object Passkey { get; init; }
     }
@@ -2098,27 +2098,27 @@ namespace GeneratedMavlink
     public record struct Heartbeat
     {
         /// <remarks>
-        /// Original name: type
+        /// Original name: TYPE
         /// </remarks>
         public byte Type { get; init; }
         /// <remarks>
-        /// Original name: autopilot
+        /// Original name: AUTOPILOT
         /// </remarks>
         public byte Autopilot { get; init; }
         /// <remarks>
-        /// Original name: base_mode
+        /// Original name: BASE_MODE
         /// </remarks>
         public byte BaseMode { get; init; }
         /// <remarks>
-        /// Original name: custom_mode
+        /// Original name: CUSTOM_MODE
         /// </remarks>
         public uint CustomMode { get; init; }
         /// <remarks>
-        /// Original name: system_status
+        /// Original name: SYSTEM_STATUS
         /// </remarks>
         public byte SystemStatus { get; init; }
         /// <remarks>
-        /// Original name: mavlink_version
+        /// Original name: MAVLINK_VERSION
         /// </remarks>
         public object MavlinkVersion { get; init; }
     }
@@ -2133,23 +2133,23 @@ namespace GeneratedMavlink
     public record struct ProtocolVersion
     {
         /// <remarks>
-        /// Original name: version
+        /// Original name: VERSION
         /// </remarks>
         public ushort Version { get; init; }
         /// <remarks>
-        /// Original name: min_version
+        /// Original name: MIN_VERSION
         /// </remarks>
         public ushort MinVersion { get; init; }
         /// <remarks>
-        /// Original name: max_version
+        /// Original name: MAX_VERSION
         /// </remarks>
         public ushort MaxVersion { get; init; }
         /// <remarks>
-        /// Original name: spec_version_hash
+        /// Original name: SPEC_VERSION_HASH
         /// </remarks>
         public object SpecVersionHash { get; init; }
         /// <remarks>
-        /// Original name: library_version_hash
+        /// Original name: LIBRARY_VERSION_HASH
         /// </remarks>
         public object LibraryVersionHash { get; init; }
     }
