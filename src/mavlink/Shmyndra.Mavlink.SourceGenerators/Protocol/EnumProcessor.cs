@@ -65,10 +65,9 @@ internal static class EnumProcessor
 			var entryName = normalizedEntryName == normalizedName ? "_" + normalizedEntryName : normalizedEntryName;
 
 			var enumMember = SyntaxFactory.EnumMemberDeclaration(entryName)
-				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value)));
-
-			enumMember = enumMember.AddSummaryTriviaIfNotNull(entry.Description);
-			enumMember = enumMember.AddRemarksTriviaIfNotNullOrEmpty($"Original type: {entry.Name}");
+				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value)))
+				.AddSummaryTriviaIfNotNull(entry.Description)
+				.AddRemarksTriviaIfNotNullOrEmpty($"Original type: {entry.Name}");
 
 			return enumMember;
 		});
@@ -80,10 +79,9 @@ internal static class EnumProcessor
 					SyntaxFactory.SingletonSeparatedList(
 						SyntaxFactory.Attribute(
 							SyntaxFactory.ParseName("Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType")))))
-			.WithMembers(new SeparatedSyntaxList<EnumMemberDeclarationSyntax>().AddRange(enumMembers));
-
-		enumDeclaration = enumDeclaration.AddSummaryTriviaIfNotNull(enumData.Description);
-		enumDeclaration = enumDeclaration.AddRemarksTriviaIfNotNullOrEmpty($"Original type: {enumData.Name}");
+			.WithMembers(new SeparatedSyntaxList<EnumMemberDeclarationSyntax>().AddRange(enumMembers))
+			.AddSummaryTriviaIfNotNull(enumData.Description)
+			.AddRemarksTriviaIfNotNullOrEmpty($"Original type: {enumData.Name}");
 
 		if (enumBaseType != "int")
 		{
