@@ -31,6 +31,50 @@ internal static class Utilities
 							.Add(summaryEnd);
 	}
 
+	public static SyntaxTriviaList CreateRemarksTriviaIfNotNullOrEmpty(string description)
+	{
+		var remarksStart = SyntaxFactory.Comment("/// <remarks>");
+		var remarksContent = SyntaxFactory.Comment($"/// {description}");
+		var remarksEnd = SyntaxFactory.Comment("/// </remarks>");
+
+		return SyntaxFactory.TriviaList(remarksStart, remarksContent, remarksEnd);
+	}
+
+	private static SyntaxTriviaList CreateRemarksTrivia(string description)
+	{
+		var remarksStart = SyntaxFactory.Comment("/// <remarks>");
+		var remarksContent = SyntaxFactory.Comment($"/// {description}");
+		var remarksEnd = SyntaxFactory.Comment("/// </remarks>");
+
+		return SyntaxFactory.TriviaList(remarksStart, remarksContent, remarksEnd);
+	}
+
+	public static T AddSummaryTriviaIfNotNull<T>(this T node, string? description) where T : SyntaxNode
+	{
+		if (string.IsNullOrEmpty(description))
+		{
+			return node;
+		}
+
+		var summaryTrivia = CreateSummaryTrivia(description!);
+		var existingTrivia = node.GetLeadingTrivia();
+
+		return node.WithLeadingTrivia(existingTrivia.AddRange(summaryTrivia));
+	}
+
+	public static T AddRemarksTriviaIfNotNullOrEmpty<T>(this T node, string? originalName) where T : SyntaxNode
+	{
+		if (string.IsNullOrEmpty(originalName))
+		{
+			return node;
+		}
+
+		var remarksTrivia = CreateRemarksTrivia(originalName!);
+		var existingTrivia = node.GetLeadingTrivia();
+
+		return node.WithLeadingTrivia(existingTrivia.AddRange(remarksTrivia));
+	}
+
 	public static string GetEnumBaseType(List<ulong> values)
 	{
 		var maxValue = values.Max();
@@ -38,15 +82,5 @@ internal static class Utilities
 		if (maxValue <= ushort.MaxValue) return "ushort";
 		if (maxValue <= uint.MaxValue) return "uint";
 		return "ulong";
-	}
-
-	public static T AddSummaryTriviaIfNotNull<T>(T node, string? description) where T : SyntaxNode
-	{
-		if (string.IsNullOrEmpty(description))
-		{
-			return node;
-		}
-
-		return node.WithLeadingTrivia(CreateSummaryTrivia(description!));
 	}
 }

@@ -21,16 +21,15 @@ internal static class EnumProcessor
 			var mavlink = (Mavlink)serializer.Deserialize(reader);
 			foreach (var e in mavlink.Enums)
 			{
-				var name = Utilities.ToCamelCase(e.Name);
-				var entries = e.Entry.Select(entry => (Utilities.ToCamelCase(entry.Name), entry.Value, entry.Description)).ToList();
+				var entries = e.Entry.Select(entry => (entry.Name, entry.Value, entry.Description)).ToList();
 
-				if (enumDict.ContainsKey(name))
+				if (enumDict.ContainsKey(e.Name))
 				{
-					enumDict[name].Entries.AddRange(entries);
+					enumDict[e.Name].Entries.AddRange(entries);
 				}
 				else
 				{
-					enumDict[name] = (e.Description, entries);
+					enumDict[e.Name] = (e.Description, entries);
 				}
 			}
 		}
@@ -41,7 +40,9 @@ internal static class EnumProcessor
 	public static void GenerateEnumFile(SourceProductionContext context, ImmutableArray<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> enums)
 	{
 		if (enums.IsDefaultOrEmpty)
+		{
 			return;
+		}
 
 		var compilationUnit = SyntaxFactory.CompilationUnit()
 			.AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName("GeneratedMavlink"))
@@ -52,19 +53,27 @@ internal static class EnumProcessor
 
 	private static EnumDeclarationSyntax CreateEnum((string Name, string? Description, List<(string Name, string Value, string? Description)> Entries) enumData)
 	{
+		var normalizedName = Utilities.ToCamelCase(enumData.Name);
+
 		// Collect all values to determine the appropriate enum base type
 		var allValues = enumData.Entries.Select(entry => ulong.Parse(entry.Value)).ToList();
 		string enumBaseType = Utilities.GetEnumBaseType(allValues);
 
 		var enumMembers = enumData.Entries.Select(entry =>
 		{
-			var entryName = entry.Name == enumData.Name ? "_" + entry.Name : entry.Name;
+			var normalizedEntryName = Utilities.ToCamelCase(entry.Name);
+			var entryName = normalizedEntryName == normalizedName ? "_" + normalizedEntryName : normalizedEntryName;
+
 			var enumMember = SyntaxFactory.EnumMemberDeclaration(entryName)
 				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value)));
-			return Utilities.AddSummaryTriviaIfNotNull(enumMember, entry.Description);
+
+			enumMember = enumMember.AddSummaryTriviaIfNotNull(entry.Description);
+			enumMember = enumMember.AddRemarksTriviaIfNotNullOrEmpty($"Original type: {entry.Name}");
+
+			return enumMember;
 		});
 
-		var enumDeclaration = SyntaxFactory.EnumDeclaration(enumData.Name)
+		var enumDeclaration = SyntaxFactory.EnumDeclaration(normalizedName)
 			.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
 			.AddAttributeLists(
 				SyntaxFactory.AttributeList(
@@ -73,12 +82,15 @@ internal static class EnumProcessor
 							SyntaxFactory.ParseName("Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType")))))
 			.WithMembers(new SeparatedSyntaxList<EnumMemberDeclarationSyntax>().AddRange(enumMembers));
 
+		enumDeclaration = enumDeclaration.AddSummaryTriviaIfNotNull(enumData.Description);
+		enumDeclaration = enumDeclaration.AddRemarksTriviaIfNotNullOrEmpty($"Original type: {enumData.Name}");
+
 		if (enumBaseType != "int")
 		{
 			enumDeclaration = enumDeclaration.WithBaseList(SyntaxFactory.BaseList(SyntaxFactory.SingletonSeparatedList<BaseTypeSyntax>(
 				SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(enumBaseType)))));
 		}
 
-		return Utilities.AddSummaryTriviaIfNotNull(enumDeclaration, enumData.Description);
+		return enumDeclaration;
 	}
 }
