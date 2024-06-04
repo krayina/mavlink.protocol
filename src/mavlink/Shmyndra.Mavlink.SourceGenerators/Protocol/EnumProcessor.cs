@@ -59,7 +59,9 @@ internal static class EnumProcessor
 		var allValues = enumData.Entries.Select(entry => ulong.Parse(entry.Value)).ToList();
 		string enumBaseType = Utilities.GetEnumBaseType(allValues);
 
-		var enumMembers = enumData.Entries.Select(entry =>
+
+		var sortedEntries = enumData.Entries.OrderBy(entry => ulong.Parse(entry.Value)).ToList();
+		var enumMembers = sortedEntries.Select(entry =>
 		{
 			var normalizedEntryName = Utilities.ToCamelCase(entry.Name);
 			var entryName = normalizedEntryName == normalizedName ? "_" + normalizedEntryName : normalizedEntryName;

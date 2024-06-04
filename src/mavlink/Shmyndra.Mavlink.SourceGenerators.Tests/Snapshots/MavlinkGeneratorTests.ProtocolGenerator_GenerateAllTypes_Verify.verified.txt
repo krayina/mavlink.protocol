@@ -213,6 +213,20 @@
         /// </remarks>
         MavModePreflight = 0,
         /// <summary>
+        /// System is allowed to be active, under manual (RC) control, no stabilization
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_MANUAL_DISARMED
+        /// </remarks>
+        MavModeManualDisarmed = 64,
+        /// <summary>
+        /// UNDEFINED mode. This solely depends on the autopilot - use with caution, intended for developers only.
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_TEST_DISARMED
+        /// </remarks>
+        MavModeTestDisarmed = 66,
+        /// <summary>
         /// System is allowed to be active, under assisted RC control.
         /// </summary>
         /// <remarks>
@@ -220,19 +234,19 @@
         /// </remarks>
         MavModeStabilizeDisarmed = 80,
         /// <summary>
-        /// System is allowed to be active, under assisted RC control.
+        /// System is allowed to be active, under autonomous control, manual setpoint
         /// </summary>
         /// <remarks>
-        /// Original type: MAV_MODE_STABILIZE_ARMED
+        /// Original type: MAV_MODE_GUIDED_DISARMED
         /// </remarks>
-        MavModeStabilizeArmed = 208,
+        MavModeGuidedDisarmed = 88,
         /// <summary>
-        /// System is allowed to be active, under manual (RC) control, no stabilization
+        /// System is allowed to be active, under autonomous control and navigation (the trajectory is decided onboard and not pre-programmed by waypoints)
         /// </summary>
         /// <remarks>
-        /// Original type: MAV_MODE_MANUAL_DISARMED
+        /// Original type: MAV_MODE_AUTO_DISARMED
         /// </remarks>
-        MavModeManualDisarmed = 64,
+        MavModeAutoDisarmed = 92,
         /// <summary>
         /// System is allowed to be active, under manual (RC) control, no stabilization
         /// </summary>
@@ -241,12 +255,19 @@
         /// </remarks>
         MavModeManualArmed = 192,
         /// <summary>
-        /// System is allowed to be active, under autonomous control, manual setpoint
+        /// UNDEFINED mode. This solely depends on the autopilot - use with caution, intended for developers only.
         /// </summary>
         /// <remarks>
-        /// Original type: MAV_MODE_GUIDED_DISARMED
+        /// Original type: MAV_MODE_TEST_ARMED
         /// </remarks>
-        MavModeGuidedDisarmed = 88,
+        MavModeTestArmed = 194,
+        /// <summary>
+        /// System is allowed to be active, under assisted RC control.
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_STABILIZE_ARMED
+        /// </remarks>
+        MavModeStabilizeArmed = 208,
         /// <summary>
         /// System is allowed to be active, under autonomous control, manual setpoint
         /// </summary>
@@ -258,30 +279,9 @@
         /// System is allowed to be active, under autonomous control and navigation (the trajectory is decided onboard and not pre-programmed by waypoints)
         /// </summary>
         /// <remarks>
-        /// Original type: MAV_MODE_AUTO_DISARMED
-        /// </remarks>
-        MavModeAutoDisarmed = 92,
-        /// <summary>
-        /// System is allowed to be active, under autonomous control and navigation (the trajectory is decided onboard and not pre-programmed by waypoints)
-        /// </summary>
-        /// <remarks>
         /// Original type: MAV_MODE_AUTO_ARMED
         /// </remarks>
-        MavModeAutoArmed = 220,
-        /// <summary>
-        /// UNDEFINED mode. This solely depends on the autopilot - use with caution, intended for developers only.
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_TEST_DISARMED
-        /// </remarks>
-        MavModeTestDisarmed = 66,
-        /// <summary>
-        /// UNDEFINED mode. This solely depends on the autopilot - use with caution, intended for developers only.
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_TEST_ARMED
-        /// </remarks>
-        MavModeTestArmed = 194
+        MavModeAutoArmed = 220
     }
 
     /// <summary>
@@ -778,47 +778,12 @@
     public enum MavModeFlag : byte
     {
         /// <summary>
-        /// 0b10000000 MAV safety set to armed. Motors are enabled / running / can start. Ready to fly. Additional note: this flag is to be ignore when sent in the command MAV_CMD_DO_SET_MODE and MAV_CMD_COMPONENT_ARM_DISARM shall be used instead. The flag can still be used to report the armed state.
+        /// 0b00000001 Reserved for future use.
         /// </summary>
         /// <remarks>
-        /// Original type: MAV_MODE_FLAG_SAFETY_ARMED
+        /// Original type: MAV_MODE_FLAG_CUSTOM_MODE_ENABLED
         /// </remarks>
-        MavModeFlagSafetyArmed = 128,
-        /// <summary>
-        /// 0b01000000 remote control input is enabled.
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_FLAG_MANUAL_INPUT_ENABLED
-        /// </remarks>
-        MavModeFlagManualInputEnabled = 64,
-        /// <summary>
-        /// 0b00100000 hardware in the loop simulation. All motors / actuators are blocked, but internal software is full operational.
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_FLAG_HIL_ENABLED
-        /// </remarks>
-        MavModeFlagHilEnabled = 32,
-        /// <summary>
-        /// 0b00010000 system stabilizes electronically its attitude (and optionally position). It needs however further control inputs to move around.
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_FLAG_STABILIZE_ENABLED
-        /// </remarks>
-        MavModeFlagStabilizeEnabled = 16,
-        /// <summary>
-        /// 0b00001000 guided mode enabled, system flies waypoints / mission items.
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_FLAG_GUIDED_ENABLED
-        /// </remarks>
-        MavModeFlagGuidedEnabled = 8,
-        /// <summary>
-        /// 0b00000100 autonomous mode enabled, system finds its own goal positions. Guided flag can be set or not, depends on the actual implementation.
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_FLAG_AUTO_ENABLED
-        /// </remarks>
-        MavModeFlagAutoEnabled = 4,
+        MavModeFlagCustomModeEnabled = 1,
         /// <summary>
         /// 0b00000010 system has a test mode enabled. This flag is intended for temporary system tests and should not be used for stable implementations.
         /// </summary>
@@ -827,12 +792,47 @@
         /// </remarks>
         MavModeFlagTestEnabled = 2,
         /// <summary>
-        /// 0b00000001 Reserved for future use.
+        /// 0b00000100 autonomous mode enabled, system finds its own goal positions. Guided flag can be set or not, depends on the actual implementation.
         /// </summary>
         /// <remarks>
-        /// Original type: MAV_MODE_FLAG_CUSTOM_MODE_ENABLED
+        /// Original type: MAV_MODE_FLAG_AUTO_ENABLED
         /// </remarks>
-        MavModeFlagCustomModeEnabled = 1
+        MavModeFlagAutoEnabled = 4,
+        /// <summary>
+        /// 0b00001000 guided mode enabled, system flies waypoints / mission items.
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_FLAG_GUIDED_ENABLED
+        /// </remarks>
+        MavModeFlagGuidedEnabled = 8,
+        /// <summary>
+        /// 0b00010000 system stabilizes electronically its attitude (and optionally position). It needs however further control inputs to move around.
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_FLAG_STABILIZE_ENABLED
+        /// </remarks>
+        MavModeFlagStabilizeEnabled = 16,
+        /// <summary>
+        /// 0b00100000 hardware in the loop simulation. All motors / actuators are blocked, but internal software is full operational.
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_FLAG_HIL_ENABLED
+        /// </remarks>
+        MavModeFlagHilEnabled = 32,
+        /// <summary>
+        /// 0b01000000 remote control input is enabled.
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_FLAG_MANUAL_INPUT_ENABLED
+        /// </remarks>
+        MavModeFlagManualInputEnabled = 64,
+        /// <summary>
+        /// 0b10000000 MAV safety set to armed. Motors are enabled / running / can start. Ready to fly. Additional note: this flag is to be ignore when sent in the command MAV_CMD_DO_SET_MODE and MAV_CMD_COMPONENT_ARM_DISARM shall be used instead. The flag can still be used to report the armed state.
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_FLAG_SAFETY_ARMED
+        /// </remarks>
+        MavModeFlagSafetyArmed = 128
     }
 
     /// <summary>
@@ -845,47 +845,12 @@
     public enum MavModeFlagDecodePosition : byte
     {
         /// <summary>
-        /// First bit:  10000000
+        /// Eighth bit: 00000001
         /// </summary>
         /// <remarks>
-        /// Original type: MAV_MODE_FLAG_DECODE_POSITION_SAFETY
+        /// Original type: MAV_MODE_FLAG_DECODE_POSITION_CUSTOM_MODE
         /// </remarks>
-        MavModeFlagDecodePositionSafety = 128,
-        /// <summary>
-        /// Second bit: 01000000
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_FLAG_DECODE_POSITION_MANUAL
-        /// </remarks>
-        MavModeFlagDecodePositionManual = 64,
-        /// <summary>
-        /// Third bit:  00100000
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_FLAG_DECODE_POSITION_HIL
-        /// </remarks>
-        MavModeFlagDecodePositionHil = 32,
-        /// <summary>
-        /// Fourth bit: 00010000
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_FLAG_DECODE_POSITION_STABILIZE
-        /// </remarks>
-        MavModeFlagDecodePositionStabilize = 16,
-        /// <summary>
-        /// Fifth bit:  00001000
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_FLAG_DECODE_POSITION_GUIDED
-        /// </remarks>
-        MavModeFlagDecodePositionGuided = 8,
-        /// <summary>
-        /// Sixth bit:   00000100
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_FLAG_DECODE_POSITION_AUTO
-        /// </remarks>
-        MavModeFlagDecodePositionAuto = 4,
+        MavModeFlagDecodePositionCustomMode = 1,
         /// <summary>
         /// Seventh bit: 00000010
         /// </summary>
@@ -894,12 +859,47 @@
         /// </remarks>
         MavModeFlagDecodePositionTest = 2,
         /// <summary>
-        /// Eighth bit: 00000001
+        /// Sixth bit:   00000100
         /// </summary>
         /// <remarks>
-        /// Original type: MAV_MODE_FLAG_DECODE_POSITION_CUSTOM_MODE
+        /// Original type: MAV_MODE_FLAG_DECODE_POSITION_AUTO
         /// </remarks>
-        MavModeFlagDecodePositionCustomMode = 1
+        MavModeFlagDecodePositionAuto = 4,
+        /// <summary>
+        /// Fifth bit:  00001000
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_FLAG_DECODE_POSITION_GUIDED
+        /// </remarks>
+        MavModeFlagDecodePositionGuided = 8,
+        /// <summary>
+        /// Fourth bit: 00010000
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_FLAG_DECODE_POSITION_STABILIZE
+        /// </remarks>
+        MavModeFlagDecodePositionStabilize = 16,
+        /// <summary>
+        /// Third bit:  00100000
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_FLAG_DECODE_POSITION_HIL
+        /// </remarks>
+        MavModeFlagDecodePositionHil = 32,
+        /// <summary>
+        /// Second bit: 01000000
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_FLAG_DECODE_POSITION_MANUAL
+        /// </remarks>
+        MavModeFlagDecodePositionManual = 64,
+        /// <summary>
+        /// First bit:  10000000
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_FLAG_DECODE_POSITION_SAFETY
+        /// </remarks>
+        MavModeFlagDecodePositionSafety = 128
     }
 
     /// <remarks>
