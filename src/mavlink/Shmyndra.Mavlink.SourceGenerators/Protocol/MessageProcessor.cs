@@ -96,8 +96,21 @@ internal static class MessageProcessor
 			.AddAttributeLists(
 				SyntaxFactory.AttributeList(
 					SyntaxFactory.SingletonSeparatedList(
-						SyntaxFactory.Attribute(
-							SyntaxFactory.ParseName("Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType")))))
+						SyntaxFactory.Attribute(SyntaxFactory.ParseName("Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType"))
+						.WithArgumentList(
+							SyntaxFactory.AttributeArgumentList(
+								SyntaxFactory.SeparatedList(new[]
+								{
+									SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
+										SyntaxKind.StringLiteralExpression,
+										SyntaxFactory.Literal(messageData.Name))
+									)
+								})
+							)
+						)
+					)
+				)
+			)
 			.AddSummaryTriviaIfNotNull(messageData.Description)
 			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {messageData.Name.ToUpper()}");
 

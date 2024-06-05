@@ -79,8 +79,21 @@ internal static class EnumProcessor
 			.AddAttributeLists(
 				SyntaxFactory.AttributeList(
 					SyntaxFactory.SingletonSeparatedList(
-						SyntaxFactory.Attribute(
-							SyntaxFactory.ParseName("Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType")))))
+						SyntaxFactory.Attribute(SyntaxFactory.ParseName("Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType"))
+						.WithArgumentList(
+							SyntaxFactory.AttributeArgumentList(
+								SyntaxFactory.SeparatedList(new[]
+								{
+									SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
+										SyntaxKind.StringLiteralExpression,
+										SyntaxFactory.Literal(enumData.Name))
+									)
+								})
+							)
+						)
+					)
+				)
+			)
 			.WithMembers(new SeparatedSyntaxList<EnumMemberDeclarationSyntax>().AddRange(enumMembers))
 			.AddSummaryTriviaIfNotNull(enumData.Description)
 			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {enumData.Name.ToUpper()}");
