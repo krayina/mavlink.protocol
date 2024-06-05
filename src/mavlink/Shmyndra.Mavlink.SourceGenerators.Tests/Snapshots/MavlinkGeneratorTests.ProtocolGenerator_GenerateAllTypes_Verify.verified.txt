@@ -1937,6 +1937,259 @@
         /// </remarks>
         MavModeAutoArmed = 220
     }
+
+    /// <summary>
+    /// These encode the sensors whose status is sent as part of the SYS_STATUS message.
+    /// </summary>
+    /// <remarks>
+    /// Original name: MAV_SYS_STATUS_SENSOR
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
+    public enum MavSysStatusSensor : uint
+    {
+        /// <summary>
+        /// 0x01 3D gyro
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_3D_GYRO
+        /// </remarks>
+        MavSysStatusSensor3dGyro = 1,
+        /// <summary>
+        /// 0x02 3D accelerometer
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_3D_ACCEL
+        /// </remarks>
+        MavSysStatusSensor3dAccel = 2,
+        /// <summary>
+        /// 0x04 3D magnetometer
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_3D_MAG
+        /// </remarks>
+        MavSysStatusSensor3dMag = 4,
+        /// <summary>
+        /// 0x08 absolute pressure
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE
+        /// </remarks>
+        MavSysStatusSensorAbsolutePressure = 8,
+        /// <summary>
+        /// 0x10 differential pressure
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_DIFFERENTIAL_PRESSURE
+        /// </remarks>
+        MavSysStatusSensorDifferentialPressure = 16,
+        /// <summary>
+        /// 0x20 GPS
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_GPS
+        /// </remarks>
+        MavSysStatusSensorGps = 32,
+        /// <summary>
+        /// 0x40 optical flow
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_OPTICAL_FLOW
+        /// </remarks>
+        MavSysStatusSensorOpticalFlow = 64,
+        /// <summary>
+        /// 0x80 computer vision position
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_VISION_POSITION
+        /// </remarks>
+        MavSysStatusSensorVisionPosition = 128,
+        /// <summary>
+        /// 0x100 laser based position
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_LASER_POSITION
+        /// </remarks>
+        MavSysStatusSensorLaserPosition = 256,
+        /// <summary>
+        /// 0x200 external ground truth (Vicon or Leica)
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_EXTERNAL_GROUND_TRUTH
+        /// </remarks>
+        MavSysStatusSensorExternalGroundTruth = 512,
+        /// <summary>
+        /// 0x400 3D angular rate control
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_ANGULAR_RATE_CONTROL
+        /// </remarks>
+        MavSysStatusSensorAngularRateControl = 1024,
+        /// <summary>
+        /// 0x800 attitude stabilization
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_ATTITUDE_STABILIZATION
+        /// </remarks>
+        MavSysStatusSensorAttitudeStabilization = 2048,
+        /// <summary>
+        /// 0x1000 yaw position
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_YAW_POSITION
+        /// </remarks>
+        MavSysStatusSensorYawPosition = 4096,
+        /// <summary>
+        /// 0x2000 z/altitude control
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_Z_ALTITUDE_CONTROL
+        /// </remarks>
+        MavSysStatusSensorZAltitudeControl = 8192,
+        /// <summary>
+        /// 0x4000 x/y position control
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_XY_POSITION_CONTROL
+        /// </remarks>
+        MavSysStatusSensorXyPositionControl = 16384,
+        /// <summary>
+        /// 0x8000 motor outputs / control
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_MOTOR_OUTPUTS
+        /// </remarks>
+        MavSysStatusSensorMotorOutputs = 32768,
+        /// <summary>
+        /// 0x10000 RC receiver
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_RC_RECEIVER
+        /// </remarks>
+        MavSysStatusSensorRcReceiver = 65536,
+        /// <summary>
+        /// 0x20000 2nd 3D gyro
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_3D_GYRO2
+        /// </remarks>
+        MavSysStatusSensor3dGyro2 = 131072,
+        /// <summary>
+        /// 0x40000 2nd 3D accelerometer
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_3D_ACCEL2
+        /// </remarks>
+        MavSysStatusSensor3dAccel2 = 262144,
+        /// <summary>
+        /// 0x80000 2nd 3D magnetometer
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_3D_MAG2
+        /// </remarks>
+        MavSysStatusSensor3dMag2 = 524288,
+        /// <summary>
+        /// 0x100000 geofence
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_GEOFENCE
+        /// </remarks>
+        MavSysStatusGeofence = 1048576,
+        /// <summary>
+        /// 0x200000 AHRS subsystem health
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_AHRS
+        /// </remarks>
+        MavSysStatusAhrs = 2097152,
+        /// <summary>
+        /// 0x400000 Terrain subsystem health
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_TERRAIN
+        /// </remarks>
+        MavSysStatusTerrain = 4194304,
+        /// <summary>
+        /// 0x800000 Motors are reversed
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_REVERSE_MOTOR
+        /// </remarks>
+        MavSysStatusReverseMotor = 8388608,
+        /// <summary>
+        /// 0x1000000 Logging
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_LOGGING
+        /// </remarks>
+        MavSysStatusLogging = 16777216,
+        /// <summary>
+        /// 0x2000000 Battery
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_BATTERY
+        /// </remarks>
+        MavSysStatusSensorBattery = 33554432,
+        /// <summary>
+        /// 0x4000000 Proximity
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_PROXIMITY
+        /// </remarks>
+        MavSysStatusSensorProximity = 67108864,
+        /// <summary>
+        /// 0x8000000 Satellite Communication
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_SATCOM
+        /// </remarks>
+        MavSysStatusSensorSatcom = 134217728,
+        /// <summary>
+        /// 0x10000000 pre-arm check status. Always healthy when armed
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_PREARM_CHECK
+        /// </remarks>
+        MavSysStatusPrearmCheck = 268435456,
+        /// <summary>
+        /// 0x20000000 Avoidance/collision prevention
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_OBSTACLE_AVOIDANCE
+        /// </remarks>
+        MavSysStatusObstacleAvoidance = 536870912,
+        /// <summary>
+        /// 0x40000000 propulsion (actuator, esc, motor or propellor)
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_PROPULSION
+        /// </remarks>
+        MavSysStatusSensorPropulsion = 1073741824,
+        /// <summary>
+        /// 0x80000000 Extended bit-field are used for further sensor status bits (needs to be set in onboard_control_sensors_present only)
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_EXTENSION_USED
+        /// </remarks>
+        MavSysStatusExtensionUsed = 2147483648
+    }
+
+    /// <summary>
+    /// These encode the sensors whose status is sent as part of the SYS_STATUS message in the extended fields.
+    /// </summary>
+    /// <remarks>
+    /// Original name: MAV_SYS_STATUS_SENSOR_EXTENDED
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
+    public enum MavSysStatusSensorExtended : byte
+    {
+        /// <summary>
+        /// 0x01 Recovery system (parachute, balloon, retracts etc)
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_RECOVERY_SYSTEM
+        /// </remarks>
+        MavSysStatusRecoverySystem = 1
+    }
 }
 namespace GeneratedMavlink
 {
@@ -1952,15 +2205,15 @@ namespace GeneratedMavlink
         /// <remarks>
         /// Original name: TYPE
         /// </remarks>
-        public byte Type { get; init; }
+        public MavType Type { get; init; }
         /// <remarks>
         /// Original name: AUTOPILOT
         /// </remarks>
-        public byte Autopilot { get; init; }
+        public MavAutopilot Autopilot { get; init; }
         /// <remarks>
         /// Original name: BASE_MODE
         /// </remarks>
-        public byte BaseMode { get; init; }
+        public MavModeFlag BaseMode { get; init; }
         /// <remarks>
         /// Original name: CUSTOM_MODE
         /// </remarks>
@@ -1968,7 +2221,7 @@ namespace GeneratedMavlink
         /// <remarks>
         /// Original name: SYSTEM_STATUS
         /// </remarks>
-        public byte SystemStatus { get; init; }
+        public MavState SystemStatus { get; init; }
         /// <remarks>
         /// Original name: MAVLINK_VERSION
         /// </remarks>
@@ -2018,15 +2271,15 @@ namespace GeneratedMavlink
         /// <remarks>
         /// Original name: ONBOARD_CONTROL_SENSORS_PRESENT
         /// </remarks>
-        public uint OnboardControlSensorsPresent { get; init; }
+        public MavSysStatusSensor OnboardControlSensorsPresent { get; init; }
         /// <remarks>
         /// Original name: ONBOARD_CONTROL_SENSORS_ENABLED
         /// </remarks>
-        public uint OnboardControlSensorsEnabled { get; init; }
+        public MavSysStatusSensor OnboardControlSensorsEnabled { get; init; }
         /// <remarks>
         /// Original name: ONBOARD_CONTROL_SENSORS_HEALTH
         /// </remarks>
-        public uint OnboardControlSensorsHealth { get; init; }
+        public MavSysStatusSensor OnboardControlSensorsHealth { get; init; }
         /// <remarks>
         /// Original name: LOAD
         /// </remarks>
@@ -2070,15 +2323,15 @@ namespace GeneratedMavlink
         /// <remarks>
         /// Original name: ONBOARD_CONTROL_SENSORS_PRESENT_EXTENDED
         /// </remarks>
-        public uint OnboardControlSensorsPresentExtended { get; init; }
+        public MavSysStatusSensorExtended OnboardControlSensorsPresentExtended { get; init; }
         /// <remarks>
         /// Original name: ONBOARD_CONTROL_SENSORS_ENABLED_EXTENDED
         /// </remarks>
-        public uint OnboardControlSensorsEnabledExtended { get; init; }
+        public MavSysStatusSensorExtended OnboardControlSensorsEnabledExtended { get; init; }
         /// <remarks>
         /// Original name: ONBOARD_CONTROL_SENSORS_HEALTH_EXTENDED
         /// </remarks>
-        public uint OnboardControlSensorsHealthExtended { get; init; }
+        public MavSysStatusSensorExtended OnboardControlSensorsHealthExtended { get; init; }
     }
 
     /// <summary>
