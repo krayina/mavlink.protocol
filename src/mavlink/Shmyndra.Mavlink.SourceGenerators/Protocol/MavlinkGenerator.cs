@@ -20,12 +20,22 @@ public class MavlinkGenerator : IIncrementalGenerator
 		internal void Generate(IncrementalGeneratorInitializationContext context)
 		{
 			var additionalTexts = context.AdditionalTextsProvider.Where(file => file.Path.EndsWith(".xml"));
-			var xmlFiles = additionalTexts.Select((file, _) => file.GetText()!.ToString()).Collect();
+			var xmlFiles = additionalTexts
+				.Select((file, _) => new
+				{
+					file.Path,
+					Content = file.GetText()!.ToString()
+				}).Collect();
 
 			context.RegisterSourceOutput(xmlFiles, (sourceProductionContext, files) =>
 			{
-				ProcessFiles(sourceProductionContext, files, EnumProcessor.ParseEnums, EnumProcessor.GenerateEnumFile);
-				ProcessFiles(sourceProductionContext, files, MessageProcessor.ParseMessages, MessageProcessor.GenerateMessageFile);
+				var fileContents = files.ToDictionary(f => f.Path, f => f.Content);
+				var orderedFiles = MavlinkXmlIncludeOrderer.GetOrderedFiles(fileContents);
+
+				var xmlContent = orderedFiles.Select(path => fileContents[path]).ToImmutableArray();
+
+				ProcessFiles(sourceProductionContext, xmlContent, EnumProcessor.ParseEnums, EnumProcessor.GenerateEnumFile);
+				ProcessFiles(sourceProductionContext, xmlContent, MessageProcessor.ParseMessages, MessageProcessor.GenerateMessageFile);
 			});
 		}
 
