@@ -33,21 +33,25 @@ public class MavlinkGenerator : IIncrementalGenerator
 				var orderedFiles = MavlinkXmlIncludeOrderer.GetOrderedFiles(fileContents);
 
 				var xmlContent = orderedFiles.Select(path => fileContents[path]).ToImmutableArray();
+				var enums = EnumProcessor.ParseEnums(xmlContent).ToImmutableArray();
+				EnumProcessor.GenerateEnumFile(sourceProductionContext, enums);
+				var enumTypes = enums.ToDictionary(e => e.Name, e => Utilities.ToCamelCase(e.Name));
 
-				ProcessFiles(sourceProductionContext, xmlContent, EnumProcessor.ParseEnums, EnumProcessor.GenerateEnumFile);
-				ProcessFiles(sourceProductionContext, xmlContent, MessageProcessor.ParseMessages, MessageProcessor.GenerateMessageFile);
+				ProcessFiles(sourceProductionContext, xmlContent, enumTypes, MessageProcessor.ParseMessages, MessageProcessor.GenerateMessageFile);
+
 			});
 		}
 
 		private static void ProcessFiles<T>(
 			SourceProductionContext context,
 			ImmutableArray<string> files,
-			Func<IEnumerable<string>, IEnumerable<T>> parseFunc,
+			Dictionary<string, string> enumTypes,
+			Func<IEnumerable<string>, Dictionary<string, string>, IEnumerable<T>> parseFunc,
 			Action<SourceProductionContext, ImmutableArray<T>> generateFunc)
 		{
 			try
 			{
-				var items = parseFunc(files).ToImmutableArray();
+				var items = parseFunc(files, enumTypes).ToImmutableArray();
 				generateFunc(context, items);
 			}
 			catch (Exception ex)

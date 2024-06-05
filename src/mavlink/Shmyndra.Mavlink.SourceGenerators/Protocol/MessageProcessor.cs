@@ -10,7 +10,7 @@ namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
 
 internal static class MessageProcessor
 {
-	public static IEnumerable<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> ParseMessages(IEnumerable<string> xmlContents)
+	public static IEnumerable<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> ParseMessages(IEnumerable<string> xmlContents, Dictionary<string, string> enumTypes)
 	{
 		var serializer = new XmlSerializer(typeof(Mavlink));
 		var messageDict = new Dictionary<string, (string? Description, List<(string Type, string Name, string? Description)> Fields)>();
@@ -22,7 +22,15 @@ internal static class MessageProcessor
 			foreach (var m in mavlink.Messages)
 			{
 				var name = m.Name;
-				var fields = m.Field.Select(field => (ConvertType(field.Type), field.Name, field.Description)).ToList();
+				var fields = m.Field.Select(field =>
+				{
+					var fieldType = ConvertType(field.Type);
+					if (field.Enum is not null && enumTypes.ContainsKey(field.Enum))
+					{
+						fieldType = enumTypes[field.Enum];
+					}
+					return (fieldType, field.Name, field.Description);
+				}).ToList();
 
 				if (messageDict.ContainsKey(name))
 				{
