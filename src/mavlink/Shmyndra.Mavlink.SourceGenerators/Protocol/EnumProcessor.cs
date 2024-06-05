@@ -69,7 +69,7 @@ internal static class EnumProcessor
 			var enumMember = SyntaxFactory.EnumMemberDeclaration(entryName)
 				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value)))
 				.AddSummaryTriviaIfNotNull(entry.Description)
-				.AddRemarksTriviaIfNotNullOrEmpty($"Original type: {entry.Name.ToUpper()}");
+				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {entry.Name.ToUpper()}");
 
 			return enumMember;
 		});
@@ -83,7 +83,7 @@ internal static class EnumProcessor
 							SyntaxFactory.ParseName("Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType")))))
 			.WithMembers(new SeparatedSyntaxList<EnumMemberDeclarationSyntax>().AddRange(enumMembers))
 			.AddSummaryTriviaIfNotNull(enumData.Description)
-			.AddRemarksTriviaIfNotNullOrEmpty($"Original type: {enumData.Name.ToUpper()}");
+			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {enumData.Name.ToUpper()}");
 
 		if (enumBaseType != "int")
 		{
