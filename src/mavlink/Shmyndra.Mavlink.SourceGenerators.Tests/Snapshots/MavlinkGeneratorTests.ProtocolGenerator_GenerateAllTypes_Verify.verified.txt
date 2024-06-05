@@ -1,290 +1,6 @@
 ﻿namespace GeneratedMavlink
 {
     /// <summary>
-    /// These values define the type of firmware release.  These values indicate the first version or release of this type.  For example the first alpha release would be 64, the second would be 65.
-    /// </summary>
-    /// <remarks>
-    /// Original type: FIRMWARE_VERSION_TYPE
-    /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
-    public enum FirmwareVersionType : byte
-    {
-        /// <summary>
-        /// development release
-        /// </summary>
-        /// <remarks>
-        /// Original type: FIRMWARE_VERSION_TYPE_DEV
-        /// </remarks>
-        FirmwareVersionTypeDev = 0,
-        /// <summary>
-        /// alpha release
-        /// </summary>
-        /// <remarks>
-        /// Original type: FIRMWARE_VERSION_TYPE_ALPHA
-        /// </remarks>
-        FirmwareVersionTypeAlpha = 64,
-        /// <summary>
-        /// beta release
-        /// </summary>
-        /// <remarks>
-        /// Original type: FIRMWARE_VERSION_TYPE_BETA
-        /// </remarks>
-        FirmwareVersionTypeBeta = 128,
-        /// <summary>
-        /// release candidate
-        /// </summary>
-        /// <remarks>
-        /// Original type: FIRMWARE_VERSION_TYPE_RC
-        /// </remarks>
-        FirmwareVersionTypeRc = 192,
-        /// <summary>
-        /// official stable release
-        /// </summary>
-        /// <remarks>
-        /// Original type: FIRMWARE_VERSION_TYPE_OFFICIAL
-        /// </remarks>
-        FirmwareVersionTypeOfficial = 255
-    }
-
-    /// <summary>
-    /// Flags to report failure cases over the high latency telemetry.
-    /// </summary>
-    /// <remarks>
-    /// Original type: HL_FAILURE_FLAG
-    /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
-    public enum HlFailureFlag : ushort
-    {
-        /// <summary>
-        /// GPS failure.
-        /// </summary>
-        /// <remarks>
-        /// Original type: HL_FAILURE_FLAG_GPS
-        /// </remarks>
-        HlFailureFlagGps = 1,
-        /// <summary>
-        /// Differential pressure sensor failure.
-        /// </summary>
-        /// <remarks>
-        /// Original type: HL_FAILURE_FLAG_DIFFERENTIAL_PRESSURE
-        /// </remarks>
-        HlFailureFlagDifferentialPressure = 2,
-        /// <summary>
-        /// Absolute pressure sensor failure.
-        /// </summary>
-        /// <remarks>
-        /// Original type: HL_FAILURE_FLAG_ABSOLUTE_PRESSURE
-        /// </remarks>
-        HlFailureFlagAbsolutePressure = 4,
-        /// <summary>
-        /// Accelerometer sensor failure.
-        /// </summary>
-        /// <remarks>
-        /// Original type: HL_FAILURE_FLAG_3D_ACCEL
-        /// </remarks>
-        HlFailureFlag3dAccel = 8,
-        /// <summary>
-        /// Gyroscope sensor failure.
-        /// </summary>
-        /// <remarks>
-        /// Original type: HL_FAILURE_FLAG_3D_GYRO
-        /// </remarks>
-        HlFailureFlag3dGyro = 16,
-        /// <summary>
-        /// Magnetometer sensor failure.
-        /// </summary>
-        /// <remarks>
-        /// Original type: HL_FAILURE_FLAG_3D_MAG
-        /// </remarks>
-        HlFailureFlag3dMag = 32,
-        /// <summary>
-        /// Terrain subsystem failure.
-        /// </summary>
-        /// <remarks>
-        /// Original type: HL_FAILURE_FLAG_TERRAIN
-        /// </remarks>
-        HlFailureFlagTerrain = 64,
-        /// <summary>
-        /// Battery failure/critical low battery.
-        /// </summary>
-        /// <remarks>
-        /// Original type: HL_FAILURE_FLAG_BATTERY
-        /// </remarks>
-        HlFailureFlagBattery = 128,
-        /// <summary>
-        /// RC receiver failure/no RC connection.
-        /// </summary>
-        /// <remarks>
-        /// Original type: HL_FAILURE_FLAG_RC_RECEIVER
-        /// </remarks>
-        HlFailureFlagRcReceiver = 256,
-        /// <summary>
-        /// Offboard link failure.
-        /// </summary>
-        /// <remarks>
-        /// Original type: HL_FAILURE_FLAG_OFFBOARD_LINK
-        /// </remarks>
-        HlFailureFlagOffboardLink = 512,
-        /// <summary>
-        /// Engine failure.
-        /// </summary>
-        /// <remarks>
-        /// Original type: HL_FAILURE_FLAG_ENGINE
-        /// </remarks>
-        HlFailureFlagEngine = 1024,
-        /// <summary>
-        /// Geofence violation.
-        /// </summary>
-        /// <remarks>
-        /// Original type: HL_FAILURE_FLAG_GEOFENCE
-        /// </remarks>
-        HlFailureFlagGeofence = 2048,
-        /// <summary>
-        /// Estimator failure, for example measurement rejection or large variances.
-        /// </summary>
-        /// <remarks>
-        /// Original type: HL_FAILURE_FLAG_ESTIMATOR
-        /// </remarks>
-        HlFailureFlagEstimator = 4096,
-        /// <summary>
-        /// Mission failure.
-        /// </summary>
-        /// <remarks>
-        /// Original type: HL_FAILURE_FLAG_MISSION
-        /// </remarks>
-        HlFailureFlagMission = 8192
-    }
-
-    /// <summary>
-    /// Actions that may be specified in MAV_CMD_OVERRIDE_GOTO to override mission execution.
-    /// </summary>
-    /// <remarks>
-    /// Original type: MAV_GOTO
-    /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
-    public enum MavGoto : byte
-    {
-        /// <summary>
-        /// Hold at the current position.
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_GOTO_DO_HOLD
-        /// </remarks>
-        MavGotoDoHold = 0,
-        /// <summary>
-        /// Continue with the next item in mission execution.
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_GOTO_DO_CONTINUE
-        /// </remarks>
-        MavGotoDoContinue = 1,
-        /// <summary>
-        /// Hold at the current position of the system
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_GOTO_HOLD_AT_CURRENT_POSITION
-        /// </remarks>
-        MavGotoHoldAtCurrentPosition = 2,
-        /// <summary>
-        /// Hold at the position specified in the parameters of the DO_HOLD action
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_GOTO_HOLD_AT_SPECIFIED_POSITION
-        /// </remarks>
-        MavGotoHoldAtSpecifiedPosition = 3
-    }
-
-    /// <summary>
-    /// These defines are predefined OR-combined mode flags. There is no need to use values from this enum, but it
-    /// simplifies the use of the mode flags. Note that manual input is enabled in all modes as a safety override.
-    /// 
-    /// </summary>
-    /// <remarks>
-    /// Original type: MAV_MODE
-    /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
-    public enum MavMode : byte
-    {
-        /// <summary>
-        /// System is not ready to fly, booting, calibrating, etc. No flag is set.
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_PREFLIGHT
-        /// </remarks>
-        MavModePreflight = 0,
-        /// <summary>
-        /// System is allowed to be active, under manual (RC) control, no stabilization
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_MANUAL_DISARMED
-        /// </remarks>
-        MavModeManualDisarmed = 64,
-        /// <summary>
-        /// UNDEFINED mode. This solely depends on the autopilot - use with caution, intended for developers only.
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_TEST_DISARMED
-        /// </remarks>
-        MavModeTestDisarmed = 66,
-        /// <summary>
-        /// System is allowed to be active, under assisted RC control.
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_STABILIZE_DISARMED
-        /// </remarks>
-        MavModeStabilizeDisarmed = 80,
-        /// <summary>
-        /// System is allowed to be active, under autonomous control, manual setpoint
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_GUIDED_DISARMED
-        /// </remarks>
-        MavModeGuidedDisarmed = 88,
-        /// <summary>
-        /// System is allowed to be active, under autonomous control and navigation (the trajectory is decided onboard and not pre-programmed by waypoints)
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_AUTO_DISARMED
-        /// </remarks>
-        MavModeAutoDisarmed = 92,
-        /// <summary>
-        /// System is allowed to be active, under manual (RC) control, no stabilization
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_MANUAL_ARMED
-        /// </remarks>
-        MavModeManualArmed = 192,
-        /// <summary>
-        /// UNDEFINED mode. This solely depends on the autopilot - use with caution, intended for developers only.
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_TEST_ARMED
-        /// </remarks>
-        MavModeTestArmed = 194,
-        /// <summary>
-        /// System is allowed to be active, under assisted RC control.
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_STABILIZE_ARMED
-        /// </remarks>
-        MavModeStabilizeArmed = 208,
-        /// <summary>
-        /// System is allowed to be active, under autonomous control, manual setpoint
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_GUIDED_ARMED
-        /// </remarks>
-        MavModeGuidedArmed = 216,
-        /// <summary>
-        /// System is allowed to be active, under autonomous control and navigation (the trajectory is decided onboard and not pre-programmed by waypoints)
-        /// </summary>
-        /// <remarks>
-        /// Original type: MAV_MODE_AUTO_ARMED
-        /// </remarks>
-        MavModeAutoArmed = 220
-    }
-
-    /// <summary>
     /// Micro air vehicle / autopilot classes. This identifies the individual model.
     /// </summary>
     /// <remarks>
@@ -1937,9 +1653,359 @@
         /// </remarks>
         MavCompIdSystemControl = 250
     }
+
+    /// <summary>
+    /// These values define the type of firmware release.  These values indicate the first version or release of this type.  For example the first alpha release would be 64, the second would be 65.
+    /// </summary>
+    /// <remarks>
+    /// Original type: FIRMWARE_VERSION_TYPE
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
+    public enum FirmwareVersionType : byte
+    {
+        /// <summary>
+        /// development release
+        /// </summary>
+        /// <remarks>
+        /// Original type: FIRMWARE_VERSION_TYPE_DEV
+        /// </remarks>
+        FirmwareVersionTypeDev = 0,
+        /// <summary>
+        /// alpha release
+        /// </summary>
+        /// <remarks>
+        /// Original type: FIRMWARE_VERSION_TYPE_ALPHA
+        /// </remarks>
+        FirmwareVersionTypeAlpha = 64,
+        /// <summary>
+        /// beta release
+        /// </summary>
+        /// <remarks>
+        /// Original type: FIRMWARE_VERSION_TYPE_BETA
+        /// </remarks>
+        FirmwareVersionTypeBeta = 128,
+        /// <summary>
+        /// release candidate
+        /// </summary>
+        /// <remarks>
+        /// Original type: FIRMWARE_VERSION_TYPE_RC
+        /// </remarks>
+        FirmwareVersionTypeRc = 192,
+        /// <summary>
+        /// official stable release
+        /// </summary>
+        /// <remarks>
+        /// Original type: FIRMWARE_VERSION_TYPE_OFFICIAL
+        /// </remarks>
+        FirmwareVersionTypeOfficial = 255
+    }
+
+    /// <summary>
+    /// Flags to report failure cases over the high latency telemetry.
+    /// </summary>
+    /// <remarks>
+    /// Original type: HL_FAILURE_FLAG
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
+    public enum HlFailureFlag : ushort
+    {
+        /// <summary>
+        /// GPS failure.
+        /// </summary>
+        /// <remarks>
+        /// Original type: HL_FAILURE_FLAG_GPS
+        /// </remarks>
+        HlFailureFlagGps = 1,
+        /// <summary>
+        /// Differential pressure sensor failure.
+        /// </summary>
+        /// <remarks>
+        /// Original type: HL_FAILURE_FLAG_DIFFERENTIAL_PRESSURE
+        /// </remarks>
+        HlFailureFlagDifferentialPressure = 2,
+        /// <summary>
+        /// Absolute pressure sensor failure.
+        /// </summary>
+        /// <remarks>
+        /// Original type: HL_FAILURE_FLAG_ABSOLUTE_PRESSURE
+        /// </remarks>
+        HlFailureFlagAbsolutePressure = 4,
+        /// <summary>
+        /// Accelerometer sensor failure.
+        /// </summary>
+        /// <remarks>
+        /// Original type: HL_FAILURE_FLAG_3D_ACCEL
+        /// </remarks>
+        HlFailureFlag3dAccel = 8,
+        /// <summary>
+        /// Gyroscope sensor failure.
+        /// </summary>
+        /// <remarks>
+        /// Original type: HL_FAILURE_FLAG_3D_GYRO
+        /// </remarks>
+        HlFailureFlag3dGyro = 16,
+        /// <summary>
+        /// Magnetometer sensor failure.
+        /// </summary>
+        /// <remarks>
+        /// Original type: HL_FAILURE_FLAG_3D_MAG
+        /// </remarks>
+        HlFailureFlag3dMag = 32,
+        /// <summary>
+        /// Terrain subsystem failure.
+        /// </summary>
+        /// <remarks>
+        /// Original type: HL_FAILURE_FLAG_TERRAIN
+        /// </remarks>
+        HlFailureFlagTerrain = 64,
+        /// <summary>
+        /// Battery failure/critical low battery.
+        /// </summary>
+        /// <remarks>
+        /// Original type: HL_FAILURE_FLAG_BATTERY
+        /// </remarks>
+        HlFailureFlagBattery = 128,
+        /// <summary>
+        /// RC receiver failure/no RC connection.
+        /// </summary>
+        /// <remarks>
+        /// Original type: HL_FAILURE_FLAG_RC_RECEIVER
+        /// </remarks>
+        HlFailureFlagRcReceiver = 256,
+        /// <summary>
+        /// Offboard link failure.
+        /// </summary>
+        /// <remarks>
+        /// Original type: HL_FAILURE_FLAG_OFFBOARD_LINK
+        /// </remarks>
+        HlFailureFlagOffboardLink = 512,
+        /// <summary>
+        /// Engine failure.
+        /// </summary>
+        /// <remarks>
+        /// Original type: HL_FAILURE_FLAG_ENGINE
+        /// </remarks>
+        HlFailureFlagEngine = 1024,
+        /// <summary>
+        /// Geofence violation.
+        /// </summary>
+        /// <remarks>
+        /// Original type: HL_FAILURE_FLAG_GEOFENCE
+        /// </remarks>
+        HlFailureFlagGeofence = 2048,
+        /// <summary>
+        /// Estimator failure, for example measurement rejection or large variances.
+        /// </summary>
+        /// <remarks>
+        /// Original type: HL_FAILURE_FLAG_ESTIMATOR
+        /// </remarks>
+        HlFailureFlagEstimator = 4096,
+        /// <summary>
+        /// Mission failure.
+        /// </summary>
+        /// <remarks>
+        /// Original type: HL_FAILURE_FLAG_MISSION
+        /// </remarks>
+        HlFailureFlagMission = 8192
+    }
+
+    /// <summary>
+    /// Actions that may be specified in MAV_CMD_OVERRIDE_GOTO to override mission execution.
+    /// </summary>
+    /// <remarks>
+    /// Original type: MAV_GOTO
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
+    public enum MavGoto : byte
+    {
+        /// <summary>
+        /// Hold at the current position.
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_GOTO_DO_HOLD
+        /// </remarks>
+        MavGotoDoHold = 0,
+        /// <summary>
+        /// Continue with the next item in mission execution.
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_GOTO_DO_CONTINUE
+        /// </remarks>
+        MavGotoDoContinue = 1,
+        /// <summary>
+        /// Hold at the current position of the system
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_GOTO_HOLD_AT_CURRENT_POSITION
+        /// </remarks>
+        MavGotoHoldAtCurrentPosition = 2,
+        /// <summary>
+        /// Hold at the position specified in the parameters of the DO_HOLD action
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_GOTO_HOLD_AT_SPECIFIED_POSITION
+        /// </remarks>
+        MavGotoHoldAtSpecifiedPosition = 3
+    }
+
+    /// <summary>
+    /// These defines are predefined OR-combined mode flags. There is no need to use values from this enum, but it
+    /// simplifies the use of the mode flags. Note that manual input is enabled in all modes as a safety override.
+    /// 
+    /// </summary>
+    /// <remarks>
+    /// Original type: MAV_MODE
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
+    public enum MavMode : byte
+    {
+        /// <summary>
+        /// System is not ready to fly, booting, calibrating, etc. No flag is set.
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_PREFLIGHT
+        /// </remarks>
+        MavModePreflight = 0,
+        /// <summary>
+        /// System is allowed to be active, under manual (RC) control, no stabilization
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_MANUAL_DISARMED
+        /// </remarks>
+        MavModeManualDisarmed = 64,
+        /// <summary>
+        /// UNDEFINED mode. This solely depends on the autopilot - use with caution, intended for developers only.
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_TEST_DISARMED
+        /// </remarks>
+        MavModeTestDisarmed = 66,
+        /// <summary>
+        /// System is allowed to be active, under assisted RC control.
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_STABILIZE_DISARMED
+        /// </remarks>
+        MavModeStabilizeDisarmed = 80,
+        /// <summary>
+        /// System is allowed to be active, under autonomous control, manual setpoint
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_GUIDED_DISARMED
+        /// </remarks>
+        MavModeGuidedDisarmed = 88,
+        /// <summary>
+        /// System is allowed to be active, under autonomous control and navigation (the trajectory is decided onboard and not pre-programmed by waypoints)
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_AUTO_DISARMED
+        /// </remarks>
+        MavModeAutoDisarmed = 92,
+        /// <summary>
+        /// System is allowed to be active, under manual (RC) control, no stabilization
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_MANUAL_ARMED
+        /// </remarks>
+        MavModeManualArmed = 192,
+        /// <summary>
+        /// UNDEFINED mode. This solely depends on the autopilot - use with caution, intended for developers only.
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_TEST_ARMED
+        /// </remarks>
+        MavModeTestArmed = 194,
+        /// <summary>
+        /// System is allowed to be active, under assisted RC control.
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_STABILIZE_ARMED
+        /// </remarks>
+        MavModeStabilizeArmed = 208,
+        /// <summary>
+        /// System is allowed to be active, under autonomous control, manual setpoint
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_GUIDED_ARMED
+        /// </remarks>
+        MavModeGuidedArmed = 216,
+        /// <summary>
+        /// System is allowed to be active, under autonomous control and navigation (the trajectory is decided onboard and not pre-programmed by waypoints)
+        /// </summary>
+        /// <remarks>
+        /// Original type: MAV_MODE_AUTO_ARMED
+        /// </remarks>
+        MavModeAutoArmed = 220
+    }
 }
 namespace GeneratedMavlink
 {
+    /// <summary>
+    /// The heartbeat message shows that a system or component is present and responding. The type and autopilot fields (along with the message component id), allow the receiving system to treat further messages from this system appropriately (e.g. by laying out the user interface based on the autopilot). This microservice is documented at https://mavlink.io/en/services/heartbeat.html
+    /// </summary>
+    /// <remarks>
+    /// Original name: HEARTBEAT
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
+    public record struct Heartbeat
+    {
+        /// <remarks>
+        /// Original name: TYPE
+        /// </remarks>
+        public byte Type { get; init; }
+        /// <remarks>
+        /// Original name: AUTOPILOT
+        /// </remarks>
+        public byte Autopilot { get; init; }
+        /// <remarks>
+        /// Original name: BASE_MODE
+        /// </remarks>
+        public byte BaseMode { get; init; }
+        /// <remarks>
+        /// Original name: CUSTOM_MODE
+        /// </remarks>
+        public uint CustomMode { get; init; }
+        /// <remarks>
+        /// Original name: SYSTEM_STATUS
+        /// </remarks>
+        public byte SystemStatus { get; init; }
+        /// <remarks>
+        /// Original name: MAVLINK_VERSION
+        /// </remarks>
+        public object MavlinkVersion { get; init; }
+    }
+
+    /// <summary>
+    /// Version and capability of protocol version. This message can be requested with MAV_CMD_REQUEST_MESSAGE and is used as part of the handshaking to establish which MAVLink version should be used on the network. Every node should respond to a request for PROTOCOL_VERSION to enable the handshaking. Library implementers should consider adding this into the default decoding state machine to allow the protocol core to respond directly.
+    /// </summary>
+    /// <remarks>
+    /// Original name: PROTOCOL_VERSION
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
+    public record struct ProtocolVersion
+    {
+        /// <remarks>
+        /// Original name: VERSION
+        /// </remarks>
+        public ushort Version { get; init; }
+        /// <remarks>
+        /// Original name: MIN_VERSION
+        /// </remarks>
+        public ushort MinVersion { get; init; }
+        /// <remarks>
+        /// Original name: MAX_VERSION
+        /// </remarks>
+        public ushort MaxVersion { get; init; }
+        /// <remarks>
+        /// Original name: SPEC_VERSION_HASH
+        /// </remarks>
+        public object SpecVersionHash { get; init; }
+        /// <remarks>
+        /// Original name: LIBRARY_VERSION_HASH
+        /// </remarks>
+        public object LibraryVersionHash { get; init; }
+    }
+
     /// <summary>
     /// The general system state. If the system is following the MAVLink standard, the system state is mainly defined by three orthogonal states/modes: The system mode, which is either LOCKED (motors shut down and locked), MANUAL (system under RC control), GUIDED (system with autonomous position control, position setpoint controlled manually) or AUTO (system guided by path/waypoint planner). The NAV_MODE defined the current flight state: LIFTOFF (often an open-loop maneuver), LANDING, WAYPOINTS or VECTOR. This represents the internal navigation state machine. The system status shows whether the system is currently active or not and if an emergency occurred. During the CRITICAL and EMERGENCY states the MAV is still considered to be active, but should start emergency procedures autonomously. After a failure occurred it should first move from active to critical to allow manual intervention and then move to emergency after a certain timeout.
     /// </summary>
@@ -2086,71 +2152,5 @@ namespace GeneratedMavlink
         /// Original name: PASSKEY
         /// </remarks>
         public object Passkey { get; init; }
-    }
-
-    /// <summary>
-    /// The heartbeat message shows that a system or component is present and responding. The type and autopilot fields (along with the message component id), allow the receiving system to treat further messages from this system appropriately (e.g. by laying out the user interface based on the autopilot). This microservice is documented at https://mavlink.io/en/services/heartbeat.html
-    /// </summary>
-    /// <remarks>
-    /// Original name: HEARTBEAT
-    /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
-    public record struct Heartbeat
-    {
-        /// <remarks>
-        /// Original name: TYPE
-        /// </remarks>
-        public byte Type { get; init; }
-        /// <remarks>
-        /// Original name: AUTOPILOT
-        /// </remarks>
-        public byte Autopilot { get; init; }
-        /// <remarks>
-        /// Original name: BASE_MODE
-        /// </remarks>
-        public byte BaseMode { get; init; }
-        /// <remarks>
-        /// Original name: CUSTOM_MODE
-        /// </remarks>
-        public uint CustomMode { get; init; }
-        /// <remarks>
-        /// Original name: SYSTEM_STATUS
-        /// </remarks>
-        public byte SystemStatus { get; init; }
-        /// <remarks>
-        /// Original name: MAVLINK_VERSION
-        /// </remarks>
-        public object MavlinkVersion { get; init; }
-    }
-
-    /// <summary>
-    /// Version and capability of protocol version. This message can be requested with MAV_CMD_REQUEST_MESSAGE and is used as part of the handshaking to establish which MAVLink version should be used on the network. Every node should respond to a request for PROTOCOL_VERSION to enable the handshaking. Library implementers should consider adding this into the default decoding state machine to allow the protocol core to respond directly.
-    /// </summary>
-    /// <remarks>
-    /// Original name: PROTOCOL_VERSION
-    /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType]
-    public record struct ProtocolVersion
-    {
-        /// <remarks>
-        /// Original name: VERSION
-        /// </remarks>
-        public ushort Version { get; init; }
-        /// <remarks>
-        /// Original name: MIN_VERSION
-        /// </remarks>
-        public ushort MinVersion { get; init; }
-        /// <remarks>
-        /// Original name: MAX_VERSION
-        /// </remarks>
-        public ushort MaxVersion { get; init; }
-        /// <remarks>
-        /// Original name: SPEC_VERSION_HASH
-        /// </remarks>
-        public object SpecVersionHash { get; init; }
-        /// <remarks>
-        /// Original name: LIBRARY_VERSION_HASH
-        /// </remarks>
-        public object LibraryVersionHash { get; init; }
     }
 }

@@ -12,8 +12,10 @@ public class MavlinkGeneratorTests
 
 		var additional = TestsHelper.GetAdditionalTextList([
 			"Stubs\\test-mavlink-common.xml",
+			"Stubs\\test-mavlink-third-empty-include.xml",
 			"Stubs\\test-mavlink-minimal.xml",
-			"Stubs\\test-mavlink-standard.xml"
+			"Stubs\\test-mavlink-standard.xml",
+			"Stubs\\test-mavlink-second-empty-include.xml"
 		]);
 
 		// act
