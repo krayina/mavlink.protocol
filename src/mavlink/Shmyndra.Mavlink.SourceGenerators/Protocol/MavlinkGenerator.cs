@@ -29,35 +29,25 @@ public class MavlinkGenerator : IIncrementalGenerator
 
 			context.RegisterSourceOutput(xmlFiles, (sourceProductionContext, files) =>
 			{
-				var fileContents = files.ToDictionary(f => f.Path, f => f.Content);
-				var orderedFiles = MavlinkXmlIncludeOrderer.GetOrderedFiles(fileContents);
+				try
+				{
+					var fileContents = files.ToDictionary(f => f.Path, f => f.Content);
+					var orderedFiles = MavlinkXmlIncludeOrderer.GetOrderedFiles(fileContents);
+					var xmlContent = orderedFiles.Select(path => fileContents[path]).ToImmutableArray();
 
-				var xmlContent = orderedFiles.Select(path => fileContents[path]).ToImmutableArray();
-				var enums = EnumProcessor.ParseEnums(xmlContent).ToImmutableArray();
-				EnumProcessor.GenerateEnumFile(sourceProductionContext, enums);
-				var enumTypes = enums.ToDictionary(e => e.Name, e => Utilities.ToCamelCase(e.Name));
+					var enums = EnumProcessor.ParseEnums(xmlContent).ToImmutableArray();
+					EnumProcessor.GenerateEnumFile(sourceProductionContext, enums);
 
-				ProcessFiles(sourceProductionContext, xmlContent, enumTypes, MessageProcessor.ParseMessages, MessageProcessor.GenerateMessageFile);
+					var enumTypes = enums.ToDictionary(e => e.Name, e => Utilities.ToCamelCase(e.Name));
 
+					var messages = MessageProcessor.ParseMessages(xmlContent, enumTypes).ToImmutableArray();
+					MessageProcessor.GenerateMessageFile(sourceProductionContext, messages);
+				}
+				catch (Exception ex)
+				{
+					ExceptionHandler.HandleException(sourceProductionContext, ex);
+				}
 			});
-		}
-
-		private static void ProcessFiles<T>(
-			SourceProductionContext context,
-			ImmutableArray<string> files,
-			Dictionary<string, string> enumTypes,
-			Func<IEnumerable<string>, Dictionary<string, string>, IEnumerable<T>> parseFunc,
-			Action<SourceProductionContext, ImmutableArray<T>> generateFunc)
-		{
-			try
-			{
-				var items = parseFunc(files, enumTypes).ToImmutableArray();
-				generateFunc(context, items);
-			}
-			catch (Exception ex)
-			{
-				ExceptionHandler.HandleException(context, ex);
-			}
 		}
 	}
 }
