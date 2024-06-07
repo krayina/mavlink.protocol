@@ -36,12 +36,10 @@ public class MavlinkGenerator : IIncrementalGenerator
 					var xmlContent = orderedFiles.Select(path => fileContents[path]).ToImmutableArray();
 
 					var enums = EnumProcessor.ParseEnums(xmlContent).ToImmutableArray();
-					EnumProcessor.GenerateEnumFile(sourceProductionContext, enums);
+					var generatedMavlinkEnumTypes = EnumProcessor.GenerateEnumFile(sourceProductionContext, enums);
 
-					var enumTypes = enums.ToDictionary(e => e.Name, e => Utilities.ToCamelCase(e.Name));
-
-					var messages = MessageProcessor.ParseMessages(xmlContent, enumTypes).ToImmutableArray();
-					MessageProcessor.GenerateMessageFile(sourceProductionContext, messages);
+					var messages = MessageProcessor.ParseMessages(xmlContent, generatedMavlinkEnumTypes).ToImmutableArray();
+					var generatedMavlinkMessageTypes = MessageProcessor.GenerateMessageFile(sourceProductionContext, messages);
 				}
 				catch (Exception ex)
 				{

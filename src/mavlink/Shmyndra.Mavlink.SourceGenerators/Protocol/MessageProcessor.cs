@@ -10,7 +10,7 @@ namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
 
 internal static class MessageProcessor
 {
-	public static IEnumerable<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> ParseMessages(IEnumerable<string> xmlContents, Dictionary<string, string> enumTypes)
+	public static IEnumerable<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> ParseMessages(IEnumerable<string> xmlContents, ImmutableDictionary<string, string> enumTypes)
 	{
 		var serializer = new XmlSerializer(typeof(Mavlink));
 		var messageDict = new Dictionary<string, (string? Description, List<(string Type, string Name, string? Description)> Fields)>();
@@ -46,16 +46,27 @@ internal static class MessageProcessor
 		return messageDict.Select(kv => (kv.Key, kv.Value.Description, kv.Value.Fields));
 	}
 
-	public static void GenerateMessageFile(SourceProductionContext context, ImmutableArray<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> messages)
+	/// <returns>Generated types [XmlName, TypeName]</returns>
+	public static ImmutableDictionary<string, string> GenerateMessageFile(SourceProductionContext context, ImmutableArray<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> messages)
 	{
 		if (messages.IsDefaultOrEmpty)
-			return;
+		{
+			return ImmutableDictionary<string, string>.Empty;
+		}
 
+		var nameMapping = new Dictionary<string, string>();
 		var compilationUnit = SyntaxFactory.CompilationUnit()
 			.AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName("GeneratedMavlink"))
-				.AddMembers(messages.Select(CreateRecordStruct).ToArray()));
+				.AddMembers(messages.Select(messageData =>
+				{
+					var recordStruct = CreateRecordStruct(messageData);
+					nameMapping[messageData.Name] = recordStruct.Identifier.Text;
+					return recordStruct;
+				}).ToArray()));
 
 		context.AddSource("MavlinkMessages.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
+
+		return nameMapping.ToImmutableDictionary();
 	}
 
 	private static RecordDeclarationSyntax CreateRecordStruct((string Name, string? Description, List<(string Type, string Name, string? Description)> Fields) messageData)

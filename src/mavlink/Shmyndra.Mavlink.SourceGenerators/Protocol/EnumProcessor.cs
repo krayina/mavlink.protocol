@@ -37,18 +37,27 @@ internal static class EnumProcessor
 		return enumDict.Select(kv => (kv.Key, kv.Value.Description, kv.Value.Entries));
 	}
 
-	public static void GenerateEnumFile(SourceProductionContext context, ImmutableArray<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> enums)
+	/// <returns>Generated types [XmlName, TypeName]</returns>
+	public static ImmutableDictionary<string, string> GenerateEnumFile(SourceProductionContext context, ImmutableArray<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> enums)
 	{
 		if (enums.IsDefaultOrEmpty)
 		{
-			return;
+			return ImmutableDictionary<string, string>.Empty;
 		}
 
+		var nameMapping = new Dictionary<string, string>();
 		var compilationUnit = SyntaxFactory.CompilationUnit()
 			.AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName("GeneratedMavlink"))
-				.AddMembers(enums.Select(CreateEnum).ToArray()));
+				.AddMembers(enums.Select(enumData =>
+				{
+					var enumDeclaration = CreateEnum(enumData);
+					nameMapping[enumData.Name] = enumDeclaration.Identifier.Text;
+					return enumDeclaration;
+				}).ToArray()));
 
 		context.AddSource("MavlinkEnums.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
+
+		return nameMapping.ToImmutableDictionary();
 	}
 
 	private static EnumDeclarationSyntax CreateEnum((string Name, string? Description, List<(string Name, string Value, string? Description)> Entries) enumData)
