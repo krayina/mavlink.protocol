@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
 
-public interface IMessageGenerator
+public interface IMavlinkMessageTypesGenerator
 {
 	List<RecordDeclarationSyntax> GenerateMessages(
 		ImmutableArray<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> messages,
@@ -14,7 +14,7 @@ public interface IMessageGenerator
 		out ImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping);
 }
 
-public class MessageGenerator : IMessageGenerator
+public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 {
 	private readonly HashSet<string> _generatedMessageNames = new();
 

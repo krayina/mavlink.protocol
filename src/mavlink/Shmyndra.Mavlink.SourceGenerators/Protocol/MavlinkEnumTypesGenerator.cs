@@ -5,16 +5,15 @@ using System.Collections.Immutable;
 
 namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
 
-public interface IEnumGenerator
+public interface IMavlinkEnumTypesGenerator
 {
 	List<EnumDeclarationSyntax> GenerateEnums(
 		ImmutableArray<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> enums,
 		string namespaceName,
 		out ImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping);
-
 }
 
-public class EnumGenerator : IEnumGenerator
+public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 {
 	private readonly HashSet<string> _generatedEnumNames = new();
 

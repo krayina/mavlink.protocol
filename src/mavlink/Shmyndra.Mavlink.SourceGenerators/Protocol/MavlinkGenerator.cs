@@ -9,15 +9,15 @@ namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
 [Generator]
 public class MavlinkGenerator : IIncrementalGenerator
 {
-	private readonly IEnumGenerator _enumGenerator;
-	private readonly IMessageGenerator _messageGenerator;
+	private readonly IMavlinkEnumTypesGenerator _enumGenerator;
+	private readonly IMavlinkMessageTypesGenerator _messageGenerator;
 
 	public MavlinkGenerator()
-		: this(new EnumGenerator(), new MessageGenerator())
+		: this(new MavlinkEnumTypesGenerator(), new MavlinkMessageTypesGenerator())
 	{
 	}
 
-	public MavlinkGenerator(IEnumGenerator enumGenerator, IMessageGenerator messageGenerator)
+	public MavlinkGenerator(IMavlinkEnumTypesGenerator enumGenerator, IMavlinkMessageTypesGenerator messageGenerator)
 	{
 		_enumGenerator = enumGenerator;
 		_messageGenerator = messageGenerator;
@@ -34,10 +34,10 @@ public class MavlinkGenerator : IIncrementalGenerator
 
 	class Generator
 	{
-		private readonly IEnumGenerator _enumGenerator;
-		private readonly IMessageGenerator _messageGenerator;
+		private readonly IMavlinkEnumTypesGenerator _enumGenerator;
+		private readonly IMavlinkMessageTypesGenerator _messageGenerator;
 
-		public Generator(IEnumGenerator enumGenerator, IMessageGenerator messageGenerator)
+		public Generator(IMavlinkEnumTypesGenerator enumGenerator, IMavlinkMessageTypesGenerator messageGenerator)
 		{
 			_enumGenerator = enumGenerator;
 			_messageGenerator = messageGenerator;
