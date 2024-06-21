@@ -1,44 +1,51 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
-using System.Xml.Serialization;
+using System.Collections.Immutable;
 
 namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
 
-internal static class EnumProcessor
+public interface IEnumGenerator
 {
-	public static IEnumerable<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> ParseEnums(IEnumerable<string> xmlContents)
+	List<EnumDeclarationSyntax> GenerateEnums(
+		ImmutableArray<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> enums,
+		string namespaceName,
+		out ImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping);
+
+}
+
+public class EnumGenerator : IEnumGenerator
+{
+	private readonly HashSet<string> _generatedEnumNames = new();
+
+	public List<EnumDeclarationSyntax> GenerateEnums(
+		ImmutableArray<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> enums,
+		string namespaceName,
+		out ImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping)
 	{
-		var serializer = new XmlSerializer(typeof(Mavlink));
-		var enumDict = new Dictionary<string, (string? Description, List<(string Name, string Value, string? Description)> Entries)>();
+		var nameMappingDict = new Dictionary<string, (string Namespace, string TypeName)>();
+		var enumDeclarations = new List<EnumDeclarationSyntax>();
 
-		foreach (var xmlContent in xmlContents)
+		foreach (var enumData in enums)
 		{
-			using var reader = new StringReader(xmlContent);
-			var mavlink = (Mavlink)serializer.Deserialize(reader);
-			foreach (var e in mavlink.Enums)
+			if (_generatedEnumNames.Contains(enumData.Name))
 			{
-				var entries = e.Entry.Select(entry => (entry.Name, entry.Value, entry.Description)).ToList();
-
-				if (enumDict.ContainsKey(e.Name))
-				{
-					enumDict[e.Name].Entries.AddRange(entries);
-				}
-				else
-				{
-					enumDict[e.Name] = (e.Description, entries);
-				}
+				continue;
 			}
+
+			var enumDeclaration = CreateEnum(enumData);
+			enumDeclarations.Add(enumDeclaration);
+			nameMappingDict[enumData.Name] = (namespaceName, enumDeclaration.Identifier.Text);
+			_generatedEnumNames.Add(enumData.Name);
 		}
 
-		return enumDict.Select(kv => (kv.Key, kv.Value.Description, kv.Value.Entries));
+		nameMapping = nameMappingDict.ToImmutableDictionary();
+		return enumDeclarations;
 	}
 
-	public static EnumDeclarationSyntax CreateEnum((string Name, string? Description, List<(string Name, string Value, string? Description)> Entries) enumData)
+	private EnumDeclarationSyntax CreateEnum((string Name, string? Description, List<(string Name, string Value, string? Description)> Entries) enumData)
 	{
 		var normalizedName = Utilities.ToCamelCase(enumData.Name);
-
-		// Collect all values to determine the appropriate enum base type
 		var allValues = enumData.Entries.Select(entry => ulong.Parse(entry.Value)).ToList();
 		string enumBaseType = Utilities.GetEnumBaseType(allValues);
 

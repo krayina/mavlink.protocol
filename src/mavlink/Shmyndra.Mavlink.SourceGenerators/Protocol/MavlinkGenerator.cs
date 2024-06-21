@@ -9,17 +9,40 @@ namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
 [Generator]
 public class MavlinkGenerator : IIncrementalGenerator
 {
+	private readonly IEnumGenerator _enumGenerator;
+	private readonly IMessageGenerator _messageGenerator;
+
+	public MavlinkGenerator()
+		: this(new EnumGenerator(), new MessageGenerator())
+	{
+	}
+
+	public MavlinkGenerator(IEnumGenerator enumGenerator, IMessageGenerator messageGenerator)
+	{
+		_enumGenerator = enumGenerator;
+		_messageGenerator = messageGenerator;
+	}
+
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
 		if (!System.Diagnostics.Debugger.IsAttached)
 		{
 			System.Diagnostics.Debugger.Launch();
 		}
-		new Generator().Generate(context);
+		new Generator(_enumGenerator, _messageGenerator).Generate(context);
 	}
 
 	class Generator
 	{
+		private readonly IEnumGenerator _enumGenerator;
+		private readonly IMessageGenerator _messageGenerator;
+
+		public Generator(IEnumGenerator enumGenerator, IMessageGenerator messageGenerator)
+		{
+			_enumGenerator = enumGenerator;
+			_messageGenerator = messageGenerator;
+		}
+
 		internal void Generate(IncrementalGeneratorInitializationContext context)
 		{
 			var additionalTexts = context.AdditionalTextsProvider.Where(file => file.Path.EndsWith(".xml"));
@@ -36,25 +59,38 @@ public class MavlinkGenerator : IIncrementalGenerator
 				{
 					var fileContents = files.ToDictionary(f => f.Path, f => f.Content);
 					var orderedFiles = MavlinkXmlIncludeOrderer.GetOrderedFiles(fileContents);
-					var xmlContent = orderedFiles.Select(path => fileContents[path]).ToImmutableArray();
+
+					var allGeneratedEnumTypes = new Dictionary<string, (string Namespace, string TypeName)>();
+					var allGeneratedMessageTypes = new Dictionary<string, (string Namespace, string TypeName)>();
 
 					foreach (var xmlFile in orderedFiles)
 					{
 						var content = fileContents[xmlFile];
 						var namespaceName = $"MavlinkTypes.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(xmlFile))}";
 
-						var enums = EnumProcessor.ParseEnums(new[] { content }).ToImmutableArray();
-						var generatedMavlinkEnumTypes = enums.ToImmutableDictionary(e => e.Name, e => (namespaceName, Utilities.ToCamelCase(e.Name)));
+						var enums = MavlinkXmlEnumParser.ParseEnums(new[] { content }).ToImmutableArray();
+						var enumDeclarations = _enumGenerator.GenerateEnums(enums, namespaceName, out var generatedMavlinkEnumTypes);
 
-						var messages = MessageProcessor.ParseMessages(new[] { content }, generatedMavlinkEnumTypes).ToImmutableArray();
-						var generatedMavlinkMessageTypes = messages.ToImmutableDictionary(m => m.Name, m => (namespaceName, Utilities.ToCamelCase(m.Name)));
+						foreach (var kvp in generatedMavlinkEnumTypes)
+						{
+							allGeneratedEnumTypes[kvp.Key] = kvp.Value;
+						}
 
-						var allGeneratedTypes = generatedMavlinkEnumTypes.AddRange(generatedMavlinkMessageTypes);
+						var messages = MavlinkXmlMessageParser.ParseMessages(new[] { content }, allGeneratedEnumTypes.ToImmutableDictionary()).ToImmutableArray();
+						var messageDeclarations = _messageGenerator.GenerateMessages(messages, namespaceName, allGeneratedEnumTypes.ToImmutableDictionary(), out var generatedMavlinkMessageTypes);
+
+						foreach (var kvp in generatedMavlinkMessageTypes)
+						{
+							allGeneratedMessageTypes[kvp.Key] = kvp.Value;
+						}
 
 						var compilationUnit = SyntaxFactory.CompilationUnit()
 							.AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(namespaceName))
-								.AddMembers(enums.Select(enumData => EnumProcessor.CreateEnum(enumData)).ToArray())
-								.AddMembers(messages.Select(messageData => MessageProcessor.CreateRecordStruct(messageData, namespaceName, allGeneratedTypes)).ToArray()));
+								.AddMembers(enumDeclarations.ToArray())
+								.AddMembers(messageDeclarations.ToArray()));
+
+						// Діагностичне повідомлення
+						System.Diagnostics.Debug.WriteLine($"Generated code for {namespaceName}");
 
 						sourceProductionContext.AddSource($"{namespaceName}.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
 					}
