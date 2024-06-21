@@ -1,4 +1,10 @@
-﻿namespace GeneratedMavlink
+﻿namespace MavlinkTypes.TestMavlinkSecondEmptyInclude
+{
+}
+namespace MavlinkTypes.TestMavlinkThirdEmptyInclude
+{
+}
+namespace MavlinkTypes.TestMavlinkMinimal
 {
     /// <summary>
     /// Micro air vehicle / autopilot classes. This identifies the individual model.
@@ -1655,6 +1661,77 @@
     }
 
     /// <summary>
+    /// The heartbeat message shows that a system or component is present and responding. The type and autopilot fields (along with the message component id), allow the receiving system to treat further messages from this system appropriately (e.g. by laying out the user interface based on the autopilot). This microservice is documented at https://mavlink.io/en/services/heartbeat.html
+    /// </summary>
+    /// <remarks>
+    /// Original name: HEARTBEAT
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("HEARTBEAT")]
+    public record struct Heartbeat
+    {
+        /// <remarks>
+        /// Original name: TYPE
+        /// </remarks>
+        public MavType Type { get; init; }
+        /// <remarks>
+        /// Original name: AUTOPILOT
+        /// </remarks>
+        public MavAutopilot Autopilot { get; init; }
+        /// <remarks>
+        /// Original name: BASE_MODE
+        /// </remarks>
+        public MavModeFlag BaseMode { get; init; }
+        /// <remarks>
+        /// Original name: CUSTOM_MODE
+        /// </remarks>
+        public uint CustomMode { get; init; }
+        /// <remarks>
+        /// Original name: SYSTEM_STATUS
+        /// </remarks>
+        public MavState SystemStatus { get; init; }
+        /// <remarks>
+        /// Original name: MAVLINK_VERSION
+        /// </remarks>
+        public object MavlinkVersion { get; init; }
+    }
+
+    /// <summary>
+    /// Version and capability of protocol version. This message can be requested with MAV_CMD_REQUEST_MESSAGE and is used as part of the handshaking to establish which MAVLink version should be used on the network. Every node should respond to a request for PROTOCOL_VERSION to enable the handshaking. Library implementers should consider adding this into the default decoding state machine to allow the protocol core to respond directly.
+    /// </summary>
+    /// <remarks>
+    /// Original name: PROTOCOL_VERSION
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("PROTOCOL_VERSION")]
+    public record struct ProtocolVersion
+    {
+        /// <remarks>
+        /// Original name: VERSION
+        /// </remarks>
+        public ushort Version { get; init; }
+        /// <remarks>
+        /// Original name: MIN_VERSION
+        /// </remarks>
+        public ushort MinVersion { get; init; }
+        /// <remarks>
+        /// Original name: MAX_VERSION
+        /// </remarks>
+        public ushort MaxVersion { get; init; }
+        /// <remarks>
+        /// Original name: SPEC_VERSION_HASH
+        /// </remarks>
+        public object SpecVersionHash { get; init; }
+        /// <remarks>
+        /// Original name: LIBRARY_VERSION_HASH
+        /// </remarks>
+        public object LibraryVersionHash { get; init; }
+    }
+}
+namespace MavlinkTypes.TestMavlinkStandard
+{
+}
+namespace MavlinkTypes.TestMavlinkCommon
+{
+    /// <summary>
     /// These values define the type of firmware release.  These values indicate the first version or release of this type.  For example the first alpha release would be 64, the second would be 65.
     /// </summary>
     /// <remarks>
@@ -2189,74 +2266,6 @@
         /// Original name: MAV_SYS_STATUS_RECOVERY_SYSTEM
         /// </remarks>
         MavSysStatusRecoverySystem = 1
-    }
-}
-namespace GeneratedMavlink
-{
-    /// <summary>
-    /// The heartbeat message shows that a system or component is present and responding. The type and autopilot fields (along with the message component id), allow the receiving system to treat further messages from this system appropriately (e.g. by laying out the user interface based on the autopilot). This microservice is documented at https://mavlink.io/en/services/heartbeat.html
-    /// </summary>
-    /// <remarks>
-    /// Original name: HEARTBEAT
-    /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("HEARTBEAT")]
-    public record struct Heartbeat
-    {
-        /// <remarks>
-        /// Original name: TYPE
-        /// </remarks>
-        public MavType Type { get; init; }
-        /// <remarks>
-        /// Original name: AUTOPILOT
-        /// </remarks>
-        public MavAutopilot Autopilot { get; init; }
-        /// <remarks>
-        /// Original name: BASE_MODE
-        /// </remarks>
-        public MavModeFlag BaseMode { get; init; }
-        /// <remarks>
-        /// Original name: CUSTOM_MODE
-        /// </remarks>
-        public uint CustomMode { get; init; }
-        /// <remarks>
-        /// Original name: SYSTEM_STATUS
-        /// </remarks>
-        public MavState SystemStatus { get; init; }
-        /// <remarks>
-        /// Original name: MAVLINK_VERSION
-        /// </remarks>
-        public object MavlinkVersion { get; init; }
-    }
-
-    /// <summary>
-    /// Version and capability of protocol version. This message can be requested with MAV_CMD_REQUEST_MESSAGE and is used as part of the handshaking to establish which MAVLink version should be used on the network. Every node should respond to a request for PROTOCOL_VERSION to enable the handshaking. Library implementers should consider adding this into the default decoding state machine to allow the protocol core to respond directly.
-    /// </summary>
-    /// <remarks>
-    /// Original name: PROTOCOL_VERSION
-    /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("PROTOCOL_VERSION")]
-    public record struct ProtocolVersion
-    {
-        /// <remarks>
-        /// Original name: VERSION
-        /// </remarks>
-        public ushort Version { get; init; }
-        /// <remarks>
-        /// Original name: MIN_VERSION
-        /// </remarks>
-        public ushort MinVersion { get; init; }
-        /// <remarks>
-        /// Original name: MAX_VERSION
-        /// </remarks>
-        public ushort MaxVersion { get; init; }
-        /// <remarks>
-        /// Original name: SPEC_VERSION_HASH
-        /// </remarks>
-        public object SpecVersionHash { get; init; }
-        /// <remarks>
-        /// Original name: LIBRARY_VERSION_HASH
-        /// </remarks>
-        public object LibraryVersionHash { get; init; }
     }
 
     /// <summary>

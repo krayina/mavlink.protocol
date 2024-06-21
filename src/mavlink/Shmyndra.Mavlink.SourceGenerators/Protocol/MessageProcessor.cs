@@ -1,8 +1,6 @@
 ﻿using System.Collections.Immutable;
-using System.Text;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis;
 using System.Xml.Serialization;
 
@@ -10,7 +8,7 @@ namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
 
 internal static class MessageProcessor
 {
-	public static IEnumerable<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> ParseMessages(IEnumerable<string> xmlContents, ImmutableDictionary<string, string> enumTypes)
+	public static IEnumerable<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> ParseMessages(IEnumerable<string> xmlContents, ImmutableDictionary<string, (string Namespace, string TypeName)> enumTypes)
 	{
 		var serializer = new XmlSerializer(typeof(Mavlink));
 		var messageDict = new Dictionary<string, (string? Description, List<(string Type, string Name, string? Description)> Fields)>();
@@ -27,7 +25,7 @@ internal static class MessageProcessor
 					var fieldType = ConvertType(field.Type);
 					if (field.Enum is not null && enumTypes.ContainsKey(field.Enum))
 					{
-						fieldType = enumTypes[field.Enum];
+						fieldType = enumTypes[field.Enum].TypeName;
 					}
 					return (fieldType, field.Name, field.Description);
 				}).ToList();
@@ -46,38 +44,16 @@ internal static class MessageProcessor
 		return messageDict.Select(kv => (kv.Key, kv.Value.Description, kv.Value.Fields));
 	}
 
-	/// <returns>Generated types [XmlName, TypeName]</returns>
-	public static ImmutableDictionary<string, string> GenerateMessageFile(SourceProductionContext context, ImmutableArray<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> messages)
-	{
-		if (messages.IsDefaultOrEmpty)
-		{
-			return ImmutableDictionary<string, string>.Empty;
-		}
-
-		var nameMapping = new Dictionary<string, string>();
-		var compilationUnit = SyntaxFactory.CompilationUnit()
-			.AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName("GeneratedMavlink"))
-				.AddMembers(messages.Select(messageData =>
-				{
-					var recordStruct = CreateRecordStruct(messageData);
-					nameMapping[messageData.Name] = recordStruct.Identifier.Text;
-					return recordStruct;
-				}).ToArray()));
-
-		context.AddSource("MavlinkMessages.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
-
-		return nameMapping.ToImmutableDictionary();
-	}
-
-	private static RecordDeclarationSyntax CreateRecordStruct((string Name, string? Description, List<(string Type, string Name, string? Description)> Fields) messageData)
+	public static RecordDeclarationSyntax CreateRecordStruct((string Name, string? Description, List<(string Type, string Name, string? Description)> Fields) messageData, string namespaceName, ImmutableDictionary<string, (string Namespace, string TypeName)> generatedTypes)
 	{
 		var normalizedName = Utilities.ToCamelCase(messageData.Name);
 
 		var properties = messageData.Fields.Select(field =>
 		{
-			var normalizedFiledName = Utilities.ToCamelCase(field.Name);
-			var fieldName = normalizedFiledName == normalizedName ? "_" + normalizedFiledName : normalizedFiledName;
-			var property = SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName(field.Type), fieldName)
+			var normalizedFieldName = Utilities.ToCamelCase(field.Name);
+			var fieldName = normalizedFieldName == normalizedName ? "_" + normalizedFieldName : normalizedFieldName;
+			var propertyType = GetTypeName(field.Type, namespaceName, generatedTypes);
+			var property = SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName(propertyType), fieldName)
 				.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
 				.AddAccessorListAccessors(
 					SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
@@ -112,10 +88,10 @@ internal static class MessageProcessor
 							SyntaxFactory.AttributeArgumentList(
 								SyntaxFactory.SeparatedList(new[]
 								{
-									SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
-										SyntaxKind.StringLiteralExpression,
-										SyntaxFactory.Literal(messageData.Name))
-									)
+								SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
+									SyntaxKind.StringLiteralExpression,
+									SyntaxFactory.Literal(messageData.Name))
+								)
 								})
 							)
 						)
@@ -126,6 +102,28 @@ internal static class MessageProcessor
 			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {messageData.Name.ToUpper()}");
 
 		return recordStruct;
+	}
+
+	private static string GetTypeName(string xmlType, string currentNamespace, ImmutableDictionary<string, (string Namespace, string TypeName)> generatedTypes)
+	{
+		// Extract the type name if it includes the namespace
+		var typeParts = xmlType.Split('.');
+		var typeName = typeParts.Length > 1 ? typeParts.Last() : xmlType;
+
+		if (generatedTypes.TryGetValue(typeName, out var generatedTypeInfo))
+		{
+			if (generatedTypeInfo.Namespace != currentNamespace)
+			{
+				return $"{generatedTypeInfo.Namespace}.{generatedTypeInfo.TypeName}";
+			}
+			else
+			{
+				return generatedTypeInfo.TypeName;
+			}
+		}
+
+		// If type is not a generated type, return it as is (assuming it's a standard .NET type)
+		return xmlType;
 	}
 
 	private static string ConvertType(string xmlType)

@@ -1,8 +1,5 @@
-﻿using System.Collections.Immutable;
-using System.Text;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis;
 using System.Xml.Serialization;
 
@@ -37,37 +34,13 @@ internal static class EnumProcessor
 		return enumDict.Select(kv => (kv.Key, kv.Value.Description, kv.Value.Entries));
 	}
 
-	/// <returns>Generated types [XmlName, TypeName]</returns>
-	public static ImmutableDictionary<string, string> GenerateEnumFile(SourceProductionContext context, ImmutableArray<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> enums)
-	{
-		if (enums.IsDefaultOrEmpty)
-		{
-			return ImmutableDictionary<string, string>.Empty;
-		}
-
-		var nameMapping = new Dictionary<string, string>();
-		var compilationUnit = SyntaxFactory.CompilationUnit()
-			.AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName("GeneratedMavlink"))
-				.AddMembers(enums.Select(enumData =>
-				{
-					var enumDeclaration = CreateEnum(enumData);
-					nameMapping[enumData.Name] = enumDeclaration.Identifier.Text;
-					return enumDeclaration;
-				}).ToArray()));
-
-		context.AddSource("MavlinkEnums.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
-
-		return nameMapping.ToImmutableDictionary();
-	}
-
-	private static EnumDeclarationSyntax CreateEnum((string Name, string? Description, List<(string Name, string Value, string? Description)> Entries) enumData)
+	public static EnumDeclarationSyntax CreateEnum((string Name, string? Description, List<(string Name, string Value, string? Description)> Entries) enumData)
 	{
 		var normalizedName = Utilities.ToCamelCase(enumData.Name);
 
 		// Collect all values to determine the appropriate enum base type
 		var allValues = enumData.Entries.Select(entry => ulong.Parse(entry.Value)).ToList();
 		string enumBaseType = Utilities.GetEnumBaseType(allValues);
-
 
 		var sortedEntries = enumData.Entries.OrderBy(entry => ulong.Parse(entry.Value)).ToList();
 		var enumMembers = sortedEntries.Select(entry =>

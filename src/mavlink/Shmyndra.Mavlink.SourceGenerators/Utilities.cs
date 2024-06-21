@@ -8,15 +8,17 @@ internal static class Utilities
 	public static string ToCamelCase(string input)
 	{
 		if (string.IsNullOrEmpty(input))
-			return input;
-
-		var words = input.Split(new[] { '_' }, StringSplitOptions.RemoveEmptyEntries);
-		for (int i = 0; i < words.Length; i++)
 		{
-			words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1).ToLower();
+			return input;
 		}
 
-		return string.Join("", words);
+		// Split the input string by hyphens, underscores, or spaces
+		var words = input.Split(new[] { '-', '_', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+		// Capitalize the first letter of each word and concatenate them
+		var result = string.Concat(words.Select(word => char.ToUpper(word[0]) + word.Substring(1).ToLower()));
+
+		return result;
 	}
 
 	public static SyntaxTriviaList CreateSummaryTrivia(string description)
