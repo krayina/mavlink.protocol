@@ -34,7 +34,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 				continue;
 			}
 
-			var recordStruct = CreateRecordStruct(messageData, namespaceName, enumTypes);
+			var recordStruct = GenerateRecordStruct(messageData, namespaceName, enumTypes);
 			messageDeclarations.Add(recordStruct);
 			nameMappingDict[messageData.Name] = (namespaceName, recordStruct.Identifier.Text);
 			_generatedMessageNames.Add(messageData.Name);
@@ -44,7 +44,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 		return messageDeclarations;
 	}
 
-	private RecordDeclarationSyntax CreateRecordStruct(
+	private RecordDeclarationSyntax GenerateRecordStruct(
 		(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields) messageData,
 		string namespaceName,
 		ImmutableDictionary<string, (string Namespace, string TypeName)> generatedTypes)

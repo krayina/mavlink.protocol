@@ -32,7 +32,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 				continue;
 			}
 
-			var enumDeclaration = CreateEnum(enumData);
+			var enumDeclaration = GenerateEnum(enumData);
 			enumDeclarations.Add(enumDeclaration);
 			nameMappingDict[enumData.Name] = (namespaceName, enumDeclaration.Identifier.Text);
 			_generatedEnumNames.Add(enumData.Name);
@@ -42,7 +42,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		return enumDeclarations;
 	}
 
-	private EnumDeclarationSyntax CreateEnum((string Name, string? Description, List<(string Name, string Value, string? Description)> Entries) enumData)
+	private EnumDeclarationSyntax GenerateEnum((string Name, string? Description, List<(string Name, string Value, string? Description)> Entries) enumData)
 	{
 		var normalizedName = Utilities.ToCamelCase(enumData.Name);
 		var allValues = enumData.Entries.Select(entry => ulong.Parse(entry.Value)).ToList();
