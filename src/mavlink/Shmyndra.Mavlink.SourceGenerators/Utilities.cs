@@ -33,15 +33,6 @@ internal static class Utilities
 							.Add(summaryEnd);
 	}
 
-	public static SyntaxTriviaList CreateRemarksTriviaIfNotNullOrEmpty(string description)
-	{
-		var remarksStart = SyntaxFactory.Comment("/// <remarks>");
-		var remarksContent = SyntaxFactory.Comment($"/// {description}");
-		var remarksEnd = SyntaxFactory.Comment("/// </remarks>");
-
-		return SyntaxFactory.TriviaList(remarksStart, remarksContent, remarksEnd);
-	}
-
 	private static SyntaxTriviaList CreateRemarksTrivia(string description)
 	{
 		var remarksStart = SyntaxFactory.Comment("/// <remarks>");
