@@ -68,16 +68,29 @@ public class MavlinkGenerator : IIncrementalGenerator
 						var content = fileContents[xmlFile];
 						var namespaceName = $"MavlinkTypes.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(xmlFile))}";
 
-						var enums = MavlinkXmlEnumParser.ParseEnums(new[] { content }).ToImmutableArray();
-						var enumDeclarations = _enumGenerator.GenerateEnums(enums, namespaceName, out var generatedMavlinkEnumTypes);
+						var mavlinkData = MavlinkXmlParser.Parse(content);
+
+						var enumDeclarations = _enumGenerator.GenerateEnums(mavlinkData.Enums.ToImmutableArray(), namespaceName, out var generatedMavlinkEnumTypes);
 
 						foreach (var kvp in generatedMavlinkEnumTypes)
 						{
 							allGeneratedEnumTypes[kvp.Key] = kvp.Value;
 						}
 
-						var messages = MavlinkXmlMessageParser.ParseMessages(new[] { content }, allGeneratedEnumTypes.ToImmutableDictionary()).ToImmutableArray();
-						var messageDeclarations = _messageGenerator.GenerateMessages(messages, namespaceName, allGeneratedEnumTypes.ToImmutableDictionary(), out var generatedMavlinkMessageTypes);
+						// Map enum types in messages
+						foreach (var message in mavlinkData.Messages)
+						{
+							for (int i = 0; i < message.Fields.Count; i++)
+							{
+								var field = message.Fields[i];
+								if (allGeneratedEnumTypes.ContainsKey(field.Type))
+								{
+									message.Fields[i] = (allGeneratedEnumTypes[field.Type].TypeName, field.Name, field.Description);
+								}
+							}
+						}
+
+						var messageDeclarations = _messageGenerator.GenerateMessages(mavlinkData.Messages.ToImmutableArray(), namespaceName, allGeneratedEnumTypes.ToImmutableDictionary(), out var generatedMavlinkMessageTypes);
 
 						foreach (var kvp in generatedMavlinkMessageTypes)
 						{
@@ -89,7 +102,6 @@ public class MavlinkGenerator : IIncrementalGenerator
 								.AddMembers(enumDeclarations.ToArray())
 								.AddMembers(messageDeclarations.ToArray()));
 
-						// Діагностичне повідомлення
 						System.Diagnostics.Debug.WriteLine($"Generated code for {namespaceName}");
 
 						sourceProductionContext.AddSource($"{namespaceName}.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
