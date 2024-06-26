@@ -8,10 +8,10 @@ namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
 public interface IMavlinkMessageTypesGenerator
 {
 	List<RecordDeclarationSyntax> GenerateMessages(
-		ImmutableArray<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> messages,
+		ImmutableArray<(string Name, string? Description, ImmutableList<(string Type, string Name, string? Description)> Fields)> messages,
 		string namespaceName,
-		ImmutableDictionary<string, (string Namespace, string TypeName)> enumTypes,
-		out ImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping);
+		IImmutableDictionary<string, (string Namespace, string TypeName)> enumTypes,
+		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping);
 }
 
 public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
@@ -19,10 +19,10 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 	private readonly HashSet<string> _generatedMessageNames = new();
 
 	public List<RecordDeclarationSyntax> GenerateMessages(
-		ImmutableArray<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> messages,
+		ImmutableArray<(string Name, string? Description, ImmutableList<(string Type, string Name, string? Description)> Fields)> messages,
 		string namespaceName,
-		ImmutableDictionary<string, (string Namespace, string TypeName)> enumTypes,
-		out ImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping)
+		IImmutableDictionary<string, (string Namespace, string TypeName)> enumTypes,
+		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping)
 	{
 		var nameMappingDict = new Dictionary<string, (string Namespace, string TypeName)>();
 		var messageDeclarations = new List<RecordDeclarationSyntax>();
@@ -34,20 +34,20 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 				continue;
 			}
 
-			var recordStruct = GenerateRecordStruct(messageData, namespaceName, enumTypes);
+			var recordStruct = CreateRecordStruct(messageData, namespaceName, enumTypes);
 			messageDeclarations.Add(recordStruct);
 			nameMappingDict[messageData.Name] = (namespaceName, recordStruct.Identifier.Text);
 			_generatedMessageNames.Add(messageData.Name);
 		}
 
-		nameMapping = nameMappingDict.ToImmutableDictionary();
+		nameMapping = nameMappingDict.ToImmutableSortedDictionary();
 		return messageDeclarations;
 	}
 
-	private RecordDeclarationSyntax GenerateRecordStruct(
-		(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields) messageData,
+	private RecordDeclarationSyntax CreateRecordStruct(
+		(string Name, string? Description, ImmutableList<(string Type, string Name, string? Description)> Fields) messageData,
 		string namespaceName,
-		ImmutableDictionary<string, (string Namespace, string TypeName)> generatedTypes)
+		IImmutableDictionary<string, (string Namespace, string TypeName)> generatedTypes)
 	{
 		var normalizedName = Utilities.ToCamelCase(messageData.Name);
 
@@ -107,9 +107,8 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 		return recordStruct;
 	}
 
-	private string GetTypeName(string xmlType, string currentNamespace, ImmutableDictionary<string, (string Namespace, string TypeName)> generatedTypes)
+	private string GetTypeName(string xmlType, string currentNamespace, IImmutableDictionary<string, (string Namespace, string TypeName)> generatedTypes)
 	{
-		// Extract the type name if it includes the namespace
 		var typeParts = xmlType.Split('.');
 		var typeName = typeParts.Length > 1 ? typeParts.Last() : xmlType;
 
@@ -125,7 +124,6 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 			}
 		}
 
-		// If type is not a generated type, return it as is (assuming it's a standard .NET type)
 		return xmlType;
 	}
 }

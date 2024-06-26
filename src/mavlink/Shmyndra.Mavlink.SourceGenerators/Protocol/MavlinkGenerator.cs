@@ -1,7 +1,7 @@
-﻿using System.Collections.Immutable;
-using System.Text;
+﻿using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
@@ -11,16 +11,21 @@ public class MavlinkGenerator : IIncrementalGenerator
 {
 	private readonly IMavlinkEnumTypesGenerator _enumGenerator;
 	private readonly IMavlinkMessageTypesGenerator _messageGenerator;
+	private readonly IMavlinkSpecificationTypeGenerator _specificationGenerator;
 
 	public MavlinkGenerator()
-		: this(new MavlinkEnumTypesGenerator(), new MavlinkMessageTypesGenerator())
+		: this(new MavlinkEnumTypesGenerator(), new MavlinkMessageTypesGenerator(), new MavlinkSpecificationTypeGenerator())
 	{
 	}
 
-	public MavlinkGenerator(IMavlinkEnumTypesGenerator enumGenerator, IMavlinkMessageTypesGenerator messageGenerator)
+	public MavlinkGenerator(
+		IMavlinkEnumTypesGenerator enumGenerator,
+		IMavlinkMessageTypesGenerator messageGenerator,
+		IMavlinkSpecificationTypeGenerator specificationGenerator)
 	{
 		_enumGenerator = enumGenerator;
 		_messageGenerator = messageGenerator;
+		_specificationGenerator = specificationGenerator;
 	}
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -29,89 +34,51 @@ public class MavlinkGenerator : IIncrementalGenerator
 		{
 			System.Diagnostics.Debugger.Launch();
 		}
-		new Generator(_enumGenerator, _messageGenerator).Generate(context);
+
+		var contentGenerator = new MavlinkTypesGenerator(_enumGenerator, _messageGenerator, _specificationGenerator);
+		Generate(context, contentGenerator);
 	}
 
-	class Generator
+	private void Generate(IncrementalGeneratorInitializationContext context, MavlinkTypesGenerator contentGenerator)
 	{
-		private readonly IMavlinkEnumTypesGenerator _enumGenerator;
-		private readonly IMavlinkMessageTypesGenerator _messageGenerator;
-
-		public Generator(IMavlinkEnumTypesGenerator enumGenerator, IMavlinkMessageTypesGenerator messageGenerator)
-		{
-			_enumGenerator = enumGenerator;
-			_messageGenerator = messageGenerator;
-		}
-
-		internal void Generate(IncrementalGeneratorInitializationContext context)
-		{
-			var additionalTexts = context.AdditionalTextsProvider.Where(file => file.Path.EndsWith(".xml"));
-			var xmlFiles = additionalTexts
-				.Select((file, _) => new
-				{
-					file.Path,
-					Content = file.GetText()!.ToString()
-				}).Collect();
-
-			context.RegisterSourceOutput(xmlFiles, (sourceProductionContext, files) =>
+		var additionalTexts = context.AdditionalTextsProvider.Where(file => file.Path.EndsWith(".xml"));
+		var xmlFiles = additionalTexts
+			.Select((file, _) => new
 			{
-				try
+				file.Path,
+				Content = file.GetText()!.ToString()
+			}).Collect();
+
+		context.RegisterSourceOutput(xmlFiles, (sourceProductionContext, files) =>
+		{
+			try
+			{
+				var fileContents = files.ToDictionary(f => f.Path, f => f.Content);
+				var orderedFiles = MavlinkXmlIncludeOrderer.GetOrderedFiles(fileContents);
+
+				foreach (var xmlFile in orderedFiles)
 				{
-					var fileContents = files.ToDictionary(f => f.Path, f => f.Content);
-					var orderedFiles = MavlinkXmlIncludeOrderer.GetOrderedFiles(fileContents);
+					var content = fileContents[xmlFile];
+					var mavlinkData = MavlinkXmlParser.Parse(content);
+					var namespaceName = $"MavlinkTypes.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(xmlFile))}";
 
-					var allGeneratedEnumTypes = new Dictionary<string, (string Namespace, string TypeName)>();
-					var allGeneratedMessageTypes = new Dictionary<string, (string Namespace, string TypeName)>();
-
-					foreach (var xmlFile in orderedFiles)
-					{
-						var content = fileContents[xmlFile];
-						var namespaceName = $"MavlinkTypes.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(xmlFile))}";
-
-						var mavlinkData = MavlinkXmlParser.Parse(content);
-
-						var enumDeclarations = _enumGenerator.GenerateEnums(mavlinkData.Enums.ToImmutableArray(), namespaceName, out var generatedMavlinkEnumTypes);
-
-						foreach (var kvp in generatedMavlinkEnumTypes)
-						{
-							allGeneratedEnumTypes[kvp.Key] = kvp.Value;
-						}
-
-						// Map enum types in messages
-						foreach (var message in mavlinkData.Messages)
-						{
-							for (int i = 0; i < message.Fields.Count; i++)
-							{
-								var field = message.Fields[i];
-								if (allGeneratedEnumTypes.ContainsKey(field.Type))
-								{
-									message.Fields[i] = (allGeneratedEnumTypes[field.Type].TypeName, field.Name, field.Description);
-								}
-							}
-						}
-
-						var messageDeclarations = _messageGenerator.GenerateMessages(mavlinkData.Messages.ToImmutableArray(), namespaceName, allGeneratedEnumTypes.ToImmutableDictionary(), out var generatedMavlinkMessageTypes);
-
-						foreach (var kvp in generatedMavlinkMessageTypes)
-						{
-							allGeneratedMessageTypes[kvp.Key] = kvp.Value;
-						}
-
-						var compilationUnit = SyntaxFactory.CompilationUnit()
-							.AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(namespaceName))
-								.AddMembers(enumDeclarations.ToArray())
-								.AddMembers(messageDeclarations.ToArray()));
-
-						System.Diagnostics.Debug.WriteLine($"Generated code for {namespaceName}");
-
-						sourceProductionContext.AddSource($"{namespaceName}.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
-					}
+					var members = contentGenerator.GenerateNamespaceMembers(mavlinkData, namespaceName);
+					AddSource(sourceProductionContext, namespaceName, members);
 				}
-				catch (Exception ex)
-				{
-					ExceptionHandler.HandleException(sourceProductionContext, ex);
-				}
-			});
-		}
+			}
+			catch (Exception ex)
+			{
+				ExceptionHandler.HandleException(sourceProductionContext, ex);
+			}
+		});
+	}
+
+	private void AddSource(SourceProductionContext context, string namespaceName, List<MemberDeclarationSyntax> members)
+	{
+		var compilationUnit = SyntaxFactory.CompilationUnit()
+			.AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(namespaceName))
+				.AddMembers(members.ToArray()));
+
+		context.AddSource($"{namespaceName}.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
 	}
 }

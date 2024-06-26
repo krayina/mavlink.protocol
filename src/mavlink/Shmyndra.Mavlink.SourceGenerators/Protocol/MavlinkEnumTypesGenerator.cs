@@ -8,9 +8,9 @@ namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
 public interface IMavlinkEnumTypesGenerator
 {
 	List<EnumDeclarationSyntax> GenerateEnums(
-		ImmutableArray<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> enums,
+		ImmutableArray<(string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries)> enums,
 		string namespaceName,
-		out ImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping);
+		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping);
 }
 
 public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
@@ -18,9 +18,9 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 	private readonly HashSet<string> _generatedEnumNames = new();
 
 	public List<EnumDeclarationSyntax> GenerateEnums(
-		ImmutableArray<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> enums,
+		ImmutableArray<(string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries)> enums,
 		string namespaceName,
-		out ImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping)
+		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping)
 	{
 		var nameMappingDict = new Dictionary<string, (string Namespace, string TypeName)>();
 		var enumDeclarations = new List<EnumDeclarationSyntax>();
@@ -32,17 +32,17 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 				continue;
 			}
 
-			var enumDeclaration = GenerateEnum(enumData);
+			var enumDeclaration = CreateEnum(enumData);
 			enumDeclarations.Add(enumDeclaration);
 			nameMappingDict[enumData.Name] = (namespaceName, enumDeclaration.Identifier.Text);
 			_generatedEnumNames.Add(enumData.Name);
 		}
 
-		nameMapping = nameMappingDict.ToImmutableDictionary();
+		nameMapping = nameMappingDict.ToImmutableSortedDictionary();
 		return enumDeclarations;
 	}
 
-	private EnumDeclarationSyntax GenerateEnum((string Name, string? Description, List<(string Name, string Value, string? Description)> Entries) enumData)
+	private EnumDeclarationSyntax CreateEnum((string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries) enumData)
 	{
 		var normalizedName = Utilities.ToCamelCase(enumData.Name);
 		var allValues = enumData.Entries.Select(entry => ulong.Parse(entry.Value)).ToList();

@@ -1,45 +1,56 @@
-﻿using System.Xml.Serialization;
+﻿using System.Collections.Immutable;
+using System.Xml.Serialization;
 
 namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
 
-public class MavlinkData
-{
-	public List<(string Name, string? Description, List<(string Name, string Value, string? Description)> Entries)> Enums { get; set; } = new();
-	public List<(string Name, string? Description, List<(string Type, string Name, string? Description)> Fields)> Messages { get; set; } = new();
-}
+public record MavlinkData(
+	ImmutableArray<(string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries)> Enums,
+	ImmutableArray<(string Name, string? Description, ImmutableList<(string Type, string Name, string? Description)> Fields)> Messages,
+	byte? Version,
+	byte? Dialect);
 
 public static class MavlinkXmlParser
 {
 	public static MavlinkData Parse(string xmlContent)
 	{
 		var serializer = new XmlSerializer(typeof(Mavlink));
-		var mavlinkData = new MavlinkData();
-
 		using var reader = new StringReader(xmlContent);
 		var mavlink = (Mavlink)serializer.Deserialize(reader);
 
-		foreach (var e in mavlink.Enums)
-		{
-			var entries = e.Entry.Select(entry => (entry.Name, entry.Value, entry.Description)).ToList();
-			mavlinkData.Enums.Add((e.Name, e.Description, entries));
-		}
+		var enums = ParseEnums(mavlink);
+		var messages = ParseMessages(mavlink);
 
-		foreach (var m in mavlink.Messages)
-		{
-			var fields = m.Field.Select(field =>
+		return new MavlinkData(
+			enums,
+			messages,
+			mavlink.VersionSpecified ? (byte?)mavlink.Version : null,
+			mavlink.DialectSpecified ? (byte?)mavlink.Dialect : null);
+	}
+
+	private static ImmutableArray<(string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries)> ParseEnums(Mavlink mavlink)
+	{
+		return mavlink.Enums.Select(e => (
+			e.Name,
+			e.Description,
+			e.Entry.Select(entry => (entry.Name, entry.Value, (string?)entry.Description)).ToImmutableList()
+		)).ToImmutableArray();
+	}
+
+	private static ImmutableArray<(string Name, string? Description, ImmutableList<(string Type, string Name, string? Description)> Fields)> ParseMessages(Mavlink mavlink)
+	{
+		return mavlink.Messages.Select(m => (
+			m.Name,
+			(string?)m.Description,
+			m.Field.Select(field =>
 			{
-				var fieldType = ConvertType(field.Type);
+				var type = ConvertType(field.Type);
 				if (field.Enum is not null)
 				{
-					fieldType = field.Enum; // We will map enum types later
+					type = field.Enum; // We will map enum types later
 				}
-				return (fieldType, field.Name, field.Description);
-			}).ToList();
-
-			mavlinkData.Messages.Add((m.Name, m.Description, fields));
-		}
-
-		return mavlinkData;
+				return (type, field.Name, (string?)field.Description);
+			}).ToImmutableList()
+		)).ToImmutableArray();
 	}
 
 	private static string ConvertType(string xmlType)

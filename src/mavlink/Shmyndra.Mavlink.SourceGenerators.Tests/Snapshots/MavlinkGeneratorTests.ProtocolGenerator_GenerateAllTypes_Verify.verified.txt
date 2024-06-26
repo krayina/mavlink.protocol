@@ -1,8 +1,18 @@
 ﻿namespace MavlinkTypes.TestMavlinkSecondEmptyInclude
 {
+    public static class MavlinkSpecification
+    {
+        public static byte? Version = null;
+        public static byte? Dialect = 0;
+    }
 }
 namespace MavlinkTypes.TestMavlinkThirdEmptyInclude
 {
+    public static class MavlinkSpecification
+    {
+        public static byte? Version = null;
+        public static byte? Dialect = 0;
+    }
 }
 namespace MavlinkTypes.TestMavlinkMinimal
 {
@@ -162,537 +172,6 @@ namespace MavlinkTypes.TestMavlinkMinimal
         /// Original name: MAV_AUTOPILOT_REFLEX
         /// </remarks>
         MavAutopilotReflex = 20
-    }
-
-    /// <summary>
-    /// MAVLINK component type reported in HEARTBEAT message. Flight controllers must report the type of the vehicle on which they are mounted (e.g. MAV_TYPE_OCTOROTOR). All other components must report a value appropriate for their type (e.g. a camera must use MAV_TYPE_CAMERA).
-    /// </summary>
-    /// <remarks>
-    /// Original name: MAV_TYPE
-    /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_TYPE")]
-    public enum MavType : byte
-    {
-        /// <summary>
-        /// Generic micro air vehicle
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_GENERIC
-        /// </remarks>
-        MavTypeGeneric = 0,
-        /// <summary>
-        /// Fixed wing aircraft.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_FIXED_WING
-        /// </remarks>
-        MavTypeFixedWing = 1,
-        /// <summary>
-        /// Quadrotor
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_QUADROTOR
-        /// </remarks>
-        MavTypeQuadrotor = 2,
-        /// <summary>
-        /// Coaxial helicopter
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_COAXIAL
-        /// </remarks>
-        MavTypeCoaxial = 3,
-        /// <summary>
-        /// Normal helicopter with tail rotor.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_HELICOPTER
-        /// </remarks>
-        MavTypeHelicopter = 4,
-        /// <summary>
-        /// Ground installation
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_ANTENNA_TRACKER
-        /// </remarks>
-        MavTypeAntennaTracker = 5,
-        /// <summary>
-        /// Operator control unit / ground control station
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_GCS
-        /// </remarks>
-        MavTypeGcs = 6,
-        /// <summary>
-        /// Airship, controlled
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_AIRSHIP
-        /// </remarks>
-        MavTypeAirship = 7,
-        /// <summary>
-        /// Free balloon, uncontrolled
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_FREE_BALLOON
-        /// </remarks>
-        MavTypeFreeBalloon = 8,
-        /// <summary>
-        /// Rocket
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_ROCKET
-        /// </remarks>
-        MavTypeRocket = 9,
-        /// <summary>
-        /// Ground rover
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_GROUND_ROVER
-        /// </remarks>
-        MavTypeGroundRover = 10,
-        /// <summary>
-        /// Surface vessel, boat, ship
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_SURFACE_BOAT
-        /// </remarks>
-        MavTypeSurfaceBoat = 11,
-        /// <summary>
-        /// Submarine
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_SUBMARINE
-        /// </remarks>
-        MavTypeSubmarine = 12,
-        /// <summary>
-        /// Hexarotor
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_HEXAROTOR
-        /// </remarks>
-        MavTypeHexarotor = 13,
-        /// <summary>
-        /// Octorotor
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_OCTOROTOR
-        /// </remarks>
-        MavTypeOctorotor = 14,
-        /// <summary>
-        /// Tricopter
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_TRICOPTER
-        /// </remarks>
-        MavTypeTricopter = 15,
-        /// <summary>
-        /// Flapping wing
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_FLAPPING_WING
-        /// </remarks>
-        MavTypeFlappingWing = 16,
-        /// <summary>
-        /// Kite
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_KITE
-        /// </remarks>
-        MavTypeKite = 17,
-        /// <summary>
-        /// Onboard companion controller
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_ONBOARD_CONTROLLER
-        /// </remarks>
-        MavTypeOnboardController = 18,
-        /// <summary>
-        /// Two-rotor Tailsitter VTOL that additionally uses control surfaces in vertical operation. Note, value previously named MAV_TYPE_VTOL_DUOROTOR.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_VTOL_TAILSITTER_DUOROTOR
-        /// </remarks>
-        MavTypeVtolTailsitterDuorotor = 19,
-        /// <summary>
-        /// Quad-rotor Tailsitter VTOL using a V-shaped quad config in vertical operation. Note: value previously named MAV_TYPE_VTOL_QUADROTOR.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_VTOL_TAILSITTER_QUADROTOR
-        /// </remarks>
-        MavTypeVtolTailsitterQuadrotor = 20,
-        /// <summary>
-        /// Tiltrotor VTOL. Fuselage and wings stay (nominally) horizontal in all flight phases. It able to tilt (some) rotors to provide thrust in cruise flight.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_VTOL_TILTROTOR
-        /// </remarks>
-        MavTypeVtolTiltrotor = 21,
-        /// <summary>
-        /// VTOL with separate fixed rotors for hover and cruise flight. Fuselage and wings stay (nominally) horizontal in all flight phases.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_VTOL_FIXEDROTOR
-        /// </remarks>
-        MavTypeVtolFixedrotor = 22,
-        /// <summary>
-        /// Tailsitter VTOL. Fuselage and wings orientation changes depending on flight phase: vertical for hover, horizontal for cruise. Use more specific VTOL MAV_TYPE_VTOL_TAILSITTER_DUOROTOR or MAV_TYPE_VTOL_TAILSITTER_QUADROTOR if appropriate.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_VTOL_TAILSITTER
-        /// </remarks>
-        MavTypeVtolTailsitter = 23,
-        /// <summary>
-        /// Tiltwing VTOL. Fuselage stays horizontal in all flight phases. The whole wing, along with any attached engine, can tilt between vertical and horizontal mode.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_VTOL_TILTWING
-        /// </remarks>
-        MavTypeVtolTiltwing = 24,
-        /// <summary>
-        /// VTOL reserved 5
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_VTOL_RESERVED5
-        /// </remarks>
-        MavTypeVtolReserved5 = 25,
-        /// <summary>
-        /// Gimbal
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_GIMBAL
-        /// </remarks>
-        MavTypeGimbal = 26,
-        /// <summary>
-        /// ADSB system
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_ADSB
-        /// </remarks>
-        MavTypeAdsb = 27,
-        /// <summary>
-        /// Steerable, nonrigid airfoil
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_PARAFOIL
-        /// </remarks>
-        MavTypeParafoil = 28,
-        /// <summary>
-        /// Dodecarotor
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_DODECAROTOR
-        /// </remarks>
-        MavTypeDodecarotor = 29,
-        /// <summary>
-        /// Camera
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_CAMERA
-        /// </remarks>
-        MavTypeCamera = 30,
-        /// <summary>
-        /// Charging station
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_CHARGING_STATION
-        /// </remarks>
-        MavTypeChargingStation = 31,
-        /// <summary>
-        /// FLARM collision avoidance system
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_FLARM
-        /// </remarks>
-        MavTypeFlarm = 32,
-        /// <summary>
-        /// Servo
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_SERVO
-        /// </remarks>
-        MavTypeServo = 33,
-        /// <summary>
-        /// Open Drone ID. See https://mavlink.io/en/services/opendroneid.html.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_ODID
-        /// </remarks>
-        MavTypeOdid = 34,
-        /// <summary>
-        /// Decarotor
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_DECAROTOR
-        /// </remarks>
-        MavTypeDecarotor = 35,
-        /// <summary>
-        /// Battery
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_BATTERY
-        /// </remarks>
-        MavTypeBattery = 36,
-        /// <summary>
-        /// Parachute
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_PARACHUTE
-        /// </remarks>
-        MavTypeParachute = 37,
-        /// <summary>
-        /// Log
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_LOG
-        /// </remarks>
-        MavTypeLog = 38,
-        /// <summary>
-        /// OSD
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_OSD
-        /// </remarks>
-        MavTypeOsd = 39,
-        /// <summary>
-        /// IMU
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_IMU
-        /// </remarks>
-        MavTypeImu = 40,
-        /// <summary>
-        /// GPS
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_GPS
-        /// </remarks>
-        MavTypeGps = 41,
-        /// <summary>
-        /// Winch
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_WINCH
-        /// </remarks>
-        MavTypeWinch = 42,
-        /// <summary>
-        /// Generic multirotor that does not fit into a specific type or whose type is unknown
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_GENERIC_MULTIROTOR
-        /// </remarks>
-        MavTypeGenericMultirotor = 43,
-        /// <summary>
-        /// Illuminator. An illuminator is a light source that is used for lighting up dark areas external to the sytstem: e.g. a torch or searchlight (as opposed to a light source for illuminating the system itself, e.g. an indicator light).
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_TYPE_ILLUMINATOR
-        /// </remarks>
-        MavTypeIlluminator = 44
-    }
-
-    /// <summary>
-    /// These flags encode the MAV mode.
-    /// </summary>
-    /// <remarks>
-    /// Original name: MAV_MODE_FLAG
-    /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_MODE_FLAG")]
-    public enum MavModeFlag : byte
-    {
-        /// <summary>
-        /// 0b00000001 Reserved for future use.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_MODE_FLAG_CUSTOM_MODE_ENABLED
-        /// </remarks>
-        MavModeFlagCustomModeEnabled = 1,
-        /// <summary>
-        /// 0b00000010 system has a test mode enabled. This flag is intended for temporary system tests and should not be used for stable implementations.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_MODE_FLAG_TEST_ENABLED
-        /// </remarks>
-        MavModeFlagTestEnabled = 2,
-        /// <summary>
-        /// 0b00000100 autonomous mode enabled, system finds its own goal positions. Guided flag can be set or not, depends on the actual implementation.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_MODE_FLAG_AUTO_ENABLED
-        /// </remarks>
-        MavModeFlagAutoEnabled = 4,
-        /// <summary>
-        /// 0b00001000 guided mode enabled, system flies waypoints / mission items.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_MODE_FLAG_GUIDED_ENABLED
-        /// </remarks>
-        MavModeFlagGuidedEnabled = 8,
-        /// <summary>
-        /// 0b00010000 system stabilizes electronically its attitude (and optionally position). It needs however further control inputs to move around.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_MODE_FLAG_STABILIZE_ENABLED
-        /// </remarks>
-        MavModeFlagStabilizeEnabled = 16,
-        /// <summary>
-        /// 0b00100000 hardware in the loop simulation. All motors / actuators are blocked, but internal software is full operational.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_MODE_FLAG_HIL_ENABLED
-        /// </remarks>
-        MavModeFlagHilEnabled = 32,
-        /// <summary>
-        /// 0b01000000 remote control input is enabled.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_MODE_FLAG_MANUAL_INPUT_ENABLED
-        /// </remarks>
-        MavModeFlagManualInputEnabled = 64,
-        /// <summary>
-        /// 0b10000000 MAV safety set to armed. Motors are enabled / running / can start. Ready to fly. Additional note: this flag is to be ignore when sent in the command MAV_CMD_DO_SET_MODE and MAV_CMD_COMPONENT_ARM_DISARM shall be used instead. The flag can still be used to report the armed state.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_MODE_FLAG_SAFETY_ARMED
-        /// </remarks>
-        MavModeFlagSafetyArmed = 128
-    }
-
-    /// <summary>
-    /// These values encode the bit positions of the decode position. These values can be used to read the value of a flag bit by combining the base_mode variable with AND with the flag position value. The result will be either 0 or 1, depending on if the flag is set or not.
-    /// </summary>
-    /// <remarks>
-    /// Original name: MAV_MODE_FLAG_DECODE_POSITION
-    /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_MODE_FLAG_DECODE_POSITION")]
-    public enum MavModeFlagDecodePosition : byte
-    {
-        /// <summary>
-        /// Eighth bit: 00000001
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_CUSTOM_MODE
-        /// </remarks>
-        MavModeFlagDecodePositionCustomMode = 1,
-        /// <summary>
-        /// Seventh bit: 00000010
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_TEST
-        /// </remarks>
-        MavModeFlagDecodePositionTest = 2,
-        /// <summary>
-        /// Sixth bit:   00000100
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_AUTO
-        /// </remarks>
-        MavModeFlagDecodePositionAuto = 4,
-        /// <summary>
-        /// Fifth bit:  00001000
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_GUIDED
-        /// </remarks>
-        MavModeFlagDecodePositionGuided = 8,
-        /// <summary>
-        /// Fourth bit: 00010000
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_STABILIZE
-        /// </remarks>
-        MavModeFlagDecodePositionStabilize = 16,
-        /// <summary>
-        /// Third bit:  00100000
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_HIL
-        /// </remarks>
-        MavModeFlagDecodePositionHil = 32,
-        /// <summary>
-        /// Second bit: 01000000
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_MANUAL
-        /// </remarks>
-        MavModeFlagDecodePositionManual = 64,
-        /// <summary>
-        /// First bit:  10000000
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_SAFETY
-        /// </remarks>
-        MavModeFlagDecodePositionSafety = 128
-    }
-
-    /// <remarks>
-    /// Original name: MAV_STATE
-    /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_STATE")]
-    public enum MavState : byte
-    {
-        /// <summary>
-        /// Uninitialized system, state is unknown.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_STATE_UNINIT
-        /// </remarks>
-        MavStateUninit = 0,
-        /// <summary>
-        /// System is booting up.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_STATE_BOOT
-        /// </remarks>
-        MavStateBoot = 1,
-        /// <summary>
-        /// System is calibrating and not flight-ready.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_STATE_CALIBRATING
-        /// </remarks>
-        MavStateCalibrating = 2,
-        /// <summary>
-        /// System is grounded and on standby. It can be launched any time.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_STATE_STANDBY
-        /// </remarks>
-        MavStateStandby = 3,
-        /// <summary>
-        /// System is active and might be already airborne. Motors are engaged.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_STATE_ACTIVE
-        /// </remarks>
-        MavStateActive = 4,
-        /// <summary>
-        /// System is in a non-normal flight mode (failsafe). It can however still navigate.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_STATE_CRITICAL
-        /// </remarks>
-        MavStateCritical = 5,
-        /// <summary>
-        /// System is in a non-normal flight mode (failsafe). It lost control over parts or over the whole airframe. It is in mayday and going down.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_STATE_EMERGENCY
-        /// </remarks>
-        MavStateEmergency = 6,
-        /// <summary>
-        /// System just initialized its power-down sequence, will shut down now.
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_STATE_POWEROFF
-        /// </remarks>
-        MavStatePoweroff = 7,
-        /// <summary>
-        /// System is terminating itself (failsafe or commanded).
-        /// </summary>
-        /// <remarks>
-        /// Original name: MAV_STATE_FLIGHT_TERMINATION
-        /// </remarks>
-        MavStateFlightTermination = 8
     }
 
     /// <summary>
@@ -1661,6 +1140,537 @@ namespace MavlinkTypes.TestMavlinkMinimal
     }
 
     /// <summary>
+    /// These flags encode the MAV mode.
+    /// </summary>
+    /// <remarks>
+    /// Original name: MAV_MODE_FLAG
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_MODE_FLAG")]
+    public enum MavModeFlag : byte
+    {
+        /// <summary>
+        /// 0b00000001 Reserved for future use.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_CUSTOM_MODE_ENABLED
+        /// </remarks>
+        MavModeFlagCustomModeEnabled = 1,
+        /// <summary>
+        /// 0b00000010 system has a test mode enabled. This flag is intended for temporary system tests and should not be used for stable implementations.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_TEST_ENABLED
+        /// </remarks>
+        MavModeFlagTestEnabled = 2,
+        /// <summary>
+        /// 0b00000100 autonomous mode enabled, system finds its own goal positions. Guided flag can be set or not, depends on the actual implementation.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_AUTO_ENABLED
+        /// </remarks>
+        MavModeFlagAutoEnabled = 4,
+        /// <summary>
+        /// 0b00001000 guided mode enabled, system flies waypoints / mission items.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_GUIDED_ENABLED
+        /// </remarks>
+        MavModeFlagGuidedEnabled = 8,
+        /// <summary>
+        /// 0b00010000 system stabilizes electronically its attitude (and optionally position). It needs however further control inputs to move around.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_STABILIZE_ENABLED
+        /// </remarks>
+        MavModeFlagStabilizeEnabled = 16,
+        /// <summary>
+        /// 0b00100000 hardware in the loop simulation. All motors / actuators are blocked, but internal software is full operational.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_HIL_ENABLED
+        /// </remarks>
+        MavModeFlagHilEnabled = 32,
+        /// <summary>
+        /// 0b01000000 remote control input is enabled.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_MANUAL_INPUT_ENABLED
+        /// </remarks>
+        MavModeFlagManualInputEnabled = 64,
+        /// <summary>
+        /// 0b10000000 MAV safety set to armed. Motors are enabled / running / can start. Ready to fly. Additional note: this flag is to be ignore when sent in the command MAV_CMD_DO_SET_MODE and MAV_CMD_COMPONENT_ARM_DISARM shall be used instead. The flag can still be used to report the armed state.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_SAFETY_ARMED
+        /// </remarks>
+        MavModeFlagSafetyArmed = 128
+    }
+
+    /// <summary>
+    /// These values encode the bit positions of the decode position. These values can be used to read the value of a flag bit by combining the base_mode variable with AND with the flag position value. The result will be either 0 or 1, depending on if the flag is set or not.
+    /// </summary>
+    /// <remarks>
+    /// Original name: MAV_MODE_FLAG_DECODE_POSITION
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_MODE_FLAG_DECODE_POSITION")]
+    public enum MavModeFlagDecodePosition : byte
+    {
+        /// <summary>
+        /// Eighth bit: 00000001
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_CUSTOM_MODE
+        /// </remarks>
+        MavModeFlagDecodePositionCustomMode = 1,
+        /// <summary>
+        /// Seventh bit: 00000010
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_TEST
+        /// </remarks>
+        MavModeFlagDecodePositionTest = 2,
+        /// <summary>
+        /// Sixth bit:   00000100
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_AUTO
+        /// </remarks>
+        MavModeFlagDecodePositionAuto = 4,
+        /// <summary>
+        /// Fifth bit:  00001000
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_GUIDED
+        /// </remarks>
+        MavModeFlagDecodePositionGuided = 8,
+        /// <summary>
+        /// Fourth bit: 00010000
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_STABILIZE
+        /// </remarks>
+        MavModeFlagDecodePositionStabilize = 16,
+        /// <summary>
+        /// Third bit:  00100000
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_HIL
+        /// </remarks>
+        MavModeFlagDecodePositionHil = 32,
+        /// <summary>
+        /// Second bit: 01000000
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_MANUAL
+        /// </remarks>
+        MavModeFlagDecodePositionManual = 64,
+        /// <summary>
+        /// First bit:  10000000
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_SAFETY
+        /// </remarks>
+        MavModeFlagDecodePositionSafety = 128
+    }
+
+    /// <remarks>
+    /// Original name: MAV_STATE
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_STATE")]
+    public enum MavState : byte
+    {
+        /// <summary>
+        /// Uninitialized system, state is unknown.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_UNINIT
+        /// </remarks>
+        MavStateUninit = 0,
+        /// <summary>
+        /// System is booting up.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_BOOT
+        /// </remarks>
+        MavStateBoot = 1,
+        /// <summary>
+        /// System is calibrating and not flight-ready.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_CALIBRATING
+        /// </remarks>
+        MavStateCalibrating = 2,
+        /// <summary>
+        /// System is grounded and on standby. It can be launched any time.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_STANDBY
+        /// </remarks>
+        MavStateStandby = 3,
+        /// <summary>
+        /// System is active and might be already airborne. Motors are engaged.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_ACTIVE
+        /// </remarks>
+        MavStateActive = 4,
+        /// <summary>
+        /// System is in a non-normal flight mode (failsafe). It can however still navigate.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_CRITICAL
+        /// </remarks>
+        MavStateCritical = 5,
+        /// <summary>
+        /// System is in a non-normal flight mode (failsafe). It lost control over parts or over the whole airframe. It is in mayday and going down.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_EMERGENCY
+        /// </remarks>
+        MavStateEmergency = 6,
+        /// <summary>
+        /// System just initialized its power-down sequence, will shut down now.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_POWEROFF
+        /// </remarks>
+        MavStatePoweroff = 7,
+        /// <summary>
+        /// System is terminating itself (failsafe or commanded).
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_FLIGHT_TERMINATION
+        /// </remarks>
+        MavStateFlightTermination = 8
+    }
+
+    /// <summary>
+    /// MAVLINK component type reported in HEARTBEAT message. Flight controllers must report the type of the vehicle on which they are mounted (e.g. MAV_TYPE_OCTOROTOR). All other components must report a value appropriate for their type (e.g. a camera must use MAV_TYPE_CAMERA).
+    /// </summary>
+    /// <remarks>
+    /// Original name: MAV_TYPE
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_TYPE")]
+    public enum MavType : byte
+    {
+        /// <summary>
+        /// Generic micro air vehicle
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_GENERIC
+        /// </remarks>
+        MavTypeGeneric = 0,
+        /// <summary>
+        /// Fixed wing aircraft.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_FIXED_WING
+        /// </remarks>
+        MavTypeFixedWing = 1,
+        /// <summary>
+        /// Quadrotor
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_QUADROTOR
+        /// </remarks>
+        MavTypeQuadrotor = 2,
+        /// <summary>
+        /// Coaxial helicopter
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_COAXIAL
+        /// </remarks>
+        MavTypeCoaxial = 3,
+        /// <summary>
+        /// Normal helicopter with tail rotor.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_HELICOPTER
+        /// </remarks>
+        MavTypeHelicopter = 4,
+        /// <summary>
+        /// Ground installation
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_ANTENNA_TRACKER
+        /// </remarks>
+        MavTypeAntennaTracker = 5,
+        /// <summary>
+        /// Operator control unit / ground control station
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_GCS
+        /// </remarks>
+        MavTypeGcs = 6,
+        /// <summary>
+        /// Airship, controlled
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_AIRSHIP
+        /// </remarks>
+        MavTypeAirship = 7,
+        /// <summary>
+        /// Free balloon, uncontrolled
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_FREE_BALLOON
+        /// </remarks>
+        MavTypeFreeBalloon = 8,
+        /// <summary>
+        /// Rocket
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_ROCKET
+        /// </remarks>
+        MavTypeRocket = 9,
+        /// <summary>
+        /// Ground rover
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_GROUND_ROVER
+        /// </remarks>
+        MavTypeGroundRover = 10,
+        /// <summary>
+        /// Surface vessel, boat, ship
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_SURFACE_BOAT
+        /// </remarks>
+        MavTypeSurfaceBoat = 11,
+        /// <summary>
+        /// Submarine
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_SUBMARINE
+        /// </remarks>
+        MavTypeSubmarine = 12,
+        /// <summary>
+        /// Hexarotor
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_HEXAROTOR
+        /// </remarks>
+        MavTypeHexarotor = 13,
+        /// <summary>
+        /// Octorotor
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_OCTOROTOR
+        /// </remarks>
+        MavTypeOctorotor = 14,
+        /// <summary>
+        /// Tricopter
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_TRICOPTER
+        /// </remarks>
+        MavTypeTricopter = 15,
+        /// <summary>
+        /// Flapping wing
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_FLAPPING_WING
+        /// </remarks>
+        MavTypeFlappingWing = 16,
+        /// <summary>
+        /// Kite
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_KITE
+        /// </remarks>
+        MavTypeKite = 17,
+        /// <summary>
+        /// Onboard companion controller
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_ONBOARD_CONTROLLER
+        /// </remarks>
+        MavTypeOnboardController = 18,
+        /// <summary>
+        /// Two-rotor Tailsitter VTOL that additionally uses control surfaces in vertical operation. Note, value previously named MAV_TYPE_VTOL_DUOROTOR.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_VTOL_TAILSITTER_DUOROTOR
+        /// </remarks>
+        MavTypeVtolTailsitterDuorotor = 19,
+        /// <summary>
+        /// Quad-rotor Tailsitter VTOL using a V-shaped quad config in vertical operation. Note: value previously named MAV_TYPE_VTOL_QUADROTOR.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_VTOL_TAILSITTER_QUADROTOR
+        /// </remarks>
+        MavTypeVtolTailsitterQuadrotor = 20,
+        /// <summary>
+        /// Tiltrotor VTOL. Fuselage and wings stay (nominally) horizontal in all flight phases. It able to tilt (some) rotors to provide thrust in cruise flight.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_VTOL_TILTROTOR
+        /// </remarks>
+        MavTypeVtolTiltrotor = 21,
+        /// <summary>
+        /// VTOL with separate fixed rotors for hover and cruise flight. Fuselage and wings stay (nominally) horizontal in all flight phases.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_VTOL_FIXEDROTOR
+        /// </remarks>
+        MavTypeVtolFixedrotor = 22,
+        /// <summary>
+        /// Tailsitter VTOL. Fuselage and wings orientation changes depending on flight phase: vertical for hover, horizontal for cruise. Use more specific VTOL MAV_TYPE_VTOL_TAILSITTER_DUOROTOR or MAV_TYPE_VTOL_TAILSITTER_QUADROTOR if appropriate.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_VTOL_TAILSITTER
+        /// </remarks>
+        MavTypeVtolTailsitter = 23,
+        /// <summary>
+        /// Tiltwing VTOL. Fuselage stays horizontal in all flight phases. The whole wing, along with any attached engine, can tilt between vertical and horizontal mode.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_VTOL_TILTWING
+        /// </remarks>
+        MavTypeVtolTiltwing = 24,
+        /// <summary>
+        /// VTOL reserved 5
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_VTOL_RESERVED5
+        /// </remarks>
+        MavTypeVtolReserved5 = 25,
+        /// <summary>
+        /// Gimbal
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_GIMBAL
+        /// </remarks>
+        MavTypeGimbal = 26,
+        /// <summary>
+        /// ADSB system
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_ADSB
+        /// </remarks>
+        MavTypeAdsb = 27,
+        /// <summary>
+        /// Steerable, nonrigid airfoil
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_PARAFOIL
+        /// </remarks>
+        MavTypeParafoil = 28,
+        /// <summary>
+        /// Dodecarotor
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_DODECAROTOR
+        /// </remarks>
+        MavTypeDodecarotor = 29,
+        /// <summary>
+        /// Camera
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_CAMERA
+        /// </remarks>
+        MavTypeCamera = 30,
+        /// <summary>
+        /// Charging station
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_CHARGING_STATION
+        /// </remarks>
+        MavTypeChargingStation = 31,
+        /// <summary>
+        /// FLARM collision avoidance system
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_FLARM
+        /// </remarks>
+        MavTypeFlarm = 32,
+        /// <summary>
+        /// Servo
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_SERVO
+        /// </remarks>
+        MavTypeServo = 33,
+        /// <summary>
+        /// Open Drone ID. See https://mavlink.io/en/services/opendroneid.html.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_ODID
+        /// </remarks>
+        MavTypeOdid = 34,
+        /// <summary>
+        /// Decarotor
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_DECAROTOR
+        /// </remarks>
+        MavTypeDecarotor = 35,
+        /// <summary>
+        /// Battery
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_BATTERY
+        /// </remarks>
+        MavTypeBattery = 36,
+        /// <summary>
+        /// Parachute
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_PARACHUTE
+        /// </remarks>
+        MavTypeParachute = 37,
+        /// <summary>
+        /// Log
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_LOG
+        /// </remarks>
+        MavTypeLog = 38,
+        /// <summary>
+        /// OSD
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_OSD
+        /// </remarks>
+        MavTypeOsd = 39,
+        /// <summary>
+        /// IMU
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_IMU
+        /// </remarks>
+        MavTypeImu = 40,
+        /// <summary>
+        /// GPS
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_GPS
+        /// </remarks>
+        MavTypeGps = 41,
+        /// <summary>
+        /// Winch
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_WINCH
+        /// </remarks>
+        MavTypeWinch = 42,
+        /// <summary>
+        /// Generic multirotor that does not fit into a specific type or whose type is unknown
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_GENERIC_MULTIROTOR
+        /// </remarks>
+        MavTypeGenericMultirotor = 43,
+        /// <summary>
+        /// Illuminator. An illuminator is a light source that is used for lighting up dark areas external to the sytstem: e.g. a torch or searchlight (as opposed to a light source for illuminating the system itself, e.g. an indicator light).
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_ILLUMINATOR
+        /// </remarks>
+        MavTypeIlluminator = 44
+    }
+
+    /// <summary>
     /// The heartbeat message shows that a system or component is present and responding. The type and autopilot fields (along with the message component id), allow the receiving system to treat further messages from this system appropriately (e.g. by laying out the user interface based on the autopilot). This microservice is documented at https://mavlink.io/en/services/heartbeat.html
     /// </summary>
     /// <remarks>
@@ -1725,9 +1735,20 @@ namespace MavlinkTypes.TestMavlinkMinimal
         /// </remarks>
         public object LibraryVersionHash { get; init; }
     }
+
+    public static class MavlinkSpecification
+    {
+        public static byte? Version = 3;
+        public static byte? Dialect = null;
+    }
 }
 namespace MavlinkTypes.TestMavlinkStandard
 {
+    public static class MavlinkSpecification
+    {
+        public static byte? Version = null;
+        public static byte? Dialect = 0;
+    }
 }
 namespace MavlinkTypes.TestMavlinkCommon
 {
@@ -2269,6 +2290,60 @@ namespace MavlinkTypes.TestMavlinkCommon
     }
 
     /// <summary>
+    /// Request to control this MAV
+    /// </summary>
+    /// <remarks>
+    /// Original name: CHANGE_OPERATOR_CONTROL
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("CHANGE_OPERATOR_CONTROL")]
+    public record struct ChangeOperatorControl
+    {
+        /// <remarks>
+        /// Original name: TARGET_SYSTEM
+        /// </remarks>
+        public byte TargetSystem { get; init; }
+        /// <remarks>
+        /// Original name: CONTROL_REQUEST
+        /// </remarks>
+        public byte ControlRequest { get; init; }
+        /// <remarks>
+        /// Original name: VERSION
+        /// </remarks>
+        public byte Version { get; init; }
+        /// <remarks>
+        /// Original name: PASSKEY
+        /// </remarks>
+        public object Passkey { get; init; }
+    }
+
+    /// <summary>
+    /// A ping message either requesting or responding to a ping. This allows to measure the system latencies, including serial port, radio modem and UDP connections. The ping microservice is documented at https://mavlink.io/en/services/ping.html
+    /// </summary>
+    /// <remarks>
+    /// Original name: PING
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("PING")]
+    public record struct Ping
+    {
+        /// <remarks>
+        /// Original name: TIME_USEC
+        /// </remarks>
+        public ulong TimeUsec { get; init; }
+        /// <remarks>
+        /// Original name: SEQ
+        /// </remarks>
+        public uint Seq { get; init; }
+        /// <remarks>
+        /// Original name: TARGET_SYSTEM
+        /// </remarks>
+        public byte TargetSystem { get; init; }
+        /// <remarks>
+        /// Original name: TARGET_COMPONENT
+        /// </remarks>
+        public byte TargetComponent { get; init; }
+    }
+
+    /// <summary>
     /// The general system state. If the system is following the MAVLink standard, the system state is mainly defined by three orthogonal states/modes: The system mode, which is either LOCKED (motors shut down and locked), MANUAL (system under RC control), GUIDED (system with autonomous position control, position setpoint controlled manually) or AUTO (system guided by path/waypoint planner). The NAV_MODE defined the current flight state: LIFTOFF (often an open-loop maneuver), LANDING, WAYPOINTS or VECTOR. This represents the internal navigation state machine. The system status shows whether the system is currently active or not and if an emergency occurred. During the CRITICAL and EMERGENCY states the MAV is still considered to be active, but should start emergency procedures autonomously. After a failure occurred it should first move from active to critical to allow manual intervention and then move to emergency after a certain timeout.
     /// </summary>
     /// <remarks>
@@ -2362,57 +2437,9 @@ namespace MavlinkTypes.TestMavlinkCommon
         public uint TimeBootMs { get; init; }
     }
 
-    /// <summary>
-    /// A ping message either requesting or responding to a ping. This allows to measure the system latencies, including serial port, radio modem and UDP connections. The ping microservice is documented at https://mavlink.io/en/services/ping.html
-    /// </summary>
-    /// <remarks>
-    /// Original name: PING
-    /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("PING")]
-    public record struct Ping
+    public static class MavlinkSpecification
     {
-        /// <remarks>
-        /// Original name: TIME_USEC
-        /// </remarks>
-        public ulong TimeUsec { get; init; }
-        /// <remarks>
-        /// Original name: SEQ
-        /// </remarks>
-        public uint Seq { get; init; }
-        /// <remarks>
-        /// Original name: TARGET_SYSTEM
-        /// </remarks>
-        public byte TargetSystem { get; init; }
-        /// <remarks>
-        /// Original name: TARGET_COMPONENT
-        /// </remarks>
-        public byte TargetComponent { get; init; }
-    }
-
-    /// <summary>
-    /// Request to control this MAV
-    /// </summary>
-    /// <remarks>
-    /// Original name: CHANGE_OPERATOR_CONTROL
-    /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("CHANGE_OPERATOR_CONTROL")]
-    public record struct ChangeOperatorControl
-    {
-        /// <remarks>
-        /// Original name: TARGET_SYSTEM
-        /// </remarks>
-        public byte TargetSystem { get; init; }
-        /// <remarks>
-        /// Original name: CONTROL_REQUEST
-        /// </remarks>
-        public byte ControlRequest { get; init; }
-        /// <remarks>
-        /// Original name: VERSION
-        /// </remarks>
-        public byte Version { get; init; }
-        /// <remarks>
-        /// Original name: PASSKEY
-        /// </remarks>
-        public object Passkey { get; init; }
+        public static byte? Version = 3;
+        public static byte? Dialect = 0;
     }
 }
