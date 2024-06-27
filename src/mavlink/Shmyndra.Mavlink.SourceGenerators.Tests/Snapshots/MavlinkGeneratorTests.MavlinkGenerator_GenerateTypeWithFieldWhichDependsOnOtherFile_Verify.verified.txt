@@ -1,0 +1,40 @@
+﻿namespace MavlinkTypes.Testcommonfile
+{
+    /// <remarks>
+    /// Original name: TEST_ENUM
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("TEST_ENUM")]
+    public enum TestEnum : byte
+    {
+        /// <remarks>
+        /// Original name: TESTENUMVALUE
+        /// </remarks>
+        Testenumvalue = 0
+    }
+
+    public static class MavlinkSpecification
+    {
+        public static byte? Version = null;
+        public static byte? Dialect = null;
+    }
+}
+namespace MavlinkTypes.Testsecondfile
+{
+    /// <remarks>
+    /// Original name: TEST_MESSAGE
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("TEST_MESSAGE")]
+    public record struct TestMessage
+    {
+        /// <remarks>
+        /// Original name: TEST
+        /// </remarks>
+        public MavlinkTypes.Testcommonfile.TestEnum Test { get; init; }
+    }
+
+    public static class MavlinkSpecification
+    {
+        public static byte? Version = null;
+        public static byte? Dialect = null;
+    }
+}

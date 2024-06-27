@@ -1,11 +1,13 @@
-﻿using Shmyndra.Mavlink.SourceGenerators.Protocol;
+﻿using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
+using Shmyndra.Mavlink.SourceGenerators.Protocol;
 
 namespace Shmyndra.Mavlink.SourceGenerators.Tests.Unit;
 
 public class MavlinkGeneratorTests
 {
 	[Fact]
-	public Task ProtocolGenerator_GenerateAllTypes_Verify()
+	public Task MavlinkGenerator_GenerateAllTypes_Verify()
 	{
 		// arrange
 		var generator = new MavlinkGenerator();
@@ -17,6 +19,41 @@ public class MavlinkGeneratorTests
 			"Stubs\\test-mavlink-standard.xml",
 			"Stubs\\test-mavlink-second-empty-include.xml"
 		]);
+
+		// act
+		var driver = generator.RunIncrementalGeneratorDriver(additional);
+		var runResult = driver.GetRunResult().Results.Single();
+		var generatedCode = string.Join(Environment.NewLine, runResult.GeneratedSources.Select(source => source.SourceText.ToString()));
+
+		// assert
+		return Verify(generatedCode).UseDirectory("..\\Snapshots");
+	}
+
+	[Fact]
+	public Task MavlinkGenerator_GenerateTypeWithFieldWhichDependsOnOtherFile_Verify()
+	{
+		// arrange
+		var generator = new MavlinkGenerator();
+
+		var additional = ImmutableArray.Create<AdditionalText>(
+			new TestAdditionalFile("testCommonFile.xml", @"<?xml version=""1.0""?>
+<mavlink>
+  <enums>
+    <enum name=""TEST_ENUM"">
+      <entry value=""0"" name=""TestEnumValue""/>
+    </enum>
+  </enums>
+</mavlink>"),
+			new TestAdditionalFile("testSecondFile.xml", @"<?xml version=""1.0""?>
+<mavlink>
+  <include>testCommonFile.xml</include>
+  <messages>
+    <message id=""0"" name=""TEST_MESSAGE"">
+      <field type=""uint8_t"" name=""test"" enum=""TEST_ENUM""/>
+    </message>
+  </messages>
+</mavlink>")
+		);
 
 		// act
 		var driver = generator.RunIncrementalGeneratorDriver(additional);
