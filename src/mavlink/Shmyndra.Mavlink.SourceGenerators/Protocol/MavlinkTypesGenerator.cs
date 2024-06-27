@@ -9,6 +9,8 @@ internal class MavlinkTypesGenerator
 	private readonly IMavlinkMessageTypesGenerator _messageGenerator;
 	private readonly IMavlinkSpecificationTypeGenerator _specificationGenerator;
 
+	private readonly Dictionary<string, (string Namespace, string TypeName)> _generatedTypes = new();
+
 	public MavlinkTypesGenerator(
 		IMavlinkEnumTypesGenerator enumGenerator,
 		IMavlinkMessageTypesGenerator messageGenerator,
@@ -22,9 +24,13 @@ internal class MavlinkTypesGenerator
 	public List<MemberDeclarationSyntax> GenerateNamespaceMembers(MavlinkData mavlinkData, string namespaceName)
 	{
 		var allGeneratedEnumTypes = GenerateEnums(mavlinkData.Enums, namespaceName);
-		var enumTypeNameMapping = allGeneratedEnumTypes.ToImmutableSortedDictionary(kvp => kvp.Key, kvp => (kvp.Value.Namespace, kvp.Value.TypeName));
 
-		var allGeneratedMessageTypes = GenerateMessages(mavlinkData.Messages, namespaceName, enumTypeNameMapping);
+		foreach (var kvp in allGeneratedEnumTypes)
+		{
+			_generatedTypes[kvp.Key] = (kvp.Value.Namespace, kvp.Value.TypeName);
+		}
+
+		var allGeneratedMessageTypes = GenerateMessages(mavlinkData.Messages, namespaceName, _generatedTypes.ToImmutableSortedDictionary());
 
 		var members = new List<MemberDeclarationSyntax>();
 		members.AddRange(allGeneratedEnumTypes.Values.Select(enumType => enumType.Declaration));
