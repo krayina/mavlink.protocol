@@ -7,18 +7,20 @@ using Microsoft.CodeAnalysis.Text;
 namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
 
 [Generator]
-public class MavlinkGenerator : IIncrementalGenerator
+public sealed class MavlinkGenerator : IIncrementalGenerator, IDisposable
 {
 	private readonly IMavlinkEnumTypesGenerator _enumGenerator;
 	private readonly IMavlinkMessageTypesGenerator _messageGenerator;
 	private readonly IMavlinkSpecificationTypeGenerator _specificationGenerator;
+	private readonly AssemblyResolver _assemblyResolver;
+	private bool _disposed;
 
 	public MavlinkGenerator()
-		: this(new MavlinkEnumTypesGenerator(), new MavlinkMessageTypesGenerator(), new MavlinkSpecificationTypeGenerator())
+	   : this(new MavlinkEnumTypesGenerator(), new MavlinkMessageTypesGenerator(), new MavlinkSpecificationTypeGenerator())
 	{
 	}
 
-	public MavlinkGenerator(
+	internal MavlinkGenerator(
 		IMavlinkEnumTypesGenerator enumGenerator,
 		IMavlinkMessageTypesGenerator messageGenerator,
 		IMavlinkSpecificationTypeGenerator specificationGenerator)
@@ -26,6 +28,8 @@ public class MavlinkGenerator : IIncrementalGenerator
 		_enumGenerator = enumGenerator;
 		_messageGenerator = messageGenerator;
 		_specificationGenerator = specificationGenerator;
+
+		_assemblyResolver = new AssemblyResolver("System.ComponentModel.Annotations");
 	}
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -68,7 +72,13 @@ public class MavlinkGenerator : IIncrementalGenerator
 			}
 			catch (Exception ex)
 			{
-				ExceptionHandler.HandleException(sourceProductionContext, ex);
+				sourceProductionContext.ReportDiagnostic(
+					Diagnostic.Create(
+						MavlinkGeneratorDiagnostics.GenericProtocolErrorRule,
+						Location.None,
+						ex.Message
+					)
+				);
 			}
 		});
 	}
@@ -80,5 +90,29 @@ public class MavlinkGenerator : IIncrementalGenerator
 				.AddMembers(members.ToArray()));
 
 		context.AddSource($"{namespaceName}.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
+	}
+
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	private void Dispose(bool disposing)
+	{
+		if (!_disposed)
+		{
+			if (disposing)
+			{
+				_assemblyResolver?.Dispose();
+			}
+
+			_disposed = true;
+		}
+	}
+
+	~MavlinkGenerator()
+	{
+		Dispose(false);
 	}
 }
