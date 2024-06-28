@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Immutable;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -9,14 +10,12 @@ namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
 [Generator]
 public sealed class MavlinkGenerator : IIncrementalGenerator, IDisposable
 {
-	private readonly IMavlinkEnumTypesGenerator _enumGenerator;
-	private readonly IMavlinkMessageTypesGenerator _messageGenerator;
-	private readonly IMavlinkSpecificationTypeGenerator _specificationGenerator;
 	private readonly AssemblyResolver _assemblyResolver;
+	private readonly MavlinkTypesGenerator _contentGenerator;
 	private bool _disposed;
 
 	public MavlinkGenerator()
-	   : this(new MavlinkEnumTypesGenerator(), new MavlinkMessageTypesGenerator(), new MavlinkSpecificationTypeGenerator())
+		: this(new MavlinkEnumTypesGenerator(), new MavlinkMessageTypesGenerator(), new MavlinkSpecificationTypeGenerator())
 	{
 	}
 
@@ -25,10 +24,7 @@ public sealed class MavlinkGenerator : IIncrementalGenerator, IDisposable
 		IMavlinkMessageTypesGenerator messageGenerator,
 		IMavlinkSpecificationTypeGenerator specificationGenerator)
 	{
-		_enumGenerator = enumGenerator;
-		_messageGenerator = messageGenerator;
-		_specificationGenerator = specificationGenerator;
-
+		_contentGenerator = new MavlinkTypesGenerator(enumGenerator, messageGenerator, specificationGenerator);
 		_assemblyResolver = new AssemblyResolver("System.ComponentModel.Annotations");
 	}
 
@@ -38,56 +34,51 @@ public sealed class MavlinkGenerator : IIncrementalGenerator, IDisposable
 		{
 			System.Diagnostics.Debugger.Launch();
 		}
-
-		var contentGenerator = new MavlinkTypesGenerator(_enumGenerator, _messageGenerator, _specificationGenerator);
-		Generate(context, contentGenerator);
+		RegisterSourceGeneration(context);
 	}
 
-	private void Generate(IncrementalGeneratorInitializationContext context, MavlinkTypesGenerator contentGenerator)
+	private void RegisterSourceGeneration(IncrementalGeneratorInitializationContext context)
 	{
-		var additionalTexts = context.AdditionalTextsProvider.Where(file => file.Path.EndsWith(".xml"));
-		var xmlFiles = additionalTexts
-			.Select((file, _) => new
-			{
-				file.Path,
-				Content = file.GetText()!.ToString()
-			}).Collect();
+		var xmlFiles = context.AdditionalTextsProvider
+			.Where(file => file.Path.EndsWith(".xml"))
+			.Select((file, _) => (file.Path, Content: file.GetText()!.ToString()))
+			.Collect();
+		context.RegisterSourceOutput(xmlFiles, GenerateSourceFiles);
+	}
 
-		context.RegisterSourceOutput(xmlFiles, (sourceProductionContext, files) =>
+	private void GenerateSourceFiles(SourceProductionContext sourceProductionContext, ImmutableArray<(string Path, string Content)> files)
+	{
+		try
 		{
-			try
-			{
-				var fileContents = files.ToDictionary(f => f.Path, f => f.Content);
-				var orderedFiles = MavlinkXmlIncludeOrderer.GetOrderedFiles(fileContents);
+			var fileContents = files.ToDictionary(f => f.Path, f => f.Content);
+			var orderedFiles = MavlinkXmlIncludeOrderer.GetOrderedFiles(fileContents);
 
-				foreach (var xmlFile in orderedFiles)
-				{
-					var content = fileContents[xmlFile];
-					var mavlinkData = MavlinkXmlParser.Parse(content);
-					var namespaceName = $"MavlinkTypes.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(xmlFile))}";
-
-					var members = contentGenerator.GenerateNamespaceMembers(mavlinkData, namespaceName);
-					AddSource(sourceProductionContext, namespaceName, members);
-				}
-			}
-			catch (Exception ex)
+			foreach (var xmlFile in orderedFiles)
 			{
-				sourceProductionContext.ReportDiagnostic(
-					Diagnostic.Create(
-						MavlinkGeneratorDiagnostics.GenericProtocolErrorRule,
-						Location.None,
-						ex.Message
-					)
-				);
+				var content = fileContents[xmlFile];
+				var mavlinkData = MavlinkXmlParser.Parse(content);
+				var namespaceName = $"MavlinkTypes.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(xmlFile))}";
+				var members = _contentGenerator.GenerateNamespaceMembers(mavlinkData, namespaceName);
+				AddSource(sourceProductionContext, namespaceName, members);
 			}
-		});
+		}
+		catch (Exception ex)
+		{
+			sourceProductionContext.ReportDiagnostic(
+				Diagnostic.Create(
+					MavlinkGeneratorDiagnostics.GenericProtocolErrorRule,
+					Location.None,
+					ex.Message
+				)
+			);
+		}
 	}
 
 	private void AddSource(SourceProductionContext context, string namespaceName, List<MemberDeclarationSyntax> members)
 	{
 		var compilationUnit = SyntaxFactory.CompilationUnit()
 			.AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(namespaceName))
-				.AddMembers(members.ToArray()));
+			.AddMembers(members.ToArray()));
 
 		context.AddSource($"{namespaceName}.g.cs", SourceText.From(compilationUnit.NormalizeWhitespace().ToFullString(), Encoding.UTF8));
 	}
@@ -106,7 +97,6 @@ public sealed class MavlinkGenerator : IIncrementalGenerator, IDisposable
 			{
 				_assemblyResolver?.Dispose();
 			}
-
 			_disposed = true;
 		}
 	}

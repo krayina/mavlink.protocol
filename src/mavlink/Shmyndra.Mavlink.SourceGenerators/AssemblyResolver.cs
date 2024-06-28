@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Shmyndra.Mavlink.SourceGenerators;
 
-internal class AssemblyResolver : IDisposable
+internal sealed class AssemblyResolver : IDisposable
 {
 	private readonly ConcurrentDictionary<string, Assembly> _forcedLoadedAssemblies = new ConcurrentDictionary<string, Assembly>();
 	private readonly ResolveEventHandler _resolveEventHandler;
