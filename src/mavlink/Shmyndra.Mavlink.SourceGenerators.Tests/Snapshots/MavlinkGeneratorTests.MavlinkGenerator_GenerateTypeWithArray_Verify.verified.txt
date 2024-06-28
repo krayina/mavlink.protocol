@@ -1,0 +1,21 @@
+﻿namespace MavlinkTypes.Testfile
+{
+    /// <remarks>
+    /// Original name: TEST_MESSAGE
+    /// </remarks>
+    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("TEST_MESSAGE")]
+    public record struct TestMessage
+    {
+        /// <remarks>
+        /// Original name: URI
+        /// </remarks>
+        [System.ComponentModel.DataAnnotations.RequiredArrayLength(230)]
+        public ImmutableArray<char> Uri { get; init; }
+    }
+
+    public static class MavlinkSpecification
+    {
+        public static byte? Version = null;
+        public static byte? Dialect = null;
+    }
+}

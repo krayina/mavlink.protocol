@@ -63,4 +63,30 @@ public class MavlinkGeneratorTests
 		// assert
 		return Verify(generatedCode).UseDirectory("..\\Snapshots");
 	}
+
+	[Fact]
+	public Task MavlinkGenerator_GenerateTypeWithArray_Verify()
+	{
+		// arrange
+		var generator = new MavlinkGenerator();
+
+		var additional = ImmutableArray.Create<AdditionalText>(
+			new TestAdditionalFile("testFile.xml", @"<?xml version=""1.0""?>
+<mavlink>
+  <messages>
+    <message id=""0"" name=""TEST_MESSAGE"">
+      <field type=""char[230]"" name=""uri"" />
+    </message>
+  </messages>
+</mavlink>")
+		);
+
+		// act
+		var driver = generator.RunIncrementalGeneratorDriver(additional);
+		var runResult = driver.GetRunResult().Results.Single();
+		var generatedCode = string.Join(Environment.NewLine, runResult.GeneratedSources.Select(source => source.SourceText.ToString()));
+
+		// assert
+		return Verify(generatedCode).UseDirectory("..\\Snapshots");
+	}
 }

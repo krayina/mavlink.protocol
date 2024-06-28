@@ -1702,7 +1702,7 @@ namespace MavlinkTypes.TestMavlinkMinimal
         /// <remarks>
         /// Original name: MAVLINK_VERSION
         /// </remarks>
-        public object MavlinkVersion { get; init; }
+        public byte MavlinkVersion { get; init; }
     }
 
     /// <summary>
@@ -1726,14 +1726,18 @@ namespace MavlinkTypes.TestMavlinkMinimal
         /// Original name: MAX_VERSION
         /// </remarks>
         public ushort MaxVersion { get; init; }
+
         /// <remarks>
         /// Original name: SPEC_VERSION_HASH
         /// </remarks>
-        public object SpecVersionHash { get; init; }
+        [System.ComponentModel.DataAnnotations.RequiredArrayLength(8)]
+        public ImmutableArray<byte> SpecVersionHash { get; init; }
+
         /// <remarks>
         /// Original name: LIBRARY_VERSION_HASH
         /// </remarks>
-        public object LibraryVersionHash { get; init; }
+        [System.ComponentModel.DataAnnotations.RequiredArrayLength(8)]
+        public ImmutableArray<byte> LibraryVersionHash { get; init; }
     }
 
     public static class MavlinkSpecification
@@ -2310,10 +2314,12 @@ namespace MavlinkTypes.TestMavlinkCommon
         /// Original name: VERSION
         /// </remarks>
         public byte Version { get; init; }
+
         /// <remarks>
         /// Original name: PASSKEY
         /// </remarks>
-        public object Passkey { get; init; }
+        [System.ComponentModel.DataAnnotations.RequiredArrayLength(25)]
+        public ImmutableArray<char> Passkey { get; init; }
     }
 
     /// <summary>
