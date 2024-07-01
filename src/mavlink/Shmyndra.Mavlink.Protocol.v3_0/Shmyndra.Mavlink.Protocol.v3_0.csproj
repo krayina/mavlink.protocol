@@ -18,8 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="*.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </AdditionalFiles>
+    <AdditionalFiles Include="**/*.xml"/>
   </ItemGroup>
 </Project>
