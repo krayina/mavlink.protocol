@@ -11,7 +11,7 @@ namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
 public sealed class MavlinkGenerator : IIncrementalGenerator, IDisposable
 {
 	private readonly AssemblyResolver _assemblyResolver;
-	private readonly MavlinkTypesGenerator _contentGenerator;
+	private readonly MavlinkMemberDefinition _contentGenerator;
 	private bool _disposed;
 
 	public MavlinkGenerator()
@@ -24,7 +24,7 @@ public sealed class MavlinkGenerator : IIncrementalGenerator, IDisposable
 		IMavlinkMessageTypesGenerator messageGenerator,
 		IMavlinkSpecificationTypeGenerator specificationGenerator)
 	{
-		_contentGenerator = new MavlinkTypesGenerator(enumGenerator, messageGenerator, specificationGenerator);
+		_contentGenerator = new MavlinkMemberDefinition(enumGenerator, messageGenerator, specificationGenerator);
 		_assemblyResolver = new AssemblyResolver("System.ComponentModel.Annotations");
 	}
 

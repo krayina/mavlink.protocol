@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
 
-internal sealed class MavlinkTypesGenerator
+internal sealed class MavlinkMemberDefinition
 {
 	private readonly IMavlinkEnumTypesGenerator _enumGenerator;
 	private readonly IMavlinkMessageTypesGenerator _messageGenerator;
@@ -11,7 +11,7 @@ internal sealed class MavlinkTypesGenerator
 
 	private readonly Dictionary<string, (string Namespace, string TypeName)> _generatedTypes = new();
 
-	public MavlinkTypesGenerator(
+	public MavlinkMemberDefinition(
 		IMavlinkEnumTypesGenerator enumGenerator,
 		IMavlinkMessageTypesGenerator messageGenerator,
 		IMavlinkSpecificationTypeGenerator specificationGenerator)
