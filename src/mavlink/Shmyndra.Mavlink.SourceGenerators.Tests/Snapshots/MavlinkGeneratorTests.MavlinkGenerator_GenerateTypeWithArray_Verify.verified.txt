@@ -10,7 +10,7 @@
         /// Original name: URI
         /// </remarks>
         [System.ComponentModel.DataAnnotations.RequiredArrayLength(230)]
-        public ImmutableArray<char> Uri { get; init; }
+        public System.Collections.Immutable.ImmutableArray<char> Uri { get; init; }
     }
 
     public static class MavlinkSpecification

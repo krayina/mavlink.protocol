@@ -1731,13 +1731,13 @@ namespace MavlinkTypes.TestMavlinkMinimal
         /// Original name: SPEC_VERSION_HASH
         /// </remarks>
         [System.ComponentModel.DataAnnotations.RequiredArrayLength(8)]
-        public ImmutableArray<byte> SpecVersionHash { get; init; }
+        public System.Collections.Immutable.ImmutableArray<byte> SpecVersionHash { get; init; }
 
         /// <remarks>
         /// Original name: LIBRARY_VERSION_HASH
         /// </remarks>
         [System.ComponentModel.DataAnnotations.RequiredArrayLength(8)]
-        public ImmutableArray<byte> LibraryVersionHash { get; init; }
+        public System.Collections.Immutable.ImmutableArray<byte> LibraryVersionHash { get; init; }
     }
 
     public static class MavlinkSpecification
@@ -2319,7 +2319,7 @@ namespace MavlinkTypes.TestMavlinkCommon
         /// Original name: PASSKEY
         /// </remarks>
         [System.ComponentModel.DataAnnotations.RequiredArrayLength(25)]
-        public ImmutableArray<char> Passkey { get; init; }
+        public System.Collections.Immutable.ImmutableArray<char> Passkey { get; init; }
     }
 
     /// <summary>

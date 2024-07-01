@@ -82,7 +82,7 @@ public static class MavlinkXmlParser
 
 			if (_typeMap.TryGetValue(baseType, out var mappedBaseType))
 			{
-				return new FieldArrayType($"ImmutableArray<{mappedBaseType}>", arraySize);
+				return new FieldArrayType($"System.Collections.Immutable.ImmutableArray<{mappedBaseType}>", arraySize);
 			}
 		}
 		else if (_typeMap.TryGetValue(xmlType, out var type))
