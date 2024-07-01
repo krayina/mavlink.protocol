@@ -4,11 +4,6 @@
     <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <CompilerGeneratedFilesOutputPath>Generated/Analyzers</CompilerGeneratedFilesOutputPath>
-  </PropertyGroup>
-  
   <ItemGroup>
     <ProjectReference Include="..\Shmyndra.Mavlink.SourceGenerators\Shmyndra.Mavlink.SourceGenerators.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
@@ -20,4 +15,10 @@
   <ItemGroup>
     <AdditionalFiles Include="**/*.xml"/>
   </ItemGroup>
+
+  <!-- DEBUG -->
+  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+    <!--<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated/Analyzers</CompilerGeneratedFilesOutputPath>-->
+  </PropertyGroup>
 </Project>
