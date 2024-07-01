@@ -3,7 +3,7 @@
     /// <remarks>
     /// Original name: TEST_MESSAGE
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("TEST_MESSAGE")]
+    [MavlinkType("TEST_MESSAGE")]
     public record struct TestMessage
     {
         /// <remarks>

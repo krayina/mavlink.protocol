@@ -1,6 +1,9 @@
 ﻿namespace System.ComponentModel.DataAnnotations;
 
-public class RequiredArrayLengthAttribute : ValidationAttribute
+/// <summary>
+/// This file must be linked from foreign folder
+/// </summary>
+internal class RequiredArrayLengthAttribute : ValidationAttribute
 {
 	private readonly int _length;
 

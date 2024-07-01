@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
+using System.ComponentModel.DataAnnotations;
 
 namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
 
@@ -91,7 +92,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 		return property.AddAttributeLists(
 			SyntaxFactory.AttributeList(
 				SyntaxFactory.SingletonSeparatedList(
-					SyntaxFactory.Attribute(SyntaxFactory.ParseName("System.ComponentModel.DataAnnotations.RequiredArrayLength"))
+					SyntaxFactory.Attribute(SyntaxFactory.ParseName(typeof(RequiredArrayLengthAttribute).FullName[0..^9]))
 					.WithArgumentList(
 						SyntaxFactory.AttributeArgumentList(
 							SyntaxFactory.SingletonSeparatedList(
@@ -124,7 +125,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 			.AddAttributeLists(
 				SyntaxFactory.AttributeList(
 					SyntaxFactory.SingletonSeparatedList(
-						SyntaxFactory.Attribute(SyntaxFactory.ParseName("Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType"))
+						SyntaxFactory.Attribute(SyntaxFactory.ParseName(typeof(MavlinkTypes.MavlinkTypeAttribute).Name[0..^9]))
 						.WithArgumentList(
 							SyntaxFactory.AttributeArgumentList(
 								SyntaxFactory.SeparatedList(new[]

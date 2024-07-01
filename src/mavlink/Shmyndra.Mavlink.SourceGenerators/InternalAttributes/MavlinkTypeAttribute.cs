@@ -1,9 +1,12 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
+namespace MavlinkTypes;
 
+/// <summary>
+/// This file must be linked from foreign folder
+/// </summary>
 [AttributeUsage(AttributeTargets.Enum | AttributeTargets.Struct)]
-public class MavlinkTypeAttribute : Attribute
+internal class MavlinkTypeAttribute : Attribute
 {
 	public string TypeName { get; }
 	public string XmlName { get; }

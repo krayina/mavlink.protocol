@@ -67,7 +67,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 			.AddAttributeLists(
 				SyntaxFactory.AttributeList(
 					SyntaxFactory.SingletonSeparatedList(
-						SyntaxFactory.Attribute(SyntaxFactory.ParseName("Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType"))
+						SyntaxFactory.Attribute(SyntaxFactory.ParseName(typeof(MavlinkTypes.MavlinkTypeAttribute).Name[0..^9]))
 						.WithArgumentList(
 							SyntaxFactory.AttributeArgumentList(
 								SyntaxFactory.SeparatedList(new[]

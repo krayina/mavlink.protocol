@@ -22,7 +22,7 @@ namespace MavlinkTypes.TestMavlinkMinimal
     /// <remarks>
     /// Original name: MAV_AUTOPILOT
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_AUTOPILOT")]
+    [MavlinkType("MAV_AUTOPILOT")]
     public enum MavAutopilot : byte
     {
         /// <summary>
@@ -182,7 +182,7 @@ namespace MavlinkTypes.TestMavlinkMinimal
     /// <remarks>
     /// Original name: MAV_COMPONENT
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_COMPONENT")]
+    [MavlinkType("MAV_COMPONENT")]
     public enum MavComponent : byte
     {
         /// <summary>
@@ -1145,7 +1145,7 @@ namespace MavlinkTypes.TestMavlinkMinimal
     /// <remarks>
     /// Original name: MAV_MODE_FLAG
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_MODE_FLAG")]
+    [MavlinkType("MAV_MODE_FLAG")]
     public enum MavModeFlag : byte
     {
         /// <summary>
@@ -1212,7 +1212,7 @@ namespace MavlinkTypes.TestMavlinkMinimal
     /// <remarks>
     /// Original name: MAV_MODE_FLAG_DECODE_POSITION
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_MODE_FLAG_DECODE_POSITION")]
+    [MavlinkType("MAV_MODE_FLAG_DECODE_POSITION")]
     public enum MavModeFlagDecodePosition : byte
     {
         /// <summary>
@@ -1276,7 +1276,7 @@ namespace MavlinkTypes.TestMavlinkMinimal
     /// <remarks>
     /// Original name: MAV_STATE
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_STATE")]
+    [MavlinkType("MAV_STATE")]
     public enum MavState : byte
     {
         /// <summary>
@@ -1350,7 +1350,7 @@ namespace MavlinkTypes.TestMavlinkMinimal
     /// <remarks>
     /// Original name: MAV_TYPE
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_TYPE")]
+    [MavlinkType("MAV_TYPE")]
     public enum MavType : byte
     {
         /// <summary>
@@ -1676,7 +1676,7 @@ namespace MavlinkTypes.TestMavlinkMinimal
     /// <remarks>
     /// Original name: HEARTBEAT
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("HEARTBEAT")]
+    [MavlinkType("HEARTBEAT")]
     public record struct Heartbeat
     {
         /// <remarks>
@@ -1711,7 +1711,7 @@ namespace MavlinkTypes.TestMavlinkMinimal
     /// <remarks>
     /// Original name: PROTOCOL_VERSION
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("PROTOCOL_VERSION")]
+    [MavlinkType("PROTOCOL_VERSION")]
     public record struct ProtocolVersion
     {
         /// <remarks>
@@ -1762,7 +1762,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// <remarks>
     /// Original name: FIRMWARE_VERSION_TYPE
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("FIRMWARE_VERSION_TYPE")]
+    [MavlinkType("FIRMWARE_VERSION_TYPE")]
     public enum FirmwareVersionType : byte
     {
         /// <summary>
@@ -1808,7 +1808,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// <remarks>
     /// Original name: HL_FAILURE_FLAG
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("HL_FAILURE_FLAG")]
+    [MavlinkType("HL_FAILURE_FLAG")]
     public enum HlFailureFlag : ushort
     {
         /// <summary>
@@ -1917,7 +1917,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// <remarks>
     /// Original name: MAV_GOTO
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_GOTO")]
+    [MavlinkType("MAV_GOTO")]
     public enum MavGoto : byte
     {
         /// <summary>
@@ -1958,7 +1958,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// <remarks>
     /// Original name: MAV_MODE
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_MODE")]
+    [MavlinkType("MAV_MODE")]
     public enum MavMode : byte
     {
         /// <summary>
@@ -2046,7 +2046,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// <remarks>
     /// Original name: MAV_SYS_STATUS_SENSOR
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_SYS_STATUS_SENSOR")]
+    [MavlinkType("MAV_SYS_STATUS_SENSOR")]
     public enum MavSysStatusSensor : uint
     {
         /// <summary>
@@ -2281,7 +2281,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// <remarks>
     /// Original name: MAV_SYS_STATUS_SENSOR_EXTENDED
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("MAV_SYS_STATUS_SENSOR_EXTENDED")]
+    [MavlinkType("MAV_SYS_STATUS_SENSOR_EXTENDED")]
     public enum MavSysStatusSensorExtended : byte
     {
         /// <summary>
@@ -2299,7 +2299,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// <remarks>
     /// Original name: CHANGE_OPERATOR_CONTROL
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("CHANGE_OPERATOR_CONTROL")]
+    [MavlinkType("CHANGE_OPERATOR_CONTROL")]
     public record struct ChangeOperatorControl
     {
         /// <remarks>
@@ -2328,7 +2328,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// <remarks>
     /// Original name: PING
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("PING")]
+    [MavlinkType("PING")]
     public record struct Ping
     {
         /// <remarks>
@@ -2355,7 +2355,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// <remarks>
     /// Original name: SYS_STATUS
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("SYS_STATUS")]
+    [MavlinkType("SYS_STATUS")]
     public record struct SysStatus
     {
         /// <remarks>
@@ -2430,7 +2430,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// <remarks>
     /// Original name: SYSTEM_TIME
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("SYSTEM_TIME")]
+    [MavlinkType("SYSTEM_TIME")]
     public record struct SystemTime
     {
         /// <remarks>

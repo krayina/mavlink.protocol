@@ -3,7 +3,7 @@
     /// <remarks>
     /// Original name: TEST_ENUM
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("TEST_ENUM")]
+    [MavlinkType("TEST_ENUM")]
     public enum TestEnum : byte
     {
         /// <remarks>
@@ -23,7 +23,7 @@ namespace MavlinkTypes.Testsecondfile
     /// <remarks>
     /// Original name: TEST_MESSAGE
     /// </remarks>
-    [Shmyndra.Mavlink.SourceGenerators.Protocol.MavlinkType("TEST_MESSAGE")]
+    [MavlinkType("TEST_MESSAGE")]
     public record struct TestMessage
     {
         /// <remarks>
