@@ -10,10 +10,23 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <PolySharpIncludeGeneratedTypes>
+      System.Diagnostics.CodeAnalysis.NotNullWhenAttribute;
+      System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute;
+      System.Index;
+      System.Range;
+    </PolySharpIncludeGeneratedTypes>
+  </PropertyGroup>
   
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+    <PackageReference Include="PolySharp">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="System.ComponentModel.Annotations" PrivateAssets="all" />
   </ItemGroup>
   
