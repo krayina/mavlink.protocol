@@ -14,6 +14,7 @@
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
       <OutputItemType>Analyzer</OutputItemType>
     </ProjectReference>
+    <ProjectReference Include="..\Shmyndra.Mavlink\Shmyndra.Mavlink.csproj" />
   </ItemGroup>
 
   <ItemGroup>

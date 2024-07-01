@@ -2,11 +2,8 @@
 
 namespace MavlinkTypes;
 
-/// <summary>
-/// This file must be linked from foreign folder
-/// </summary>
 [AttributeUsage(AttributeTargets.Enum | AttributeTargets.Struct)]
-internal class MavlinkTypeAttribute : Attribute
+public class MavlinkTypeAttribute : Attribute
 {
 	public string TypeName { get; }
 	public string XmlName { get; }

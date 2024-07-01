@@ -33,4 +33,13 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Shmyndra.Mavlink.SourceGenerators.Tests" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shmyndra.Mavlink\Attributes\MavlinkTypeAttribute.cs">
+      <Link>Attributes\MavlinkTypeAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Shmyndra.Mavlink\Attributes\RequiredArrayLengthAttribute.cs">
+      <Link>Attributes\RequiredArrayLengthAttribute.cs</Link>
+    </Compile>
+  </ItemGroup>
 </Project>
