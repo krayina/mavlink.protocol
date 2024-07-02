@@ -1677,7 +1677,7 @@ namespace MavlinkTypes.TestMavlinkMinimal
     /// Original name: HEARTBEAT
     /// </remarks>
     [MavlinkIdentifiedType(0U, "HEARTBEAT")]
-    public record struct Heartbeat
+    public record struct Heartbeat : MavlinkMessage
     {
         /// <remarks>
         /// Original name: TYPE
@@ -1712,7 +1712,7 @@ namespace MavlinkTypes.TestMavlinkMinimal
     /// Original name: PROTOCOL_VERSION
     /// </remarks>
     [MavlinkIdentifiedType(300U, "PROTOCOL_VERSION")]
-    public record struct ProtocolVersion
+    public record struct ProtocolVersion : MavlinkMessage
     {
         /// <remarks>
         /// Original name: VERSION
@@ -2300,7 +2300,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// Original name: CHANGE_OPERATOR_CONTROL
     /// </remarks>
     [MavlinkIdentifiedType(5U, "CHANGE_OPERATOR_CONTROL")]
-    public record struct ChangeOperatorControl
+    public record struct ChangeOperatorControl : MavlinkMessage
     {
         /// <remarks>
         /// Original name: TARGET_SYSTEM
@@ -2329,7 +2329,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// Original name: PING
     /// </remarks>
     [MavlinkIdentifiedType(4U, "PING")]
-    public record struct Ping
+    public record struct Ping : MavlinkMessage
     {
         /// <remarks>
         /// Original name: TIME_USEC
@@ -2356,7 +2356,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// Original name: SYS_STATUS
     /// </remarks>
     [MavlinkIdentifiedType(1U, "SYS_STATUS")]
-    public record struct SysStatus
+    public record struct SysStatus : MavlinkMessage
     {
         /// <remarks>
         /// Original name: ONBOARD_CONTROL_SENSORS_PRESENT
@@ -2431,7 +2431,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// Original name: SYSTEM_TIME
     /// </remarks>
     [MavlinkIdentifiedType(2U, "SYSTEM_TIME")]
-    public record struct SystemTime
+    public record struct SystemTime : MavlinkMessage
     {
         /// <remarks>
         /// Original name: TIME_UNIX_USEC

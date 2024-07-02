@@ -116,7 +116,9 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 				identifier: SyntaxFactory.Identifier(normalizedName),
 				typeParameterList: null,
 				parameterList: null,
-				baseList: null,
+				baseList: SyntaxFactory.BaseList(SyntaxFactory.SingletonSeparatedList<BaseTypeSyntax>(
+					SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName("MavlinkMessage"))
+				)),
 				constraintClauses: default,
 				openBraceToken: SyntaxFactory.Token(SyntaxKind.OpenBraceToken),
 				members: SyntaxFactory.List<MemberDeclarationSyntax>(properties),
@@ -131,14 +133,14 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 							SyntaxFactory.AttributeArgumentList(
 								SyntaxFactory.SeparatedList(new[]
 								{
-								SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
-									SyntaxKind.NumericLiteralExpression,
-									SyntaxFactory.Literal(id))
-								),
-								SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
-									SyntaxKind.StringLiteralExpression,
-									SyntaxFactory.Literal(originalName))
-								)
+							SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
+								SyntaxKind.NumericLiteralExpression,
+								SyntaxFactory.Literal(id))
+							),
+							SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
+								SyntaxKind.StringLiteralExpression,
+								SyntaxFactory.Literal(originalName))
+							)
 								})
 							)
 						)

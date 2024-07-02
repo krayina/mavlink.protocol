@@ -4,7 +4,7 @@
     /// Original name: TEST_MESSAGE
     /// </remarks>
     [MavlinkIdentifiedType(22U, "TEST_MESSAGE")]
-    public record struct TestMessage
+    public record struct TestMessage : MavlinkMessage
     {
         /// <remarks>
         /// Original name: SOMEPROPERTY
