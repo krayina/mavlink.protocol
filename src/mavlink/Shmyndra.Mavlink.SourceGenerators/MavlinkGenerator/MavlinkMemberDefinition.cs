@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
+namespace Shmyndra.Mavlink.SourceGenerators.MavlinkGenerator;
 
 internal sealed class MavlinkMemberDefinition
 {

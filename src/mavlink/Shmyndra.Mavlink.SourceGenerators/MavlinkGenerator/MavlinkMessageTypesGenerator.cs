@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
 using System.ComponentModel.DataAnnotations;
 
-namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
+namespace Shmyndra.Mavlink.SourceGenerators.MavlinkGenerator;
 
 public interface IMavlinkMessageTypesGenerator
 {

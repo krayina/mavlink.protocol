@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
 
-namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
+namespace Shmyndra.Mavlink.SourceGenerators.MavlinkGenerator;
 
 public interface IMavlinkEnumTypesGenerator
 {

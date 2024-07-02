@@ -1,16 +1,16 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
-using Shmyndra.Mavlink.SourceGenerators.Protocol;
+using Shmyndra.Mavlink.SourceGenerators.MavlinkGenerator;
 
 namespace Shmyndra.Mavlink.SourceGenerators.Tests.Unit;
 
-public class MavlinkGeneratorTests
+public class MavlinkIncrementalGeneratorTests
 {
 	[Fact]
-	public Task MavlinkGenerator_GenerateAllTypes_Verify()
+	public Task MavlinkIncrementalGenerator_GenerateAllTypes_Verify()
 	{
 		// arrange
-		var generator = new MavlinkGenerator();
+		var generator = new MavlinkIncrementalGenerator();
 
 		var additional = TestsHelper.GetAdditionalTextList([
 			"Stubs\\test-mavlink-common.xml",
@@ -30,10 +30,10 @@ public class MavlinkGeneratorTests
 	}
 
 	[Fact]
-	public Task MavlinkGenerator_GenerateTypeWithFieldWhichDependsOnOtherFile_Verify()
+	public Task MavlinkIncrementalGenerator_GenerateTypeWithFieldWhichDependsOnOtherFile_Verify()
 	{
 		// arrange
-		var generator = new MavlinkGenerator();
+		var generator = new MavlinkIncrementalGenerator();
 
 		var additional = ImmutableArray.Create<AdditionalText>(
 			new TestAdditionalFile("testCommonFile.xml", @"<?xml version=""1.0""?>
@@ -65,10 +65,10 @@ public class MavlinkGeneratorTests
 	}
 
 	[Fact]
-	public Task MavlinkGenerator_GenerateTypeWithArray_Verify()
+	public Task MavlinkIncrementalGenerator_GenerateTypeWithArray_Verify()
 	{
 		// arrange
-		var generator = new MavlinkGenerator();
+		var generator = new MavlinkIncrementalGenerator();
 
 		var additional = ImmutableArray.Create<AdditionalText>(
 			new TestAdditionalFile("testFile.xml", @"<?xml version=""1.0""?>

@@ -1,4 +1,4 @@
-﻿namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
+﻿namespace Shmyndra.Mavlink.SourceGenerators.MavlinkGenerator;
 
 [Serializable()]
 [System.Xml.Serialization.XmlType("SI_Unit", Namespace = "")]

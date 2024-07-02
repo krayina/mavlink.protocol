@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
+namespace Shmyndra.Mavlink.SourceGenerators.MavlinkGenerator;
 
 public interface IMavlinkSpecificationTypeGenerator
 {

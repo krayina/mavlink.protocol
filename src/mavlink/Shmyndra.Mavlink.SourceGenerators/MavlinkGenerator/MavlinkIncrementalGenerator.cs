@@ -5,21 +5,21 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
+namespace Shmyndra.Mavlink.SourceGenerators.MavlinkGenerator;
 
 [Generator]
-public sealed class MavlinkGenerator : IIncrementalGenerator, IDisposable
+public sealed class MavlinkIncrementalGenerator : IIncrementalGenerator, IDisposable
 {
 	private readonly AssemblyResolver _assemblyResolver;
 	private readonly MavlinkMemberDefinition _contentGenerator;
 	private bool _disposed;
 
-	public MavlinkGenerator()
+	public MavlinkIncrementalGenerator()
 		: this(new MavlinkEnumTypesGenerator(), new MavlinkMessageTypesGenerator(), new MavlinkSpecificationTypeGenerator())
 	{
 	}
 
-	internal MavlinkGenerator(
+	internal MavlinkIncrementalGenerator(
 		IMavlinkEnumTypesGenerator enumGenerator,
 		IMavlinkMessageTypesGenerator messageGenerator,
 		IMavlinkSpecificationTypeGenerator specificationGenerator)
@@ -102,7 +102,7 @@ public sealed class MavlinkGenerator : IIncrementalGenerator, IDisposable
 		}
 	}
 
-	~MavlinkGenerator()
+	~MavlinkIncrementalGenerator()
 	{
 		Dispose(false);
 	}

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Xml.Serialization;
 
-namespace Shmyndra.Mavlink.SourceGenerators.Protocol;
+namespace Shmyndra.Mavlink.SourceGenerators.MavlinkGenerator;
 
 public record FieldType(string TypeName);
 public record FieldArrayType(string TypeName, int Length) : FieldType(TypeName);
