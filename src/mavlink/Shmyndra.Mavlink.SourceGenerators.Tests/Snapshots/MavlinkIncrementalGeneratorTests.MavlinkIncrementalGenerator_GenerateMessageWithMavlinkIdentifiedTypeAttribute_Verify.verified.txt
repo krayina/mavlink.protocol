@@ -3,14 +3,13 @@
     /// <remarks>
     /// Original name: TEST_MESSAGE
     /// </remarks>
-    [MavlinkIdentifiedType(0U, "TEST_MESSAGE")]
+    [MavlinkIdentifiedType(22U, "TEST_MESSAGE")]
     public record struct TestMessage
     {
         /// <remarks>
-        /// Original name: URI
+        /// Original name: SOMEPROPERTY
         /// </remarks>
-        [System.ComponentModel.DataAnnotations.RequiredArrayLength(230)]
-        public System.Collections.Immutable.ImmutableArray<char> Uri { get; init; }
+        public sbyte Someproperty { get; init; }
     }
 
     public static class MavlinkSpecification

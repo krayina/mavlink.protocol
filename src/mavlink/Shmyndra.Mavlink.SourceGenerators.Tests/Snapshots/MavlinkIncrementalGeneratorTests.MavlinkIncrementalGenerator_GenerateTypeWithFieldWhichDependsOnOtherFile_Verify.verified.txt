@@ -23,7 +23,7 @@ namespace MavlinkTypes.Testsecondfile
     /// <remarks>
     /// Original name: TEST_MESSAGE
     /// </remarks>
-    [MavlinkType("TEST_MESSAGE")]
+    [MavlinkIdentifiedType(0U, "TEST_MESSAGE")]
     public record struct TestMessage
     {
         /// <remarks>

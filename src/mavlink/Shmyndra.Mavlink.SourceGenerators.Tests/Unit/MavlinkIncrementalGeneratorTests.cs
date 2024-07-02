@@ -89,4 +89,30 @@ public class MavlinkIncrementalGeneratorTests
 		// assert
 		return Verify(generatedCode).UseDirectory("..\\Snapshots");
 	}
+
+	[Fact]
+	public Task MavlinkIncrementalGenerator_GenerateMessageWithMavlinkIdentifiedTypeAttribute_Verify()
+	{
+		// arrange
+		var generator = new MavlinkIncrementalGenerator();
+
+		var additional = ImmutableArray.Create<AdditionalText>(
+			new TestAdditionalFile("testFile.xml", @"<?xml version=""1.0""?>
+<mavlink>
+  <messages>
+    <message id=""22"" name=""TEST_MESSAGE"">
+      <field type=""int8_t"" name=""SomeProperty"" />
+    </message>
+  </messages>
+</mavlink>")
+		);
+
+		// act
+		var driver = generator.RunIncrementalGeneratorDriver(additional);
+		var runResult = driver.GetRunResult().Results.Single();
+		var generatedCode = string.Join(Environment.NewLine, runResult.GeneratedSources.Select(source => source.SourceText.ToString()));
+
+		// assert
+		return Verify(generatedCode).UseDirectory("..\\Snapshots");
+	}
 }

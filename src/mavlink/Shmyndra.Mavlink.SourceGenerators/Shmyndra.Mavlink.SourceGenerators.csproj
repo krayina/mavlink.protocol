@@ -41,5 +41,8 @@
     <Compile Include="..\Shmyndra.Mavlink\Attributes\RequiredArrayLengthAttribute.cs">
       <Link>Attributes\RequiredArrayLengthAttribute.cs</Link>
     </Compile>
+    <Compile Include="..\Shmyndra.Mavlink\Attributes\MavlinkIdentifiedTypeAttribute.cs">
+      <Link>Attributes\MavlinkIdentifiedTypeAttribute.cs</Link>
+    </Compile>
   </ItemGroup>
 </Project>

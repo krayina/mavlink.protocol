@@ -51,7 +51,7 @@ internal sealed class MavlinkMemberDefinition
 	}
 
 	private Dictionary<string, (string Namespace, string TypeName, RecordDeclarationSyntax Declaration)> GenerateMessages(
-		ImmutableArray<(string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields)> messages,
+		ImmutableArray<(uint Id, string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields)> messages,
 		string namespaceName,
 		IImmutableDictionary<string, (string Namespace, string TypeName)> allGeneratedEnumTypes)
 	{

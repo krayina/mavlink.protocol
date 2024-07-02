@@ -9,7 +9,7 @@ namespace Shmyndra.Mavlink.SourceGenerators.MavlinkGenerator;
 public interface IMavlinkMessageTypesGenerator
 {
 	List<RecordDeclarationSyntax> GenerateMessages(
-		ImmutableArray<(string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields)> messages,
+		ImmutableArray<(uint Id, string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields)> messages,
 		string namespaceName,
 		IImmutableDictionary<string, (string Namespace, string TypeName)> enumTypes,
 		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping);
@@ -20,7 +20,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 	private readonly HashSet<string> _generatedMessageNames = new();
 
 	public List<RecordDeclarationSyntax> GenerateMessages(
-		ImmutableArray<(string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields)> messages,
+		ImmutableArray<(uint Id, string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields)> messages,
 		string namespaceName,
 		IImmutableDictionary<string, (string Namespace, string TypeName)> enumTypes,
 		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping)
@@ -46,11 +46,12 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 	}
 
 	private RecordDeclarationSyntax CreateRecordStruct(
-		(string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields) messageData,
+		(uint Id, string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields) messageData,
 		string namespaceName,
 		IImmutableDictionary<string, (string Namespace, string TypeName)> generatedTypes)
 	{
 		var normalizedName = Utilities.ToCamelCase(messageData.Name);
+		var id = messageData.Id;
 
 		var properties = messageData.Fields.Select(field =>
 		{
@@ -74,7 +75,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {field.Name.ToUpper()}");
 		}).ToArray();
 
-		return CreateRecordStructDeclaration(normalizedName, properties, messageData.Description, messageData.Name);
+		return CreateRecordStructDeclaration(id, normalizedName, properties, messageData.Description, messageData.Name);
 	}
 
 	private PropertyDeclarationSyntax CreatePropertyDeclaration(string propertyType, string fieldName)
@@ -104,7 +105,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 		);
 	}
 
-	private RecordDeclarationSyntax CreateRecordStructDeclaration(string normalizedName, PropertyDeclarationSyntax[] properties, string? description, string originalName)
+	private RecordDeclarationSyntax CreateRecordStructDeclaration(uint id, string normalizedName, PropertyDeclarationSyntax[] properties, string? description, string originalName)
 	{
 		return SyntaxFactory.RecordDeclaration(
 				kind: SyntaxKind.RecordStructDeclaration,
@@ -125,11 +126,15 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 			.AddAttributeLists(
 				SyntaxFactory.AttributeList(
 					SyntaxFactory.SingletonSeparatedList(
-						SyntaxFactory.Attribute(SyntaxFactory.ParseName(nameof(MavlinkTypes.MavlinkTypeAttribute)[0..^9]))
+						SyntaxFactory.Attribute(SyntaxFactory.ParseName(nameof(MavlinkTypes.MavlinkIdentifiedTypeAttribute)[0..^9]))
 						.WithArgumentList(
 							SyntaxFactory.AttributeArgumentList(
 								SyntaxFactory.SeparatedList(new[]
 								{
+								SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
+									SyntaxKind.NumericLiteralExpression,
+									SyntaxFactory.Literal(id))
+								),
 								SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
 									SyntaxKind.StringLiteralExpression,
 									SyntaxFactory.Literal(originalName))

@@ -8,7 +8,7 @@ public record FieldArrayType(string TypeName, int Length) : FieldType(TypeName);
 
 public record MavlinkData(
 	ImmutableArray<(string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries)> Enums,
-	ImmutableArray<(string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields)> Messages,
+	ImmutableArray<(uint Id, string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields)> Messages,
 	byte? Version,
 	byte? Dialect);
 
@@ -55,9 +55,10 @@ public static class MavlinkXmlParser
 		)).ToImmutableArray();
 	}
 
-	private static ImmutableArray<(string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields)> ParseMessages(Mavlink mavlink)
+	private static ImmutableArray<(uint Id, string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields)> ParseMessages(Mavlink mavlink)
 	{
 		return mavlink.Messages.Select(m => (
+			m.Id,
 			m.Name,
 			(string?)m.Description,
 			m.Field.Select(field =>
