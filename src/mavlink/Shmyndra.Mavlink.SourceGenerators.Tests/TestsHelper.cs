@@ -24,13 +24,13 @@ public static class TestsHelper
 		return additional.ToImmutableArray();
 	}
 
-	public static GeneratorDriver RunGeneratorDriver(
+	public static GeneratorDriver RunSourceGeneratorDriver(
 		this ISourceGenerator generator,
 		ImmutableArray<AdditionalText>? additional = null,
 		IEnumerable<PortableExecutableReference>? references = null)
 	{
 		var compilation = CSharpCompilation.Create(
-			assemblyName: "Shmyndra.Mavlink.SourceGenerators",
+			assemblyName: "Shmyndra.SourceGenerators",
 			references: references);
 
 		var driver = CSharpGeneratorDriver.Create(generator);
@@ -56,7 +56,7 @@ public static class TestsHelper
 		};
 
 		var compilation = CSharpCompilation.Create(
-			assemblyName: "Shmyndra.Mavlink.SourceGenerators",
+			assemblyName: "Shmyndra.IIncrementalGenerators",
 			syntaxTrees: syntaxTrees,
 			references: referencesList,
 			options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
