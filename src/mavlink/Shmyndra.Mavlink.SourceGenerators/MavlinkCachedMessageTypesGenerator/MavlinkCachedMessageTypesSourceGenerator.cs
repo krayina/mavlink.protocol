@@ -19,7 +19,7 @@ public class MavlinkCachedMessageTypesSourceGenerator : ISourceGenerator
 		if (!System.Diagnostics.Debugger.IsAttached)
 		{
 			//Uncomment this line to enter Debug mode for the generator and perform a Rebuild
-			System.Diagnostics.Debugger.Launch();
+			//System.Diagnostics.Debugger.Launch();
 		}
 
 		if (context.SyntaxReceiver is not MavlinkAttributeReceiver receiver)
