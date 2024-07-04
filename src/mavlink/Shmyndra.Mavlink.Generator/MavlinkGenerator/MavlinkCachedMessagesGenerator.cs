@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Shmyndra.Mavlink.SourceGenerators.MavlinkGenerator;
+namespace Shmyndra.Mavlink.Generator;
 
 internal record MavlinkCachedMessage(string FullName, ulong Id, string XmlName);
 

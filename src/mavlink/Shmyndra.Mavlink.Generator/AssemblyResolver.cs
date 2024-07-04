@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace Shmyndra.Mavlink.SourceGenerators;
+namespace Shmyndra.Mavlink.Generator;
 
 internal sealed class AssemblyResolver : IDisposable
 {

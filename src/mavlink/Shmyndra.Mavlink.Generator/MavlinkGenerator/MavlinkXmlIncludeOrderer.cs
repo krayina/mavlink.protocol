@@ -1,6 +1,6 @@
 ﻿using System.Xml.Linq;
 
-namespace Shmyndra.Mavlink.SourceGenerators.MavlinkGenerator;
+namespace Shmyndra.Mavlink.Generator;
 
 public static class MavlinkXmlIncludeOrderer
 {

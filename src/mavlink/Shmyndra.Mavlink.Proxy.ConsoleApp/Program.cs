@@ -1,6 +1,6 @@
 ﻿using Shmyndra.Mavlink.Protocol.v3_0;
 
-namespace Shmyndra.Mavlink.Protocol.ConsoleApp;
+namespace Shmyndra.Mavlink.Proxy.ConsoleApp;
 
 internal class Program
 {

@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
 
-namespace Shmyndra.Mavlink.SourceGenerators.Tests;
+namespace Shmyndra.Mavlink.Generator.Tests;
 
 public static class TestsHelper
 {
@@ -30,7 +30,7 @@ public static class TestsHelper
 		IEnumerable<PortableExecutableReference>? references = null)
 	{
 		var compilation = CSharpCompilation.Create(
-			assemblyName: "Shmyndra.SourceGenerators",
+			assemblyName: "Shmyndra.Generator",
 			references: references);
 
 		var driver = CSharpGeneratorDriver.Create(generator);

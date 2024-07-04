@@ -1,8 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
-using Shmyndra.Mavlink.SourceGenerators.MavlinkGenerator;
 
-namespace Shmyndra.Mavlink.SourceGenerators.Tests.Unit;
+namespace Shmyndra.Mavlink.Generator.Tests.Unit;
 
 public class MavlinkIncrementalGeneratorTests
 {

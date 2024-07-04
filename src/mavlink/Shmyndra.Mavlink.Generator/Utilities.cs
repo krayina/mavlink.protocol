@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
 
-namespace Shmyndra.Mavlink.SourceGenerators;
+namespace Shmyndra.Mavlink.Generator;
 
 internal static class Utilities
 {
