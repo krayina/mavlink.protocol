@@ -1,0 +1,12 @@
+{
+  "solution": {
+    "path": "Shmyndra.sln",
+    "projects": [
+      "mavlink\\Shmyndra.Mavlink.Generator.Tests\\Shmyndra.Mavlink.Generator.Tests.csproj",
+      "mavlink\\Shmyndra.Mavlink.Generator\\Shmyndra.Mavlink.Generator.csproj",
+      "mavlink\\Shmyndra.Mavlink.Protocol.v3_0\\Shmyndra.Mavlink.Protocol.v3_0.csproj",
+      "mavlink\\Shmyndra.Mavlink.Proxy.ConsoleApp\\Shmyndra.Mavlink.Proxy.ConsoleApp.csproj",
+      "mavlink\\Shmyndra.Mavlink\\Shmyndra.Mavlink.csproj"
+    ]
+  }
+}
