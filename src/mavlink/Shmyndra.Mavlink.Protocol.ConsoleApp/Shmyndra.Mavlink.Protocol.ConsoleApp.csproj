@@ -1,21 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>$(DotNetVersion)</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\Shmyndra.Mavlink.SourceGenerators\Shmyndra.Mavlink.SourceGenerators.csproj">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-      <OutputItemType>Analyzer</OutputItemType>
-    </ProjectReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Include="*.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </AdditionalFiles>
+    <ProjectReference Include="..\Shmyndra.Mavlink.Protocol.v3_0\Shmyndra.Mavlink.Protocol.v3_0.csproj" />
   </ItemGroup>
   
 </Project>
