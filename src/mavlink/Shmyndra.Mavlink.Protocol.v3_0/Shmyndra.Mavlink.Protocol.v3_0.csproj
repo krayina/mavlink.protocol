@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shmyndra.Mavlink.SourceGenerators\Shmyndra.Mavlink.SourceGenerators.csproj">
+    <ProjectReference Include="..\Shmyndra.Mavlink.Generator\Shmyndra.Mavlink.Generator.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
       <OutputItemType>Analyzer</OutputItemType>
     </ProjectReference>
@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="**/*.xml"/>
+    <AdditionalFiles Include="**/*.xml" />
   </ItemGroup>
 
   <!-- DEBUG -->

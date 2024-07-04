@@ -23,9 +23,9 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\Shmyndra.Mavlink.SourceGenerators\Shmyndra.Mavlink.SourceGenerators.csproj" />
+    <ProjectReference Include="..\Shmyndra.Mavlink.Generator\Shmyndra.Mavlink.Generator.csproj" />
   </ItemGroup>
 
   <ItemGroup>
