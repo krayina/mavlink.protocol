@@ -21,7 +21,7 @@ internal sealed class MavlinkMemberDefinition
 		_specificationGenerator = specificationGenerator;
 	}
 
-	public List<MemberDeclarationSyntax> GenerateNamespaceMembers(MavlinkData mavlinkData, string namespaceName)
+	public List<MemberDeclarationSyntax> GenerateNamespaceMembers(MavlinkData mavlinkData, string namespaceName, out List<MavlinkCachedMessage> messagesCache)
 	{
 		var allGeneratedEnumTypes = GenerateEnums(mavlinkData.Enums, namespaceName);
 
@@ -38,6 +38,13 @@ internal sealed class MavlinkMemberDefinition
 
 		var specificationClass = _specificationGenerator.GenerateSpecification(mavlinkData, namespaceName);
 		members.Add(specificationClass);
+
+		messagesCache = mavlinkData.Messages
+			.Select(message => new MavlinkCachedMessage(
+				$"{namespaceName}.{allGeneratedMessageTypes[message.Name].TypeName}",
+				message.Id,
+				message.Name.ToUpper()))
+			.ToList();
 
 		return members;
 	}

@@ -2449,3 +2449,47 @@ namespace MavlinkTypes.TestMavlinkCommon
         public static byte? Dialect = 0;
     }
 }
+namespace MavlinkTypes
+{
+    public static class MavlinkMessages
+    {
+        private static Dictionary<Type, (ulong Id, string XmlName)> _mavlinkMessages = new()
+        {
+            {
+                typeof(MavlinkTypes.TestMavlinkMinimal.Heartbeat),
+                (0U, "HEARTBEAT")
+            },
+            {
+                typeof(MavlinkTypes.TestMavlinkMinimal.ProtocolVersion),
+                (300U, "PROTOCOL_VERSION")
+            },
+            {
+                typeof(MavlinkTypes.TestMavlinkCommon.SysStatus),
+                (1U, "SYS_STATUS")
+            },
+            {
+                typeof(MavlinkTypes.TestMavlinkCommon.SystemTime),
+                (2U, "SYSTEM_TIME")
+            },
+            {
+                typeof(MavlinkTypes.TestMavlinkCommon.Ping),
+                (4U, "PING")
+            },
+            {
+                typeof(MavlinkTypes.TestMavlinkCommon.ChangeOperatorControl),
+                (5U, "CHANGE_OPERATOR_CONTROL")
+            }
+        };
+        public static ulong GetId<T>()
+            where T : MavlinkMessage
+        {
+            return _mavlinkMessages[typeof(T)].Id;
+        }
+
+        public static string GetXmlName<T>()
+            where T : MavlinkMessage
+        {
+            return _mavlinkMessages[typeof(T)].XmlName;
+        }
+    }
+}

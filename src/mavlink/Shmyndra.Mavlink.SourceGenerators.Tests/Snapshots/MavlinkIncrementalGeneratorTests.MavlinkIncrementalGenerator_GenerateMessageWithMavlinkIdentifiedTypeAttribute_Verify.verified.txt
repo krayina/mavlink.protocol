@@ -18,3 +18,27 @@
         public static byte? Dialect = null;
     }
 }
+namespace MavlinkTypes
+{
+    public static class MavlinkMessages
+    {
+        private static Dictionary<Type, (ulong Id, string XmlName)> _mavlinkMessages = new()
+        {
+            {
+                typeof(MavlinkTypes.Testfile.TestMessage),
+                (22U, "TEST_MESSAGE")
+            }
+        };
+        public static ulong GetId<T>()
+            where T : MavlinkMessage
+        {
+            return _mavlinkMessages[typeof(T)].Id;
+        }
+
+        public static string GetXmlName<T>()
+            where T : MavlinkMessage
+        {
+            return _mavlinkMessages[typeof(T)].XmlName;
+        }
+    }
+}

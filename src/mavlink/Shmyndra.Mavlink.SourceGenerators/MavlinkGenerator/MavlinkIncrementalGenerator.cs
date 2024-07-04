@@ -51,6 +51,8 @@ public sealed class MavlinkIncrementalGenerator : IIncrementalGenerator, IDispos
 	{
 		try
 		{
+			List<MavlinkCachedMessage> messagesCache = new();
+
 			var fileContents = files.ToDictionary(f => f.Path, f => f.Content);
 			var orderedFiles = MavlinkXmlIncludeOrderer.GetOrderedFiles(fileContents);
 
@@ -59,8 +61,22 @@ public sealed class MavlinkIncrementalGenerator : IIncrementalGenerator, IDispos
 				var content = fileContents[xmlFile];
 				var mavlinkData = MavlinkXmlParser.Parse(content);
 				var namespaceName = $"MavlinkTypes.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(xmlFile))}";
-				var members = _contentGenerator.GenerateNamespaceMembers(mavlinkData, namespaceName);
+
+				var members = _contentGenerator.GenerateNamespaceMembers(mavlinkData, namespaceName, out var messagesCacheOut);
+
+				if (messagesCacheOut.Count > 0)
+				{
+					messagesCache.AddRange(messagesCacheOut);
+				}
+
 				AddSource(sourceProductionContext, namespaceName, members);
+			}
+
+			// Generate the cached messages class after all files have been processed
+			if (messagesCache.Count > 0)
+			{
+				var cachedMessagesClass = MavlinkCachedMessagesGenerator.GenerateMessagesCache(messagesCache);
+				AddSource(sourceProductionContext, "MavlinkTypes", new List<MemberDeclarationSyntax> { cachedMessagesClass });
 			}
 		}
 		catch (Exception ex)
