@@ -10,7 +10,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{2ABC6460-2DF6-4827-BE09-89A6020E8D04}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		Directory.Packages.props = Directory.Packages.props
+		PolySharp.Shared.targets = PolySharp.Shared.targets
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink", "mavlink\Shmyndra.Mavlink\Shmyndra.Mavlink.csproj", "{0E997B51-A9D4-411A-AC0A-518B4D121637}"
