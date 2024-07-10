@@ -7,6 +7,8 @@ public class DroneCommunication
 	private readonly TcpStream _tcpStream;
 	private readonly byte[] _buffer = new byte[1024];
 
+	public event EventHandler<byte[]>? DataReceived;
+
 	public DroneCommunication(string url)
 	{
 		_tcpStream = new TcpStream(url);
@@ -34,7 +36,8 @@ public class DroneCommunication
 				int bytesRead = _tcpStream.Read(_buffer, 0, _buffer.Length);
 				if (bytesRead > 0)
 				{
-					ProcessReceivedData(_buffer, bytesRead);
+					DataReceived?.Invoke(this, _buffer);
+					//ProcessReceivedData(_buffer, bytesRead);
 				}
 			}
 			catch (Exception ex)
@@ -44,27 +47,50 @@ public class DroneCommunication
 		}
 	}
 
-	private void ProcessReceivedData(byte[] data, int length)
-	{
-		// Assuming data is a MAVLink message, you would parse it here
-		var heartbeat = new MavlinkTypes.Minimal.Heartbeat
-		{
-			Type = (MavlinkTypes.Minimal.MavType)data[0],
-			Autopilot = (MavlinkTypes.Minimal.MavAutopilot)data[1],
-			BaseMode = (MavlinkTypes.Minimal.MavModeFlag)data[2],
-			CustomMode = BitConverter.ToUInt32(data, 3),
-			SystemStatus = (MavlinkTypes.Minimal.MavState)data[7],
-			MavlinkVersion = data[8]
-		};
+	//private void ProcessReceivedData(byte[] data, int length)
+	//{
+	//	// Assuming data is a MAVLink message, you would parse it here
+	//	var heartbeat = new MavlinkTypes.Minimal.Heartbeat
+	//	{
+	//		Type = (MavlinkTypes.Minimal.MavType)data[0],
+	//		Autopilot = (MavlinkTypes.Minimal.MavAutopilot)data[1],
+	//		BaseMode = (MavlinkTypes.Minimal.MavModeFlag)data[2],
+	//		CustomMode = BitConverter.ToUInt32(data, 3),
+	//		SystemStatus = (MavlinkTypes.Minimal.MavState)data[7],
+	//		MavlinkVersion = data[8]
+	//	};
 
-		Console.WriteLine("Received Heartbeat:");
-		Console.WriteLine($"Type: {heartbeat.Type}");
-		Console.WriteLine($"Autopilot: {heartbeat.Autopilot}");
-		Console.WriteLine($"BaseMode: {heartbeat.BaseMode}");
-		Console.WriteLine($"CustomMode: {heartbeat.CustomMode}");
-		Console.WriteLine($"SystemStatus: {heartbeat.SystemStatus}");
-		Console.WriteLine($"MavlinkVersion: {heartbeat.MavlinkVersion}");
-	}
+	//	Console.WriteLine("Received Heartbeat:");
+	//	Console.WriteLine($"Type: {heartbeat.Type}");
+	//	Console.WriteLine($"Autopilot: {heartbeat.Autopilot}");
+	//	Console.WriteLine($"BaseMode: {heartbeat.BaseMode}");
+	//	Console.WriteLine($"CustomMode: {heartbeat.CustomMode}");
+	//	Console.WriteLine($"SystemStatus: {heartbeat.SystemStatus}");
+	//	Console.WriteLine($"MavlinkVersion: {heartbeat.MavlinkVersion}");
+	//}	
+
+	//private void ProcessReceivedData(byte[] data, int length)
+	//{
+	//	var test = MavlinkV1PacketConverter.FromByteArray(data);
+	//	// Assuming data is a MAVLink message, you would parse it here
+	//	var heartbeat = new MavlinkTypes.Minimal.Heartbeat
+	//	{
+	//		Type = (MavlinkTypes.Minimal.MavType)data[0],
+	//		Autopilot = (MavlinkTypes.Minimal.MavAutopilot)data[1],
+	//		BaseMode = (MavlinkTypes.Minimal.MavModeFlag)data[2],
+	//		CustomMode = BitConverter.ToUInt32(data, 3),
+	//		SystemStatus = (MavlinkTypes.Minimal.MavState)data[7],
+	//		MavlinkVersion = data[8]
+	//	};
+
+	//	Console.WriteLine("Received Heartbeat:");
+	//	Console.WriteLine($"Type: {heartbeat.Type}");
+	//	Console.WriteLine($"Autopilot: {heartbeat.Autopilot}");
+	//	Console.WriteLine($"BaseMode: {heartbeat.BaseMode}");
+	//	Console.WriteLine($"CustomMode: {heartbeat.CustomMode}");
+	//	Console.WriteLine($"SystemStatus: {heartbeat.SystemStatus}");
+	//	Console.WriteLine($"MavlinkVersion: {heartbeat.MavlinkVersion}");
+	//}
 
 	public void Disconnect()
 	{
