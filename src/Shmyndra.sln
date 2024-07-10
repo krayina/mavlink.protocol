@@ -25,9 +25,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.Proxy.Cons
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.Protocol.v3_0.Tests", "mavlink\Shmyndra.Mavlink.Protocol.v3_0.Tests\Shmyndra.Mavlink.Protocol.v3_0.Tests.csproj", "{1712CE07-3ABA-4876-803D-F3891988E00E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shmyndra.Mavlink.V1", "mavlink\Shmyndra.Mavlink.V1\Shmyndra.Mavlink.V1.csproj", "{37568044-D29A-474A-8ED4-7A4F11E1A4C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.V1", "mavlink\Shmyndra.Mavlink.V1\Shmyndra.Mavlink.V1.csproj", "{37568044-D29A-474A-8ED4-7A4F11E1A4C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shmyndra.Mavlink.V2", "mavlink\Shmyndra.Mavlink.V2\Shmyndra.Mavlink.V2.csproj", "{7B780D42-8BB0-4CF2-8B32-3D6FF63F670D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.V2", "mavlink\Shmyndra.Mavlink.V2\Shmyndra.Mavlink.V2.csproj", "{7B780D42-8BB0-4CF2-8B32-3D6FF63F670D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
