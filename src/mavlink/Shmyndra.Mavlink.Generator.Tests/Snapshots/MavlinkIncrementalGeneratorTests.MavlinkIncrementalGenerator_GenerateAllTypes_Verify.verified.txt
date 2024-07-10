@@ -2503,72 +2503,39 @@ namespace MavlinkTypes.TestMavlinkCommon
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+
 namespace MavlinkTypes
 {
     public static class MavlinkMessages
     {
         private static readonly Dictionary<Type, (uint Id, string XmlName)> _mavlinkMessagesByType = new()
         {
-            {
-                typeof(MavlinkTypes.TestMavlinkMinimal.Heartbeat),
-                (0U, "HEARTBEAT")
-            },
-            {
-                typeof(MavlinkTypes.TestMavlinkMinimal.ProtocolVersion),
-                (300U, "PROTOCOL_VERSION")
-            },
-            {
-                typeof(MavlinkTypes.TestMavlinkCommon.SysStatus),
-                (1U, "SYS_STATUS")
-            },
-            {
-                typeof(MavlinkTypes.TestMavlinkCommon.SystemTime),
-                (2U, "SYSTEM_TIME")
-            },
-            {
-                typeof(MavlinkTypes.TestMavlinkCommon.Ping),
-                (4U, "PING")
-            },
-            {
-                typeof(MavlinkTypes.TestMavlinkCommon.ChangeOperatorControl),
-                (5U, "CHANGE_OPERATOR_CONTROL")
-            }
+			{ typeof(MavlinkTypes.TestMavlinkMinimal.Heartbeat), (0U, "HEARTBEAT") },
+			{ typeof(MavlinkTypes.TestMavlinkMinimal.ProtocolVersion), (300U, "PROTOCOL_VERSION") },
+			{ typeof(MavlinkTypes.TestMavlinkCommon.SysStatus), (1U, "SYS_STATUS") },
+			{ typeof(MavlinkTypes.TestMavlinkCommon.SystemTime), (2U, "SYSTEM_TIME") },
+			{ typeof(MavlinkTypes.TestMavlinkCommon.Ping), (4U, "PING") },
+			{ typeof(MavlinkTypes.TestMavlinkCommon.ChangeOperatorControl), (5U, "CHANGE_OPERATOR_CONTROL") }
         };
+
         private static readonly Dictionary<uint, (Type Type, string XmlName)> _mavlinkMessagesById = new()
         {
-            {
-                0U,
-                (typeof(MavlinkTypes.TestMavlinkMinimal.Heartbeat), "HEARTBEAT")
-            },
-            {
-                300U,
-                (typeof(MavlinkTypes.TestMavlinkMinimal.ProtocolVersion), "PROTOCOL_VERSION")
-            },
-            {
-                1U,
-                (typeof(MavlinkTypes.TestMavlinkCommon.SysStatus), "SYS_STATUS")
-            },
-            {
-                2U,
-                (typeof(MavlinkTypes.TestMavlinkCommon.SystemTime), "SYSTEM_TIME")
-            },
-            {
-                4U,
-                (typeof(MavlinkTypes.TestMavlinkCommon.Ping), "PING")
-            },
-            {
-                5U,
-                (typeof(MavlinkTypes.TestMavlinkCommon.ChangeOperatorControl), "CHANGE_OPERATOR_CONTROL")
-            }
+			{ 0U, (typeof(MavlinkTypes.TestMavlinkMinimal.Heartbeat), "HEARTBEAT") },
+			{ 300U, (typeof(MavlinkTypes.TestMavlinkMinimal.ProtocolVersion), "PROTOCOL_VERSION") },
+			{ 1U, (typeof(MavlinkTypes.TestMavlinkCommon.SysStatus), "SYS_STATUS") },
+			{ 2U, (typeof(MavlinkTypes.TestMavlinkCommon.SystemTime), "SYSTEM_TIME") },
+			{ 4U, (typeof(MavlinkTypes.TestMavlinkCommon.Ping), "PING") },
+			{ 5U, (typeof(MavlinkTypes.TestMavlinkCommon.ChangeOperatorControl), "CHANGE_OPERATOR_CONTROL") }
         };
-        public static uint GetId<T>()
-            where T : MavlinkMessage
+
+        public static uint GetId<T>() where T : MavlinkMessage
         {
             return _mavlinkMessagesByType[typeof(T)].Id;
         }
 
-        public static string GetXmlName<T>()
-            where T : MavlinkMessage
+        public static string GetXmlName<T>() where T : MavlinkMessage
         {
             return _mavlinkMessagesByType[typeof(T)].XmlName;
         }
@@ -2583,16 +2550,14 @@ namespace MavlinkTypes
             return _mavlinkMessagesById[id].Type;
         }
 
-        public static bool TryGetId<T>(out uint id)
-            where T : MavlinkMessage
+        public static bool TryGetId<T>(out uint id) where T : MavlinkMessage
         {
             var isExists = _mavlinkMessagesByType.TryGetValue(typeof(T), out var value);
             id = isExists ? value.Id : default;
             return isExists;
         }
 
-        public static bool TryGetXmlName<T>(out string xmlName)
-            where T : MavlinkMessage
+        public static bool TryGetXmlName<T>(out string xmlName) where T : MavlinkMessage
         {
             var isExists = _mavlinkMessagesByType.TryGetValue(typeof(T), out var value);
             xmlName = isExists ? value.XmlName : default;

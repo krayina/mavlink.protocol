@@ -36,32 +36,29 @@ namespace MavlinkTypes.Testfile
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+
 namespace MavlinkTypes
 {
     public static class MavlinkMessages
     {
         private static readonly Dictionary<Type, (uint Id, string XmlName)> _mavlinkMessagesByType = new()
         {
-            {
-                typeof(MavlinkTypes.Testfile.TestMessage),
-                (22U, "TEST_MESSAGE")
-            }
+			{ typeof(MavlinkTypes.Testfile.TestMessage), (22U, "TEST_MESSAGE") }
         };
+
         private static readonly Dictionary<uint, (Type Type, string XmlName)> _mavlinkMessagesById = new()
         {
-            {
-                22U,
-                (typeof(MavlinkTypes.Testfile.TestMessage), "TEST_MESSAGE")
-            }
+			{ 22U, (typeof(MavlinkTypes.Testfile.TestMessage), "TEST_MESSAGE") }
         };
-        public static uint GetId<T>()
-            where T : MavlinkMessage
+
+        public static uint GetId<T>() where T : MavlinkMessage
         {
             return _mavlinkMessagesByType[typeof(T)].Id;
         }
 
-        public static string GetXmlName<T>()
-            where T : MavlinkMessage
+        public static string GetXmlName<T>() where T : MavlinkMessage
         {
             return _mavlinkMessagesByType[typeof(T)].XmlName;
         }
@@ -76,16 +73,14 @@ namespace MavlinkTypes
             return _mavlinkMessagesById[id].Type;
         }
 
-        public static bool TryGetId<T>(out uint id)
-            where T : MavlinkMessage
+        public static bool TryGetId<T>(out uint id) where T : MavlinkMessage
         {
             var isExists = _mavlinkMessagesByType.TryGetValue(typeof(T), out var value);
             id = isExists ? value.Id : default;
             return isExists;
         }
 
-        public static bool TryGetXmlName<T>(out string xmlName)
-            where T : MavlinkMessage
+        public static bool TryGetXmlName<T>(out string xmlName) where T : MavlinkMessage
         {
             var isExists = _mavlinkMessagesByType.TryGetValue(typeof(T), out var value);
             xmlName = isExists ? value.XmlName : default;
