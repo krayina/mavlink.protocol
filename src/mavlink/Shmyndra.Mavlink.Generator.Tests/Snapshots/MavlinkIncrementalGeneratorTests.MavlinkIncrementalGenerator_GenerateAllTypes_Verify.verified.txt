@@ -2507,7 +2507,7 @@ namespace MavlinkTypes
 {
     public static class MavlinkMessages
     {
-        private static Dictionary<Type, (ulong Id, string XmlName)> _mavlinkMessages = new()
+        private static readonly Dictionary<Type, (uint Id, string XmlName)> _mavlinkMessagesByType = new()
         {
             {
                 typeof(MavlinkTypes.TestMavlinkMinimal.Heartbeat),
@@ -2534,16 +2534,83 @@ namespace MavlinkTypes
                 (5U, "CHANGE_OPERATOR_CONTROL")
             }
         };
-        public static ulong GetId<T>()
+        private static readonly Dictionary<uint, (Type Type, string XmlName)> _mavlinkMessagesById = new()
+        {
+            {
+                0U,
+                (typeof(MavlinkTypes.TestMavlinkMinimal.Heartbeat), "HEARTBEAT")
+            },
+            {
+                300U,
+                (typeof(MavlinkTypes.TestMavlinkMinimal.ProtocolVersion), "PROTOCOL_VERSION")
+            },
+            {
+                1U,
+                (typeof(MavlinkTypes.TestMavlinkCommon.SysStatus), "SYS_STATUS")
+            },
+            {
+                2U,
+                (typeof(MavlinkTypes.TestMavlinkCommon.SystemTime), "SYSTEM_TIME")
+            },
+            {
+                4U,
+                (typeof(MavlinkTypes.TestMavlinkCommon.Ping), "PING")
+            },
+            {
+                5U,
+                (typeof(MavlinkTypes.TestMavlinkCommon.ChangeOperatorControl), "CHANGE_OPERATOR_CONTROL")
+            }
+        };
+        public static uint GetId<T>()
             where T : MavlinkMessage
         {
-            return _mavlinkMessages[typeof(T)].Id;
+            return _mavlinkMessagesByType[typeof(T)].Id;
         }
 
         public static string GetXmlName<T>()
             where T : MavlinkMessage
         {
-            return _mavlinkMessages[typeof(T)].XmlName;
+            return _mavlinkMessagesByType[typeof(T)].XmlName;
+        }
+
+        public static string GetXmlName(uint id)
+        {
+            return _mavlinkMessagesById[id].XmlName;
+        }
+
+        public static Type GetType(uint id)
+        {
+            return _mavlinkMessagesById[id].Type;
+        }
+
+        public static bool TryGetId<T>(out uint id)
+            where T : MavlinkMessage
+        {
+            var isExists = _mavlinkMessagesByType.TryGetValue(typeof(T), out var value);
+            id = isExists ? value.Id : default;
+            return isExists;
+        }
+
+        public static bool TryGetXmlName<T>(out string xmlName)
+            where T : MavlinkMessage
+        {
+            var isExists = _mavlinkMessagesByType.TryGetValue(typeof(T), out var value);
+            xmlName = isExists ? value.XmlName : default;
+            return isExists;
+        }
+
+        public static bool TryGetXmlName(uint id, out string xmlName)
+        {
+            var isExists = _mavlinkMessagesById.TryGetValue(id, out var value);
+            xmlName = isExists ? value.XmlName : default;
+            return isExists;
+        }
+
+        public static bool TryGetType(uint id, out Type type)
+        {
+            var isExists = _mavlinkMessagesById.TryGetValue(id, out var value);
+            type = isExists ? value.Type : default;
+            return isExists;
         }
     }
 }
