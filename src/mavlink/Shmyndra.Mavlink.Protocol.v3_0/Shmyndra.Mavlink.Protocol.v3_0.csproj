@@ -5,20 +5,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Shmyndra.Mavlink.V1\Shmyndra.Mavlink.V1.csproj" />
+    <ProjectReference Include="..\Shmyndra.Mavlink.V2\Shmyndra.Mavlink.V2.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Shmyndra.Mavlink.Generator\Shmyndra.Mavlink.Generator.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
       <OutputItemType>Analyzer</OutputItemType>
     </ProjectReference>
-    <ProjectReference Include="..\Shmyndra.Mavlink\Shmyndra.Mavlink.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Include="**/*.xml" />
-  </ItemGroup>
-
+  
   <!-- DEBUG -->
   <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
     <!--<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>Generated/Analyzers</CompilerGeneratedFilesOutputPath>-->
   </PropertyGroup>
+  
+  <ItemGroup>
+    <AdditionalFiles Include="**/*.xml" />
+  </ItemGroup>
 </Project>
