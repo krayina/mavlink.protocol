@@ -68,7 +68,7 @@ internal static class Utilities
 		return node.WithLeadingTrivia(existingTrivia.AddRange(remarksTrivia));
 	}
 
-	public static string GetEnumBaseType(List<ulong> values)
+	public static string DetermineEnumBaseType(IEnumerable<ulong> values)
 	{
 		var maxValue = values.Max();
 		if (maxValue <= byte.MaxValue) return "byte";

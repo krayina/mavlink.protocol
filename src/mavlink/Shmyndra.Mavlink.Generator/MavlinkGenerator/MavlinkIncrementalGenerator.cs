@@ -13,6 +13,7 @@ public sealed class MavlinkIncrementalGenerator : IIncrementalGenerator, IDispos
 	private readonly AssemblyResolver _assemblyResolver;
 	private readonly MavlinkMemberDefinition _contentGenerator;
 	private bool _disposed;
+	private readonly HashSet<string> _generatedFiles = new();
 
 	public MavlinkIncrementalGenerator()
 		: this(new MavlinkEnumTypesGenerator(), new MavlinkMessageTypesGenerator(), new MavlinkSpecificationTypeGenerator())
@@ -51,25 +52,13 @@ public sealed class MavlinkIncrementalGenerator : IIncrementalGenerator, IDispos
 	{
 		try
 		{
-			List<MavlinkCachedMessage> messagesCache = new();
-
+			var messagesCache = new List<MavlinkCachedMessage>();
 			var fileContents = files.ToDictionary(f => f.Path, f => f.Content);
-			var orderedFiles = MavlinkXmlIncludeOrderer.GetOrderedFiles(fileContents);
+			var rootFileTrees = MavlinkFilesTreeBuilder.Build(fileContents);
 
-			foreach (var xmlFile in orderedFiles)
+			foreach (var rootFileTree in rootFileTrees)
 			{
-				var content = fileContents[xmlFile];
-				var mavlinkData = MavlinkXmlParser.Parse(content);
-				var namespaceName = $"MavlinkTypes.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(xmlFile))}";
-
-				var members = _contentGenerator.GenerateNamespaceMembers(mavlinkData, namespaceName, out var messagesCacheOut);
-
-				if (messagesCacheOut.Count > 0)
-				{
-					messagesCache.AddRange(messagesCacheOut);
-				}
-
-				AddSource(sourceProductionContext, namespaceName, members);
+				ProcessFileTree(sourceProductionContext, rootFileTree, fileContents, messagesCache);
 			}
 
 			// Generate the cached messages class after all files have been processed
@@ -90,6 +79,38 @@ public sealed class MavlinkIncrementalGenerator : IIncrementalGenerator, IDispos
 				)
 			);
 		}
+	}
+
+	private void ProcessFileTree(
+		SourceProductionContext context,
+		MavlinkFilesTreeBuilder.MavlinkFileNode node,
+		Dictionary<string, string> fileContents,
+		List<MavlinkCachedMessage> messagesCache)
+	{
+		foreach (var include in node.Includes)
+		{
+			ProcessFileTree(context, include, fileContents, messagesCache);
+		}
+
+		if (_generatedFiles.Contains(node.FilePath))
+		{
+			return;
+		}
+
+		var content = fileContents[node.FilePath];
+		var mavlinkData = MavlinkXmlParser.Parse(content);
+		var namespaceName = $"MavlinkTypes.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(node.FilePath))}";
+
+		var members = _contentGenerator.GenerateNamespaceMembers(mavlinkData, namespaceName, out var messagesCacheOut);
+
+		if (messagesCacheOut.Count > 0)
+		{
+			messagesCache.AddRange(messagesCacheOut);
+		}
+
+		AddSource(context, namespaceName, members);
+
+		_generatedFiles.Add(node.FilePath);
 	}
 
 	private void AddSource(SourceProductionContext context, string namespaceName, List<MemberDeclarationSyntax> members)
