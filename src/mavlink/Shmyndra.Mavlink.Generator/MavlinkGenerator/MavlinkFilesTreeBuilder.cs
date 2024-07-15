@@ -1,61 +1,58 @@
-﻿using System.Xml.Linq;
+﻿namespace Shmyndra.Mavlink.Generator;
 
-namespace Shmyndra.Mavlink.Generator;
+public interface IMavlinkFilesTreeBuilder
+{
+	List<MavlinkFilesTreeBuilder.MavlinkFileNode> Build(Dictionary<string, string> fileContents);
+}
 
 /// <summary>
-/// Provides functionality to build a tree of MAVLink files based on include dependencies.
+/// Provides functionality to build a tree of MAVLink files based on include dependencies and parse them into MavlinkData.
 /// </summary>
-public static class MavlinkFilesTreeBuilder
+public class MavlinkFilesTreeBuilder : IMavlinkFilesTreeBuilder
 {
 	/// <summary>
 	/// Represents a node in the MAVLink files tree.
 	/// </summary>
 	/// <param name="FilePath">The path to the MAVLink file.</param>
+	/// <param name="Data">The parsed MAVLink data for the file.</param>
 	/// <param name="Includes">The list of included files for this node.</param>
-	public record MavlinkFileNode(string FilePath, List<MavlinkFileNode> Includes);
+	public record MavlinkFileNode(string FilePath, MavlinkData Data, List<MavlinkFileNode> Includes);
+
+	private readonly IMavlinkXmlParser _parser;
+
+	public MavlinkFilesTreeBuilder(IMavlinkXmlParser parser)
+	{
+		_parser = parser;
+	}
 
 	/// <summary>
-	/// Builds a tree of MAVLink files based on their include dependencies.
+	/// Builds a tree of MAVLink files based on their include dependencies and parses them into MavlinkData.
 	/// </summary>
 	/// <param name="fileContents">A dictionary with file paths as keys and file contents as values.</param>
 	/// <returns>The list of root nodes of the MAVLink files tree.</returns>
-	public static List<MavlinkFileNode> Build(Dictionary<string, string> fileContents)
+	public List<MavlinkFileNode> Build(Dictionary<string, string> fileContents)
 	{
-		var nodes = fileContents.Keys.ToDictionary(path => path, path => new MavlinkFileNode(path, new List<MavlinkFileNode>()));
+		// Create nodes with parsed MavlinkData for each file
+		var nodes = fileContents.ToDictionary(
+			kvp => kvp.Key,
+			kvp => new MavlinkFileNode(kvp.Key, _parser.Parse(kvp.Value), new List<MavlinkFileNode>())
+		);
 
+		// Populate the include dependencies for each node
 		foreach (var kvp in fileContents)
 		{
-			var includes = ExtractIncludes(kvp.Value);
-			foreach (var include in includes)
+			var node = nodes[kvp.Key];
+			foreach (var include in node.Data.Includes)
 			{
 				var includePath = Path.Combine(Path.GetDirectoryName(kvp.Key)!, include);
 				if (nodes.TryGetValue(includePath, out var includeNode))
 				{
-					nodes[kvp.Key].Includes.Add(includeNode);
+					node.Includes.Add(includeNode);
 				}
 			}
 		}
 
-		var rootNodes = nodes.Values.Where(node => !nodes.Values.Any(n => n.Includes.Contains(node))).ToList();
-		return rootNodes;
-	}
-
-	/// <summary>
-	/// Extracts the list of includes from the content of a MAVLink file.
-	/// </summary>
-	/// <param name="content">The content of the MAVLink file.</param>
-	/// <returns>A list of file paths that are included in the MAVLink file.</returns>
-	private static List<string> ExtractIncludes(string content)
-	{
-		var includes = new List<string>();
-		var doc = XDocument.Parse(content);
-		var includeElements = doc.Descendants("include");
-
-		foreach (var element in includeElements)
-		{
-			includes.Add(element.Value.Trim());
-		}
-
-		return includes;
+		// Identify and return the root nodes (nodes not included by any other node)
+		return nodes.Values.Where(node => !nodes.Values.Any(n => n.Includes.Contains(node))).ToList();
 	}
 }

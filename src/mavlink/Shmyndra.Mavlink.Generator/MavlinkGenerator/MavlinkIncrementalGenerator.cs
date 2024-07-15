@@ -8,23 +8,30 @@ using Microsoft.CodeAnalysis.Text;
 namespace Shmyndra.Mavlink.Generator;
 
 [Generator]
-public sealed class MavlinkIncrementalGenerator : IIncrementalGenerator, IDisposable
+public class MavlinkIncrementalGenerator : IIncrementalGenerator, IDisposable
 {
-	private readonly AssemblyResolver _assemblyResolver;
+	private readonly IMavlinkFilesTreeBuilder _treeBuilder;
 	private readonly MavlinkMemberDefinition _contentGenerator;
+	private readonly AssemblyResolver _assemblyResolver;
 	private bool _disposed;
 	private readonly HashSet<string> _generatedFiles = new();
 
 	public MavlinkIncrementalGenerator()
-		: this(new MavlinkEnumTypesGenerator(), new MavlinkMessageTypesGenerator(), new MavlinkSpecificationTypeGenerator())
+		: this(
+			new MavlinkFilesTreeBuilder(new MavlinkXmlParser()),
+			new MavlinkEnumTypesGenerator(),
+			new MavlinkMessageTypesGenerator(),
+			new MavlinkSpecificationTypeGenerator())
 	{
 	}
 
 	internal MavlinkIncrementalGenerator(
+		IMavlinkFilesTreeBuilder treeBuilder,
 		IMavlinkEnumTypesGenerator enumGenerator,
 		IMavlinkMessageTypesGenerator messageGenerator,
 		IMavlinkSpecificationTypeGenerator specificationGenerator)
 	{
+		_treeBuilder = treeBuilder;
 		_contentGenerator = new MavlinkMemberDefinition(enumGenerator, messageGenerator, specificationGenerator);
 		_assemblyResolver = new AssemblyResolver("System.ComponentModel.Annotations");
 	}
@@ -54,14 +61,13 @@ public sealed class MavlinkIncrementalGenerator : IIncrementalGenerator, IDispos
 		{
 			var messagesCache = new List<MavlinkCachedMessage>();
 			var fileContents = files.ToDictionary(f => f.Path, f => f.Content);
-			var rootFileTrees = MavlinkFilesTreeBuilder.Build(fileContents);
+			var rootFileTrees = _treeBuilder.Build(fileContents);
 
 			foreach (var rootFileTree in rootFileTrees)
 			{
-				ProcessFileTree(sourceProductionContext, rootFileTree, fileContents, messagesCache);
+				ProcessFileTree(sourceProductionContext, rootFileTree, messagesCache);
 			}
 
-			// Generate the cached messages class after all files have been processed
 			if (messagesCache.Count > 0)
 			{
 				var cachedMessagesCode = MavlinkCachedMessagesGenerator.GenerateMessagesCache(messagesCache);
@@ -84,12 +90,11 @@ public sealed class MavlinkIncrementalGenerator : IIncrementalGenerator, IDispos
 	private void ProcessFileTree(
 		SourceProductionContext context,
 		MavlinkFilesTreeBuilder.MavlinkFileNode node,
-		Dictionary<string, string> fileContents,
 		List<MavlinkCachedMessage> messagesCache)
 	{
 		foreach (var include in node.Includes)
 		{
-			ProcessFileTree(context, include, fileContents, messagesCache);
+			ProcessFileTree(context, include, messagesCache);
 		}
 
 		if (_generatedFiles.Contains(node.FilePath))
@@ -97,11 +102,9 @@ public sealed class MavlinkIncrementalGenerator : IIncrementalGenerator, IDispos
 			return;
 		}
 
-		var content = fileContents[node.FilePath];
-		var mavlinkData = MavlinkXmlParser.Parse(content);
 		var namespaceName = $"MavlinkTypes.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(node.FilePath))}";
 
-		var members = _contentGenerator.GenerateNamespaceMembers(mavlinkData, namespaceName, out var messagesCacheOut);
+		var members = _contentGenerator.GenerateNamespaceMembers(node.Data, namespaceName, out var messagesCacheOut, node.FilePath);
 
 		if (messagesCacheOut.Count > 0)
 		{

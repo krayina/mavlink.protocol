@@ -10,39 +10,83 @@ public interface IMavlinkEnumTypesGenerator
 	List<EnumDeclarationSyntax> GenerateEnums(
 		ImmutableArray<(string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries)> enums,
 		string namespaceName,
-		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping);
+		ImmutableArray<string> includes,
+		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping,
+		string filePath);
 }
 
 public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 {
-	private readonly Dictionary<string, EnumDeclarationSyntax> _generatedEnums = new();
-	private readonly Dictionary<string, string> _namespaceMap = new();
+	private readonly Dictionary<(string Namespace, string Name), EnumDeclarationSyntax> _generatedEnums = new();
+	private readonly Dictionary<string, HashSet<string>> _namespaceIncludesMap = new();
+	private readonly Dictionary<string, string> _fileNameToPathMap = new();
 
 	public List<EnumDeclarationSyntax> GenerateEnums(
 		ImmutableArray<(string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries)> enums,
 		string namespaceName,
-		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping)
+		ImmutableArray<string> includes,
+		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping,
+		string filePath)
 	{
 		var nameMappingDict = new Dictionary<string, (string Namespace, string TypeName)>();
 		var enumDeclarations = new List<EnumDeclarationSyntax>();
 
+		_fileNameToPathMap[Path.GetFileName(filePath)] = namespaceName;
+
 		foreach (var enumData in enums)
 		{
-			if (_generatedEnums.TryGetValue(enumData.Name, out var existingEnum))
+			var key = (Namespace: namespaceName, Name: enumData.Name);
+			var existingEnums = new List<(EnumDeclarationSyntax Enum, string Namespace)>();
+
+			// Check for existing enums in the current namespace or includes
+			foreach (var include in includes)
 			{
-				var mergedEnum = MergeEnums(existingEnum, enumData, namespaceName);
-				_generatedEnums[enumData.Name] = mergedEnum;
-				enumDeclarations.Add(mergedEnum);
-			}
-			else
-			{
-				var newEnum = CreateEnum(enumData, namespaceName);
-				_generatedEnums[enumData.Name] = newEnum;
-				_namespaceMap[enumData.Name] = namespaceName;
-				enumDeclarations.Add(newEnum);
+				if (_fileNameToPathMap.TryGetValue(include, out var includeNamespace))
+				{
+					var includeKey = (Namespace: includeNamespace, Name: enumData.Name);
+					if (_generatedEnums.TryGetValue(includeKey, out var includeEnum))
+					{
+						existingEnums.Add((includeEnum, includeNamespace));
+					}
+				}
 			}
 
-			nameMappingDict[enumData.Name] = (namespaceName, _generatedEnums[enumData.Name].Identifier.Text);
+			EnumDeclarationSyntax? finalEnum = null;
+
+			if (existingEnums.Count > 0)
+			{
+				// Merge all existing enums into one final enum
+				foreach (var (existingEnum, includeNamespace) in existingEnums)
+				{
+					if (finalEnum is null)
+					{
+						finalEnum = MergeEnums(existingEnum, enumData, includeNamespace);
+					}
+					else
+					{
+						finalEnum = MergeEnums(finalEnum, enumData, namespaceName);
+					}
+				}
+			}
+
+			if (finalEnum is null)
+			{
+				finalEnum = CreateEnum(enumData, namespaceName);
+			}
+
+			_generatedEnums[key] = finalEnum;
+			enumDeclarations.Add(finalEnum);
+
+			nameMappingDict[enumData.Name] = (namespaceName, _generatedEnums[key].Identifier.Text);
+
+			if (!_namespaceIncludesMap.ContainsKey(enumData.Name))
+			{
+				_namespaceIncludesMap[enumData.Name] = new HashSet<string>();
+			}
+			foreach (var include in includes)
+			{
+				_namespaceIncludesMap[enumData.Name].Add(include);
+			}
 		}
 
 		nameMapping = nameMappingDict.ToImmutableSortedDictionary();
@@ -77,14 +121,6 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 			.Select(entry => ulong.Parse(entry.Value!))
 			.ToList();
 
-		if (_generatedEnums.TryGetValue(enumData.Name, out var existingEnum))
-		{
-			var existingValues = existingEnum.Members
-				.Where(m => m.EqualsValue != null)
-				.Select(m => ulong.Parse(((LiteralExpressionSyntax)m.EqualsValue!.Value).Token.ValueText));
-			allValues.AddRange(existingValues);
-		}
-
 		string enumBaseType = Utilities.DetermineEnumBaseType(allValues);
 
 		var sortedEntries = enumData.Entries
@@ -115,10 +151,10 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 							SyntaxFactory.AttributeArgumentList(
 								SyntaxFactory.SeparatedList(new[]
 								{
-								SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
-									SyntaxKind.StringLiteralExpression,
-									SyntaxFactory.Literal(enumData.Name))
-								)
+							SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
+								SyntaxKind.StringLiteralExpression,
+								SyntaxFactory.Literal(enumData.Name))
+							)
 								})
 							)
 						)
@@ -138,13 +174,8 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		return enumDeclaration;
 	}
 
-	private EnumDeclarationSyntax MergeEnums(EnumDeclarationSyntax existingEnum, (string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries) newEnumData, string newNamespace)
+	private EnumDeclarationSyntax MergeEnums(EnumDeclarationSyntax existingEnum, (string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries) newEnumData, string existingNamespace)
 	{
-		if (!_namespaceMap.TryGetValue(existingEnum.Identifier.Text, out var existingNamespace))
-		{
-			existingNamespace = newNamespace;
-		}
-
 		var updatedExistingMembers = existingEnum.Members.Select(m =>
 		{
 			var newMember = SyntaxFactory.EnumMemberDeclaration(m.Identifier.Text)

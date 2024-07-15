@@ -21,9 +21,9 @@ internal sealed class MavlinkMemberDefinition
 		_specificationGenerator = specificationGenerator;
 	}
 
-	public List<MemberDeclarationSyntax> GenerateNamespaceMembers(MavlinkData mavlinkData, string namespaceName, out List<MavlinkCachedMessage> messagesCache)
+	public List<MemberDeclarationSyntax> GenerateNamespaceMembers(MavlinkData mavlinkData, string namespaceName, out List<MavlinkCachedMessage> messagesCache, string filePath)
 	{
-		var allGeneratedEnumTypes = GenerateEnums(mavlinkData.Enums, namespaceName);
+		var allGeneratedEnumTypes = GenerateEnums(mavlinkData.Enums, namespaceName, mavlinkData.Includes, filePath);
 
 		foreach (var kvp in allGeneratedEnumTypes)
 		{
@@ -51,9 +51,11 @@ internal sealed class MavlinkMemberDefinition
 
 	private Dictionary<string, (string Namespace, string TypeName, EnumDeclarationSyntax Declaration)> GenerateEnums(
 		ImmutableArray<(string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries)> enums,
-		string namespaceName)
+		string namespaceName,
+		ImmutableArray<string> includes,
+		string filePath)
 	{
-		var enumDeclarations = _enumGenerator.GenerateEnums(enums, namespaceName, out var generatedMavlinkEnumTypes);
+		var enumDeclarations = _enumGenerator.GenerateEnums(enums, namespaceName, includes, out var generatedMavlinkEnumTypes, filePath);
 		return generatedMavlinkEnumTypes.ToDictionary(kvp => kvp.Key, kvp => (namespaceName, kvp.Value.TypeName, enumDeclarations.First(e => e.Identifier.Text == kvp.Value.TypeName)));
 	}
 

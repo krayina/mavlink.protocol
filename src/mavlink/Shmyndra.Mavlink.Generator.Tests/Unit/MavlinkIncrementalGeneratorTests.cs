@@ -124,11 +124,11 @@ public class MavlinkIncrementalGeneratorTests
 		var additional = ImmutableArray.Create<AdditionalText>(
 			new TestAdditionalFile("testFile.xml", @"<?xml version=""1.0""?>
 <mavlink>
-  <include>testSecondFile.xml</include>
   <include>testThirdFile.xml</include>
+  <include>testSecondFile.xml</include>
   <enums>
     <enum name=""MAV_CMD"">
-      <entry name=""MAV_CMD_PRS_SET_ARM"" value=""60020"" isDestination=""false"" hasLocation=""false"" />
+      <entry name=""MAV_CMD_PRS_SET_ARM"" value=""65536"" isDestination=""false"" hasLocation=""false"" />
     </enum>
   </enums>
 </mavlink>"),
