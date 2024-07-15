@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <mavlink>
-  <include>standard.xml</include>
+  <!--<include>standard.xml</include>-->
+  <include>minimal.xml</include>
   <version>3</version>
   <dialect>0</dialect>
   <enums>

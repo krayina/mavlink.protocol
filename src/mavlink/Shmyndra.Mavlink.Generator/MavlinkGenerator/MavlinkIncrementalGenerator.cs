@@ -49,7 +49,9 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator, IDisposable
 	private void RegisterSourceGeneration(IncrementalGeneratorInitializationContext context)
 	{
 		var xmlFiles = context.AdditionalTextsProvider
-			.Where(file => file.Path.EndsWith(".xml"))
+			.Where(file => file.Path.EndsWith(".xml")
+				// Files that are not included in the project marked as "_"
+				&& !Path.GetFileName(file.Path).StartsWith("_"))
 			.Select((file, _) => (file.Path, Content: file.GetText()!.ToString()))
 			.Collect();
 		context.RegisterSourceOutput(xmlFiles, GenerateSourceFiles);
