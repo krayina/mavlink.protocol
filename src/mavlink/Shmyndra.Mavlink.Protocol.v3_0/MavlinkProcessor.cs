@@ -27,22 +27,58 @@ public class MavlinkProcessor
 	{
 		if (MavlinkMessages.TryGetType(messageId, out var messageType))
 		{
-			var instance = Activator.CreateInstance(messageType);
+			var properties = messageType.GetProperties();
+			int offset = 0;
 
-			// Тут необхідно імплементувати логіку для десеріалізації payload у екземпляр instance
-
-			foreach (var property in messageType.GetProperties())
+			Debug.WriteLine($"ID:{messageId}");
+			foreach (var property in properties)
 			{
-				var value = property.GetValue(instance);
-				if (value != null)
-				{
-					Debug.WriteLine($"{property.Name}: {value}");
-				}
+				var value = ReadValueFromPayload(property.PropertyType, payload, ref offset);
+				Debug.WriteLine($"\t{property.Name}: {value}");
 			}
 		}
 		else
 		{
 			Debug.WriteLine($"Unknown message ID: {messageId}");
 		}
+	}
+
+	private dynamic? ReadValueFromPayload(Type type, byte[] payload, ref int offset)
+	{
+		dynamic? value = null;
+
+		if (type == typeof(byte))
+		{
+			value = payload[offset];
+			offset += sizeof(byte);
+		}
+		else if (type == typeof(uint))
+		{
+			value = BitConverter.ToUInt32(payload, offset);
+			offset += sizeof(uint);
+		}
+		else if (type == typeof(int))
+		{
+			value = BitConverter.ToInt32(payload, offset);
+			offset += sizeof(int);
+		}
+		else if (type == typeof(short))
+		{
+			value = BitConverter.ToInt16(payload, offset);
+			offset += sizeof(short);
+		}
+		else if (type == typeof(ushort))
+		{
+			value = BitConverter.ToUInt16(payload, offset);
+			offset += sizeof(ushort);
+		}
+		else if (type == typeof(float))
+		{
+			value = BitConverter.ToSingle(payload, offset);
+			offset += sizeof(float);
+		}
+		// Додайте підтримку інших типів даних за потреби
+
+		return value;
 	}
 }
