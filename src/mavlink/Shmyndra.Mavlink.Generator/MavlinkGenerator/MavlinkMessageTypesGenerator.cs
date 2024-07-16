@@ -53,10 +53,16 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 		var normalizedName = Utilities.ToCamelCase(messageData.Name);
 		var id = messageData.Id;
 
-		var properties = messageData.Fields.Select(field =>
+		var camelCasedFields = messageData.Fields.Select(field =>
+		(
+			field.Type,
+			Name: Utilities.ToCamelCase(field.Name),
+			field.Description
+		)).ToImmutableList();
+
+		var properties = camelCasedFields.Select(field =>
 		{
-			var normalizedFieldName = Utilities.ToCamelCase(field.Name);
-			var fieldName = normalizedFieldName == normalizedName ? "_" + normalizedFieldName : normalizedFieldName;
+			var fieldName = field.Name == normalizedName ? "_" + field.Name : field.Name;
 
 			string propertyType = field.Type switch
 			{
@@ -75,7 +81,10 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {field.Name.ToUpper()}");
 		}).ToArray();
 
-		return CreateRecordStructDeclaration(id, normalizedName, properties, messageData.Description, messageData.Name);
+		var createInstanceMethod = MavlinkMessageFactory.GenerateCreateInstanceMethod(normalizedName, camelCasedFields, generatedTypes);
+
+		return CreateRecordStructDeclaration(id, normalizedName, properties, messageData.Description, messageData.Name)
+			.AddMembers(createInstanceMethod);
 	}
 
 	private PropertyDeclarationSyntax CreatePropertyDeclaration(string propertyType, string fieldName)
