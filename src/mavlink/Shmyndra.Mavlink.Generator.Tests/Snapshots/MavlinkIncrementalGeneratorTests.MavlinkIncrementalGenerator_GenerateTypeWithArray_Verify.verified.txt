@@ -24,7 +24,7 @@ namespace MavlinkTypes.Testfile
         public static TestMessage CreateInstance(byte[] payload)
         {
             var tempUriArray = new char[230];
-            Buffer.BlockCopy(payload, 0, tempUriArray, 0, 230 * sizeof(char));
+            Buffer.BlockCopy(payload, 0, tempUriArray, 0, 460);
             var uri = tempUriArray.ToImmutableArray();
             return new TestMessage
             {

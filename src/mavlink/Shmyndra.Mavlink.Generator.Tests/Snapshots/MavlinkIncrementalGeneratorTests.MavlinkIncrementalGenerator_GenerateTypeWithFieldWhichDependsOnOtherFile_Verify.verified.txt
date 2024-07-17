@@ -51,7 +51,7 @@ namespace MavlinkTypes.Testsecondfile
 
         public static TestMessage CreateInstance(byte[] payload)
         {
-            var testValue = BitConverter.ToInt32(payload, 0); // Assuming 4-byte enum
+            var testValue = (byte)payload(payload, 0);
             var test = (MavlinkTypes.Testcommonfile.TestEnum)testValue;
             return new TestMessage
             {

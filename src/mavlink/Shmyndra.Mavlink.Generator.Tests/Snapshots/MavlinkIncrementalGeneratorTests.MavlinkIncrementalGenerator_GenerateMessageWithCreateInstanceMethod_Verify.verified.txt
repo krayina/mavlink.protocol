@@ -79,11 +79,11 @@ namespace MavlinkTypes.Testfile
         {
             var somefirstproperty = (sbyte)payload[0];
             var tempSomesecondpropertyArray = new char[230];
-            Buffer.BlockCopy(payload, 0, tempSomesecondpropertyArray, 0, 230 * sizeof(char));
+            Buffer.BlockCopy(payload, 1, tempSomesecondpropertyArray, 0, 460);
             var somesecondproperty = tempSomesecondpropertyArray.ToImmutableArray();
-            var somethirdpropertyValue = BitConverter.ToInt32(payload, 0); // Assuming 4-byte enum
+            var somethirdpropertyValue = BitConverter.ToUInt32(payload, 461);
             var somethirdproperty = (MavlinkTypes.Testfile.MavCmd)somethirdpropertyValue;
-            var somefourthpropertyValue = BitConverter.ToInt32(payload, 0); // Assuming 4-byte enum
+            var somefourthpropertyValue = BitConverter.ToUInt16(payload, 465);
             var somefourthproperty = (MavlinkTypes.Testsecondfile.EnumFromAnotherFile)somefourthpropertyValue;
             return new TestMessage
             {
