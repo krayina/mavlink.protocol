@@ -51,7 +51,7 @@ namespace MavlinkTypes.Testsecondfile
 
         public static TestMessage CreateInstance(byte[] payload)
         {
-            var testValue = (byte)payload(payload, 0);
+            var testValue = (byte)payload[0];
             var test = (MavlinkTypes.Testcommonfile.TestEnum)testValue;
             return new TestMessage
             {

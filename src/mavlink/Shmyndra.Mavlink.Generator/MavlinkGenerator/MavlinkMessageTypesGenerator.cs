@@ -11,7 +11,7 @@ public interface IMavlinkMessageTypesGenerator
 	List<RecordDeclarationSyntax> GenerateMessages(
 		ImmutableArray<(uint Id, string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields)> messages,
 		string namespaceName,
-		IImmutableDictionary<string, (string Namespace, string TypeName, string BaseType)> enumTypes,
+		IImmutableDictionary<string, (string Namespace, string TypeName)> enumTypes,
 		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping);
 }
 
@@ -22,7 +22,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 	public List<RecordDeclarationSyntax> GenerateMessages(
 		ImmutableArray<(uint Id, string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields)> messages,
 		string namespaceName,
-		IImmutableDictionary<string, (string Namespace, string TypeName, string BaseType)> enumTypes,
+		IImmutableDictionary<string, (string Namespace, string TypeName)> enumTypes,
 		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping)
 	{
 		var nameMappingDict = new Dictionary<string, (string Namespace, string TypeName)>();
@@ -48,7 +48,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 	private RecordDeclarationSyntax CreateRecordStruct(
 		(uint Id, string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields) messageData,
 		string namespaceName,
-		IImmutableDictionary<string, (string Namespace, string TypeName, string BaseType)> generatedTypes)
+		IImmutableDictionary<string, (string Namespace, string TypeName)> generatedTypes)
 	{
 		var normalizedName = Utilities.ToCamelCase(messageData.Name);
 		var id = messageData.Id;
@@ -82,7 +82,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {field.XmlName.ToUpper()}");
 		}).ToArray();
 
-		var createInstanceMethod = MavlinkMessagePayloadDeserializationGenerator.GenerateCreateInstanceMethod(normalizedName, camelCasedFields, generatedTypes);
+		var createInstanceMethod = MavlinkMessagePayloadDeserializationGenerator.GenerateCreateInstanceMethod((namespaceName, normalizedName), camelCasedFields, generatedTypes);
 
 		return CreateRecordStructDeclaration(id, normalizedName, properties, messageData.Description, messageData.Name)
 			.AddMembers(createInstanceMethod);
@@ -161,7 +161,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {originalName.ToUpper()}");
 	}
 
-	private string GetTypeName(string xmlType, string currentNamespace, IImmutableDictionary<string, (string Namespace, string TypeName, string BaseType)> generatedTypes)
+	private string GetTypeName(string xmlType, string currentNamespace, IImmutableDictionary<string, (string Namespace, string TypeName)> generatedTypes)
 	{
 		var typeParts = xmlType.Split('.');
 		var typeName = typeParts.Length > 1 ? typeParts.Last() : xmlType;

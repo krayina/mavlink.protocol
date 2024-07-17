@@ -1699,15 +1699,15 @@ namespace MavlinkTypes.TestMavlinkMinimal
 
         public static Heartbeat CreateInstance(byte[] payload)
         {
-            var typeValue = (byte)payload(payload, 0);
-            var type = (MavlinkTypes.TestMavlinkMinimal.MavType)typeValue;
-            var autopilotValue = (byte)payload(payload, 1);
-            var autopilot = (MavlinkTypes.TestMavlinkMinimal.MavAutopilot)autopilotValue;
-            var baseModeValue = (byte)payload(payload, 2);
-            var baseMode = (MavlinkTypes.TestMavlinkMinimal.MavModeFlag)baseModeValue;
+            var typeValue = (byte)payload[0];
+            var type = (MavType)typeValue;
+            var autopilotValue = (byte)payload[1];
+            var autopilot = (MavAutopilot)autopilotValue;
+            var baseModeValue = (byte)payload[2];
+            var baseMode = (MavModeFlag)baseModeValue;
             var customMode = BitConverter.ToUInt32(payload, 3);
-            var systemStatusValue = (byte)payload(payload, 7);
-            var systemStatus = (MavlinkTypes.TestMavlinkMinimal.MavState)systemStatusValue;
+            var systemStatusValue = (byte)payload[7];
+            var systemStatus = (MavState)systemStatusValue;
             var mavlinkVersion = payload[8];
             return new Heartbeat
             {
@@ -2513,11 +2513,11 @@ namespace MavlinkTypes.TestMavlinkCommon
         public static SysStatus CreateInstance(byte[] payload)
         {
             var onboardControlSensorsPresentValue = BitConverter.ToUInt32(payload, 0);
-            var onboardControlSensorsPresent = (MavlinkTypes.TestMavlinkCommon.MavSysStatusSensor)onboardControlSensorsPresentValue;
+            var onboardControlSensorsPresent = (MavSysStatusSensor)onboardControlSensorsPresentValue;
             var onboardControlSensorsEnabledValue = BitConverter.ToUInt32(payload, 4);
-            var onboardControlSensorsEnabled = (MavlinkTypes.TestMavlinkCommon.MavSysStatusSensor)onboardControlSensorsEnabledValue;
+            var onboardControlSensorsEnabled = (MavSysStatusSensor)onboardControlSensorsEnabledValue;
             var onboardControlSensorsHealthValue = BitConverter.ToUInt32(payload, 8);
-            var onboardControlSensorsHealth = (MavlinkTypes.TestMavlinkCommon.MavSysStatusSensor)onboardControlSensorsHealthValue;
+            var onboardControlSensorsHealth = (MavSysStatusSensor)onboardControlSensorsHealthValue;
             var load = BitConverter.ToUInt16(payload, 12);
             var voltageBattery = BitConverter.ToUInt16(payload, 14);
             var currentBattery = BitConverter.ToInt16(payload, 16);
@@ -2528,12 +2528,12 @@ namespace MavlinkTypes.TestMavlinkCommon
             var errorsCount2 = BitConverter.ToUInt16(payload, 25);
             var errorsCount3 = BitConverter.ToUInt16(payload, 27);
             var errorsCount4 = BitConverter.ToUInt16(payload, 29);
-            var onboardControlSensorsPresentExtendedValue = (byte)payload(payload, 31);
-            var onboardControlSensorsPresentExtended = (MavlinkTypes.TestMavlinkCommon.MavSysStatusSensorExtended)onboardControlSensorsPresentExtendedValue;
-            var onboardControlSensorsEnabledExtendedValue = (byte)payload(payload, 32);
-            var onboardControlSensorsEnabledExtended = (MavlinkTypes.TestMavlinkCommon.MavSysStatusSensorExtended)onboardControlSensorsEnabledExtendedValue;
-            var onboardControlSensorsHealthExtendedValue = (byte)payload(payload, 33);
-            var onboardControlSensorsHealthExtended = (MavlinkTypes.TestMavlinkCommon.MavSysStatusSensorExtended)onboardControlSensorsHealthExtendedValue;
+            var onboardControlSensorsPresentExtendedValue = BitConverter.ToUInt32(payload, 31);
+            var onboardControlSensorsPresentExtended = (MavSysStatusSensorExtended)onboardControlSensorsPresentExtendedValue;
+            var onboardControlSensorsEnabledExtendedValue = BitConverter.ToUInt32(payload, 35);
+            var onboardControlSensorsEnabledExtended = (MavSysStatusSensorExtended)onboardControlSensorsEnabledExtendedValue;
+            var onboardControlSensorsHealthExtendedValue = BitConverter.ToUInt32(payload, 39);
+            var onboardControlSensorsHealthExtended = (MavSysStatusSensorExtended)onboardControlSensorsHealthExtendedValue;
             return new SysStatus
             {
                 OnboardControlSensorsPresent = onboardControlSensorsPresent,

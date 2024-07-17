@@ -81,9 +81,9 @@ namespace MavlinkTypes.Testfile
             var tempSomesecondpropertyArray = new char[230];
             Buffer.BlockCopy(payload, 1, tempSomesecondpropertyArray, 0, 460);
             var somesecondproperty = tempSomesecondpropertyArray.ToImmutableArray();
-            var somethirdpropertyValue = BitConverter.ToUInt32(payload, 461);
-            var somethirdproperty = (MavlinkTypes.Testfile.MavCmd)somethirdpropertyValue;
-            var somefourthpropertyValue = BitConverter.ToUInt16(payload, 465);
+            var somethirdpropertyValue = (byte)payload[461];
+            var somethirdproperty = (MavCmd)somethirdpropertyValue;
+            var somefourthpropertyValue = (byte)payload[462];
             var somefourthproperty = (MavlinkTypes.Testsecondfile.EnumFromAnotherFile)somefourthpropertyValue;
             return new TestMessage
             {

@@ -8,9 +8,9 @@ namespace Shmyndra.Mavlink.Generator;
 public class MavlinkMessagePayloadDeserializationGenerator
 {
 	public static MethodDeclarationSyntax GenerateCreateInstanceMethod(
-		string messageTypeName,
+		(string Namespace, string Name) messageType,
 		ImmutableList<(FieldType Type, string Name, string XmlName, string? Description)> fields,
-		IImmutableDictionary<string, (string Namespace, string TypeName, string BaseType)> enumTypes)
+		IImmutableDictionary<string, (string Namespace, string TypeName)> enumTypes)
 	{
 		var methodBody = new StringBuilder();
 		var offset = 0;
@@ -26,10 +26,9 @@ public class MavlinkMessagePayloadDeserializationGenerator
 				var elementType = ExtractElementType(arrayType.TypeName);
 				methodBody.AppendLine(GenerateArrayDeserialization(variableName, fieldName, arrayType, elementType, ref offset));
 			}
-			else if (enumTypes.ContainsKey(fieldType.TypeName))
+			else if (fieldType is FieldEnumType enumType)
 			{
-				var enumTypeInfo = enumTypes[fieldType.TypeName];
-				methodBody.AppendLine(GenerateEnumDeserialization(variableName, enumTypeInfo, ref offset));
+				methodBody.AppendLine(GenerateEnumDeserialization(variableName, enumType, enumTypes, ref offset, messageType.Namespace));
 			}
 			else
 			{
@@ -43,10 +42,10 @@ public class MavlinkMessagePayloadDeserializationGenerator
 			return $"{field.Name} = {variableName}";
 		}));
 
-		methodBody.AppendLine($"return new {messageTypeName} {{ {propertiesAssignment} }};");
+		methodBody.AppendLine($"return new {messageType.Name} {{ {propertiesAssignment} }};");
 
 		var methodString = $@"
-public static {messageTypeName} CreateInstance(byte[] payload)
+public static {messageType.Name} CreateInstance(byte[] payload)
 {{
     {methodBody}
 }}";
@@ -82,45 +81,61 @@ var {variableName} = {tempArrayName}.ToImmutableArray();";
 		return result;
 	}
 
-	private static string GenerateEnumDeserialization(string variableName, (string Namespace, string TypeName, string BaseType) enumTypeInfo, ref int offset)
+	private static string GenerateEnumDeserialization(string variableName, FieldEnumType fieldEnumType, IImmutableDictionary<string, (string Namespace, string TypeName)> enumTypes, ref int offset, string currentNamespace)
 	{
-		var bitConverterMethod = GetBitConverterMethodForEnumBaseType(enumTypeInfo.BaseType);
-		var size = GetTypeSize(enumTypeInfo.BaseType);
-		var result = $@"
-var {variableName}Value = {bitConverterMethod}(payload, {offset});
-var {variableName} = ({enumTypeInfo.Namespace}.{enumTypeInfo.TypeName}){variableName}Value;";
+		var size = fieldEnumType.Size;
+		var (enumNamespace, enumTypeName) = enumTypes[fieldEnumType.TypeName];
+		var fullEnumTypeName = enumNamespace == currentNamespace ? enumTypeName : $"{enumNamespace}.{enumTypeName}";
+
+		string deserializationCode;
+		if (size == 1)
+		{
+			deserializationCode = $@"
+var {variableName}Value = (byte)payload[{offset}];
+var {variableName} = ({fullEnumTypeName}){variableName}Value;";
+		}
+		else
+		{
+			deserializationCode = $@"
+var {variableName}Value = BitConverter.{GetBitConverterMethodForSize(size)}(payload, {offset});
+var {variableName} = ({fullEnumTypeName}){variableName}Value;";
+		}
+
 		offset += size;
-		return result;
+		return deserializationCode;
 	}
 
 	private static string GenerateSimpleTypeDeserialization(string variableName, string typeName, ref int offset)
 	{
 		var size = GetTypeSize(typeName);
-		var result = typeName switch
+		string deserializationCode;
+
+		if (typeName == "byte")
 		{
-			"sbyte" => $@"var {variableName} = (sbyte)payload[{offset}];",
-			"byte" => $@"var {variableName} = payload[{offset}];",
-			"char" => $@"var {variableName} = BitConverter.ToChar(payload, {offset});",
-			_ => $@"var {variableName} = BitConverter.{GetBitConverterMethod(typeName)}(payload, {offset});"
-		};
+			deserializationCode = $@"var {variableName} = payload[{offset}];";
+		}
+		else if (typeName == "sbyte")
+		{
+			deserializationCode = $@"var {variableName} = (sbyte)payload[{offset}];";
+		}
+		else
+		{
+			deserializationCode = $@"var {variableName} = BitConverter.{GetBitConverterMethod(typeName)}(payload, {offset});";
+		}
+
 		offset += size;
-		return result;
+		return deserializationCode;
 	}
 
-	private static string GetBitConverterMethodForEnumBaseType(string baseType)
+	private static string GetBitConverterMethodForSize(int size)
 	{
-		return baseType switch
+		return size switch
 		{
-			"byte" => "(byte)payload",
-			"sbyte" => "(sbyte)payload",
-			"ushort" => "BitConverter.ToUInt16",
-			"short" => "BitConverter.ToInt16",
-			"uint" => "BitConverter.ToUInt32",
-			"int" => "BitConverter.ToInt32",
-			"ulong" => "BitConverter.ToUInt64",
-			"long" => "BitConverter.ToInt64",
-			"char" => "BitConverter.ToChar",
-			_ => throw new NotSupportedException($"Unsupported enum base type: {baseType}")
+			1 => "ToByte",
+			2 => "ToUInt16",
+			4 => "ToUInt32",
+			8 => "ToUInt64",
+			_ => throw new NotSupportedException($"Unsupported size: {size}")
 		};
 	}
 
@@ -136,8 +151,8 @@ var {variableName} = ({enumTypeInfo.Namespace}.{enumTypeInfo.TypeName}){variable
 			"ulong" => "ToUInt64",
 			"float" => "ToSingle",
 			"double" => "ToDouble",
-			"sbyte" => "ToSByte", // Додавання підтримки для sbyte
-			"byte" => "ToByte", // Додавання підтримки для byte
+			"sbyte" => "ToSByte",
+			"byte" => "ToByte",
 			"char" => "ToChar",
 			_ => throw new NotSupportedException($"Unsupported type: {typeName}")
 		};

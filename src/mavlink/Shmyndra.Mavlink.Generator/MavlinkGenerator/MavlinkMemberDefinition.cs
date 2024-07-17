@@ -9,7 +9,7 @@ internal sealed class MavlinkMemberDefinition
 	private readonly IMavlinkMessageTypesGenerator _messageGenerator;
 	private readonly IMavlinkSpecificationTypeGenerator _specificationGenerator;
 
-	private readonly Dictionary<string, (string Namespace, string TypeName, string BaseType)> _generatedTypes = new();
+	private readonly Dictionary<string, (string Namespace, string TypeName)> _generatedTypes = new();
 
 	public MavlinkMemberDefinition(
 		IMavlinkEnumTypesGenerator enumGenerator,
@@ -27,7 +27,7 @@ internal sealed class MavlinkMemberDefinition
 
 		foreach (var kvp in allGeneratedEnumTypes)
 		{
-			_generatedTypes[kvp.Key] = (kvp.Value.Namespace, kvp.Value.TypeName, kvp.Value.BaseType);
+			_generatedTypes[kvp.Key] = (kvp.Value.Namespace, kvp.Value.TypeName);
 		}
 
 		var allGeneratedMessageTypes = GenerateMessages(mavlinkData.Messages, namespaceName, _generatedTypes.ToImmutableSortedDictionary());
@@ -70,7 +70,7 @@ internal sealed class MavlinkMemberDefinition
 	private Dictionary<string, (string Namespace, string TypeName, RecordDeclarationSyntax Declaration)> GenerateMessages(
 		ImmutableArray<(uint Id, string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields)> messages,
 		string namespaceName,
-		IImmutableDictionary<string, (string Namespace, string TypeName, string BaseType)> allGeneratedEnumTypes)
+		IImmutableDictionary<string, (string Namespace, string TypeName)> allGeneratedEnumTypes)
 	{
 		var messageDeclarations = _messageGenerator.GenerateMessages(messages, namespaceName, allGeneratedEnumTypes, out var generatedMavlinkMessageTypes);
 		return generatedMavlinkMessageTypes.ToDictionary(kvp => kvp.Key, kvp => (namespaceName, kvp.Value.TypeName, messageDeclarations.First(m => m.Identifier.Text == kvp.Value.TypeName)));
