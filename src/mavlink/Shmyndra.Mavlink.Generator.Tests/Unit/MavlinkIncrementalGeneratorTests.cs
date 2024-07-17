@@ -158,4 +158,47 @@ public class MavlinkIncrementalGeneratorTests
 		// assert
 		return Verify(generatedCode).UseDirectory("..\\Snapshots");
 	}
+
+	[Fact]
+	public Task MavlinkIncrementalGenerator_GenerateMessageWithCreateInstanceMethod_Verify()
+	{
+		// arrange
+		var generator = new MavlinkIncrementalGenerator();
+
+		var additional = ImmutableArray.Create<AdditionalText>(
+			new TestAdditionalFile("testFile.xml", @"<?xml version=""1.0""?>
+<mavlink>
+  <include>testSecondFile.xml</include>
+  <enums>
+    <enum name=""MAV_CMD"">
+      <entry name=""MAV_CMD_PRS_SET_ARM"" value=""65536"" isDestination=""false"" hasLocation=""false"" />
+    </enum>
+  </enums>
+  <messages>
+    <message id=""22"" name=""TEST_MESSAGE"">
+      <field type=""int8_t"" name=""SomeFirstProperty"" />
+      <field type=""char[230]"" name=""SomeSecondProperty"" />
+      <field type=""uint8_t"" name=""SomeThirdProperty"" enum=""MAV_CMD"" />
+      <field type=""uint8_t"" name=""SomeFourthProperty"" enum=""ENUM_FROM_ANOTHER_FILE"" />
+    </message>
+  </messages>
+</mavlink>"),
+			new TestAdditionalFile("testSecondFile.xml", @"<?xml version=""1.0""?>
+<mavlink>
+  <enums>
+    <enum name=""ENUM_FROM_ANOTHER_FILE"">
+      <entry name=""MAV_CMD_Second_Test"" value=""60040"" isDestination=""false"" hasLocation=""false"" />
+    </enum>
+  </enums>
+</mavlink>")
+		);
+
+		// act
+		var driver = generator.RunIncrementalGeneratorDriver(additional);
+		var runResult = driver.GetRunResult().Results.Single();
+		var generatedCode = string.Join(Environment.NewLine, runResult.GeneratedSources.Select(source => source.SourceText.ToString()));
+
+		// assert
+		return Verify(generatedCode).UseDirectory("..\\Snapshots");
+	}
 }
