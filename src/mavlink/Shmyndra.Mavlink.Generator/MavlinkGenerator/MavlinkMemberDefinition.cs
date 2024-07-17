@@ -9,7 +9,7 @@ internal sealed class MavlinkMemberDefinition
 	private readonly IMavlinkMessageTypesGenerator _messageGenerator;
 	private readonly IMavlinkSpecificationTypeGenerator _specificationGenerator;
 
-	private readonly Dictionary<string, (string Namespace, string TypeName)> _generatedTypes = new();
+	private readonly Dictionary<string, (string Namespace, string TypeName, string BaseType)> _generatedTypes = new();
 
 	public MavlinkMemberDefinition(
 		IMavlinkEnumTypesGenerator enumGenerator,
@@ -27,7 +27,7 @@ internal sealed class MavlinkMemberDefinition
 
 		foreach (var kvp in allGeneratedEnumTypes)
 		{
-			_generatedTypes[kvp.Key] = (kvp.Value.Namespace, kvp.Value.TypeName);
+			_generatedTypes[kvp.Key] = (kvp.Value.Namespace, kvp.Value.TypeName, kvp.Value.BaseType);
 		}
 
 		var allGeneratedMessageTypes = GenerateMessages(mavlinkData.Messages, namespaceName, _generatedTypes.ToImmutableSortedDictionary());
@@ -49,23 +49,40 @@ internal sealed class MavlinkMemberDefinition
 		return members;
 	}
 
-	private Dictionary<string, (string Namespace, string TypeName, EnumDeclarationSyntax Declaration)> GenerateEnums(
+	private Dictionary<string, (string Namespace, string TypeName, string BaseType, EnumDeclarationSyntax Declaration)> GenerateEnums(
 		ImmutableArray<(string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries)> enums,
 		string namespaceName,
 		ImmutableArray<string> includes,
 		string filePath)
 	{
 		var enumDeclarations = _enumGenerator.GenerateEnums(enums, namespaceName, includes, out var generatedMavlinkEnumTypes, filePath);
-		return generatedMavlinkEnumTypes.ToDictionary(kvp => kvp.Key, kvp => (namespaceName, kvp.Value.TypeName, enumDeclarations.First(e => e.Identifier.Text == kvp.Value.TypeName)));
+
+		return generatedMavlinkEnumTypes.ToDictionary(
+			kvp => kvp.Key,
+			kvp =>
+			{
+				var enumDeclaration = enumDeclarations.First(e => e.Identifier.Text == kvp.Value.TypeName);
+				var baseType = GetEnumBaseType(enumDeclaration);
+				return (namespaceName, kvp.Value.TypeName, baseType, enumDeclaration);
+			});
 	}
 
 	private Dictionary<string, (string Namespace, string TypeName, RecordDeclarationSyntax Declaration)> GenerateMessages(
 		ImmutableArray<(uint Id, string Name, string? Description, ImmutableList<(FieldType Type, string Name, string? Description)> Fields)> messages,
 		string namespaceName,
-		IImmutableDictionary<string, (string Namespace, string TypeName)> allGeneratedEnumTypes)
+		IImmutableDictionary<string, (string Namespace, string TypeName, string BaseType)> allGeneratedEnumTypes)
 	{
 		var messageDeclarations = _messageGenerator.GenerateMessages(messages, namespaceName, allGeneratedEnumTypes, out var generatedMavlinkMessageTypes);
 		return generatedMavlinkMessageTypes.ToDictionary(kvp => kvp.Key, kvp => (namespaceName, kvp.Value.TypeName, messageDeclarations.First(m => m.Identifier.Text == kvp.Value.TypeName)));
 	}
-}
 
+	private string GetEnumBaseType(EnumDeclarationSyntax enumDeclaration)
+	{
+		if (enumDeclaration.BaseList?.Types.FirstOrDefault() is SimpleBaseTypeSyntax baseType)
+		{
+			return baseType.Type.ToString();
+		}
+
+		return "int"; // default base type
+	}
+}

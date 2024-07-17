@@ -10,7 +10,7 @@ public class MavlinkMessagePayloadDeserializationGenerator
 	public static MethodDeclarationSyntax GenerateCreateInstanceMethod(
 		string messageTypeName,
 		ImmutableList<(FieldType Type, string Name, string XmlName, string? Description)> fields,
-		IImmutableDictionary<string, (string Namespace, string TypeName)> enumTypes)
+		IImmutableDictionary<string, (string Namespace, string TypeName, string BaseType)> enumTypes)
 	{
 		var methodBody = new StringBuilder();
 
@@ -27,7 +27,8 @@ public class MavlinkMessagePayloadDeserializationGenerator
 			}
 			else if (enumTypes.ContainsKey(fieldType.TypeName))
 			{
-				methodBody.AppendLine(GenerateEnumDeserialization(variableName, fieldType.TypeName, enumTypes));
+				var enumTypeInfo = enumTypes[fieldType.TypeName];
+				methodBody.AppendLine(GenerateEnumDeserialization(variableName, enumTypeInfo));
 			}
 			else
 			{
@@ -46,13 +47,13 @@ public class MavlinkMessagePayloadDeserializationGenerator
 		var methodString = $@"
 public static {messageTypeName} CreateInstance(byte[] payload)
 {{
-	{methodBody}
+    {methodBody}
 }}";
 
 		var classWrapper = $@"
 public class TemporaryClass
 {{
-	{methodString}
+    {methodString}
 }}";
 
 		var syntaxTree = CSharpSyntaxTree.ParseText(classWrapper);
@@ -72,17 +73,33 @@ public class TemporaryClass
 	{
 		var tempArrayName = $"temp{originalName}Array";
 		return $@"
-            var {tempArrayName} = new {elementType}[{arrayType.Length}];
-            Buffer.BlockCopy(payload, 0, {tempArrayName}, 0, {arrayType.Length} * sizeof({elementType}));
-            var {variableName} = {tempArrayName}.ToImmutableArray();";
+var {tempArrayName} = new {elementType}[{arrayType.Length}];
+Buffer.BlockCopy(payload, 0, {tempArrayName}, 0, {arrayType.Length} * sizeof({elementType}));
+var {variableName} = {tempArrayName}.ToImmutableArray();";
 	}
 
-	private static string GenerateEnumDeserialization(string variableName, string typeName, IImmutableDictionary<string, (string Namespace, string TypeName)> enumTypes)
+	private static string GenerateEnumDeserialization(string variableName, (string Namespace, string TypeName, string BaseType) enumTypeInfo)
 	{
-		var enumType = enumTypes[typeName];
+		var bitConverterMethod = GetBitConverterMethodForEnumBaseType(enumTypeInfo.BaseType);
 		return $@"
-            var {variableName}Value = BitConverter.ToInt32(payload, 0); // Assuming 4-byte enum
-            var {variableName} = ({enumType.Namespace}.{enumType.TypeName}){variableName}Value;";
+var {variableName}Value = {bitConverterMethod}(payload, 0);
+var {variableName} = ({enumTypeInfo.Namespace}.{enumTypeInfo.TypeName}){variableName}Value;";
+	}
+
+	private static string GetBitConverterMethodForEnumBaseType(string baseType)
+	{
+		return baseType switch
+		{
+			"byte" => "(byte)payload[0]",
+			"sbyte" => "(sbyte)payload[0]",
+			"ushort" => "BitConverter.ToUInt16",
+			"short" => "BitConverter.ToInt16",
+			"uint" => "BitConverter.ToUInt32",
+			"int" => "BitConverter.ToInt32",
+			"ulong" => "BitConverter.ToUInt64",
+			"long" => "BitConverter.ToInt64",
+			_ => throw new NotSupportedException($"Unsupported enum base type: {baseType}")
+		};
 	}
 
 	private static string GenerateSimpleTypeDeserialization(string variableName, string typeName)
