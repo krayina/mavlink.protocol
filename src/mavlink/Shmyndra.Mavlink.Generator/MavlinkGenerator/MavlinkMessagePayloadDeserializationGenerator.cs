@@ -43,16 +43,19 @@ public class MavlinkMessagePayloadDeserializationGenerator
 
 		methodBody.AppendLine($"return new {messageTypeName} {{ {propertiesAssignment} }};");
 
-		var classString = $@"
-            public class TemporaryClass
-            {{
-                public static {messageTypeName} CreateInstance(byte[] payload)
-                {{
-                    {methodBody}
-                }}
-            }}";
+		var methodString = $@"
+public static {messageTypeName} CreateInstance(byte[] payload)
+{{
+	{methodBody}
+}}";
 
-		var syntaxTree = SyntaxFactory.ParseSyntaxTree(classString);
+		var classWrapper = $@"
+public class TemporaryClass
+{{
+	{methodString}
+}}";
+
+		var syntaxTree = CSharpSyntaxTree.ParseText(classWrapper);
 		var root = syntaxTree.GetRoot();
 		var method = root.DescendantNodes().OfType<MethodDeclarationSyntax>().First(m => m.Identifier.Text == "CreateInstance");
 		return method;
