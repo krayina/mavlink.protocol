@@ -8,7 +8,7 @@ namespace Shmyndra.Mavlink.Generator;
 public interface IMavlinkEnumTypesGenerator
 {
 	List<EnumDeclarationSyntax> GenerateEnums(
-		ImmutableArray<(string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries)> enums,
+		ImmutableArray<(string Name, string? Description, bool Bitmask, ImmutableList<(string Name, string Value, string? Description)> Entries)> enums,
 		string namespaceName,
 		ImmutableArray<string> includes,
 		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping,
@@ -22,7 +22,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 	private readonly Dictionary<string, string> _fileNameToPathMap = new();
 
 	public List<EnumDeclarationSyntax> GenerateEnums(
-		ImmutableArray<(string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries)> enums,
+		ImmutableArray<(string Name, string? Description, bool Bitmask, ImmutableList<(string Name, string Value, string? Description)> Entries)> enums,
 		string namespaceName,
 		ImmutableArray<string> includes,
 		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping,
@@ -112,7 +112,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 	}
 
 	private EnumDeclarationSyntax CreateEnum(
-		(string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries) enumData,
+		(string Name, string? Description, bool Bitmask, ImmutableList<(string Name, string Value, string? Description)> Entries) enumData,
 		string namespaceName)
 	{
 		var normalizedName = Utilities.ToCamelCase(enumData.Name);
@@ -151,10 +151,10 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 							SyntaxFactory.AttributeArgumentList(
 								SyntaxFactory.SeparatedList(new[]
 								{
-							SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
-								SyntaxKind.StringLiteralExpression,
-								SyntaxFactory.Literal(enumData.Name))
-							)
+									SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
+										SyntaxKind.StringLiteralExpression,
+										SyntaxFactory.Literal(enumData.Name))
+									)
 								})
 							)
 						)
@@ -171,10 +171,21 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 				SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(enumBaseType)))));
 		}
 
+		if (enumData.Bitmask)
+		{
+			enumDeclaration = enumDeclaration.AddAttributeLists(
+				SyntaxFactory.AttributeList(
+					SyntaxFactory.SingletonSeparatedList(
+						SyntaxFactory.Attribute(SyntaxFactory.ParseName("System.FlagsAttribute"))
+					)
+				)
+			);
+		}
+
 		return enumDeclaration;
 	}
 
-	private EnumDeclarationSyntax MergeEnums(EnumDeclarationSyntax existingEnum, (string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries) newEnumData, string existingNamespace)
+	private EnumDeclarationSyntax MergeEnums(EnumDeclarationSyntax existingEnum, (string Name, string? Description, bool Bitmask, ImmutableList<(string Name, string Value, string? Description)> Entries) newEnumData, string existingNamespace)
 	{
 		var updatedExistingMembers = existingEnum.Members.Select(m =>
 		{
@@ -223,6 +234,17 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 			enumDeclaration = enumDeclaration.WithBaseList(
 				SyntaxFactory.BaseList(SyntaxFactory.SingletonSeparatedList<BaseTypeSyntax>(
 					SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(newBaseType)))));
+		}
+
+		if (newEnumData.Bitmask)
+		{
+			enumDeclaration = enumDeclaration.AddAttributeLists(
+				SyntaxFactory.AttributeList(
+					SyntaxFactory.SingletonSeparatedList(
+						SyntaxFactory.Attribute(SyntaxFactory.ParseName("System.FlagsAttribute"))
+					)
+				)
+			);
 		}
 
 		return enumDeclaration;

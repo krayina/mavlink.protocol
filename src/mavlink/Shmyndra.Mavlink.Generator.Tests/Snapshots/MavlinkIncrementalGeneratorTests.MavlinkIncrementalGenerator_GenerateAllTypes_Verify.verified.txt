@@ -1139,6 +1139,7 @@ namespace MavlinkTypes.TestMavlinkMinimal
     /// Original name: MAV_MODE_FLAG
     /// </remarks>
     [MavlinkType("MAV_MODE_FLAG")]
+    [System.FlagsAttribute]
     public enum MavModeFlag : byte
     {
         /// <summary>
@@ -1206,6 +1207,7 @@ namespace MavlinkTypes.TestMavlinkMinimal
     /// Original name: MAV_MODE_FLAG_DECODE_POSITION
     /// </remarks>
     [MavlinkType("MAV_MODE_FLAG_DECODE_POSITION")]
+    [System.FlagsAttribute]
     public enum MavModeFlagDecodePosition : byte
     {
         /// <summary>
@@ -1864,6 +1866,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// Original name: HL_FAILURE_FLAG
     /// </remarks>
     [MavlinkType("HL_FAILURE_FLAG")]
+    [System.FlagsAttribute]
     public enum HlFailureFlag : ushort
     {
         /// <summary>
@@ -2102,6 +2105,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// Original name: MAV_SYS_STATUS_SENSOR
     /// </remarks>
     [MavlinkType("MAV_SYS_STATUS_SENSOR")]
+    [System.FlagsAttribute]
     public enum MavSysStatusSensor : uint
     {
         /// <summary>
@@ -2337,6 +2341,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// Original name: MAV_SYS_STATUS_SENSOR_EXTENDED
     /// </remarks>
     [MavlinkType("MAV_SYS_STATUS_SENSOR_EXTENDED")]
+    [System.FlagsAttribute]
     public enum MavSysStatusSensorExtended : byte
     {
         /// <summary>

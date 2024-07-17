@@ -201,4 +201,29 @@ public class MavlinkIncrementalGeneratorTests
 		// assert
 		return Verify(generatedCode).UseDirectory("..\\Snapshots");
 	}
+
+	[Fact]
+	public Task MavlinkIncrementalGenerator_GenerateEnumWithBitmask_Verify()
+	{
+		// arrange
+		var generator = new MavlinkIncrementalGenerator();
+
+		var additional = ImmutableArray.Create<AdditionalText>(
+			new TestAdditionalFile("testFile.xml", @"<?xml version=""1.0""?>
+<mavlink>
+  <enums>
+    <enum name=""MAV_CMD"" bitmask=""true"">
+      <entry name=""MAV_CMD_PRS_SET_ARM"" value=""1"" />
+    </enum>
+  </enums>
+</mavlink>"));
+
+		// act
+		var driver = generator.RunIncrementalGeneratorDriver(additional);
+		var runResult = driver.GetRunResult().Results.Single();
+		var generatedCode = string.Join(Environment.NewLine, runResult.GeneratedSources.Select(source => source.SourceText.ToString()));
+
+		// assert
+		return Verify(generatedCode).UseDirectory("..\\Snapshots");
+	}
 }

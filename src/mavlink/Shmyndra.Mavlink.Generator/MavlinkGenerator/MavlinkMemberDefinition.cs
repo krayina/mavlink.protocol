@@ -50,7 +50,7 @@ internal sealed class MavlinkMemberDefinition
 	}
 
 	private Dictionary<string, (string Namespace, string TypeName, string BaseType, EnumDeclarationSyntax Declaration)> GenerateEnums(
-		ImmutableArray<(string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries)> enums,
+		ImmutableArray<(string Name, string? Description, bool Bitmask, ImmutableList<(string Name, string Value, string? Description)> Entries)> enums,
 		string namespaceName,
 		ImmutableArray<string> includes,
 		string filePath)

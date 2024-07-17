@@ -49,11 +49,12 @@ public class MavlinkXmlParser : IMavlinkXmlParser
 		return mavlink.Include.Select(i => i.Trim()).ToImmutableArray();
 	}
 
-	private ImmutableArray<(string Name, string? Description, ImmutableList<(string Name, string Value, string? Description)> Entries)> ParseEnums(Mavlink mavlink)
+	private ImmutableArray<(string Name, string? Description, bool Bitmask, ImmutableList<(string Name, string Value, string? Description)> Entries)> ParseEnums(Mavlink mavlink)
 	{
 		return mavlink.Enums.Select(e => (
 			e.Name,
 			e.Description,
+			e.Bitmask,
 			e.Entry.Select(entry => (entry.Name, entry.Value, (string?)entry.Description)).ToImmutableList()
 		)).ToImmutableArray();
 	}

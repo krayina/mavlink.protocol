@@ -41,7 +41,7 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator, IDisposable
 		if (!System.Diagnostics.Debugger.IsAttached)
 		{
 			//Uncomment this line to enter Debug mode for the generator and perform a Rebuild
-			//System.Diagnostics.Debugger.Launch();
+			System.Diagnostics.Debugger.Launch();
 		}
 		RegisterSourceGeneration(context);
 	}
