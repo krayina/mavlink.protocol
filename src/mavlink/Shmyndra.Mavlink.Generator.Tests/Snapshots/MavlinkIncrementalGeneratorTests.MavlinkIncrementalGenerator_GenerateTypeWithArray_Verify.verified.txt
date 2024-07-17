@@ -20,6 +20,17 @@ namespace MavlinkTypes.Testfile
         /// </remarks>
         [System.ComponentModel.DataAnnotations.RequiredArrayLength(230)]
         public System.Collections.Immutable.ImmutableArray<char> Uri { get; init; }
+
+        public static TestMessage CreateInstance(byte[] payload)
+        {
+            var tempUriArray = new char[230];
+            Buffer.BlockCopy(payload, 0, tempUriArray, 0, 230 * sizeof(char));
+            var uri = tempUriArray.ToImmutableArray();
+            return new TestMessage
+            {
+                Uri = uri
+            };
+        }
     }
 
     public static class MavlinkSpecification

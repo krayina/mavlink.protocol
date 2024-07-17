@@ -1696,6 +1696,29 @@ namespace MavlinkTypes.TestMavlinkMinimal
         /// Original name: MAVLINK_VERSION
         /// </remarks>
         public byte MavlinkVersion { get; init; }
+
+        public static Heartbeat CreateInstance(byte[] payload)
+        {
+            var typeValue = BitConverter.ToInt32(payload, 0); // Assuming 4-byte enum
+            var type = (MavlinkTypes.TestMavlinkMinimal.MavType)typeValue;
+            var autopilotValue = BitConverter.ToInt32(payload, 0); // Assuming 4-byte enum
+            var autopilot = (MavlinkTypes.TestMavlinkMinimal.MavAutopilot)autopilotValue;
+            var baseModeValue = BitConverter.ToInt32(payload, 0); // Assuming 4-byte enum
+            var baseMode = (MavlinkTypes.TestMavlinkMinimal.MavModeFlag)baseModeValue;
+            var customMode = BitConverter.ToUInt32(payload, 0);
+            var systemStatusValue = BitConverter.ToInt32(payload, 0); // Assuming 4-byte enum
+            var systemStatus = (MavlinkTypes.TestMavlinkMinimal.MavState)systemStatusValue;
+            var mavlinkVersion = payload[0];
+            return new Heartbeat
+            {
+                Type = type,
+                Autopilot = autopilot,
+                BaseMode = baseMode,
+                CustomMode = customMode,
+                SystemStatus = systemStatus,
+                MavlinkVersion = mavlinkVersion
+            };
+        }
     }
 
     /// <summary>
@@ -1731,6 +1754,27 @@ namespace MavlinkTypes.TestMavlinkMinimal
         /// </remarks>
         [System.ComponentModel.DataAnnotations.RequiredArrayLength(8)]
         public System.Collections.Immutable.ImmutableArray<byte> LibraryVersionHash { get; init; }
+
+        public static ProtocolVersion CreateInstance(byte[] payload)
+        {
+            var version = BitConverter.ToUInt16(payload, 0);
+            var minVersion = BitConverter.ToUInt16(payload, 0);
+            var maxVersion = BitConverter.ToUInt16(payload, 0);
+            var tempSpecVersionHashArray = new byte[8];
+            Buffer.BlockCopy(payload, 0, tempSpecVersionHashArray, 0, 8 * sizeof(byte));
+            var specVersionHash = tempSpecVersionHashArray.ToImmutableArray();
+            var tempLibraryVersionHashArray = new byte[8];
+            Buffer.BlockCopy(payload, 0, tempLibraryVersionHashArray, 0, 8 * sizeof(byte));
+            var libraryVersionHash = tempLibraryVersionHashArray.ToImmutableArray();
+            return new ProtocolVersion
+            {
+                Version = version,
+                MinVersion = minVersion,
+                MaxVersion = maxVersion,
+                SpecVersionHash = specVersionHash,
+                LibraryVersionHash = libraryVersionHash
+            };
+        }
     }
 
     public static class MavlinkSpecification
@@ -2331,6 +2375,23 @@ namespace MavlinkTypes.TestMavlinkCommon
         /// </remarks>
         [System.ComponentModel.DataAnnotations.RequiredArrayLength(25)]
         public System.Collections.Immutable.ImmutableArray<char> Passkey { get; init; }
+
+        public static ChangeOperatorControl CreateInstance(byte[] payload)
+        {
+            var targetSystem = payload[0];
+            var controlRequest = payload[0];
+            var version = payload[0];
+            var tempPasskeyArray = new char[25];
+            Buffer.BlockCopy(payload, 0, tempPasskeyArray, 0, 25 * sizeof(char));
+            var passkey = tempPasskeyArray.ToImmutableArray();
+            return new ChangeOperatorControl
+            {
+                TargetSystem = targetSystem,
+                ControlRequest = controlRequest,
+                Version = version,
+                Passkey = passkey
+            };
+        }
     }
 
     /// <summary>
@@ -2358,6 +2419,21 @@ namespace MavlinkTypes.TestMavlinkCommon
         /// Original name: TARGET_COMPONENT
         /// </remarks>
         public byte TargetComponent { get; init; }
+
+        public static Ping CreateInstance(byte[] payload)
+        {
+            var timeUsec = BitConverter.ToUInt64(payload, 0);
+            var seq = BitConverter.ToUInt32(payload, 0);
+            var targetSystem = payload[0];
+            var targetComponent = payload[0];
+            return new Ping
+            {
+                TimeUsec = timeUsec,
+                Seq = seq,
+                TargetSystem = targetSystem,
+                TargetComponent = targetComponent
+            };
+        }
     }
 
     /// <summary>
@@ -2433,6 +2509,51 @@ namespace MavlinkTypes.TestMavlinkCommon
         /// Original name: ONBOARD_CONTROL_SENSORS_HEALTH_EXTENDED
         /// </remarks>
         public MavSysStatusSensorExtended OnboardControlSensorsHealthExtended { get; init; }
+
+        public static SysStatus CreateInstance(byte[] payload)
+        {
+            var onboardControlSensorsPresentValue = BitConverter.ToInt32(payload, 0); // Assuming 4-byte enum
+            var onboardControlSensorsPresent = (MavlinkTypes.TestMavlinkCommon.MavSysStatusSensor)onboardControlSensorsPresentValue;
+            var onboardControlSensorsEnabledValue = BitConverter.ToInt32(payload, 0); // Assuming 4-byte enum
+            var onboardControlSensorsEnabled = (MavlinkTypes.TestMavlinkCommon.MavSysStatusSensor)onboardControlSensorsEnabledValue;
+            var onboardControlSensorsHealthValue = BitConverter.ToInt32(payload, 0); // Assuming 4-byte enum
+            var onboardControlSensorsHealth = (MavlinkTypes.TestMavlinkCommon.MavSysStatusSensor)onboardControlSensorsHealthValue;
+            var load = BitConverter.ToUInt16(payload, 0);
+            var voltageBattery = BitConverter.ToUInt16(payload, 0);
+            var currentBattery = BitConverter.ToInt16(payload, 0);
+            var batteryRemaining = (sbyte)payload[0];
+            var dropRateComm = BitConverter.ToUInt16(payload, 0);
+            var errorsComm = BitConverter.ToUInt16(payload, 0);
+            var errorsCount1 = BitConverter.ToUInt16(payload, 0);
+            var errorsCount2 = BitConverter.ToUInt16(payload, 0);
+            var errorsCount3 = BitConverter.ToUInt16(payload, 0);
+            var errorsCount4 = BitConverter.ToUInt16(payload, 0);
+            var onboardControlSensorsPresentExtendedValue = BitConverter.ToInt32(payload, 0); // Assuming 4-byte enum
+            var onboardControlSensorsPresentExtended = (MavlinkTypes.TestMavlinkCommon.MavSysStatusSensorExtended)onboardControlSensorsPresentExtendedValue;
+            var onboardControlSensorsEnabledExtendedValue = BitConverter.ToInt32(payload, 0); // Assuming 4-byte enum
+            var onboardControlSensorsEnabledExtended = (MavlinkTypes.TestMavlinkCommon.MavSysStatusSensorExtended)onboardControlSensorsEnabledExtendedValue;
+            var onboardControlSensorsHealthExtendedValue = BitConverter.ToInt32(payload, 0); // Assuming 4-byte enum
+            var onboardControlSensorsHealthExtended = (MavlinkTypes.TestMavlinkCommon.MavSysStatusSensorExtended)onboardControlSensorsHealthExtendedValue;
+            return new SysStatus
+            {
+                OnboardControlSensorsPresent = onboardControlSensorsPresent,
+                OnboardControlSensorsEnabled = onboardControlSensorsEnabled,
+                OnboardControlSensorsHealth = onboardControlSensorsHealth,
+                Load = load,
+                VoltageBattery = voltageBattery,
+                CurrentBattery = currentBattery,
+                BatteryRemaining = batteryRemaining,
+                DropRateComm = dropRateComm,
+                ErrorsComm = errorsComm,
+                ErrorsCount1 = errorsCount1,
+                ErrorsCount2 = errorsCount2,
+                ErrorsCount3 = errorsCount3,
+                ErrorsCount4 = errorsCount4,
+                OnboardControlSensorsPresentExtended = onboardControlSensorsPresentExtended,
+                OnboardControlSensorsEnabledExtended = onboardControlSensorsEnabledExtended,
+                OnboardControlSensorsHealthExtended = onboardControlSensorsHealthExtended
+            };
+        }
     }
 
     /// <summary>
@@ -2452,6 +2573,17 @@ namespace MavlinkTypes.TestMavlinkCommon
         /// Original name: TIME_BOOT_MS
         /// </remarks>
         public uint TimeBootMs { get; init; }
+
+        public static SystemTime CreateInstance(byte[] payload)
+        {
+            var timeUnixUsec = BitConverter.ToUInt64(payload, 0);
+            var timeBootMs = BitConverter.ToUInt32(payload, 0);
+            return new SystemTime
+            {
+                TimeUnixUsec = timeUnixUsec,
+                TimeBootMs = timeBootMs
+            };
+        }
     }
 
     public static class MavlinkSpecification

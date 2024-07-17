@@ -57,6 +57,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 		(
 			field.Type,
 			Name: Utilities.ToCamelCase(field.Name),
+			XmlName: field.Name,
 			field.Description
 		)).ToImmutableList();
 
@@ -78,10 +79,10 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 			}
 
 			return property.AddSummaryTriviaIfNotNull(field.Description)
-				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {field.Name.ToUpper()}");
+				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {field.XmlName.ToUpper()}");
 		}).ToArray();
 
-		var createInstanceMethod = MavlinkMessageFactory.GenerateCreateInstanceMethod(normalizedName, camelCasedFields, generatedTypes);
+		var createInstanceMethod = MavlinkMessagePayloadDeserializationGenerator.GenerateCreateInstanceMethod(normalizedName, camelCasedFields, generatedTypes);
 
 		return CreateRecordStructDeclaration(id, normalizedName, properties, messageData.Description, messageData.Name)
 			.AddMembers(createInstanceMethod);
