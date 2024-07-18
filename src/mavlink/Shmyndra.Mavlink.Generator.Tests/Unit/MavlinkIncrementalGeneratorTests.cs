@@ -226,4 +226,60 @@ public class MavlinkIncrementalGeneratorTests
 		// assert
 		return Verify(generatedCode).UseDirectory("..\\Snapshots");
 	}
+
+	[Fact]
+	public Task MavlinkIncrementalGenerator_GenerateDisplayBitmaskArrayField_Verify()
+	{
+		// arrange
+		var generator = new MavlinkIncrementalGenerator();
+
+		var additional = ImmutableArray.Create<AdditionalText>(
+			new TestAdditionalFile("testFile.xml", @"<?xml version=""1.0""?>
+<mavlink>
+  <enums>
+    <enum name=""ESC_FAILURE_FLAGS"" bitmask=""true"">
+      <description>Flags to report ESC failures.</description>
+      <entry value=""0"" name=""ESC_FAILURE_NONE"">
+        <description>No ESC failure.</description>
+      </entry>
+      <entry value=""1"" name=""ESC_FAILURE_OVER_CURRENT"">
+        <description>Over current failure.</description>
+      </entry>
+      <entry value=""2"" name=""ESC_FAILURE_OVER_VOLTAGE"">
+        <description>Over voltage failure.</description>
+      </entry>
+      <entry value=""4"" name=""ESC_FAILURE_OVER_TEMPERATURE"">
+        <description>Over temperature failure.</description>
+      </entry>
+      <entry value=""8"" name=""ESC_FAILURE_OVER_RPM"">
+        <description>Over RPM failure.</description>
+      </entry>
+      <entry value=""16"" name=""ESC_FAILURE_INCONSISTENT_CMD"">
+        <description>Inconsistent command failure i.e. out of bounds.</description>
+      </entry>
+      <entry value=""32"" name=""ESC_FAILURE_MOTOR_STUCK"">
+        <description>Motor stuck failure.</description>
+      </entry>
+      <entry value=""64"" name=""ESC_FAILURE_GENERIC"">
+        <description>Generic ESC failure.</description>
+      </entry>
+    </enum>
+  </enums>
+  <messages>
+    <message id=""290"" name=""ESC_INFO"">
+      <field type=""uint8_t"" name=""info"" display=""bitmask"">Information regarding online/offline status of each ESC.</field>
+      <field type=""uint16_t[4]"" name=""failure_flags"" enum=""ESC_FAILURE_FLAGS"" display=""bitmask"">Bitmap of ESC failure flags.</field>
+      <field type=""uint32_t[4]"" name=""error_count"">Number of reported errors by each ESC since boot.</field>
+    </message>
+  </messages>
+</mavlink>"));
+
+		// act
+		var driver = generator.RunIncrementalGeneratorDriver(additional);
+		var runResult = driver.GetRunResult().Results.Single();
+		var generatedCode = string.Join(Environment.NewLine, runResult.GeneratedSources.Select(source => source.SourceText.ToString()));
+
+		// assert
+		return Verify(generatedCode).UseDirectory("..\\Snapshots");
+	}
 }
