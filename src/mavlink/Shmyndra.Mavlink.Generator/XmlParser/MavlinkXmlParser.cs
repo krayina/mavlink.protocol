@@ -67,7 +67,7 @@ public class MavlinkXmlParser : IMavlinkXmlParser
 			(string?)m.Description,
 			m.Field.Select(field =>
 			{
-				FieldType type = ConvertToFieldType(field.Type);
+				var type = ConvertToFieldType(field.Type);
 
 				if (field.Enum is not null)
 				{

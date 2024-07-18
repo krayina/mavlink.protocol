@@ -35,7 +35,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 
 		foreach (var enumData in enums)
 		{
-			var key = (Namespace: namespaceName, Name: enumData.Name);
+			var key = (Namespace: namespaceName, enumData.Name);
 			var existingEnums = new List<(EnumDeclarationSyntax Enum, string Namespace)>();
 
 			// Check for existing enums in the current namespace or includes
@@ -43,7 +43,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 			{
 				if (_fileNameToPathMap.TryGetValue(include, out var includeNamespace))
 				{
-					var includeKey = (Namespace: includeNamespace, Name: enumData.Name);
+					var includeKey = (Namespace: includeNamespace, enumData.Name);
 					if (_generatedEnums.TryGetValue(includeKey, out var includeEnum))
 					{
 						existingEnums.Add((includeEnum, includeNamespace));
@@ -121,7 +121,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 			.Select(entry => ulong.Parse(entry.Value!))
 			.ToList();
 
-		string enumBaseType = Utilities.DetermineEnumBaseType(allValues);
+		var enumBaseType = Utilities.DetermineEnumBaseType(allValues);
 
 		var sortedEntries = enumData.Entries
 			.Where(entry => entry.Value != null)
@@ -205,7 +205,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 
 		var maxNewValue = newEnumData.Entries.Max(e => ulong.Parse(e.Value));
 
-		string currentBaseType = GetBaseType(existingEnum);
+		var currentBaseType = GetBaseType(existingEnum);
 
 		var existingValues = new List<ulong>();
 
@@ -223,7 +223,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 
 		existingValues.Add(maxNewValue);
 
-		string newBaseType = Utilities.DetermineEnumBaseType(existingValues);
+		var newBaseType = Utilities.DetermineEnumBaseType(existingValues);
 
 		var mergedMembers = updatedExistingMembers.Concat(newMembers).ToArray();
 

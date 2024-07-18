@@ -65,7 +65,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 		{
 			var fieldName = field.Name == normalizedName ? "_" + field.Name : field.Name;
 
-			string propertyType = field.Type switch
+			var propertyType = field.Type switch
 			{
 				FieldArrayType arrayFieldType => arrayFieldType.TypeName,
 				_ => GetTypeName(field.Type.TypeName, namespaceName, generatedTypes)
