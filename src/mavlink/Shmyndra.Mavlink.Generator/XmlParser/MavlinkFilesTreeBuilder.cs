@@ -1,4 +1,5 @@
-﻿namespace Shmyndra.Mavlink.Generator;
+﻿#if false
+namespace Shmyndra.Mavlink.Generator;
 
 public interface IMavlinkFilesTreeBuilder
 {
@@ -18,9 +19,9 @@ public class MavlinkFilesTreeBuilder : IMavlinkFilesTreeBuilder
 	/// <param name="Includes">The list of included files for this node.</param>
 	public record MavlinkFileNode(string FilePath, MavlinkData Data, List<MavlinkFileNode> Includes);
 
-	private readonly IMavlinkXmlParser _parser;
+	private readonly IMavlinkParser _parser;
 
-	public MavlinkFilesTreeBuilder(IMavlinkXmlParser parser)
+	public MavlinkFilesTreeBuilder(IMavlinkParser parser)
 	{
 		_parser = parser;
 	}
@@ -56,3 +57,4 @@ public class MavlinkFilesTreeBuilder : IMavlinkFilesTreeBuilder
 		return nodes.Values.Where(node => !nodes.Values.Any(n => n.Includes.Contains(node))).ToList();
 	}
 }
+#endif

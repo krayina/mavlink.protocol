@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿#if false
+using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -41,7 +42,7 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator, IDisposable
 		if (!System.Diagnostics.Debugger.IsAttached)
 		{
 			//Uncomment this line to enter Debug mode for the generator and perform a Rebuild
-			System.Diagnostics.Debugger.Launch();
+			//System.Diagnostics.Debugger.Launch();
 		}
 		RegisterSourceGeneration(context);
 	}
@@ -151,3 +152,4 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator, IDisposable
 		Dispose(false);
 	}
 }
+#endif

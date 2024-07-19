@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿#if false
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Shmyndra.Mavlink.Generator;
@@ -86,3 +87,4 @@ internal sealed class MavlinkMemberDefinition
 		return "int"; // default base type
 	}
 }
+#endif

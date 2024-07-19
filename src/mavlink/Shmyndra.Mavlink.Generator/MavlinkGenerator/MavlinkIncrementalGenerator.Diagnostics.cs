@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿#if false
+using Microsoft.CodeAnalysis;
 
 namespace Shmyndra.Mavlink.Generator;
 
@@ -22,3 +23,4 @@ public static class MavlinkGeneratorDiagnostics
 #pragma warning restore RS1033 // Define diagnostic description correctly
 		);
 }
+#endif

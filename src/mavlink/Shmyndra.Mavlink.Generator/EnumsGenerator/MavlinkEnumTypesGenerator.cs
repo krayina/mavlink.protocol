@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿#if false
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
@@ -266,3 +267,4 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		return null;
 	}
 }
+#endif

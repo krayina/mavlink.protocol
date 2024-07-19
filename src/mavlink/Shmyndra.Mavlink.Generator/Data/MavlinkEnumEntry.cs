@@ -99,4 +99,3 @@ public record MavlinkEnumEntry
 		MissionOnly = missionOnly;
 	}
 }
-

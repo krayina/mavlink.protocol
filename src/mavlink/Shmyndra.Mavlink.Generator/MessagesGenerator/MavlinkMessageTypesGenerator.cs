@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿#if false
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
@@ -181,3 +182,4 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 		return xmlType;
 	}
 }
+#endif

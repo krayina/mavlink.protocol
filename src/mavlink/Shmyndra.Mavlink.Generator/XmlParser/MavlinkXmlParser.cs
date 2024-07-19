@@ -1,14 +1,15 @@
-﻿using System.Collections.Immutable;
+﻿#if false
+using System.Collections.Immutable;
 using System.Xml.Serialization;
 
 namespace Shmyndra.Mavlink.Generator;
 
-public interface IMavlinkXmlParser
+public interface IMavlinkParser
 {
-	MavlinkData Parse(string xmlContent);
+	MavlinkData Parse(string content);
 }
 
-public class MavlinkXmlParser : IMavlinkXmlParser
+public class MavlinkXmlParser : IMavlinkParser
 {
 	private static readonly Dictionary<string, (string TypeName, int Size)> _typeMap = new()
 	{
@@ -99,3 +100,4 @@ public class MavlinkXmlParser : IMavlinkXmlParser
 		return new FieldType("object");
 	}
 }
+#endif

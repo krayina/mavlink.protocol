@@ -1,4 +1,5 @@
-﻿namespace Shmyndra.Mavlink.Generator;
+﻿#if false
+namespace Shmyndra.Mavlink.Generator;
 
 internal record MavlinkCachedMessage(string FullName, uint Id, string XmlName);
 
@@ -82,3 +83,4 @@ namespace MavlinkTypes
 		return classCode;
 	}
 }
+#endif
