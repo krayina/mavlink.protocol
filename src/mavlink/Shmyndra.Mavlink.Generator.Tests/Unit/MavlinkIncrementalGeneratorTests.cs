@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿#if false
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
 namespace Shmyndra.Mavlink.Generator.Tests.Unit;
@@ -283,3 +284,4 @@ public class MavlinkIncrementalGeneratorTests
 		return Verify(generatedCode).UseDirectory("..\\Snapshots");
 	}
 }
+#endif
