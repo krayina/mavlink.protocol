@@ -2,7 +2,7 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
-namespace Shmyndra.Mavlink.Generator.Tests.Unit;
+namespace Shmyndra.Mavlink.Generator.Tests.Integration;
 
 public class MavlinkIncrementalGeneratorTests
 {
