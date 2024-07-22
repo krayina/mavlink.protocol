@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<mavlink>
+  <enums>
+    <enum name="ESC_CONNECTION_TYPE">
+      <!-- This enum is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
+      <description>Indicates the ESC connection type.</description>
+      <entry value="0" name="ESC_CONNECTION_TYPE_PPM">
+        <description>Traditional PPM ESC.</description>
+      </entry>
+      <entry value="1" name="ESC_CONNECTION_TYPE_SERIAL">
+        <description>Serial Bus connected ESC.</description>
+      </entry>
+      <entry value="2" name="ESC_CONNECTION_TYPE_ONESHOT">
+        <description>One Shot PPM ESC.</description>
+      </entry>
+      <entry value="3" name="ESC_CONNECTION_TYPE_I2C">
+        <description>I2C ESC.</description>
+      </entry>
+      <entry value="4" name="ESC_CONNECTION_TYPE_CAN">
+        <description>CAN-Bus ESC.</description>
+      </entry>
+      <entry value="5" name="ESC_CONNECTION_TYPE_DSHOT">
+        <description>DShot ESC.</description>
+      </entry>
+    </enum>
+    <enum name="ESC_FAILURE_FLAGS" bitmask="true">
+      <!-- This enum is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
+      <description>Flags to report ESC failures.</description>
+      <entry value="0" name="ESC_FAILURE_NONE">
+        <description>No ESC failure.</description>
+      </entry>
+      <entry value="1" name="ESC_FAILURE_OVER_CURRENT">
+        <description>Over current failure.</description>
+      </entry>
+      <entry value="2" name="ESC_FAILURE_OVER_VOLTAGE">
+        <description>Over voltage failure.</description>
+      </entry>
+      <entry value="4" name="ESC_FAILURE_OVER_TEMPERATURE">
+        <description>Over temperature failure.</description>
+      </entry>
+      <entry value="8" name="ESC_FAILURE_OVER_RPM">
+        <description>Over RPM failure.</description>
+      </entry>
+      <entry value="16" name="ESC_FAILURE_INCONSISTENT_CMD">
+        <description>Inconsistent command failure i.e. out of bounds.</description>
+      </entry>
+      <entry value="32" name="ESC_FAILURE_MOTOR_STUCK">
+        <description>Motor stuck failure.</description>
+      </entry>
+      <entry value="64" name="ESC_FAILURE_GENERIC">
+        <description>Generic ESC failure.</description>
+      </entry>
+    </enum>
+  </enums>
+  <messages>
+    <message id="290" name="ESC_INFO">
+      <wip/>
+      <!-- This message is work-in-progress and it can therefore change. It should NOT be used in stable production environments. -->
+      <description>ESC information for lower rate streaming. Recommended streaming rate 1Hz. See ESC_STATUS for higher-rate ESC data.</description>
+      <field type="uint8_t" name="index" instance="true">Index of the first ESC in this message. minValue = 0, maxValue = 60, increment = 4.</field>
+      <field type="uint64_t" name="time_usec" units="us">Timestamp (UNIX Epoch time or time since system boot). The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude the number.</field>
+      <field type="uint16_t" name="counter">Counter of data packets received.</field>
+      <field type="uint8_t" name="count">Total number of ESCs in all messages of this type. Message fields with an index higher than this should be ignored because they contain invalid data.</field>
+      <field type="uint8_t" name="connection_type" enum="ESC_CONNECTION_TYPE">Connection type protocol for all ESC.</field>
+      <field type="uint8_t" name="info" display="bitmask">Information regarding online/offline status of each ESC.</field>
+      <field type="uint16_t[4]" name="failure_flags" enum="ESC_FAILURE_FLAGS" display="bitmask">Bitmap of ESC failure flags.</field>
+      <field type="uint32_t[4]" name="error_count">Number of reported errors by each ESC since boot.</field>
+      <field type="int16_t[4]" name="temperature" units="cdegC" invalid="[INT16_MAX]">Temperature of each ESC. INT16_MAX: if data not supplied by ESC.</field>
+    </message>
+  </messages>
+</mavlink>
