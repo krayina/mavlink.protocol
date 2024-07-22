@@ -532,6 +532,14 @@ public partial class Enum
 		_entry = new System.Collections.ObjectModel.Collection<Entry>();
 	}
 
+	internal Enum(string name, bool bitmask, string description, System.Collections.ObjectModel.Collection<Entry> entries)
+	{
+		Name = name;
+		Bitmask = bitmask;
+		Description = description;
+		_entry = entries;
+	}
+
 	/// <summary>
 	/// <para xml:lang="en">Pattern: [\w_]+.</para>
 	/// </summary>
@@ -584,6 +592,14 @@ public partial class Message
 	public Message()
 	{
 		_field = new System.Collections.ObjectModel.Collection<Field>();
+	}
+
+	internal Message(uint id, string name, string description, System.Collections.ObjectModel.Collection<Field> fields)
+	{
+		Id = id;
+		Name = name;
+		Description = description;
+		_field = fields;
 	}
 
 	[System.Xml.Serialization.XmlElement("extensions")]
