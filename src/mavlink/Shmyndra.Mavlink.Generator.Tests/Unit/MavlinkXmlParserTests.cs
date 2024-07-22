@@ -47,4 +47,39 @@ public class MavlinkXmlParserTests
 		Assert.Contains(escInfoMessage.Field, f => f.Name == "error_count" && f.Type == "uint32_t[4]" && f.Units == SiUnit.S);
 		Assert.Contains(escInfoMessage.Field, f => f.Name == "temperature" && f.Type == "int16_t[4]" && f.Units == SiUnit.CdegC);
 	}
+
+	[Fact]
+	public void Parse_ValidXmlContent_ShouldReturnMavlinkData()
+	{
+		// Arrange
+		var xmlPath = "Stubs\\test-mavlink-ESC_INFO.xml";
+		var additionalText = TestsHelper.GetAdditionalText(xmlPath);
+		var xmlContent = additionalText.GetText()!.ToString();
+
+		var parser = new MavlinkXmlParser();
+
+		// Act
+		var mavlinkData = parser.Parse(xmlContent);
+
+		// Assert
+		Assert.NotNull(mavlinkData);
+		Assert.NotEmpty(mavlinkData.Enums);
+		Assert.NotEmpty(mavlinkData.Messages);
+
+		var escFailureFlagsEnum = mavlinkData.Enums.FirstOrDefault(e => e.Name == "ESC_FAILURE_FLAGS");
+		Assert.NotNull(escFailureFlagsEnum);
+		Assert.True(escFailureFlagsEnum.Bitmask);
+		Assert.Equal("Flags to report ESC failures.", escFailureFlagsEnum.Description);
+		Assert.Equal(8, escFailureFlagsEnum.Entries.Count);
+		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_NONE" && entry.Value == 0);
+		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_OVER_CURRENT" && entry.Value == 1);
+
+		var escInfoMessage = mavlinkData.Messages.FirstOrDefault(m => m.Name == "ESC_INFO");
+		Assert.NotNull(escInfoMessage);
+		Assert.Equal(290U, escInfoMessage.Id);
+		Assert.Equal("ESC_INFO", escInfoMessage.Name);
+		Assert.Equal("ESC information for lower rate streaming. Recommended streaming rate 1Hz. See ESC_STATUS for higher-rate ESC data.", escInfoMessage.Description);
+		Assert.NotEmpty(escInfoMessage.Fields);
+		Assert.Contains(escInfoMessage.Fields, f => f.Name == "index" && f.Type.TypeName == "uint8_t" && f.Instance!.Value);
+	}
 }
