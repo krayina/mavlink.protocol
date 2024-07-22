@@ -410,6 +410,9 @@ public partial class Field
 
 	[System.Xml.Serialization.XmlText()]
 	public string[] Text { get; set; } = Array.Empty<string>();
+
+	[System.Xml.Serialization.XmlIgnore]
+	public bool IsRequired { get; set; } = true;
 }
 
 [Serializable()]
@@ -559,11 +562,12 @@ public partial class Enum
 	public bool BitmaskSpecified { get; set; }
 }
 
-[Serializable()]
-[System.Xml.Serialization.XmlType("message", Namespace = "", AnonymousType = true)]
-[System.ComponentModel.DesignerCategory("code")]
+// Contains custom deserialization logic
+//[Serializable()]
+//[System.Xml.Serialization.XmlType("message", Namespace = "", AnonymousType = true)]
+//[System.ComponentModel.DesignerCategory("code")]
 [System.Xml.Serialization.XmlRoot("message", Namespace = "")]
-public partial class Message
+public partial class Message : System.Xml.Serialization.IXmlSerializable
 {
 	[System.Xml.Serialization.XmlElement("deprecated")]
 	public Deprecated? Deprecated { get; set; }
@@ -619,6 +623,68 @@ public partial class Message
 	[System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
 	[System.Xml.Serialization.XmlAttribute("name", Namespace = "", Form = System.Xml.Schema.XmlSchemaForm.Qualified)]
 	public string Name { get; set; } = string.Empty;
+
+	public System.Xml.Schema.XmlSchema? GetSchema() => null;
+
+	public void ReadXml(System.Xml.XmlReader reader)
+	{
+		reader.MoveToContent();
+		Id = uint.Parse(reader.GetAttribute("id"));
+		Name = reader.GetAttribute("name");
+
+		if (reader.IsEmptyElement)
+		{
+			reader.ReadStartElement();
+			return;
+		}
+
+		reader.ReadStartElement();
+
+		bool isAfterExtensions = false;
+
+		while (reader.NodeType != System.Xml.XmlNodeType.EndElement)
+		{
+			if (reader.NodeType == System.Xml.XmlNodeType.Element)
+			{
+				if (reader.Name == "extensions")
+				{
+					isAfterExtensions = true;
+					reader.ReadStartElement();
+				}
+				else if (reader.Name == "field")
+				{
+					var serializer = new System.Xml.Serialization.XmlSerializer(typeof(Field));
+					var field = (Field)serializer.Deserialize(reader);
+					field.IsRequired = !isAfterExtensions;
+					Field.Add(field);
+				}
+				else if (reader.Name == "wip")
+				{
+					Wip = new Wip();
+					reader.ReadStartElement();
+				}
+				else if (reader.Name == "description")
+				{
+					Description = reader.ReadElementContentAsString();
+				}
+				else
+				{
+					reader.Skip();
+				}
+			}
+			else
+			{
+				reader.Read();
+			}
+		}
+
+		reader.ReadEndElement();
+	}
+
+	public void WriteXml(System.Xml.XmlWriter writer)
+	{
+		throw new NotImplementedException();
+	}
 }
 
 [Serializable()]

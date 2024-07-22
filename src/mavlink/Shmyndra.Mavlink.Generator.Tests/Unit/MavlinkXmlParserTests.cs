@@ -1,4 +1,5 @@
 ﻿using System.Xml.Serialization;
+using Microsoft.CodeAnalysis;
 
 namespace Shmyndra.Mavlink.Generator.Tests.Unit;
 
@@ -81,5 +82,42 @@ public class MavlinkXmlParserTests
 		Assert.Equal("ESC information for lower rate streaming. Recommended streaming rate 1Hz. See ESC_STATUS for higher-rate ESC data.", escInfoMessage.Description);
 		Assert.NotEmpty(escInfoMessage.Fields);
 		Assert.Contains(escInfoMessage.Fields, f => f.Name == "index" && f.Type.TypeName == "uint8_t" && f.Instance!.Value);
+	}
+
+	[Fact]
+	public void Parse_ValidXmlContent_ShouldReturnMavlinkDataWith3RequiredAnd2NonRequiredFields()
+	{
+		// Arrange
+		var xmlAdditionalFile = new TestAdditionalFile("test.xml", @"<?xml version=""1.0""?>
+<mavlink>
+  <messages>
+    <message id=""44"" name=""MISSION_COUNT"">
+      <field type=""uint8_t"" name=""target_system"" />
+      <field type=""uint8_t"" name=""target_component"" />
+      <field type=""uint16_t"" name=""count"" />
+      <extensions/>
+      <field type=""uint8_t"" name=""mission_type"" />
+      <field type=""uint32_t"" name=""opaque_id"" invalid=""0"" />
+    </message>
+  </messages>
+</mavlink>");
+
+		// Act
+		var parser = new MavlinkXmlParser();
+		var mavlinkData = parser.Parse(xmlAdditionalFile.GetText()!.ToString());
+
+		// Assert
+		Assert.Single(mavlinkData.Messages);
+
+		var message = mavlinkData.Messages.First();
+		var fields = message.Fields;
+
+		Assert.Equal(5, fields.Count);
+
+		var requiredFields = fields.Count(f => f.IsRequired);
+		var nonRequiredFields = fields.Count(f => !f.IsRequired);
+
+		Assert.Equal(3, requiredFields);
+		Assert.Equal(2, nonRequiredFields);
 	}
 }

@@ -20,10 +20,10 @@ internal static class MavlinkXmlDataConverters
 		{ "uint8_t_mavlink_version", ("byte", 1) }
 	};
 
-	public static MavlinkData ConvertToMavlinkData(this Mavlink mavlink, Func<string, bool> isFieldRequired)
+	public static MavlinkData ConvertToMavlinkData(this Mavlink mavlink)
 	{
 		var enums = mavlink.Enums.Select(e => e.ConvertToMavlinkEnum()).ToImmutableArray();
-		var messages = mavlink.Messages.Select(m => m.ConvertToMavlinkMessage(isFieldRequired)).ToImmutableArray();
+		var messages = mavlink.Messages.Select(m => m.ConvertToMavlinkMessage()).ToImmutableArray();
 		var includes = mavlink.Include.ToImmutableArray();
 
 		return new MavlinkData(enums, messages, includes, mavlink.Version, mavlink.Dialect);
@@ -76,9 +76,9 @@ internal static class MavlinkXmlDataConverters
 		);
 	}
 
-	public static MavlinkMessage ConvertToMavlinkMessage(this Message message, Func<string, bool> isFieldRequired)
+	public static MavlinkMessage ConvertToMavlinkMessage(this Message message)
 	{
-		var fields = message.Field.Select(f => f.ConvertToMavlinkMessageField(isFieldRequired)).ToImmutableList();
+		var fields = message.Field.Select(f => f.ConvertToMavlinkMessageField()).ToImmutableList();
 
 		return new MavlinkMessage(
 			message.Id,
@@ -89,7 +89,7 @@ internal static class MavlinkXmlDataConverters
 		);
 	}
 
-	public static MavlinkMessageField ConvertToMavlinkMessageField(this Field field, Func<string, bool> isRequired)
+	public static MavlinkMessageField ConvertToMavlinkMessageField(this Field field)
 	{
 		return new MavlinkMessageField(
 			field.Type.ConvertToFieldType(),
@@ -97,7 +97,7 @@ internal static class MavlinkXmlDataConverters
 			field.Description,
 			field.Display?.ConvertToMavlinkMessageFieldDisplay() ?? MavlinkMessageFieldDisplay.None,
 			field.Units.ConvertToMavlinkSystemUnit(),
-			isRequired.Invoke(field.Name),
+			field.IsRequired,
 			field.PrintFormat,
 			field.Enum,
 			field.IncrementSpecified ? field.Increment : null,
