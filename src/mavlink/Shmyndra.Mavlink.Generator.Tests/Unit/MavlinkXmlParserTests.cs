@@ -123,7 +123,7 @@ public class MavlinkXmlParserTests
 	}
 
 	[Fact]
-	public void Parse_ValidXmlContentWithTwoEnums_ShouldReturnMavlinkDataWithSortedEnums()
+	public void Parse_ValidXmlContentWithFourEnums_ShouldReturnMavlinkDataWithSortedEnums()
 	{
 		// Arrange
 		var xmlAdditionalFile = new TestAdditionalFile("test.xml", @"<?xml version=""1.0""?>
@@ -134,8 +134,13 @@ public class MavlinkXmlParserTests
         <param index=""1"" label=""Test label"" enum=""THIS_ENUM_SHOULD_BE_SECOND"" />
       </entry>
     </enum>
+    <enum name=""THIS_ENUM_SHOULD_BE_FOURTH"">
+      <entry value=""1"" name=""TEST_ENTRY_AA"">
+        <param index=""1"" label=""Test label"" enum=""ENUM_FROM_ANOTHER_FILE"" />
+      </entry>
+    </enum>
     <enum name=""THIS_ENUM_SHOULD_BE_SECOND"">
-      <entry value=""0"" name=""TEST_ENTRY"">
+      <entry value=""2"" name=""TEST_ENTRY"">
         <param index=""1"" label=""Test label"" enum=""THIS_ENUM_SHOULD_BE_FIRST"" />
       </entry>
     </enum>
@@ -148,10 +153,11 @@ public class MavlinkXmlParserTests
 		var mavlinkData = parser.Parse(xmlAdditionalFile.GetText()!.ToString());
 
 		// Assert
-		Assert.Equal(3, mavlinkData.Enums.Length);
+		Assert.Equal(4, mavlinkData.Enums.Length);
 		Assert.Equal("THIS_ENUM_SHOULD_BE_FIRST", mavlinkData.Enums[0].Name);
 		Assert.Equal("THIS_ENUM_SHOULD_BE_SECOND", mavlinkData.Enums[1].Name);
 		Assert.Equal("THIS_ENUM_SHOULD_BE_THIRD", mavlinkData.Enums[2].Name);
+		Assert.Equal("THIS_ENUM_SHOULD_BE_FOURTH", mavlinkData.Enums[3].Name);
 	}
 
 	[Fact]

@@ -44,8 +44,7 @@ public class MavlinkXmlParser : IMavlinkParser
 				{
 					foreach (var param in entry.Param)
 					{
-						if (!string.IsNullOrEmpty(param.Enum)
-							&& enumDict.ContainsKey(param.Enum!))
+						if (!string.IsNullOrEmpty(param.Enum))
 						{
 							Visit(param.Enum!);
 						}
