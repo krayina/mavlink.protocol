@@ -120,4 +120,36 @@ public class MavlinkXmlParserTests
 		Assert.Equal(3, requiredFields);
 		Assert.Equal(2, nonRequiredFields);
 	}
+
+	[Fact]
+	public void Parse_ValidXmlContentWithTwoEnums_ShouldReturnMavlinkDataWithSortedEnums()
+	{
+		// Arrange
+		var xmlAdditionalFile = new TestAdditionalFile("test.xml", @"<?xml version=""1.0""?>
+<mavlink>
+  <enums>
+    <enum name=""THIS_ENUM_SHOULD_BE_THIRD"">
+      <entry value=""0"" name=""TEST_ENTRY_AA"">
+        <param index=""1"" label=""Test label"" enum=""THIS_ENUM_SHOULD_BE_SECOND"" />
+      </entry>
+    </enum>
+    <enum name=""THIS_ENUM_SHOULD_BE_SECOND"">
+      <entry value=""0"" name=""TEST_ENTRY"">
+        <param index=""1"" label=""Test label"" enum=""THIS_ENUM_SHOULD_BE_FIRST"" />
+      </entry>
+    </enum>
+    <enum name=""THIS_ENUM_SHOULD_BE_FIRST"" />
+  </enums>
+</mavlink>");
+
+		// Act
+		var parser = new MavlinkXmlParser();
+		var mavlinkData = parser.Parse(xmlAdditionalFile.GetText()!.ToString());
+
+		// Assert
+		Assert.Equal(3, mavlinkData.Enums.Length);
+		Assert.Equal("THIS_ENUM_SHOULD_BE_FIRST", mavlinkData.Enums[0].Name);
+		Assert.Equal("THIS_ENUM_SHOULD_BE_SECOND", mavlinkData.Enums[1].Name);
+		Assert.Equal("THIS_ENUM_SHOULD_BE_THIRD", mavlinkData.Enums[2].Name);
+	}
 }

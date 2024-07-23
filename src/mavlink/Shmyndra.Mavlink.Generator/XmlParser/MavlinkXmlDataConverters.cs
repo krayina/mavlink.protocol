@@ -20,9 +20,12 @@ internal static class MavlinkXmlDataConverters
 		{ "uint8_t_mavlink_version", ("byte", 1) }
 	};
 
-	public static MavlinkData ConvertToMavlinkData(this Mavlink mavlink)
+	public static MavlinkData ConvertToMavlinkData(this Mavlink mavlink, Func<IEnumerable<Enum>, IEnumerable<Enum>>? sortEnumsPredicate = null)
 	{
-		var enums = mavlink.Enums.Select(e => e.ConvertToMavlinkEnum()).ToImmutableArray();
+		var enums = sortEnumsPredicate != null
+			? sortEnumsPredicate(mavlink.Enums).Select(e => e.ConvertToMavlinkEnum()).ToImmutableArray()
+			: mavlink.Enums.Select(e => e.ConvertToMavlinkEnum()).ToImmutableArray();
+
 		var messages = mavlink.Messages.Select(m => m.ConvertToMavlinkMessage()).ToImmutableArray();
 		var includes = mavlink.Include.ToImmutableArray();
 
