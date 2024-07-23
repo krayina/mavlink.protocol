@@ -1,4 +1,5 @@
-﻿using System.Xml.Serialization;
+﻿using System.Collections.Immutable;
+using System.Xml.Serialization;
 using Microsoft.CodeAnalysis;
 
 namespace Shmyndra.Mavlink.Generator.Tests.Unit;
@@ -151,5 +152,49 @@ public class MavlinkXmlParserTests
 		Assert.Equal("THIS_ENUM_SHOULD_BE_FIRST", mavlinkData.Enums[0].Name);
 		Assert.Equal("THIS_ENUM_SHOULD_BE_SECOND", mavlinkData.Enums[1].Name);
 		Assert.Equal("THIS_ENUM_SHOULD_BE_THIRD", mavlinkData.Enums[2].Name);
+	}
+
+	[Fact]
+	public void GetMavlinkFileNodes_ValidXmlFilesWithIncludes_ShouldReturnTwoRootNodes()
+	{
+		// Arrange
+		var additional = ImmutableArray.Create<AdditionalText>(
+			new TestAdditionalFile("ThisFileShouldBeFourth.xml", @"<?xml version=""1.0""?>
+<mavlink>
+  <include>ThisFileShouldBeThird.xml</include>
+</mavlink>"),
+			new TestAdditionalFile("ThisFileShouldBeSecond.xml", @"<?xml version=""1.0""?>
+<mavlink />"),
+			new TestAdditionalFile("ThisFileShouldBeThird.xml", @"<?xml version=""1.0""?>
+<mavlink>
+  <include>ThisFileShouldBeSecond.xml</include>
+</mavlink>"),
+			new TestAdditionalFile("ThisFileShouldBeFirst.xml", @"<?xml version=""1.0""?>
+<mavlink />")
+		);
+
+		var fileContents = additional.ToDictionary(file => file.Path, file => file.GetText()!.ToString());
+
+		var parser = new MavlinkXmlParser();
+		var builder = new MavlinkFilesTreeBuilder(parser);
+
+		// Act
+		var result = builder.Build(fileContents);
+
+		// Assert
+		Assert.Equal(2, result.Count); // Two root nodes
+		var firstNode = result.SingleOrDefault(node => node.FilePath == "ThisFileShouldBeFirst.xml");
+		var fourthNode = result.SingleOrDefault(node => node.FilePath == "ThisFileShouldBeFourth.xml");
+
+		Assert.NotNull(firstNode);
+		Assert.NotNull(fourthNode);
+		Assert.Empty(firstNode.Includes);
+
+		var thirdNode = fourthNode.Includes.SingleOrDefault(node => node.FilePath == "ThisFileShouldBeThird.xml");
+		Assert.NotNull(thirdNode);
+
+		var secondNode = thirdNode.Includes.SingleOrDefault(node => node.FilePath == "ThisFileShouldBeSecond.xml");
+		Assert.NotNull(secondNode);
+		Assert.Empty(secondNode.Includes);
 	}
 }

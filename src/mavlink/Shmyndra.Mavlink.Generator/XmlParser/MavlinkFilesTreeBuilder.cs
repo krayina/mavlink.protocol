@@ -1,5 +1,4 @@
-﻿#if false
-namespace Shmyndra.Mavlink.Generator;
+﻿namespace Shmyndra.Mavlink.Generator;
 
 public interface IMavlinkFilesTreeBuilder
 {
@@ -57,4 +56,3 @@ public class MavlinkFilesTreeBuilder : IMavlinkFilesTreeBuilder
 		return nodes.Values.Where(node => !nodes.Values.Any(n => n.Includes.Contains(node))).ToList();
 	}
 }
-#endif
