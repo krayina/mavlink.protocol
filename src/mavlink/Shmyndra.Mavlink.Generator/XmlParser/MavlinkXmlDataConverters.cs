@@ -95,14 +95,13 @@ internal static class MavlinkXmlDataConverters
 	public static MavlinkMessageField ConvertToMavlinkMessageField(this Field field)
 	{
 		return new MavlinkMessageField(
-			field.Type.ConvertToFieldType(),
+			field.Type.ConvertToMavlinkMessageFieldType(field.Enum),
 			field.Name,
 			field.Description,
 			field.Display?.ConvertToMavlinkMessageFieldDisplay() ?? MavlinkMessageFieldDisplay.None,
 			field.Units.ConvertToMavlinkSystemUnit(),
 			field.IsRequired,
 			field.PrintFormat,
-			field.Enum,
 			field.IncrementSpecified ? field.Increment : null,
 			field.MinValueSpecified ? field.MinValue : null,
 			field.MaxValueSpecified ? field.MaxValue : null,
@@ -132,9 +131,39 @@ internal static class MavlinkXmlDataConverters
 		return System.Enum.TryParse(siUnit.ToString(), true, out MavlinkSystemUnit result) ? result : MavlinkSystemUnit.Empty;
 	}
 
-	public static FieldType ConvertToFieldType(this string type)
+	public static MavlinkMessageFieldType ConvertToMavlinkMessageFieldType(this string type, string? enumDependency)
 	{
-		// Example implementation: additional logic needed to handle array and enum types properly
-		return new FieldType(type);
+		// Check if the type represents an array (e.g., "uint32_t[4]")
+		var arrayMatch = System.Text.RegularExpressions.Regex.Match(type, @"^(?<baseType>[^\[]+)\[(?<arrayLength>\d+)\]$");
+
+		if (arrayMatch.Success)
+		{
+			var baseType = arrayMatch.Groups["baseType"].Value;
+			var arrayLength = int.Parse(arrayMatch.Groups["arrayLength"].Value);
+
+			if (enumDependency != null)
+			{
+				// If the field has an enum dependency, return an array enum type
+				return new MavlinkMessageFieldArrayEnumType(enumDependency, _typeMap[baseType].Size, arrayLength);
+			}
+			else
+			{
+				// If no enum dependency, return a standard array type
+				return new MavlinkMessageFieldArrayType(_typeMap[baseType].TypeName, arrayLength);
+			}
+		}
+		else
+		{
+			if (enumDependency != null)
+			{
+				// If the field has an enum dependency, return an enum type
+				return new MavlinkMessageFieldEnumType(enumDependency, _typeMap[type].Size);
+			}
+			else
+			{
+				// If no enum dependency, return a standard type
+				return new MavlinkMessageFieldType(_typeMap[type].TypeName);
+			}
+		}
 	}
 }

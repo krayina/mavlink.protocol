@@ -1,21 +1,6 @@
 ﻿namespace Shmyndra.Mavlink.Generator;
 
 /// <summary>
-/// Represents a basic field type with a name.
-/// </summary>
-public record FieldType(string TypeName);
-
-/// <summary>
-/// Represents an array field type with a name and length.
-/// </summary>
-public record FieldArrayType(string TypeName, int Length) : FieldType(TypeName);
-
-/// <summary>
-/// Represents an enum field type with a name and size.
-/// </summary>
-public record FieldEnumType(string TypeName, int Size) : FieldType(TypeName);
-
-/// <summary>
 /// Represents a field in a Mavlink message with various properties.
 /// </summary>
 public record MavlinkMessageField
@@ -23,7 +8,7 @@ public record MavlinkMessageField
 	/// <summary>
 	/// The type of the field.
 	/// </summary>
-	public FieldType Type { get; init; }
+	public MavlinkMessageFieldType Type { get; init; }
 
 	/// <summary>
 	/// The name of the field.
@@ -56,13 +41,6 @@ public record MavlinkMessageField
 	/// The print format specifies how the value of the field should be formatted when displayed or printed.
 	/// </summary>
 	public string? PrintFormat { get; init; }
-
-	/// <summary>
-	/// The enum name associated with the field.
-	/// The enum property defines a set of possible values for the field, restricting the input to predefined options.
-	/// This is useful for fields that have a limited set of valid values, such as modes or states.
-	/// </summary>
-	public string? Enum { get; init; }
 
 	/// <summary>
 	/// The increment step for the field value.
@@ -115,7 +93,6 @@ public record MavlinkMessageField
 	/// <param name="display">The display information of the field.</param>
 	/// <param name="systemUnit">The system unit of the field.</param>
 	/// <param name="printFormat">The print format of the field.</param>
-	/// <param name="enum">The enum name associated with the field.</param>
 	/// <param name="increment">The increment step for the field value.</param>
 	/// <param name="minValue">The minimum value for the field.</param>
 	/// <param name="maxValue">The maximum value for the field.</param>
@@ -124,14 +101,13 @@ public record MavlinkMessageField
 	/// <param name="invalid">The invalid value for the field.</param>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="name"/> is <c>null</c>.</exception>
 	public MavlinkMessageField(
-		FieldType type,
+		MavlinkMessageFieldType type,
 		string name,
 		string? description,
 		MavlinkMessageFieldDisplay display,
 		MavlinkSystemUnit systemUnit,
 		bool isRequired,
 		string? printFormat,
-		string? @enum,
 		float? increment,
 		float? minValue,
 		float? maxValue,
@@ -146,7 +122,6 @@ public record MavlinkMessageField
 		SystemUnit = systemUnit;
 		IsRequired = isRequired;
 		PrintFormat = printFormat;
-		Enum = @enum;
 		Increment = increment;
 		MinValue = minValue;
 		MaxValue = maxValue;
