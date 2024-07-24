@@ -1,5 +1,4 @@
-﻿#if false
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
@@ -9,11 +8,11 @@ namespace Shmyndra.Mavlink.Generator;
 public interface IMavlinkEnumTypesGenerator
 {
 	List<EnumDeclarationSyntax> GenerateEnums(
-		ImmutableArray<(string Name, string? Description, bool Bitmask, ImmutableList<(string Name, string Value, string? Description)> Entries)> enums,
+		ImmutableArray<MavlinkEnum> enums,
 		string namespaceName,
 		ImmutableArray<string> includes,
-		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping,
-		string filePath);
+		string filePath,
+		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping);
 }
 
 public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
@@ -23,11 +22,11 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 	private readonly Dictionary<string, string> _fileNameToPathMap = new();
 
 	public List<EnumDeclarationSyntax> GenerateEnums(
-		ImmutableArray<(string Name, string? Description, bool Bitmask, ImmutableList<(string Name, string Value, string? Description)> Entries)> enums,
+		ImmutableArray<MavlinkEnum> enums,
 		string namespaceName,
 		ImmutableArray<string> includes,
-		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping,
-		string filePath)
+		string filePath,
+		out IImmutableDictionary<string, (string Namespace, string TypeName)> nameMapping)
 	{
 		var nameMappingDict = new Dictionary<string, (string Namespace, string TypeName)>();
 		var enumDeclarations = new List<EnumDeclarationSyntax>();
@@ -95,7 +94,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 	}
 
 	private IEnumerable<EnumMemberDeclarationSyntax> CreateEnumMembers(
-		ImmutableList<(string Name, string Value, string? Description)> entries,
+		ImmutableList<MavlinkEnumEntry> entries,
 		string baseEnumName)
 	{
 		return entries.Select(entry =>
@@ -106,28 +105,22 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 			var enumMember = SyntaxFactory.EnumMemberDeclaration(entryName)
 				.AddSummaryTriviaIfNotNull(entry.Description)
 				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {entry.Name.ToUpper()}")
-				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value)));
-
+				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())));
 			return enumMember;
 		});
 	}
 
 	private EnumDeclarationSyntax CreateEnum(
-		(string Name, string? Description, bool Bitmask, ImmutableList<(string Name, string Value, string? Description)> Entries) enumData,
+		MavlinkEnum enumData,
 		string namespaceName)
 	{
 		var normalizedName = Utilities.ToCamelCase(enumData.Name);
-		var allValues = enumData.Entries
-			.Where(entry => entry.Value != null)
-			.Select(entry => ulong.Parse(entry.Value!))
-			.ToList();
+
+		var allValues = enumData.Entries.Select(entry => entry.Value);
 
 		var enumBaseType = Utilities.DetermineEnumBaseType(allValues);
 
-		var sortedEntries = enumData.Entries
-			.Where(entry => entry.Value != null)
-			.OrderBy(entry => ulong.Parse(entry.Value!))
-			.ToList();
+		var sortedEntries = enumData.Entries.OrderBy(entry => entry.Value);
 
 		var enumMembers = sortedEntries.Select(entry =>
 		{
@@ -135,7 +128,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 			var entryName = normalizedEntryName == normalizedName ? "_" + normalizedEntryName : normalizedEntryName;
 
 			var enumMember = SyntaxFactory.EnumMemberDeclaration(entryName)
-				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value!)))
+				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())))
 				.AddSummaryTriviaIfNotNull(entry.Description)
 				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {entry.Name.ToUpper()}");
 
@@ -172,7 +165,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 				SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(enumBaseType)))));
 		}
 
-		if (enumData.Bitmask)
+		if (enumData.Bitmask == true)
 		{
 			enumDeclaration = enumDeclaration.AddAttributeLists(
 				SyntaxFactory.AttributeList(
@@ -186,7 +179,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		return enumDeclaration;
 	}
 
-	private EnumDeclarationSyntax MergeEnums(EnumDeclarationSyntax existingEnum, (string Name, string? Description, bool Bitmask, ImmutableList<(string Name, string Value, string? Description)> Entries) newEnumData, string existingNamespace)
+	private EnumDeclarationSyntax MergeEnums(EnumDeclarationSyntax existingEnum, MavlinkEnum newEnumData, string existingNamespace)
 	{
 		var updatedExistingMembers = existingEnum.Members.Select(m =>
 		{
@@ -204,11 +197,11 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 
 		var newMembers = CreateEnumMembers(newEnumData.Entries, newEnumData.Name).ToList();
 
-		var maxNewValue = newEnumData.Entries.Max(e => ulong.Parse(e.Value));
+		var maxNewValue = newEnumData.Entries.Max(e => e.Value);
 
 		var currentBaseType = GetBaseType(existingEnum);
 
-		var existingValues = new List<ulong>();
+		var existingValues = new List<uint>();
 
 		foreach (var member in existingEnum.Members)
 		{
@@ -237,7 +230,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 					SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(newBaseType)))));
 		}
 
-		if (newEnumData.Bitmask)
+		if (newEnumData.Bitmask == true)
 		{
 			enumDeclaration = enumDeclaration.AddAttributeLists(
 				SyntaxFactory.AttributeList(
@@ -256,10 +249,10 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		return enumDeclaration.BaseList?.Types.FirstOrDefault()?.ToString() ?? "int";
 	}
 
-	private static ulong? TryParseEnumValue(ExpressionSyntax expression)
+	private static uint? TryParseEnumValue(ExpressionSyntax expression)
 	{
 		if (expression is LiteralExpressionSyntax literalExpression &&
-			ulong.TryParse(literalExpression.Token.ValueText, out var value))
+			uint.TryParse(literalExpression.Token.ValueText, out var value))
 		{
 			return value;
 		}
@@ -267,4 +260,3 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		return null;
 	}
 }
-#endif

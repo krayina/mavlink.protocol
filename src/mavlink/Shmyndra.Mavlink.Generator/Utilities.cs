@@ -68,12 +68,12 @@ internal static class Utilities
 		return node.WithLeadingTrivia(existingTrivia.AddRange(remarksTrivia));
 	}
 
-	public static string DetermineEnumBaseType(IEnumerable<ulong> values)
+	public static string DetermineEnumBaseType(IEnumerable<uint> values)
 	{
 		var maxValue = values.Max();
 		if (maxValue <= byte.MaxValue) return "byte";
 		if (maxValue <= ushort.MaxValue) return "ushort";
 		if (maxValue <= uint.MaxValue) return "uint";
-		return "ulong";
+		throw new InvalidOperationException("The enum base type value cannot be greater than uint.");
 	}
 }
