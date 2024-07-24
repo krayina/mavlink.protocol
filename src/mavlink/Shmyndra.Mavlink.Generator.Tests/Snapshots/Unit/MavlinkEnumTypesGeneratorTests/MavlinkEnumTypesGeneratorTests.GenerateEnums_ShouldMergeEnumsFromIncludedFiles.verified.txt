@@ -1,0 +1,51 @@
+﻿[  
+/// <summary>
+/// Enum for ESC connection types
+/// </summary>
+/// <remarks>
+/// Original name: ESC_CONNECTION_TYPE
+/// </remarks>
+[MavlinkType("ESC_CONNECTION_TYPE")]
+public enum EscConnectionType : byte
+{
+    /// <summary>
+    /// Type 1
+    /// </summary>
+    /// <remarks>
+    /// Original name: ESC_TYPE1
+    /// </remarks>
+    EscType1 = 0
+}
+  
+/// <summary>
+/// Enum for ESC connection types
+/// </summary>
+/// <remarks>
+/// Original name: ESC_CONNECTION_TYPE
+/// </remarks>
+[MavlinkType("ESC_CONNECTION_TYPE")]
+public enum EscConnectionType : byte
+{
+    /// <summary>
+    /// Type 1
+    /// </summary>
+    /// <remarks>
+    /// Original name: ESC_TYPE1
+    /// </remarks>
+    EscType1 = Namespace1.EscConnectionType.EscType1,
+    /// <summary>
+    /// Type 2
+    /// </summary>
+    /// <remarks>
+    /// Original name: ESC_TYPE2
+    /// </remarks>
+    EscType2 = 1,
+    /// <summary>
+    /// Type 3
+    /// </summary>
+    /// <remarks>
+    /// Original name: ESC_TYPE3
+    /// </remarks>
+    EscType3 = 2
+}
+]
