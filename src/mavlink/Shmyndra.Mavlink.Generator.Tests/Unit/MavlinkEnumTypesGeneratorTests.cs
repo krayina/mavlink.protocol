@@ -79,7 +79,7 @@ public class MavlinkEnumTypesGeneratorTests
 
 		// Assert
 		await Verify(normalizedEnums)
-			.UseDirectory("Snapshots/Unit/MavlinkEnumTypesGeneratorTests")
+			.UseDirectory("..\\Snapshots/Unit/MavlinkEnumTypesGeneratorTests")
 			.UseParameters(namespaceName, filePath);
 	}
 }
