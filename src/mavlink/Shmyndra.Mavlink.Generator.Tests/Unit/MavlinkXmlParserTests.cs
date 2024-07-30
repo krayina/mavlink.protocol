@@ -68,6 +68,7 @@ public class MavlinkXmlParserTests
 		Assert.NotEmpty(mavlinkData.Enums);
 		Assert.NotEmpty(mavlinkData.Messages);
 
+		// Check ESC_FAILURE_FLAGS enum
 		var escFailureFlagsEnum = mavlinkData.Enums.FirstOrDefault(e => e.Name == "ESC_FAILURE_FLAGS");
 		Assert.NotNull(escFailureFlagsEnum);
 		Assert.True(escFailureFlagsEnum.Bitmask);
@@ -75,14 +76,44 @@ public class MavlinkXmlParserTests
 		Assert.Equal(8, escFailureFlagsEnum.Entries.Count);
 		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_NONE" && entry.Value == 0);
 		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_OVER_CURRENT" && entry.Value == 1);
+		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_OVER_VOLTAGE" && entry.Value == 2);
+		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_OVER_TEMPERATURE" && entry.Value == 4);
+		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_OVER_RPM" && entry.Value == 8);
+		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_INCONSISTENT_CMD" && entry.Value == 16);
+		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_MOTOR_STUCK" && entry.Value == 32);
+		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_GENERIC" && entry.Value == 64);
 
+		// Check ESC_INFO message
 		var escInfoMessage = mavlinkData.Messages.FirstOrDefault(m => m.Name == "ESC_INFO");
 		Assert.NotNull(escInfoMessage);
 		Assert.Equal(290U, escInfoMessage.Id);
 		Assert.Equal("ESC_INFO", escInfoMessage.Name);
 		Assert.Equal("ESC information for lower rate streaming. Recommended streaming rate 1Hz. See ESC_STATUS for higher-rate ESC data.", escInfoMessage.Description);
 		Assert.NotEmpty(escInfoMessage.Fields);
-		Assert.Contains(escInfoMessage.Fields, f => f.Name == "index" && f.Type.TypeName == "uint8_t" && f.Instance!.Value);
+
+		// Check specific fields in ESC_INFO message
+		var indexField = escInfoMessage.Fields.FirstOrDefault(f => f.Name == "index");
+		Assert.NotNull(indexField);
+		Assert.Equal("byte", indexField.Type.TypeName);
+		Assert.True(indexField.Instance!.Value);
+
+		var connectionTypeField = escInfoMessage.Fields.FirstOrDefault(f => f.Name == "connection_type");
+		Assert.NotNull(connectionTypeField);
+		Assert.Equal("ESC_CONNECTION_TYPE", connectionTypeField.Type.TypeName);
+		Assert.IsType<MavlinkMessageFieldEnumType>(connectionTypeField.Type);
+		var connectionTypeFieldEnum = (MavlinkMessageFieldEnumType)connectionTypeField.Type;
+		Assert.Equal("ESC_CONNECTION_TYPE", connectionTypeFieldEnum.TypeName);
+		Assert.Equal(sizeof(byte), connectionTypeFieldEnum.EnumSize);
+
+		var failureFlagsField = escInfoMessage.Fields.FirstOrDefault(f => f.Name == "failure_flags");
+		Assert.NotNull(failureFlagsField);
+		Assert.Equal("ESC_FAILURE_FLAGS", failureFlagsField.Type.TypeName);
+		Assert.IsType<MavlinkMessageFieldArrayEnumType>(failureFlagsField.Type);
+		var failureFlagsFieldArrayEnum = (MavlinkMessageFieldArrayEnumType)failureFlagsField.Type;
+		Assert.Equal("ESC_FAILURE_FLAGS", failureFlagsFieldArrayEnum.TypeName);
+		Assert.Equal(sizeof(ushort), failureFlagsFieldArrayEnum.EnumSize);
+		Assert.Equal(4, failureFlagsFieldArrayEnum.ArrayLength);
+		Assert.Equal(MavlinkMessageFieldDisplay.Bitmask, failureFlagsField.Display);
 	}
 
 	[Fact]
