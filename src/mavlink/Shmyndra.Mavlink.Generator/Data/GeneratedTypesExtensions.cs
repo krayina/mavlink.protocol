@@ -20,15 +20,16 @@ internal static class GeneratedTypesExtensions
 	}
 
 	/// <summary>
-	/// Converts a <see cref="MavlinkEnumEntry"/> to a <see cref="GeneratedMavlinkEnumEntry"/> with a specified generated name.
+	/// Converts a <see cref="MavlinkEnumEntry"/> to a <see cref="GeneratedMavlinkEnumEntry"/> with a specified generated name and namespace.
 	/// </summary>
 	/// <param name="entry">The original Mavlink enum entry.</param>
+	/// <param name="namespace">The namespace of the original enum to which this entry belongs.</param>
 	/// <param name="generatedName">The generated name for the new entry.</param>
 	/// <returns>A new <see cref="GeneratedMavlinkEnumEntry"/> instance.</returns>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="generatedName"/> is <c>null</c>.</exception>
-	public static GeneratedMavlinkEnumEntry ToGeneratedMavlinkEnumEntry(this MavlinkEnumEntry entry, string generatedName)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="namespace"/> or <paramref name="generatedName"/> is <c>null</c>.</exception>
+	public static GeneratedMavlinkEnumEntry ToGeneratedMavlinkEnumEntry(this MavlinkEnumEntry entry, string @namespace, string generatedName)
 	{
-		return new GeneratedMavlinkEnumEntry(generatedName, entry);
+		return new GeneratedMavlinkEnumEntry(@namespace, generatedName, entry);
 	}
 
 	/// <summary>
