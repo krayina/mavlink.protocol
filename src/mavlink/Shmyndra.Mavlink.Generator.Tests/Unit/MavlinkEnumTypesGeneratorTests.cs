@@ -6,6 +6,7 @@ namespace Shmyndra.Mavlink.Generator.Tests.Unit;
 public class MavlinkEnumTypesGeneratorTests
 {
 	private const string SNAPSHOT_PATH = "..\\Snapshots/Unit/MavlinkEnumTypesGeneratorTests";
+
 	[Fact]
 	public async Task GenerateEnums_ShouldMatchSnapshot()
 	{
@@ -15,17 +16,18 @@ public class MavlinkEnumTypesGeneratorTests
 				name: "ESC_CONNECTION_TYPE",
 				description: "Enum for ESC connection types",
 				bitmask: false,
-				entries: ImmutableList.Create(
+				entries:
+				[
 					new MavlinkEnumEntry(
-						name: "ESC_TYPE1",
-						value: 0,
-						description: "Type 1",
-						details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
-						deprecated: null,
-						hasLocation: null,
-						isDestination: null,
-						missionOnly: null
-					),
+									name: "ESC_TYPE1",
+									value: 0,
+									description: "Type 1",
+									details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
+									deprecated: null,
+									hasLocation: null,
+									isDestination: null,
+									missionOnly: null
+								),
 					new MavlinkEnumEntry(
 						name: "ESC_TYPE2",
 						value: 1,
@@ -36,7 +38,7 @@ public class MavlinkEnumTypesGeneratorTests
 						isDestination: null,
 						missionOnly: null
 					)
-				),
+				],
 				deprecated: null
 			),
 			new MavlinkEnum(
