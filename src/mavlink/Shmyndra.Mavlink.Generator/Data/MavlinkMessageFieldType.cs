@@ -26,7 +26,7 @@ public record MavlinkMessageFieldArrayType(string TypeName, int ArrayLength) : M
 public record MavlinkMessageFieldEnumType(string TypeName, int EnumSize) : MavlinkMessageFieldType(TypeName);
 
 /// <summary>
-/// Represents an enum field type with a name and size.
+/// Represents an enum field array with a name and size.
 /// </summary>
 /// <remarks>
 /// type="uint16_t[4]" enum=""ESC_FAILURE_FLAGS"" will be converted to original enum name ESC_FAILURE_FLAGS<br/>
