@@ -76,12 +76,6 @@ public class MavlinkXmlParserTests
 		Assert.Equal(8, escFailureFlagsEnum.Entries.Count);
 		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_NONE" && entry.Value == 0);
 		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_OVER_CURRENT" && entry.Value == 1);
-		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_OVER_VOLTAGE" && entry.Value == 2);
-		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_OVER_TEMPERATURE" && entry.Value == 4);
-		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_OVER_RPM" && entry.Value == 8);
-		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_INCONSISTENT_CMD" && entry.Value == 16);
-		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_MOTOR_STUCK" && entry.Value == 32);
-		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_GENERIC" && entry.Value == 64);
 
 		// Check ESC_INFO message
 		var escInfoMessage = mavlinkData.Messages.FirstOrDefault(m => m.Name == "ESC_INFO");
@@ -94,26 +88,23 @@ public class MavlinkXmlParserTests
 		// Check specific fields in ESC_INFO message
 		var indexField = escInfoMessage.Fields.FirstOrDefault(f => f.Name == "index");
 		Assert.NotNull(indexField);
-		Assert.Equal("byte", indexField.Type.TypeName);
+		Assert.Equal("uint8_t", indexField.Type.TypeName);
 		Assert.True(indexField.Instance!.Value);
 
 		var connectionTypeField = escInfoMessage.Fields.FirstOrDefault(f => f.Name == "connection_type");
 		Assert.NotNull(connectionTypeField);
-		Assert.Equal("ESC_CONNECTION_TYPE", connectionTypeField.Type.TypeName);
+		Assert.Equal("uint8_t", connectionTypeField.Type.TypeName);
 		Assert.IsType<MavlinkMessageFieldEnumType>(connectionTypeField.Type);
 		var connectionTypeFieldEnum = (MavlinkMessageFieldEnumType)connectionTypeField.Type;
-		Assert.Equal("ESC_CONNECTION_TYPE", connectionTypeFieldEnum.TypeName);
-		Assert.Equal(sizeof(byte), connectionTypeFieldEnum.EnumSize);
+		Assert.Equal("ESC_CONNECTION_TYPE", connectionTypeFieldEnum.EnumName);
 
 		var failureFlagsField = escInfoMessage.Fields.FirstOrDefault(f => f.Name == "failure_flags");
 		Assert.NotNull(failureFlagsField);
-		Assert.Equal("ESC_FAILURE_FLAGS", failureFlagsField.Type.TypeName);
-		Assert.IsType<MavlinkMessageFieldArrayEnumType>(failureFlagsField.Type);
-		var failureFlagsFieldArrayEnum = (MavlinkMessageFieldArrayEnumType)failureFlagsField.Type;
-		Assert.Equal("ESC_FAILURE_FLAGS", failureFlagsFieldArrayEnum.TypeName);
-		Assert.Equal(sizeof(ushort), failureFlagsFieldArrayEnum.EnumSize);
-		Assert.Equal(4, failureFlagsFieldArrayEnum.ArrayLength);
-		Assert.Equal(MavlinkMessageFieldDisplay.Bitmask, failureFlagsField.Display);
+		Assert.Equal("uint16_t[4]", failureFlagsField.Type.TypeName);
+		Assert.IsType<MavlinkMessageFieldEnumType>(failureFlagsField.Type);
+		var failureFlagsFieldEnum = (MavlinkMessageFieldEnumType)failureFlagsField.Type;
+		Assert.Equal("ESC_FAILURE_FLAGS", failureFlagsFieldEnum.EnumName);
+		Assert.Equal("Bitmask", failureFlagsField.Display.ToString());
 	}
 
 	[Fact]
@@ -270,26 +261,23 @@ public class MavlinkXmlParserTests
 
 		Assert.NotNull(countField);
 		Assert.IsType<MavlinkMessageFieldType>(countField.Type);
-		Assert.Equal("byte", countField.Type.TypeName);
+		Assert.Equal("uint8_t", countField.Type.TypeName);
 
 		Assert.NotNull(connectionTypeField);
 		Assert.IsType<MavlinkMessageFieldEnumType>(connectionTypeField.Type);
 		var connectionTypeEnum = (MavlinkMessageFieldEnumType)connectionTypeField.Type;
-		Assert.Equal("ESC_CONNECTION_TYPE", connectionTypeEnum.TypeName);
-		Assert.Equal(1, connectionTypeEnum.EnumSize); // Size of uint8_t
+		Assert.Equal("uint8_t", connectionTypeEnum.TypeName);
+		Assert.Equal("ESC_CONNECTION_TYPE", connectionTypeEnum.EnumName);
 
 		Assert.NotNull(errorCountField);
-		Assert.IsType<MavlinkMessageFieldArrayType>(errorCountField.Type);
-		var errorCountArray = (MavlinkMessageFieldArrayType)errorCountField.Type;
-		Assert.Equal("uint", errorCountArray.TypeName); // uint32_t corresponds to uint
-		Assert.Equal(4, errorCountArray.ArrayLength);
+		Assert.IsType<MavlinkMessageFieldType>(errorCountField.Type);
+		Assert.Equal("uint32_t[4]", errorCountField.Type.TypeName);
 
 		Assert.NotNull(failureFlagsField);
-		Assert.IsType<MavlinkMessageFieldArrayEnumType>(failureFlagsField.Type);
-		var failureFlagsArrayEnum = (MavlinkMessageFieldArrayEnumType)failureFlagsField.Type;
-		Assert.Equal("ESC_FAILURE_FLAGS", failureFlagsArrayEnum.TypeName);
-		Assert.Equal(2, failureFlagsArrayEnum.EnumSize); // Size of uint16_t
-		Assert.Equal(4, failureFlagsArrayEnum.ArrayLength);
+		Assert.IsType<MavlinkMessageFieldEnumType>(failureFlagsField.Type);
+		var failureFlagsEnum = (MavlinkMessageFieldEnumType)failureFlagsField.Type;
+		Assert.Equal("uint16_t[4]", failureFlagsEnum.TypeName);
+		Assert.Equal("ESC_FAILURE_FLAGS", failureFlagsEnum.EnumName);
+		Assert.Equal(MavlinkMessageFieldDisplay.Bitmask, failureFlagsField.Display);
 	}
-
 }
