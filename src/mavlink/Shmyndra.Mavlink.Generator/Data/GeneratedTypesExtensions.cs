@@ -8,18 +8,6 @@ namespace Shmyndra.Mavlink.Generator;
 internal static class GeneratedTypesExtensions
 {
 	/// <summary>
-	/// Converts a <see cref="MavlinkMessageField"/> to a <see cref="GeneratedMavlinkMessageField"/> with a specified generated name.
-	/// </summary>
-	/// <param name="field">The original Mavlink message field.</param>
-	/// <param name="generatedName">The generated name for the new field.</param>
-	/// <returns>A new instance of <see cref="GeneratedMavlinkMessageField"/> with the specified generated name.</returns>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="field"/> or <paramref name="generatedName"/> is <c>null</c>.</exception>
-	public static GeneratedMavlinkMessageField ToGeneratedMavlinkMessageField(this MavlinkMessageField field, string generatedName)
-	{
-		return new GeneratedMavlinkMessageField(generatedName, field);
-	}
-
-	/// <summary>
 	/// Converts a <see cref="MavlinkEnumEntry"/> to a <see cref="GeneratedMavlinkEnumEntry"/> with a specified generated name and namespace.
 	/// </summary>
 	/// <param name="entry">The original Mavlink enum entry.</param>
