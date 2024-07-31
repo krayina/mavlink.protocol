@@ -10,8 +10,12 @@
     var tempFailureFlagsArray = new ESC_FAILURE_FLAGS[4];
     Buffer.BlockCopy(payload, 14, tempFailureFlagsArray, 0, 8);
     var failureFlags = tempFailureFlagsArray.ToImmutableArray();
-    var errorCount = BitConverter.ToUInt32(payload, 22);
-    var temperature = BitConverter.ToInt16(payload, 26);
+    var tempErrorCountArray = new uint[4];
+    Buffer.BlockCopy(payload, 22, tempErrorCountArray, 0, 16);
+    var errorCount = tempErrorCountArray.ToImmutableArray();
+    var tempTemperatureArray = new short[4];
+    Buffer.BlockCopy(payload, 38, tempTemperatureArray, 0, 8);
+    var temperature = tempTemperatureArray.ToImmutableArray();
     return new GeneratedMavlinkMessageFieldType
     {
         Index = index,
