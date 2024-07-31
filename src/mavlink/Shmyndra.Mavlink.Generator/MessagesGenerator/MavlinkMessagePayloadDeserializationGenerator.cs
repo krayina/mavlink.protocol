@@ -11,7 +11,7 @@ internal class MavlinkMessagePayloadDeserializationGenerator
 	/// Generates the <c>CreateInstance</c> method for deserializing Mavlink message payloads into instances of the generated message type.
 	/// </summary>
 	/// <param name="currentNamespace">The namespace of the generated message type.</param>
-	/// <param name="fields">The list of fields in the Mavlink message, each represented as a <see cref="GeneratedMavlinkMessageField"/>.</param>
+	/// <param name="fields">The array of fields in the Mavlink message, each represented as a <see cref="GeneratedMavlinkMessageField"/>.</param>
 	/// <returns>A <see cref="MethodDeclarationSyntax"/> representing the <c>CreateInstance</c> method.</returns>
 	/// <remarks>
 	/// The <c>CreateInstance</c> method is essential for converting raw byte payloads from Mavlink messages into strongly-typed objects, enabling easier manipulation and access to message data in .NET applications.
@@ -19,7 +19,7 @@ internal class MavlinkMessagePayloadDeserializationGenerator
 	/// <exception cref="InvalidCastException">Thrown if any field in <paramref name="fields"/> is not of type <see cref="GeneratedMavlinkMessageFieldType"/> or its derived types.</exception>
 	public static MethodDeclarationSyntax GenerateCreateInstanceMethod(
 		string currentNamespace,
-		ImmutableList<GeneratedMavlinkMessageField> fields)
+		ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
 		var methodBody = new StringBuilder();
 		var offset = 0;
