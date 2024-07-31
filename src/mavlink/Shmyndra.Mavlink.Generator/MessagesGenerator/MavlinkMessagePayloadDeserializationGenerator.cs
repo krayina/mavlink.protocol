@@ -1,52 +1,63 @@
-﻿#if false
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Text;
 
 namespace Shmyndra.Mavlink.Generator;
 
-public class MavlinkMessagePayloadDeserializationGenerator
+internal class MavlinkMessagePayloadDeserializationGenerator
 {
+	/// <summary>
+	/// Generates the <c>CreateInstance</c> method for deserializing Mavlink message payloads into instances of the generated message type.
+	/// </summary>
+	/// <param name="currentNamespace">The namespace of the generated message type.</param>
+	/// <param name="fields">The list of fields in the Mavlink message, each represented as a <see cref="GeneratedMavlinkMessageField"/>.</param>
+	/// <returns>A <see cref="MethodDeclarationSyntax"/> representing the <c>CreateInstance</c> method.</returns>
+	/// <remarks>
+	/// The <c>CreateInstance</c> method is essential for converting raw byte payloads from Mavlink messages into strongly-typed objects, enabling easier manipulation and access to message data in .NET applications.
+	/// </remarks>
+	/// <exception cref="InvalidCastException">Thrown if any field in <paramref name="fields"/> is not of type <see cref="GeneratedMavlinkMessageFieldType"/> or its derived types.</exception>
 	public static MethodDeclarationSyntax GenerateCreateInstanceMethod(
-		(string Namespace, string Name) messageType,
-		ImmutableList<(FieldType Type, string Name, string XmlName, string? Description)> fields,
-		IImmutableDictionary<string, (string Namespace, string TypeName)> enumTypes)
+		string currentNamespace,
+		ImmutableList<GeneratedMavlinkMessageField> fields)
 	{
 		var methodBody = new StringBuilder();
 		var offset = 0;
 
 		foreach (var field in fields)
 		{
-			var fieldType = field.Type;
-			var fieldName = field.Name;
-			var variableName = char.ToLowerInvariant(fieldName[0]) + fieldName.Substring(1);
+			var fieldType = (GeneratedMavlinkMessageFieldType)field.Type;
+			var fieldPropertyName = field.GeneratedName;
+			var variableName = char.ToLowerInvariant(fieldPropertyName[0]) + fieldPropertyName.Substring(1);
 
-			if (fieldType is FieldArrayType arrayType)
+			if (fieldType is GeneratedMavlinkMessageFieldArrayType arrayType)
 			{
-				var elementType = ExtractElementType(arrayType.TypeName);
-				methodBody.AppendLine(GenerateArrayDeserialization(variableName, fieldName, arrayType, elementType, ref offset));
+				methodBody.AppendLine(GenerateArrayDeserialization(variableName, fieldPropertyName, arrayType, ref offset));
 			}
-			else if (fieldType is FieldEnumType enumType)
+			else if (fieldType is GeneratedMavlinkMessageFieldEnumType enumType)
 			{
-				methodBody.AppendLine(GenerateEnumDeserialization(variableName, enumType, enumTypes, ref offset, messageType.Namespace));
+				methodBody.AppendLine(GenerateEnumDeserialization(variableName, enumType, ref offset, currentNamespace));
+			}
+			else if (fieldType is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType)
+			{
+				methodBody.AppendLine(GenerateArrayEnumDeserialization(variableName, fieldPropertyName, arrayEnumType, ref offset, currentNamespace));
 			}
 			else
 			{
-				methodBody.AppendLine(GenerateSimpleTypeDeserialization(variableName, fieldType.TypeName, ref offset));
+				methodBody.AppendLine(GenerateSimpleTypeDeserialization(variableName, fieldType.ConvertedType, ref offset));
 			}
 		}
 
 		var propertiesAssignment = string.Join(", ", fields.Select(field =>
 		{
-			var variableName = char.ToLowerInvariant(field.Name[0]) + field.Name.Substring(1);
-			return $"{field.Name} = {variableName}";
+			var variableName = char.ToLowerInvariant(field.GeneratedName[0]) + field.GeneratedName.Substring(1);
+			return $"{field.GeneratedName} = {variableName}";
 		}));
 
-		methodBody.AppendLine($"return new {messageType.Name} {{ {propertiesAssignment} }};");
+		methodBody.AppendLine($"return new {fields.First().Type.GetType().Name} {{ {propertiesAssignment} }};");
 
 		var methodString = $@"
-public static {messageType.Name} CreateInstance(byte[] payload)
+public static {fields.First().Type.GetType().Name} CreateInstance(byte[] payload)
 {{
     {methodBody}
 }}";
@@ -63,29 +74,23 @@ public class TemporaryClass
 		return method;
 	}
 
-	private static string ExtractElementType(string typeName)
+	private static string GenerateArrayDeserialization(string variableName, string propertyName, GeneratedMavlinkMessageFieldArrayType arrayType, ref int offset)
 	{
-		var start = typeName.IndexOf('<') + 1;
-		var length = typeName.IndexOf('>') - start;
-		return typeName.Substring(start, length);
-	}
-
-	private static string GenerateArrayDeserialization(string variableName, string originalName, FieldArrayType arrayType, string elementType, ref int offset)
-	{
-		var tempArrayName = $"temp{originalName}Array";
-		var arrayLength = arrayType.Length * GetTypeSize(elementType);
+		var tempArrayName = $"temp{propertyName}Array";
+		var elementType = arrayType.ConvertedType;
+		var arrayLength = arrayType.ArrayLength * GetTypeSize(elementType);
 		var result = $@"
-var {tempArrayName} = new {elementType}[{arrayType.Length}];
+var {tempArrayName} = new {elementType}[{arrayType.ArrayLength}];
 Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayLength});
 var {variableName} = {tempArrayName}.ToImmutableArray();";
 		offset += arrayLength;
 		return result;
 	}
 
-	private static string GenerateEnumDeserialization(string variableName, FieldEnumType fieldEnumType, IImmutableDictionary<string, (string Namespace, string TypeName)> enumTypes, ref int offset, string currentNamespace)
+	private static string GenerateEnumDeserialization(string variableName, GeneratedMavlinkMessageFieldEnumType fieldEnumType, ref int offset, string currentNamespace)
 	{
-		var size = fieldEnumType.Size;
-		var (enumNamespace, enumTypeName) = enumTypes[fieldEnumType.TypeName];
+		var size = GetTypeSize(fieldEnumType.ConvertedType);
+		var (enumNamespace, enumTypeName) = (fieldEnumType.GeneratedEnum.Namespace, fieldEnumType.GeneratedEnum.Name);
 		var fullEnumTypeName = enumNamespace == currentNamespace ? enumTypeName : $"{enumNamespace}.{enumTypeName}";
 
 		string deserializationCode;
@@ -104,6 +109,20 @@ var {variableName} = ({fullEnumTypeName}){variableName}Value;";
 
 		offset += size;
 		return deserializationCode;
+	}
+
+	private static string GenerateArrayEnumDeserialization(string variableName, string propertyName, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, ref int offset, string currentNamespace)
+	{
+		var tempArrayName = $"temp{propertyName}Array";
+		var (enumNamespace, enumTypeName) = (arrayEnumType.GeneratedEnum.Namespace, arrayEnumType.GeneratedEnum.Name);
+		var fullEnumTypeName = enumNamespace == currentNamespace ? enumTypeName : $"{enumNamespace}.{enumTypeName}";
+
+		var result = $@"
+var {tempArrayName} = new {fullEnumTypeName}[{arrayEnumType.ArrayLength}];
+Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayEnumType.ArrayLength * GetTypeSize(arrayEnumType.ConvertedType)});
+var {variableName} = {tempArrayName}.ToImmutableArray();";
+		offset += arrayEnumType.ArrayLength * GetTypeSize(arrayEnumType.ConvertedType);
+		return result;
 	}
 
 	private static string GenerateSimpleTypeDeserialization(string variableName, string typeName, ref int offset)
@@ -178,4 +197,3 @@ var {variableName} = ({fullEnumTypeName}){variableName}Value;";
 		};
 	}
 }
-#endif
