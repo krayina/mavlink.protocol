@@ -1,0 +1,27 @@
+﻿public static GeneratedMavlinkMessageFieldType CreateInstance(byte[] payload)
+{
+    var index = payload[0];
+    var timeUsec = BitConverter.ToUInt64(payload, 1);
+    var counter = BitConverter.ToUInt16(payload, 9);
+    var count = payload[11];
+    var connectionTypeValue = (byte)payload[12];
+    var connectionType = (ESC_CONNECTION_TYPE)connectionTypeValue;
+    var info = payload[13];
+    var tempFailureFlagsArray = new ESC_FAILURE_FLAGS[4];
+    Buffer.BlockCopy(payload, 14, tempFailureFlagsArray, 0, 8);
+    var failureFlags = tempFailureFlagsArray.ToImmutableArray();
+    var errorCount = BitConverter.ToUInt32(payload, 22);
+    var temperature = BitConverter.ToInt16(payload, 26);
+    return new GeneratedMavlinkMessageFieldType
+    {
+        Index = index,
+        TimeUsec = timeUsec,
+        Counter = counter,
+        Count = count,
+        ConnectionType = connectionType,
+        Info = info,
+        FailureFlags = failureFlags,
+        ErrorCount = errorCount,
+        Temperature = temperature
+    };
+}
