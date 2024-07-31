@@ -135,7 +135,7 @@ public class MavlinkXmlParserTests
 		var message = mavlinkData.Messages.First();
 		var fields = message.Fields;
 
-		Assert.Equal(5, fields.Count);
+		Assert.Equal(5, fields.Length);
 
 		var requiredFields = fields.Count(f => f.IsRequired);
 		var nonRequiredFields = fields.Count(f => !f.IsRequired);

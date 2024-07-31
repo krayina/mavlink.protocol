@@ -65,7 +65,7 @@ internal static class MavlinkXmlDataConverters
 
 	public static MavlinkMessage ConvertToMavlinkMessage(this Message message)
 	{
-		var fields = message.Field.Select(f => f.ConvertToMavlinkMessageField()).ToImmutableList();
+		var fields = message.Field.Select(f => f.ConvertToMavlinkMessageField()).ToImmutableArray();
 
 		return new MavlinkMessage(
 			message.Id,
