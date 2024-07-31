@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Shmyndra.Mavlink.Generator.Tests;
 
-public static class MavlinkSchemaEscInfoMessageFactory
+public static class MavlinkSchemaEscInfoTestInstances
 {
 	private static Enum? _escFailureFlagsEnum;
 	private static Enum? _escConnectionTypeEnum;
