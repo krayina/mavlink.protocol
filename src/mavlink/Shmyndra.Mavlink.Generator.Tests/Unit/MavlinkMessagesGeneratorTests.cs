@@ -7,30 +7,81 @@ public class MavlinkMessagesGeneratorTests
 {
 	private const string SNAPSHOT_PATH = "..\\Snapshots/Unit/MavlinkMessageTypesGeneratorTests";
 
-	private static readonly ImmutableList<MavlinkMessageField> _baseFields =
+	private static readonly ImmutableArray<MavlinkEnum> MavlinkEnums =
 	[
-		new(new MavlinkMessageFieldType("uint8_t"), "index", "Index of the first ESC in this message", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, true, null, null, 0, 60, true, null, null),
-		new(new MavlinkMessageFieldType("uint64_t"), "time_usec", "Timestamp", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Us, true, null, null, null, null, null, null, null),
-		new(new MavlinkMessageFieldType("uint16_t"), "counter", "Counter of data packets received", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
-		new(new MavlinkMessageFieldType("uint8_t"), "count", "Total number of ESCs in all messages of this type", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
-		new(new MavlinkMessageFieldEnumType("uint8_t", "ESC_CONNECTION_TYPE"), "connection_type", "Connection type protocol for all ESC", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
-		new(new MavlinkMessageFieldType("uint8_t"), "info", "Information regarding online/offline status of each ESC", MavlinkMessageFieldDisplay.Bitmask, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
-		new(new MavlinkMessageFieldType("uint16_t[4]"), "failure_flags", "Bitmap of ESC failure flags", MavlinkMessageFieldDisplay.Bitmask, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
-		new(new MavlinkMessageFieldType("uint32_t[4]"), "error_count", "Number of reported errors by each ESC since boot", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
-		new(new MavlinkMessageFieldType("int16_t[4]"), "temperature", "Temperature of each ESC", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.CdegC, true, null, null, null, null, null, null, null)
+		new MavlinkEnum("ESC_CONNECTION_TYPE", "Indicates the ESC connection type.", false,
+		[
+			new MavlinkEnumEntry("ESC_CONNECTION_TYPE_PPM", 0, "Traditional PPM ESC.", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+			new MavlinkEnumEntry("ESC_CONNECTION_TYPE_SERIAL", 1, "Serial Bus connected ESC.", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+			new MavlinkEnumEntry("ESC_CONNECTION_TYPE_ONESHOT", 2, "One Shot PPM ESC.", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+			new MavlinkEnumEntry("ESC_CONNECTION_TYPE_I2C", 3, "I2C ESC.", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+			new MavlinkEnumEntry("ESC_CONNECTION_TYPE_CAN", 4, "CAN-Bus ESC.", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+			new MavlinkEnumEntry("ESC_CONNECTION_TYPE_DSHOT", 5, "DShot ESC.", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)
+		], null),
+		new MavlinkEnum("ESC_FAILURE_FLAGS", "Flags to report ESC failures.", true,
+		[
+			new MavlinkEnumEntry("ESC_FAILURE_NONE", 0, "No ESC failure.", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+			new MavlinkEnumEntry("ESC_FAILURE_OVER_CURRENT", 1, "Over current failure.", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+			new MavlinkEnumEntry("ESC_FAILURE_OVER_VOLTAGE", 2, "Over voltage failure.", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+			new MavlinkEnumEntry("ESC_FAILURE_OVER_TEMPERATURE", 4, "Over temperature failure.", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+			new MavlinkEnumEntry("ESC_FAILURE_OVER_RPM", 8, "Over RPM failure.", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+			new MavlinkEnumEntry("ESC_FAILURE_INCONSISTENT_CMD", 16, "Inconsistent command failure i.e. out of bounds.", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+			new MavlinkEnumEntry("ESC_FAILURE_MOTOR_STUCK", 32, "Motor stuck failure.", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+			new MavlinkEnumEntry("ESC_FAILURE_GENERIC", 64, "Generic ESC failure.", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)
+		], null)
 	];
 
-	private static readonly ImmutableList<GeneratedMavlinkMessageField> _testGeneratedFields =
+	private static readonly ImmutableArray<GeneratedMavlinkEnum> GeneratedEnums =
 	[
-		new("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"), _baseFields[0]),
-		new("TimeUsec", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"), _baseFields[1]),
-		new("Counter", new GeneratedMavlinkMessageFieldType("uint16_t", "ushort"), _baseFields[2]),
-		new("Count", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"), _baseFields[3]),
-		new("ConnectionType", new GeneratedMavlinkMessageFieldEnumType("uint8_t", "byte", new GeneratedMavlinkEnum("Namespace1", ImmutableList<GeneratedMavlinkEnumEntry>.Empty, new MavlinkEnum("ESC_CONNECTION_TYPE", null, false, ImmutableList<MavlinkEnumEntry>.Empty, null))), _baseFields[4]),
-		new("Info", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"), _baseFields[5]),
-		new("FailureFlags", new GeneratedMavlinkMessageFieldArrayEnumType("uint16_t[4]", "ushort", new GeneratedMavlinkEnum("Namespace1", ImmutableList<GeneratedMavlinkEnumEntry>.Empty, new MavlinkEnum("ESC_FAILURE_FLAGS", null, true, ImmutableList<MavlinkEnumEntry>.Empty, null)), 4), _baseFields[6]),
-		new("ErrorCount", new GeneratedMavlinkMessageFieldArrayType("uint32_t[4]", "uint", 4), _baseFields[7]),
-		new("Temperature", new GeneratedMavlinkMessageFieldArrayType("int16_t[4]", "short", 4), _baseFields[8])
+		new GeneratedMavlinkEnum("Namespace1", ImmutableList<GeneratedMavlinkEnumEntry>.Empty, MavlinkEnums[0]),
+		new GeneratedMavlinkEnum("Namespace1", ImmutableList<GeneratedMavlinkEnumEntry>.Empty, MavlinkEnums[1])
+	];
+
+	private static readonly ImmutableArray<MavlinkMessageField> MavlinkFields =
+	[
+		new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "index", "Index of the first ESC in this message", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, true, null, 4, 0, 60, true, null, null),
+		new MavlinkMessageField(new MavlinkMessageFieldType("uint64_t"), "time_usec", "Timestamp", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Us, true, null, null, null, null, null, null, null),
+		new MavlinkMessageField(new MavlinkMessageFieldType("uint16_t"), "counter", "Counter of data packets received", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
+		new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "count", "Total number of ESCs in all messages of this type", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
+		new MavlinkMessageField(new MavlinkMessageFieldEnumType("uint8_t", "ESC_CONNECTION_TYPE"), "connection_type", "Connection type protocol for all ESC", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
+		new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "info", "Information regarding online/offline status of each ESC", MavlinkMessageFieldDisplay.Bitmask, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
+		new MavlinkMessageField(new MavlinkMessageFieldType("uint16_t[4]"), "failure_flags", "Bitmap of ESC failure flags", MavlinkMessageFieldDisplay.Bitmask, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
+		new MavlinkMessageField(new MavlinkMessageFieldType("uint32_t[4]"), "error_count", "Number of reported errors by each ESC since boot", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
+		new MavlinkMessageField(new MavlinkMessageFieldType("int16_t[4]"), "temperature", "Temperature of each ESC", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.CdegC, true, null, null, null, null, null, null, "[INT16_MAX]")
+	];
+
+	private static readonly ImmutableArray<GeneratedMavlinkMessageField> GeneratedFields =
+	[
+		new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"), MavlinkFields[0]),
+		new GeneratedMavlinkMessageField("TimeUsec", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"), MavlinkFields[1]),
+		new GeneratedMavlinkMessageField("Counter", new GeneratedMavlinkMessageFieldType("uint16_t", "ushort"), MavlinkFields[2]),
+		new GeneratedMavlinkMessageField("Count", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"), MavlinkFields[3]),
+		new GeneratedMavlinkMessageField("ConnectionType", new GeneratedMavlinkMessageFieldEnumType("uint8_t", "byte", GeneratedEnums[0]), MavlinkFields[4]),
+		new GeneratedMavlinkMessageField("Info", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"), MavlinkFields[5]),
+		new GeneratedMavlinkMessageField("FailureFlags", new GeneratedMavlinkMessageFieldArrayEnumType("uint16_t[4]", "ushort", GeneratedEnums[1], 4), MavlinkFields[6]),
+		new GeneratedMavlinkMessageField("ErrorCount", new GeneratedMavlinkMessageFieldArrayType("uint32_t[4]", "uint", 4), MavlinkFields[7]),
+		new GeneratedMavlinkMessageField("Temperature", new GeneratedMavlinkMessageFieldArrayType("int16_t[4]", "short", 4), MavlinkFields[8])
+	];
+
+	private static readonly ImmutableArray<MavlinkMessage> MavlinkMessages =
+	[
+		new MavlinkMessage(290, "ESC_INFO", "ESC information for lower rate streaming. Recommended streaming rate 1Hz. See ESC_STATUS for higher-rate ESC data.",
+		[
+			new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "index", "Index of the first ESC in this message", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, true, null, 4, 0, 60, true, null, null),
+			new MavlinkMessageField(new MavlinkMessageFieldType("uint64_t"), "time_usec", "Timestamp", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Us, true, null, null, null, null, null, null, null),
+			new MavlinkMessageField(new MavlinkMessageFieldType("uint16_t"), "counter", "Counter of data packets received", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
+			new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "count", "Total number of ESCs in all messages of this type", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
+			new MavlinkMessageField(new MavlinkMessageFieldEnumType("uint8_t", "ESC_CONNECTION_TYPE"), "connection_type", "Connection type protocol for all ESC", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
+			new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "info", "Information regarding online/offline status of each ESC", MavlinkMessageFieldDisplay.Bitmask, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
+			new MavlinkMessageField(new MavlinkMessageFieldType("uint16_t[4]"), "failure_flags", "Bitmap of ESC failure flags", MavlinkMessageFieldDisplay.Bitmask, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
+			new MavlinkMessageField(new MavlinkMessageFieldType("uint32_t[4]"), "error_count", "Number of reported errors by each ESC since boot", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, true, null, null, null, null, null, null, null),
+			new MavlinkMessageField(new MavlinkMessageFieldType("int16_t[4]"), "temperature", "Temperature of each ESC", MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.CdegC, true, null, null, null, null, null, null, "[INT16_MAX]")
+		], null)
+	];
+
+	private static readonly ImmutableArray<GeneratedMavlinkMessage> GeneratedMessages =
+	[
+		new GeneratedMavlinkMessage("Namespace1", GeneratedFields, MavlinkMessages[0])
 	];
 
 	[Fact]
@@ -40,7 +91,7 @@ public class MavlinkMessagesGeneratorTests
 		var currentNamespace = "Namespace1";
 
 		// Act
-		var methodSyntax = MavlinkMessagePayloadDeserializationGenerator.GenerateCreateInstanceMethod(currentNamespace, _testGeneratedFields);
+		var methodSyntax = MavlinkMessagePayloadDeserializationGenerator.GenerateCreateInstanceMethod(currentNamespace, GeneratedFields);
 
 		// Assert
 		var methodCode = methodSyntax.NormalizeWhitespace().ToFullString();
