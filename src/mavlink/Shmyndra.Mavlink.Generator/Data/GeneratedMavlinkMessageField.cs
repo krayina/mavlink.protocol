@@ -18,14 +18,16 @@ public record GeneratedMavlinkMessageField : MavlinkMessageField
 	public string GeneratedName { get; init; }
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="GeneratedMavlinkMessageField"/> record.
+	/// Initializes a new instance of the <see cref="GeneratedMavlinkMessageField"/> record with a generated name and a specific generated field type.
 	/// </summary>
 	/// <param name="generatedName">The generated name of the field.</param>
-	/// <param name="original">The original Mavlink message field.</param>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="generatedName"/> or <paramref name="original"/> is <c>null</c>.</exception>
-	internal GeneratedMavlinkMessageField(string generatedName, MavlinkMessageField original)
+	/// <param name="generatedFieldType">The type of the generated field, which is a derived type of <see cref="GeneratedMavlinkMessageFieldType"/>.</param>
+	/// <param name="original">The original Mavlink message field from which this instance is derived.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="generatedName"/>, <paramref name="generatedFieldType"/>, or <paramref name="original"/> is <c>null</c>.</exception>
+	internal GeneratedMavlinkMessageField(string generatedName, GeneratedMavlinkMessageFieldType generatedFieldType, MavlinkMessageField original)
 		: base(original)
 	{
 		GeneratedName = generatedName ?? throw new ArgumentNullException(nameof(generatedName));
+		Type = generatedFieldType ?? throw new ArgumentNullException(nameof(generatedFieldType));
 	}
 }
