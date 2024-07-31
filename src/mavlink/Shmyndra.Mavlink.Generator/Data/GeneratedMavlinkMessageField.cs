@@ -5,7 +5,10 @@
 /// </summary>
 /// <remarks>
 /// Instances of this class are created exclusively by implementations of the <see cref="IMavlinkMessageTypesGenerator"/> interface
-/// and should not be instantiated manually.
+/// and should not be instantiated manually.<br/>
+/// The <see cref="MavlinkMessageField.Type"/> property will be an instance of <see cref="GeneratedMavlinkMessageFieldType"/>, 
+/// which includes specific types like <see cref="GeneratedMavlinkMessageFieldEnumType"/>, <see cref="GeneratedMavlinkMessageFieldArrayType"/> and <see cref="GeneratedMavlinkMessageFieldArrayEnumType"/> 
+/// to represent various Mavlink message field types and their dotnet counterparts.
 /// </remarks>
 public record GeneratedMavlinkMessageField : MavlinkMessageField
 {
