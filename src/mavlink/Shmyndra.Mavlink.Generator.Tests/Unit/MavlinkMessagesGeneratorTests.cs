@@ -33,8 +33,8 @@ public class MavlinkMessagesGeneratorTests
 
 	private static readonly ImmutableArray<GeneratedMavlinkEnum> GeneratedEnums =
 	[
-		new GeneratedMavlinkEnum("Namespace1", ImmutableList<GeneratedMavlinkEnumEntry>.Empty, MavlinkEnums[0]),
-		new GeneratedMavlinkEnum("Namespace1", ImmutableList<GeneratedMavlinkEnumEntry>.Empty, MavlinkEnums[1])
+		new GeneratedMavlinkEnum("Namespace1", ImmutableArray<GeneratedMavlinkEnumEntry>.Empty, MavlinkEnums[0]),
+		new GeneratedMavlinkEnum("Namespace1", ImmutableArray<GeneratedMavlinkEnumEntry>.Empty, MavlinkEnums[1])
 	];
 
 	private static readonly ImmutableArray<MavlinkMessageField> MavlinkFields =

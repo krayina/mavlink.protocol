@@ -18,7 +18,7 @@ internal static class MavlinkXmlDataConverters
 
 	public static MavlinkEnum ConvertToMavlinkEnum(this Enum @enum)
 	{
-		var entries = @enum.Entry.Select(e => e.ConvertToMavlinkEnumEntry()).ToImmutableList();
+		var entries = @enum.Entry.Select(e => e.ConvertToMavlinkEnumEntry()).ToImmutableArray();
 
 		return new MavlinkEnum(
 			@enum.Name,

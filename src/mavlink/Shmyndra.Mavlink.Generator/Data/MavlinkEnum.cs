@@ -23,9 +23,9 @@ public record MavlinkEnum
 	public bool? Bitmask { get; init; }
 
 	/// <summary>
-	/// The list of entries in the Mavlink enum.
+	/// The array of entries in the Mavlink enum.
 	/// </summary>
-	public ImmutableList<MavlinkEnumEntry> Entries { get; init; }
+	public ImmutableArray<MavlinkEnumEntry> Entries { get; init; }
 
 	/// <summary>
 	/// The deprecation information of the Mavlink enum.
@@ -38,18 +38,18 @@ public record MavlinkEnum
 	/// <param name="name">The name of the Mavlink enum.</param>
 	/// <param name="description">The description of the Mavlink enum.</param>
 	/// <param name="bitmask">Indicates whether the enum is a bitmask.</param>
-	/// <param name="entries">The list of entries in the Mavlink enum.</param>
+	/// <param name="entries">The array of entries in the Mavlink enum.</param>
 	/// <param name="deprecated">The deprecation information of the Mavlink enum.</param>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="name"/> or <paramref name="entries"/> is <c>null</c>.</exception>
 	public MavlinkEnum(
 		string name,
 		string? description,
 		bool? bitmask,
-		ImmutableList<MavlinkEnumEntry> entries,
+		ImmutableArray<MavlinkEnumEntry> entries,
 		MavlinkDeprecatedInfo? deprecated)
 	{
 		Name = name ?? throw new ArgumentNullException(nameof(name));
-		Entries = entries ?? throw new ArgumentNullException(nameof(entries));
+		Entries = entries;
 		Description = description;
 		Bitmask = bitmask;
 		Deprecated = deprecated;

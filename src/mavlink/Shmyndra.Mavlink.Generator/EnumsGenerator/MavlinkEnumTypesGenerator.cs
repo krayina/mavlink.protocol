@@ -94,7 +94,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 
 			var generatedEnumEntries = enumData.Entries
 				.Select(entry => entry.ToGeneratedMavlinkEnumEntry(namespaceName, entry.Name))
-				.ToImmutableList();
+				.ToImmutableArray();
 
 			var generatedEnum = new GeneratedMavlinkEnum(namespaceName, generatedEnumEntries, enumData);
 			generatedTypesDict[enumData.Name] = generatedEnum;
@@ -114,7 +114,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 	}
 
 	private IEnumerable<EnumMemberDeclarationSyntax> CreateEnumMembers(
-		ImmutableList<MavlinkEnumEntry> entries,
+		ImmutableArray<MavlinkEnumEntry> entries,
 		string baseEnumName)
 	{
 		return entries.Select(entry =>
