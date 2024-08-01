@@ -99,22 +99,6 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 		return property;
 	}
 
-	private PropertyDeclarationSyntax AddArrayLengthAttribute(PropertyDeclarationSyntax property, int length)
-	{
-		return property.AddAttributeLists(
-			SyntaxFactory.AttributeList(
-				SyntaxFactory.SingletonSeparatedList(
-					SyntaxFactory.Attribute(SyntaxFactory.ParseName(typeof(RequiredArrayLengthAttribute).FullName[0..^9]))
-					.WithArgumentList(
-						SyntaxFactory.AttributeArgumentList(
-							SyntaxFactory.SingletonSeparatedList(
-								SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(length))))
-						)
-					)
-				)
-			)
-		);
-	}
 
 	private RecordDeclarationSyntax CreateRecordStructDeclaration(uint id, string normalizedName, PropertyDeclarationSyntax[] properties, string? description, string originalName)
 	{
