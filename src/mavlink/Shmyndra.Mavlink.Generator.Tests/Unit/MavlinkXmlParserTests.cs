@@ -73,7 +73,7 @@ public class MavlinkXmlParserTests
 		Assert.NotNull(escFailureFlagsEnum);
 		Assert.True(escFailureFlagsEnum.Bitmask);
 		Assert.Equal("Flags to report ESC failures.", escFailureFlagsEnum.Description);
-		Assert.Equal(8, escFailureFlagsEnum.Entries.Count);
+		Assert.Equal(8, escFailureFlagsEnum.Entries.Length);
 		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_NONE" && entry.Value == 0);
 		Assert.Contains(escFailureFlagsEnum.Entries, entry => entry.Name == "ESC_FAILURE_OVER_CURRENT" && entry.Value == 1);
 

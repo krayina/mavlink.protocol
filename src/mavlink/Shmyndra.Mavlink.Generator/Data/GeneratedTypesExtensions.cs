@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Shmyndra.Mavlink.Generator;
 
@@ -12,12 +13,13 @@ internal static class GeneratedTypesExtensions
 	/// </summary>
 	/// <param name="entry">The original Mavlink enum entry.</param>
 	/// <param name="namespace">The namespace of the original enum to which this entry belongs.</param>
+	/// <param name="declarationSyntax">The syntax node for the enum member declaration.</param>
 	/// <param name="generatedName">The generated name for the new entry.</param>
 	/// <returns>A new <see cref="GeneratedMavlinkEnumEntry"/> instance.</returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="namespace"/> or <paramref name="generatedName"/> is <c>null</c>.</exception>
-	public static GeneratedMavlinkEnumEntry ToGeneratedMavlinkEnumEntry(this MavlinkEnumEntry entry, string @namespace, string generatedName)
+	public static GeneratedMavlinkEnumEntry ToGeneratedMavlinkEnumEntry(this MavlinkEnumEntry entry, string @namespace, EnumMemberDeclarationSyntax declarationSyntax, string generatedName)
 	{
-		return new GeneratedMavlinkEnumEntry(@namespace, generatedName, entry);
+		return new GeneratedMavlinkEnumEntry(@namespace, generatedName, declarationSyntax, entry);
 	}
 
 	/// <summary>
@@ -25,12 +27,14 @@ internal static class GeneratedTypesExtensions
 	/// </summary>
 	/// <param name="mavlinkEnum">The original Mavlink enum.</param>
 	/// <param name="namespace">The namespace for the generated enum.</param>
-	/// <param name="generatedEntries">The list of generated entries to include in the new enum.</param>
+	/// <param name="generatedName">The name of the generated enum.</param>
+	/// <param name="generatedEntries">The array of generated entries to include in the new enum.</param>
+	/// <param name="declarationSyntax">The syntax declaration of the generated enum.</param>
 	/// <returns>A new instance of <see cref="GeneratedMavlinkEnum"/> with the specified namespace and entries.</returns>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mavlinkEnum"/>, <paramref name="namespace"/>, or <paramref name="generatedEntries"/> is null.</exception>
-	public static GeneratedMavlinkEnum ToGeneratedMavlinkEnum(this MavlinkEnum mavlinkEnum, string @namespace, ImmutableList<GeneratedMavlinkEnumEntry> generatedEntries)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mavlinkEnum"/>, <paramref name="namespace"/>, <paramref name="declarationSyntax"/>, or <paramref name="generatedName"/> is null.</exception>
+	public static GeneratedMavlinkEnum ToGeneratedMavlinkEnum(this MavlinkEnum mavlinkEnum, string @namespace, string generatedName, EnumDeclarationSyntax declarationSyntax, ImmutableArray<GeneratedMavlinkEnumEntry> generatedEntries)
 	{
-		return new GeneratedMavlinkEnum(@namespace, generatedEntries, mavlinkEnum);
+		return new GeneratedMavlinkEnum(@namespace, generatedName, generatedEntries, declarationSyntax, mavlinkEnum);
 	}
 
 	/// <summary>

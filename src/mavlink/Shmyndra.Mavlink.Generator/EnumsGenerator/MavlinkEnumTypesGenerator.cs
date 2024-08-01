@@ -32,7 +32,7 @@ public interface IMavlinkEnumTypesGenerator
 
 public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 {
-	private readonly Dictionary<(string Namespace, string Name), EnumDeclarationSyntax> _generatedEnums = new();
+	private readonly Dictionary<(string Namespace, string Name), GeneratedMavlinkEnum> _generatedEnums = new();
 	private readonly Dictionary<string, HashSet<string>> _namespaceIncludesMap = new();
 	private readonly Dictionary<string, string> _fileNameToPathMap = new();
 
@@ -51,7 +51,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		foreach (var enumData in enums)
 		{
 			var key = (Namespace: namespaceName, enumData.Name);
-			var existingEnums = new List<(EnumDeclarationSyntax Enum, string Namespace)>();
+			GeneratedMavlinkEnum? existingGeneratedEnum = null;
 
 			// Check for existing enums in the current namespace or includes
 			foreach (var include in includes)
@@ -59,45 +59,35 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 				if (_fileNameToPathMap.TryGetValue(include, out var includeNamespace))
 				{
 					var includeKey = (Namespace: includeNamespace, enumData.Name);
-					if (_generatedEnums.TryGetValue(includeKey, out var includeEnum))
+					if (_generatedEnums.TryGetValue(includeKey, out var includeGeneratedEnum))
 					{
-						existingEnums.Add((includeEnum, includeNamespace));
+						if (existingGeneratedEnum is null)
+						{
+							existingGeneratedEnum = includeGeneratedEnum;
+						}
+						else
+						{
+							existingGeneratedEnum = MergeEnums(existingGeneratedEnum, enumData, includeNamespace);
+						}
 					}
 				}
 			}
 
-			EnumDeclarationSyntax? finalEnum = null;
-
-			if (existingEnums.Count > 0)
-			{
-				// Merge all existing enums into one final enum
-				foreach (var (existingEnum, includeNamespace) in existingEnums)
-				{
-					if (finalEnum is null)
-					{
-						finalEnum = MergeEnums(existingEnum, enumData, includeNamespace);
-					}
-					else
-					{
-						finalEnum = MergeEnums(finalEnum, enumData, namespaceName);
-					}
-				}
-			}
-
-			if (finalEnum is null)
+			GeneratedMavlinkEnum finalEnum;
+			if (existingGeneratedEnum is null)
 			{
 				finalEnum = CreateEnum(enumData, namespaceName);
 			}
+			else
+			{
+				finalEnum = MergeEnums(existingGeneratedEnum, enumData, namespaceName);
+			}
 
+			// Store the generated enum directly in _generatedEnums
 			_generatedEnums[key] = finalEnum;
-			enumDeclarations.Add(finalEnum);
+			enumDeclarations.Add(finalEnum.DeclarationSyntax);
 
-			var generatedEnumEntries = enumData.Entries
-				.Select(entry => entry.ToGeneratedMavlinkEnumEntry(namespaceName, entry.Name))
-				.ToImmutableArray();
-
-			var generatedEnum = new GeneratedMavlinkEnum(namespaceName, generatedEnumEntries, enumData);
-			generatedTypesDict[enumData.Name] = generatedEnum;
+			generatedTypesDict[enumData.Name] = finalEnum;
 
 			if (!_namespaceIncludesMap.ContainsKey(enumData.Name))
 			{
@@ -113,49 +103,23 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		return enumDeclarations;
 	}
 
-	private IEnumerable<EnumMemberDeclarationSyntax> CreateEnumMembers(
-		ImmutableArray<MavlinkEnumEntry> entries,
-		string baseEnumName)
-	{
-		return entries.Select(entry =>
-		{
-			var normalizedEntryName = Utilities.ToCamelCase(entry.Name);
-			var entryName = normalizedEntryName == baseEnumName ? "_" + normalizedEntryName : normalizedEntryName;
-
-			var enumMember = SyntaxFactory.EnumMemberDeclaration(entryName)
-				.AddSummaryTriviaIfNotNull(entry.Description)
-				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {entry.Name.ToUpper()}")
-				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())));
-			return enumMember;
-		});
-	}
-
-	private EnumDeclarationSyntax CreateEnum(
+	private GeneratedMavlinkEnum CreateEnum(
 		MavlinkEnum enumData,
 		string namespaceName)
 	{
-		var normalizedName = Utilities.ToCamelCase(enumData.Name);
-
-		var allValues = enumData.Entries.Select(entry => entry.Value);
-
-		var enumBaseType = Utilities.DetermineEnumBaseType(allValues);
+		var enumName = Utilities.ToCamelCase(enumData.Name);
+		ImmutableArray<GeneratedMavlinkEnumEntry> generatedEntries = [];
 
 		var sortedEntries = enumData.Entries.OrderBy(entry => entry.Value);
-
-		var enumMembers = sortedEntries.Select(entry =>
+		if (sortedEntries is not null)
 		{
-			var normalizedEntryName = Utilities.ToCamelCase(entry.Name);
-			var entryName = normalizedEntryName == normalizedName ? "_" + normalizedEntryName : normalizedEntryName;
+			generatedEntries = CreateEnumMembers(sortedEntries, enumName, namespaceName).ToImmutableArray();
+		}
 
-			var enumMember = SyntaxFactory.EnumMemberDeclaration(entryName)
-				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())))
-				.AddSummaryTriviaIfNotNull(entry.Description)
-				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {entry.Name.ToUpper()}");
+		var allValues = enumData.Entries.Select(entry => entry.Value);
+		var enumBaseType = Utilities.DetermineEnumBaseType(allValues);
 
-			return enumMember;
-		});
-
-		var enumDeclaration = SyntaxFactory.EnumDeclaration(normalizedName)
+		var enumDeclaration = SyntaxFactory.EnumDeclaration(enumName)
 			.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
 			.AddAttributeLists(
 				SyntaxFactory.AttributeList(
@@ -165,17 +129,17 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 							SyntaxFactory.AttributeArgumentList(
 								SyntaxFactory.SeparatedList(new[]
 								{
-									SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
-										SyntaxKind.StringLiteralExpression,
-										SyntaxFactory.Literal(enumData.Name))
-									)
+								SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
+									SyntaxKind.StringLiteralExpression,
+									SyntaxFactory.Literal(enumData.Name))
+								)
 								})
 							)
 						)
 					)
 				)
 			)
-			.WithMembers(new SeparatedSyntaxList<EnumMemberDeclarationSyntax>().AddRange(enumMembers))
+			.WithMembers(new SeparatedSyntaxList<EnumMemberDeclarationSyntax>().AddRange(generatedEntries.Select(entry => entry.DeclarationSyntax)))
 			.AddSummaryTriviaIfNotNull(enumData.Description)
 			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {enumData.Name.ToUpper()}");
 
@@ -196,60 +160,69 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 			);
 		}
 
-		return enumDeclaration;
+		return new GeneratedMavlinkEnum(namespaceName, enumName, generatedEntries, enumDeclaration, enumData);
 	}
 
-	private EnumDeclarationSyntax MergeEnums(EnumDeclarationSyntax existingEnum, MavlinkEnum newEnumData, string existingNamespace)
+	private GeneratedMavlinkEnum MergeEnums(
+		GeneratedMavlinkEnum existingEnum,
+		MavlinkEnum newEnumData,
+		string existingNamespace)
 	{
-		var updatedExistingMembers = existingEnum.Members.Select(m =>
+		// Update existing members with full namespace references
+		var updatedExistingEntries = existingEnum.GeneratedEntries.Select(entry =>
 		{
-			var newMember = SyntaxFactory.EnumMemberDeclaration(m.Identifier.Text)
-				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression($"{existingNamespace}.{existingEnum.Identifier.Text}.{m.Identifier.Text}")));
+			var updatedDeclaration = entry.DeclarationSyntax.WithEqualsValue(
+				SyntaxFactory.EqualsValueClause(
+					SyntaxFactory.ParseExpression($"{entry.Namespace}.{existingEnum.GeneratedName}.{entry.GeneratedName}")
+				));
 
-			var leadingTrivia = m.GetLeadingTrivia();
-			if (leadingTrivia.Any())
-			{
-				newMember = newMember.WithLeadingTrivia(leadingTrivia);
-			}
-
-			return newMember;
+			return entry with { DeclarationSyntax = updatedDeclaration };
 		}).ToList();
 
-		var newMembers = CreateEnumMembers(newEnumData.Entries, newEnumData.Name).ToList();
+		// Create new members from the new enum data
+		var newEntries = CreateEnumMembers(newEnumData.Entries, newEnumData.Name, existingNamespace).ToList();
 
+		// Determine the maximum value among new entries
 		var maxNewValue = newEnumData.Entries.Max(e => e.Value);
 
-		var currentBaseType = GetBaseType(existingEnum);
+		// Determine the base type for the existing enum
+		var currentBaseType = GetBaseType(existingEnum.DeclarationSyntax);
 
 		var existingValues = new List<uint>();
 
-		foreach (var member in existingEnum.Members)
+		// Collect existing enum values
+		foreach (var entry in existingEnum.GeneratedEntries)
 		{
-			if (member.EqualsValue != null)
+			var parsedValue = TryParseEnumValue(entry.DeclarationSyntax.EqualsValue!.Value);
+			if (parsedValue.HasValue)
 			{
-				var parsedValue = TryParseEnumValue(member.EqualsValue.Value);
-				if (parsedValue.HasValue)
-				{
-					existingValues.Add(parsedValue.Value);
-				}
+				existingValues.Add(parsedValue.Value);
 			}
 		}
 
 		existingValues.Add(maxNewValue);
 
+		// Determine the new base type considering all values
 		var newBaseType = Utilities.DetermineEnumBaseType(existingValues);
 
-		var mergedMembers = updatedExistingMembers.Concat(newMembers).ToArray();
+		// Merge the entries
+		var mergedEntries = updatedExistingEntries.Concat(newEntries).ToImmutableArray();
 
-		var enumDeclaration = existingEnum.WithMembers(SyntaxFactory.SeparatedList(mergedMembers));
+		// Create the final merged enum declaration
+		var enumDeclaration = existingEnum.DeclarationSyntax.WithMembers(
+			SyntaxFactory.SeparatedList(mergedEntries.Select(entry => entry.DeclarationSyntax))
+		);
 
+		// Adjust the base type if necessary
 		if (newBaseType != currentBaseType)
 		{
 			enumDeclaration = enumDeclaration.WithBaseList(
 				SyntaxFactory.BaseList(SyntaxFactory.SingletonSeparatedList<BaseTypeSyntax>(
-					SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(newBaseType)))));
+					SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(newBaseType))))
+			);
 		}
 
+		// Add Flags attribute if it's a bitmask
 		if (newEnumData.Bitmask == true)
 		{
 			enumDeclaration = enumDeclaration.AddAttributeLists(
@@ -261,7 +234,33 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 			);
 		}
 
-		return enumDeclaration;
+		// Create the merged GeneratedMavlinkEnum object
+		return new GeneratedMavlinkEnum(
+			existingEnum.Namespace,
+			existingEnum.GeneratedName,
+			mergedEntries,
+			enumDeclaration,
+			newEnumData
+		);
+	}
+
+	private IEnumerable<GeneratedMavlinkEnumEntry> CreateEnumMembers(
+		IEnumerable<MavlinkEnumEntry> entries,
+		string enumName,
+		string enumNamespace)
+	{
+		return entries.Select(entry =>
+		{
+			var normalizedEntryName = Utilities.ToCamelCase(entry.Name);
+			var entryName = normalizedEntryName == enumName ? "_" + normalizedEntryName : normalizedEntryName;
+
+			var enumMemberSyntax = SyntaxFactory.EnumMemberDeclaration(entryName)
+				.AddSummaryTriviaIfNotNull(entry.Description)
+				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {entry.Name.ToUpper()}")
+				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())));
+
+			return new GeneratedMavlinkEnumEntry(enumNamespace, entryName, enumMemberSyntax, entry);
+		});
 	}
 
 	private static string GetBaseType(EnumDeclarationSyntax enumDeclaration)

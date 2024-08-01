@@ -45,17 +45,18 @@ public class MavlinkEnumTypesGeneratorTests
 				name: "ESC_FAILURE_FLAGS",
 				description: "Bitmask for ESC failure flags",
 				bitmask: true,
-				entries: ImmutableList.Create(
+				entries:
+				[
 					new MavlinkEnumEntry(
-						name: "FAILURE_FLAG1",
-						value: 1,
-						description: "Failure Flag 1",
-						details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
-						deprecated: null,
-						hasLocation: null,
-						isDestination: null,
-						missionOnly: null
-					),
+									name: "FAILURE_FLAG1",
+									value: 1,
+									description: "Failure Flag 1",
+									details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
+									deprecated: null,
+									hasLocation: null,
+									isDestination: null,
+									missionOnly: null
+								),
 					new MavlinkEnumEntry(
 						name: "FAILURE_FLAG2",
 						value: 2,
@@ -66,7 +67,7 @@ public class MavlinkEnumTypesGeneratorTests
 						isDestination: null,
 						missionOnly: null
 					)
-				),
+				],
 				deprecated: null
 			)
 		);
@@ -95,8 +96,7 @@ public class MavlinkEnumTypesGeneratorTests
 				name: "ESC_CONNECTION_TYPE",
 				description: "Enum for ESC connection types",
 				bitmask: false,
-				entries: ImmutableList.Create(
-					new MavlinkEnumEntry(
+				entries: [new MavlinkEnumEntry(
 						name: "ESC_TYPE1",
 						value: 0,
 						description: "Type 1",
@@ -105,8 +105,7 @@ public class MavlinkEnumTypesGeneratorTests
 						hasLocation: null,
 						isDestination: null,
 						missionOnly: null
-					)
-				),
+					)],
 				deprecated: null
 			)
 		);
@@ -116,17 +115,18 @@ public class MavlinkEnumTypesGeneratorTests
 				name: "ESC_CONNECTION_TYPE",
 				description: "Additional types",
 				bitmask: false,
-				entries: ImmutableList.Create(
+				entries:
+				[
 					new MavlinkEnumEntry(
-						name: "ESC_TYPE2",
-						value: 1,
-						description: "Type 2",
-						details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
-						deprecated: null,
-						hasLocation: null,
-						isDestination: null,
-						missionOnly: null
-					),
+									name: "ESC_TYPE2",
+									value: 1,
+									description: "Type 2",
+									details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
+									deprecated: null,
+									hasLocation: null,
+									isDestination: null,
+									missionOnly: null
+								),
 					new MavlinkEnumEntry(
 						name: "ESC_TYPE3",
 						value: 2,
@@ -137,7 +137,7 @@ public class MavlinkEnumTypesGeneratorTests
 						isDestination: null,
 						missionOnly: null
 					)
-				),
+				],
 				deprecated: null
 			)
 		);
