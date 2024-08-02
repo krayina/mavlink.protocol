@@ -84,7 +84,7 @@ public class MavlinkMessagesGeneratorTests
 	];
 
 	[Fact]
-	public async Task GenerateCreateInstanceMethod_ShouldMatchExpectedSnapshot()
+	public async Task CreateCreateInstanceMethod_ShouldMatchExpectedSnapshot()
 	{
 		// Arrange
 		var currentNamespace = "Namespace1";
