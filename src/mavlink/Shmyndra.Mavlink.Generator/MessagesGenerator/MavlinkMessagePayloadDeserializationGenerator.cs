@@ -90,7 +90,7 @@ var {variableName} = {tempArrayName}.ToImmutableArray();";
 	private static string GenerateEnumDeserialization(string variableName, GeneratedMavlinkMessageFieldEnumType fieldEnumType, ref int offset, string currentNamespace)
 	{
 		var size = GetTypeSize(fieldEnumType.ConvertedType);
-		var (enumNamespace, enumTypeName) = (fieldEnumType.GeneratedEnum.Namespace, fieldEnumType.GeneratedEnum.Name);
+		var (enumNamespace, enumTypeName) = (fieldEnumType.GeneratedEnum.Namespace, fieldEnumType.GeneratedEnum.GeneratedName);
 		var fullEnumTypeName = enumNamespace == currentNamespace ? enumTypeName : $"{enumNamespace}.{enumTypeName}";
 
 		string deserializationCode;
@@ -114,7 +114,7 @@ var {variableName} = ({fullEnumTypeName}){variableName}Value;";
 	private static string GenerateArrayEnumDeserialization(string variableName, string propertyName, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, ref int offset, string currentNamespace)
 	{
 		var tempArrayName = $"temp{propertyName}Array";
-		var (enumNamespace, enumTypeName) = (arrayEnumType.GeneratedEnum.Namespace, arrayEnumType.GeneratedEnum.Name);
+		var (enumNamespace, enumTypeName) = (arrayEnumType.GeneratedEnum.Namespace, arrayEnumType.GeneratedEnum.GeneratedName);
 		var fullEnumTypeName = enumNamespace == currentNamespace ? enumTypeName : $"{enumNamespace}.{enumTypeName}";
 
 		var result = $@"
