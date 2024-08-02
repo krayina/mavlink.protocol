@@ -1,17 +1,14 @@
-﻿#if false
-namespace Shmyndra.Mavlink.Generator;
+﻿namespace Shmyndra.Mavlink.Generator;
 
-internal record MavlinkCachedMessage(string FullName, uint Id, string XmlName);
-
-internal static class MavlinkCachedMessagesGenerator
+internal static class MavlinkMessagesGenerator
 {
-	public static string GenerateMessagesCache(IEnumerable<MavlinkCachedMessage> messages)
+	public static string GenerateMessagesCache(IEnumerable<GeneratedMavlinkMessage> messages)
 	{
 		var dictionaryEntriesByType = string.Join(",\n", messages.Select(message =>
-			$"\t\t\t{{ typeof({message.FullName}), ({message.Id}U, \"{message.XmlName}\") }}"));
+			$"\t\t\t{{ typeof({message.GeneratedNamespace}.{message.GeneratedName}), ({message.Id}U, \"{message.Name}\") }}"));
 
 		var dictionaryEntriesById = string.Join(",\n", messages.Select(message =>
-			$"\t\t\t{{ {message.Id}U, (typeof({message.FullName}), \"{message.XmlName}\") }}"));
+			$"\t\t\t{{ {message.Id}U, (typeof({message.GeneratedNamespace}.{message.GeneratedName}), \"{message.Name}\") }}"));
 
 		var classCode =
 $@"using System;
@@ -21,12 +18,12 @@ namespace MavlinkTypes
 {{
     public static class MavlinkMessages
     {{
-        private static readonly Dictionary<Type, (uint Id, string XmlName)> _mavlinkMessagesByType = new()
+        private static readonly Dictionary<Type, (uint Id, string MavlinkName)> _mavlinkMessagesByType = new()
         {{
 {dictionaryEntriesByType}
         }};
 
-        private static readonly Dictionary<uint, (Type Type, string XmlName)> _mavlinkMessagesById = new()
+        private static readonly Dictionary<uint, (Type Type, string MavlinkName)> _mavlinkMessagesById = new()
         {{
 {dictionaryEntriesById}
         }};
@@ -36,14 +33,14 @@ namespace MavlinkTypes
             return _mavlinkMessagesByType[typeof(T)].Id;
         }}
 
-        public static string GetXmlName<T>() where T : MavlinkMessage
+        public static string GetMavlinkName<T>() where T : MavlinkMessage
         {{
-            return _mavlinkMessagesByType[typeof(T)].XmlName;
+            return _mavlinkMessagesByType[typeof(T)].MavlinkName;
         }}
 
-        public static string GetXmlName(uint id)
+        public static string GetMavlinkName(uint id)
         {{
-            return _mavlinkMessagesById[id].XmlName;
+            return _mavlinkMessagesById[id].MavlinkName;
         }}
 
         public static Type GetType(uint id)
@@ -58,17 +55,17 @@ namespace MavlinkTypes
             return isExists;
         }}
 
-        public static bool TryGetXmlName<T>(out string xmlName) where T : MavlinkMessage
+        public static bool TryGetMavlinkName<T>(out string mavlinkName) where T : MavlinkMessage
         {{
             var isExists = _mavlinkMessagesByType.TryGetValue(typeof(T), out var value);
-            xmlName = isExists ? value.XmlName : default;
+            mavlinkName = isExists ? value.MavlinkName : default;
             return isExists;
         }}
 
-        public static bool TryGetXmlName(uint id, out string xmlName)
+        public static bool TryGetMavlinkName(uint id, out string mavlinkName)
         {{
             var isExists = _mavlinkMessagesById.TryGetValue(id, out var value);
-            xmlName = isExists ? value.XmlName : default;
+            mavlinkName = isExists ? value.MavlinkName : default;
             return isExists;
         }}
 
@@ -83,4 +80,3 @@ namespace MavlinkTypes
 		return classCode;
 	}
 }
-#endif
