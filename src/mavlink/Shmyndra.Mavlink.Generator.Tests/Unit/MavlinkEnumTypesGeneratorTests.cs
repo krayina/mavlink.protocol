@@ -152,8 +152,8 @@ public class MavlinkEnumTypesGeneratorTests
 		var generator = new MavlinkEnumGenerator();
 
 		// Act
-		var generatedEnumFile1 = generator.GenerateMavlinkEnum(enumsFile1[0], namespaceName1, ImmutableArray<string>.Empty, filePath1);
-		var generatedEnumFile2 = generator.GenerateMavlinkEnum(enumsFile2[0], namespaceName2, includes, filePath2);
+		var generatedEnumFile1 = generator.GenerateMavlinkEnumInternal(enumsFile1[0], namespaceName1);
+		var generatedEnumFile2 = generator.GenerateAndMergeMavlinkEnumInternal(generatedEnumFile1, enumsFile2[0], namespaceName2);
 
 		var allGeneratedEnums = new List<GeneratedMavlinkEnum> { generatedEnumFile1, generatedEnumFile2 };
 
