@@ -6,7 +6,7 @@ namespace Shmyndra.Mavlink.Generator;
 /// Represents an entry in a generated Mavlink enum with an additional generated name.
 /// </summary>
 /// <remarks>
-/// Instances of this class are created exclusively by implementations of the <see cref="IMavlinkEnumTypesGenerator"/> interface
+/// Instances of this class are created exclusively by implementations of the <see cref="IMavlinkEnumGenerator"/> interface
 /// and should not be instantiated manually.
 /// </remarks>
 public record GeneratedMavlinkEnumEntry : MavlinkEnumEntry

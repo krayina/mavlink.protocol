@@ -75,11 +75,11 @@ public class MavlinkEnumTypesGeneratorTests
 		var filePath = "TestFile.xml";
 		var namespaceName = "TestNamespace";
 
-		var generator = new MavlinkEnumTypesGenerator();
+		var generator = new MavlinkEnumGenerator();
 
 		// Act
-		var generatedEnums = generator.GenerateEnums(enums, namespaceName, includes, filePath, out var nameMapping);
-		var normalizedEnums = generatedEnums.Select(enumDecl => enumDecl.NormalizeWhitespace().ToFullString()).ToList();
+		var generatedEnums = enums.Select(e => generator.GenerateMavlinkEnum(e, namespaceName, includes, filePath)).ToList();
+		var normalizedEnums = generatedEnums.Select(e => e.DeclarationSyntax.NormalizeWhitespace().ToFullString()).ToList();
 
 		// Assert
 		await Verify(normalizedEnums)
@@ -149,16 +149,16 @@ public class MavlinkEnumTypesGeneratorTests
 
 		var includes = ImmutableArray.Create(filePath1); // File2 includes File1
 
-		var generator = new MavlinkEnumTypesGenerator();
+		var generator = new MavlinkEnumGenerator();
 
 		// Act
-		var generatedEnumsFile1 = generator.GenerateEnums(enumsFile1, namespaceName1, ImmutableArray<string>.Empty, filePath1, out var nameMapping1);
-		var generatedEnumsFile2 = generator.GenerateEnums(enumsFile2, namespaceName2, includes, filePath2, out var nameMapping2);
+		var generatedEnumFile1 = generator.GenerateMavlinkEnum(enumsFile1[0], namespaceName1, ImmutableArray<string>.Empty, filePath1);
+		var generatedEnumFile2 = generator.GenerateMavlinkEnum(enumsFile2[0], namespaceName2, includes, filePath2);
 
-		var allGeneratedEnums = generatedEnumsFile1.Concat(generatedEnumsFile2).ToList();
+		var allGeneratedEnums = new List<GeneratedMavlinkEnum> { generatedEnumFile1, generatedEnumFile2 };
 
 		// Convert to normalized string representations
-		var normalizedEnums = allGeneratedEnums.Select(enumDecl => enumDecl.NormalizeWhitespace().ToFullString()).ToList();
+		var normalizedEnums = allGeneratedEnums.Select(enumDecl => enumDecl.DeclarationSyntax.NormalizeWhitespace().ToFullString()).ToList();
 
 		// Assert with Verify
 		await Verify(normalizedEnums)

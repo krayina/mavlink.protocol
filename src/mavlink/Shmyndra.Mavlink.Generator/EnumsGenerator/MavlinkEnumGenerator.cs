@@ -5,121 +5,124 @@ using System.Collections.Immutable;
 
 namespace Shmyndra.Mavlink.Generator;
 
-public interface IMavlinkEnumTypesGenerator
+public interface IMavlinkEnumGenerator
 {
 	/// <summary>
-	/// Generates Mavlink enums and maps their names to namespaces and type names.
+	/// Generates Mavlink enum and maps their names to namespaces and type names.
 	/// </summary>
-	/// <param name="enums">The collection of Mavlink enums to be generated.</param>
-	/// <param name="namespaceName">The namespace in which the generated enums will be placed.</param>
+	/// <param name="enum">The Mavlink enum to be generated.</param>
+	/// <param name="namespace">The namespace in which the generated enum will be placed.</param>
 	/// <param name="includes">A list of included files that may contain existing enums to merge with.</param>
-	/// <param name="filePath">The file path where the generated enums will be saved.</param>
-	/// <param name="generatedTypes">An output parameter that maps enum names to their generated enum types.</param>
-	/// <returns>An array of syntax nodes representing the generated enum declarations.</returns>
+	/// <param name="filePath">The file path where the generated enum will be saved.</param>
+	/// <returns>The generated Mavlink enum.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="namespace"/> or <paramref name="includes"/> is <c>null</c>.</exception>
 	/// <remarks>
 	/// This method generates enums based on the provided data, merges with existing enums if necessary,
-	/// and maps the generated enum names to their respective namespaces and type names. The resulting
-	/// enums are represented as <see cref="GeneratedMavlinkEnum"/> instances. This method also initializes
-	/// instances of <see cref="GeneratedMavlinkEnumEntry"/> within <see cref="GeneratedMavlinkEnum"/>.
+	/// and maps the generated enum names to their respective namespaces and type names.
+	/// The resulting enums are represented as <see cref="GeneratedMavlinkEnum"/> instances.
+	/// This method also initializes instances of <see cref="GeneratedMavlinkEnumEntry"/> within <see cref="GeneratedMavlinkEnum"/>.
 	/// </remarks>
-	ImmutableArray<EnumDeclarationSyntax> GenerateEnums(
-		ImmutableArray<MavlinkEnum> enums,
-		string namespaceName,
+	GeneratedMavlinkEnum GenerateMavlinkEnum(
+		MavlinkEnum @enum,
+		string @namespace,
 		ImmutableArray<string> includes,
-		string filePath,
-		out IImmutableDictionary<string, GeneratedMavlinkEnum> generatedTypes);
+		string filePath);
 }
 
-public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
+public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 {
 	private readonly Dictionary<(string Namespace, string Name), GeneratedMavlinkEnum> _generatedEnums = new();
 	private readonly Dictionary<string, HashSet<string>> _namespaceIncludesMap = new();
 	private readonly Dictionary<string, string> _fileNameToPathMap = new();
 
-	public ImmutableArray<EnumDeclarationSyntax> GenerateEnums(
-		ImmutableArray<MavlinkEnum> enums,
-		string namespaceName,
+	public GeneratedMavlinkEnum GenerateMavlinkEnum(
+		MavlinkEnum @enum,
+		string @namespace,
 		ImmutableArray<string> includes,
-		string filePath,
-		out IImmutableDictionary<string, GeneratedMavlinkEnum> generatedTypes)
+		string filePath)
 	{
-		var generatedTypesDict = new Dictionary<string, GeneratedMavlinkEnum>();
-		var enumDeclarations = new List<EnumDeclarationSyntax>();
+		_fileNameToPathMap[Path.GetFileName(filePath)] = @namespace;
 
-		_fileNameToPathMap[Path.GetFileName(filePath)] = namespaceName;
-
-		foreach (var enumData in enums)
+		var key = (Namespace: @namespace, @enum.Name);
+		if (_generatedEnums.ContainsKey(key))
 		{
-			var key = (Namespace: namespaceName, enumData.Name);
-			GeneratedMavlinkEnum? existingGeneratedEnum = null;
+			throw new InvalidOperationException($"Enum '{@enum.Name}' already exists in namespace '{@namespace}'.");
+		}
 
-			// Check for existing enums in the current namespace or includes
-			foreach (var include in includes)
+		GeneratedMavlinkEnum? existingGeneratedEnum = null;
+
+		// Check for existing enums in the current namespace or includes
+		foreach (var include in includes)
+		{
+			if (_fileNameToPathMap.TryGetValue(include, out var includeNamespace))
 			{
-				if (_fileNameToPathMap.TryGetValue(include, out var includeNamespace))
+				var includeKey = (Namespace: includeNamespace, @enum.Name);
+				if (_generatedEnums.TryGetValue(includeKey, out var includeGeneratedEnum))
 				{
-					var includeKey = (Namespace: includeNamespace, enumData.Name);
-					if (_generatedEnums.TryGetValue(includeKey, out var includeGeneratedEnum))
+					if (existingGeneratedEnum is null)
 					{
-						if (existingGeneratedEnum is null)
-						{
-							existingGeneratedEnum = includeGeneratedEnum;
-						}
-						else
-						{
-							existingGeneratedEnum = GenerateAndMergeMavlinkEnum(existingGeneratedEnum, enumData, includeNamespace);
-						}
+						existingGeneratedEnum = includeGeneratedEnum;
+					}
+					else
+					{
+						existingGeneratedEnum = GenerateAndMergeMavlinkEnumInternal(existingGeneratedEnum, @enum, includeNamespace);
 					}
 				}
 			}
-
-			GeneratedMavlinkEnum finalEnum;
-			if (existingGeneratedEnum is null)
-			{
-				finalEnum = GenerateMavlinkEnum(enumData, namespaceName);
-			}
-			else
-			{
-				finalEnum = GenerateAndMergeMavlinkEnum(existingGeneratedEnum, enumData, namespaceName);
-			}
-
-			// Store the generated enum directly in _generatedEnums
-			_generatedEnums[key] = finalEnum;
-			enumDeclarations.Add(finalEnum.DeclarationSyntax);
-
-			generatedTypesDict[enumData.Name] = finalEnum;
-
-			if (!_namespaceIncludesMap.ContainsKey(enumData.Name))
-			{
-				_namespaceIncludesMap[enumData.Name] = new HashSet<string>();
-			}
-			foreach (var include in includes)
-			{
-				_namespaceIncludesMap[enumData.Name].Add(include);
-			}
 		}
 
-		generatedTypes = generatedTypesDict.ToImmutableSortedDictionary();
-		return enumDeclarations.ToImmutableArray();
+		GeneratedMavlinkEnum generatedEnum;
+		if (existingGeneratedEnum is null)
+		{
+			generatedEnum = GenerateMavlinkEnumInternal(@enum, @namespace);
+		}
+		else
+		{
+			generatedEnum = GenerateAndMergeMavlinkEnumInternal(existingGeneratedEnum, @enum, @namespace);
+		}
+
+		// Store the generated enum directly in _generatedEnums
+		_generatedEnums[key] = generatedEnum;
+
+		if (!_namespaceIncludesMap.ContainsKey(@enum.Name))
+		{
+			_namespaceIncludesMap[@enum.Name] = new HashSet<string>();
+		}
+		foreach (var include in includes)
+		{
+			_namespaceIncludesMap[@enum.Name].Add(include);
+		}
+		return generatedEnum;
 	}
 
-	private GeneratedMavlinkEnum GenerateMavlinkEnum(
-		MavlinkEnum enumData,
+	/// <summary>
+	/// Generates a Mavlink enum and its associated C# declaration syntax without caching.
+	/// </summary>
+	/// <param name="enum">The Mavlink enum data to generate.</param>
+	/// <param name="namespaceName">The namespace in which the generated enum will reside.</param>
+	/// <returns>A <see cref="GeneratedMavlinkEnum"/> containing the generated entries and declaration syntax.</returns>
+	/// <remarks>
+	/// This method creates the necessary syntax for the Mavlink enum based on the provided data.
+	/// The resulting <see cref="GeneratedMavlinkEnum"/> includes the generated entries and their declaration syntax,
+	/// but this method does not add the generated enum to the cache.
+	/// </remarks>
+	internal GeneratedMavlinkEnum GenerateMavlinkEnumInternal(
+		MavlinkEnum @enum,
 		string namespaceName)
 	{
-		var enumName = Utilities.ToCamelCase(enumData.Name);
+		var normalizedEnumName = Utilities.ToCamelCase(@enum.Name);
 		ImmutableArray<GeneratedMavlinkEnumEntry> generatedEntries = [];
 
-		var sortedEntries = enumData.Entries.OrderBy(entry => entry.Value);
+		var sortedEntries = @enum.Entries.OrderBy(entry => entry.Value);
 		if (sortedEntries is not null)
 		{
-			generatedEntries = GenerateEnumMembers(sortedEntries, enumName, namespaceName);
+			generatedEntries = GenerateEnumMembersInternal(sortedEntries, normalizedEnumName, namespaceName);
 		}
 
-		var allValues = enumData.Entries.Select(entry => entry.Value);
+		var allValues = @enum.Entries.Select(entry => entry.Value);
 		var enumBaseType = Utilities.DetermineEnumBaseType(allValues);
 
-		var enumDeclaration = SyntaxFactory.EnumDeclaration(enumName)
+		var enumDeclaration = SyntaxFactory.EnumDeclaration(normalizedEnumName)
 			.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
 			.AddAttributeLists(
 				SyntaxFactory.AttributeList(
@@ -131,7 +134,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 								{
 								SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
 									SyntaxKind.StringLiteralExpression,
-									SyntaxFactory.Literal(enumData.Name))
+									SyntaxFactory.Literal(@enum.Name))
 								)
 								})
 							)
@@ -140,8 +143,8 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 				)
 			)
 			.WithMembers(new SeparatedSyntaxList<EnumMemberDeclarationSyntax>().AddRange(generatedEntries.Select(entry => entry.DeclarationSyntax)))
-			.AddSummaryTriviaIfNotNull(enumData.Description)
-			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {enumData.Name.ToUpper()}");
+			.AddSummaryTriviaIfNotNull(@enum.Description)
+			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {@enum.Name.ToUpper()}");
 
 		if (enumBaseType != "int")
 		{
@@ -149,7 +152,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 				SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(enumBaseType)))));
 		}
 
-		if (enumData.Bitmask == true)
+		if (@enum.Bitmask == true)
 		{
 			enumDeclaration = enumDeclaration.AddAttributeLists(
 				SyntaxFactory.AttributeList(
@@ -160,10 +163,10 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 			);
 		}
 
-		return new GeneratedMavlinkEnum(namespaceName, enumName, generatedEntries, enumDeclaration, enumData);
+		return new GeneratedMavlinkEnum(namespaceName, normalizedEnumName, generatedEntries, enumDeclaration, @enum);
 	}
 
-	private GeneratedMavlinkEnum GenerateAndMergeMavlinkEnum(
+	internal GeneratedMavlinkEnum GenerateAndMergeMavlinkEnumInternal(
 		GeneratedMavlinkEnum existingEnum,
 		MavlinkEnum newEnumData,
 		string existingNamespace)
@@ -180,7 +183,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		}).ToList();
 
 		// Create new members from the new enum data
-		var newEntries = GenerateEnumMembers(newEnumData.Entries, newEnumData.Name, existingNamespace).ToList();
+		var newEntries = GenerateEnumMembersInternal(newEnumData.Entries, newEnumData.Name, existingNamespace).ToList();
 
 		// Determine the maximum value among new entries
 		var maxNewValue = newEnumData.Entries.Max(e => e.Value);
@@ -241,7 +244,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		);
 	}
 
-	private ImmutableArray<GeneratedMavlinkEnumEntry> GenerateEnumMembers(
+	internal ImmutableArray<GeneratedMavlinkEnumEntry> GenerateEnumMembersInternal(
 		IEnumerable<MavlinkEnumEntry> entries,
 		string enumName,
 		string enumNamespace)
