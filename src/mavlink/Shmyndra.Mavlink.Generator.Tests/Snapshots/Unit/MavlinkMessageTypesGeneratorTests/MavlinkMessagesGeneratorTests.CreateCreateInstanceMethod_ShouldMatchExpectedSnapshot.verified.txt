@@ -1,4 +1,4 @@
-﻿public static GeneratedMavlinkMessageFieldType CreateInstance(byte[] payload)
+﻿public static ESCInfoMessage CreateInstance(byte[] payload)
 {
     var index = payload[0];
     var timeUsec = BitConverter.ToUInt64(payload, 1);
@@ -16,7 +16,7 @@
     var tempTemperatureArray = new short[4];
     Buffer.BlockCopy(payload, 38, tempTemperatureArray, 0, 8);
     var temperature = tempTemperatureArray.ToImmutableArray();
-    return new GeneratedMavlinkMessageFieldType
+    return new ESCInfoMessage
     {
         Index = index,
         TimeUsec = timeUsec,

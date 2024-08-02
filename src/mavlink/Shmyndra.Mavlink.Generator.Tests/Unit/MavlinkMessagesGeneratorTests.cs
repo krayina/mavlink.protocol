@@ -90,7 +90,7 @@ public class MavlinkMessagesGeneratorTests
 		var currentNamespace = "Namespace1";
 
 		// Act
-		var methodSyntax = MavlinkMessagePayloadDeserializationGenerator.CreateCreateInstanceMethod(currentNamespace, GeneratedFields);
+		var methodSyntax = MavlinkMessagePayloadDeserializationGenerator.CreateCreateInstanceMethod(currentNamespace, "ESCInfoMessage", GeneratedFields);
 
 		// Assert
 		var methodCode = methodSyntax.NormalizeWhitespace().ToFullString();

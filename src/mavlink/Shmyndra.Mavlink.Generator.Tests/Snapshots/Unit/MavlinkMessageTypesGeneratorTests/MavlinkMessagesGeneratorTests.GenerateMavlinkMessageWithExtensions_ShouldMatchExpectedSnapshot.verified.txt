@@ -13,11 +13,11 @@ public record struct SysStatus : MavlinkMessage
     /// </remarks>
     public sbyte? BatteryRemaining { get; init; }
 
-    public static GeneratedMavlinkMessageFieldType CreateInstance(byte[] payload)
+    public static SysStatus CreateInstance(byte[] payload)
     {
         var currentBattery = BitConverter.ToInt16(payload, 0);
         var batteryRemaining = (sbyte)payload[2];
-        return new GeneratedMavlinkMessageFieldType
+        return new SysStatus
         {
             CurrentBattery = currentBattery,
             BatteryRemaining = batteryRemaining

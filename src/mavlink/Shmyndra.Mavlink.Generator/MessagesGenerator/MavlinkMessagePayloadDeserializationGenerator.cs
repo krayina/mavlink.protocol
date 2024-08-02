@@ -10,7 +10,8 @@ internal class MavlinkMessagePayloadDeserializationGenerator
 	/// <summary>
 	/// Generates the <c>CreateInstance</c> method for deserializing Mavlink message payloads into instances of the generated message type.
 	/// </summary>
-	/// <param name="currentNamespace">The namespace of the generated message type.</param>
+	/// <param name="namespace">The namespace of the generated message type.</param>
+	/// <param name="messageName">The name of the generated message type.</param>
 	/// <param name="fields">The array of fields in the Mavlink message, each represented as a <see cref="GeneratedMavlinkMessageField"/>.</param>
 	/// <returns>A <see cref="MethodDeclarationSyntax"/> representing the <c>CreateInstance</c> method.</returns>
 	/// <remarks>
@@ -18,7 +19,8 @@ internal class MavlinkMessagePayloadDeserializationGenerator
 	/// </remarks>
 	/// <exception cref="InvalidCastException">Thrown if any field in <paramref name="fields"/> is not of type <see cref="GeneratedMavlinkMessageFieldType"/> or its derived types.</exception>
 	public static MethodDeclarationSyntax CreateCreateInstanceMethod(
-		string currentNamespace,
+		string @namespace,
+		string messageName,
 		ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
 		var methodBody = new StringBuilder();
@@ -36,11 +38,11 @@ internal class MavlinkMessagePayloadDeserializationGenerator
 			}
 			else if (fieldType is GeneratedMavlinkMessageFieldEnumType enumType)
 			{
-				methodBody.AppendLine(GenerateEnumDeserialization(variableName, enumType, ref offset, currentNamespace));
+				methodBody.AppendLine(GenerateEnumDeserialization(variableName, enumType, ref offset, @namespace));
 			}
 			else if (fieldType is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType)
 			{
-				methodBody.AppendLine(GenerateArrayEnumDeserialization(variableName, fieldPropertyName, arrayEnumType, ref offset, currentNamespace));
+				methodBody.AppendLine(GenerateArrayEnumDeserialization(variableName, fieldPropertyName, arrayEnumType, ref offset, @namespace));
 			}
 			else
 			{
@@ -54,10 +56,10 @@ internal class MavlinkMessagePayloadDeserializationGenerator
 			return $"{field.GeneratedName} = {variableName}";
 		}));
 
-		methodBody.AppendLine($"return new {fields.First().Type.GetType().Name} {{ {propertiesAssignment} }};");
+		methodBody.AppendLine($"return new {messageName} {{ {propertiesAssignment} }};");
 
 		var methodString = $@"
-public static {fields.First().Type.GetType().Name} CreateInstance(byte[] payload)
+public static {messageName} CreateInstance(byte[] payload)
 {{
     {methodBody}
 }}";

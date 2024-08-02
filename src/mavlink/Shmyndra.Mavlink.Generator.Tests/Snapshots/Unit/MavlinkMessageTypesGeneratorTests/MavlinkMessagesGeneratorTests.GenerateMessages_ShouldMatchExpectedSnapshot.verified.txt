@@ -77,7 +77,7 @@ public record struct EscInfo : MavlinkMessage
     [System.ComponentModel.DataAnnotations.RequiredArrayLength(4)]
     public System.Collections.Immutable.ImmutableArray<short> Temperature { get; init; }
 
-    public static GeneratedMavlinkMessageFieldType CreateInstance(byte[] payload)
+    public static EscInfo CreateInstance(byte[] payload)
     {
         var index = payload[0];
         var timeUsec = BitConverter.ToUInt64(payload, 1);
@@ -95,7 +95,7 @@ public record struct EscInfo : MavlinkMessage
         var tempTemperatureArray = new short[4];
         Buffer.BlockCopy(payload, 38, tempTemperatureArray, 0, 8);
         var temperature = tempTemperatureArray.ToImmutableArray();
-        return new GeneratedMavlinkMessageFieldType
+        return new EscInfo
         {
             Index = index,
             TimeUsec = timeUsec,
