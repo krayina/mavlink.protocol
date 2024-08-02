@@ -67,7 +67,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 						}
 						else
 						{
-							existingGeneratedEnum = MergeEnums(existingGeneratedEnum, enumData, includeNamespace);
+							existingGeneratedEnum = GenerateAndMergeMavlinkEnum(existingGeneratedEnum, enumData, includeNamespace);
 						}
 					}
 				}
@@ -76,11 +76,11 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 			GeneratedMavlinkEnum finalEnum;
 			if (existingGeneratedEnum is null)
 			{
-				finalEnum = CreateEnum(enumData, namespaceName);
+				finalEnum = GenerateMavlinkEnum(enumData, namespaceName);
 			}
 			else
 			{
-				finalEnum = MergeEnums(existingGeneratedEnum, enumData, namespaceName);
+				finalEnum = GenerateAndMergeMavlinkEnum(existingGeneratedEnum, enumData, namespaceName);
 			}
 
 			// Store the generated enum directly in _generatedEnums
@@ -103,7 +103,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		return enumDeclarations;
 	}
 
-	private GeneratedMavlinkEnum CreateEnum(
+	private GeneratedMavlinkEnum GenerateMavlinkEnum(
 		MavlinkEnum enumData,
 		string namespaceName)
 	{
@@ -113,7 +113,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		var sortedEntries = enumData.Entries.OrderBy(entry => entry.Value);
 		if (sortedEntries is not null)
 		{
-			generatedEntries = CreateEnumMembers(sortedEntries, enumName, namespaceName).ToImmutableArray();
+			generatedEntries = GenerateEnumMembers(sortedEntries, enumName, namespaceName);
 		}
 
 		var allValues = enumData.Entries.Select(entry => entry.Value);
@@ -163,7 +163,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		return new GeneratedMavlinkEnum(namespaceName, enumName, generatedEntries, enumDeclaration, enumData);
 	}
 
-	private GeneratedMavlinkEnum MergeEnums(
+	private GeneratedMavlinkEnum GenerateAndMergeMavlinkEnum(
 		GeneratedMavlinkEnum existingEnum,
 		MavlinkEnum newEnumData,
 		string existingNamespace)
@@ -180,7 +180,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		}).ToList();
 
 		// Create new members from the new enum data
-		var newEntries = CreateEnumMembers(newEnumData.Entries, newEnumData.Name, existingNamespace).ToList();
+		var newEntries = GenerateEnumMembers(newEnumData.Entries, newEnumData.Name, existingNamespace).ToList();
 
 		// Determine the maximum value among new entries
 		var maxNewValue = newEnumData.Entries.Max(e => e.Value);
@@ -194,10 +194,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		foreach (var entry in existingEnum.GeneratedEntries)
 		{
 			var parsedValue = TryParseEnumValue(entry.DeclarationSyntax.EqualsValue!.Value);
-			if (parsedValue.HasValue)
-			{
-				existingValues.Add(parsedValue.Value);
-			}
+			existingValues.Add(parsedValue);
 		}
 
 		existingValues.Add(maxNewValue);
@@ -244,7 +241,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		);
 	}
 
-	private IEnumerable<GeneratedMavlinkEnumEntry> CreateEnumMembers(
+	private ImmutableArray<GeneratedMavlinkEnumEntry> GenerateEnumMembers(
 		IEnumerable<MavlinkEnumEntry> entries,
 		string enumName,
 		string enumNamespace)
@@ -260,7 +257,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())));
 
 			return new GeneratedMavlinkEnumEntry(enumNamespace, entryName, enumMemberSyntax, entry);
-		});
+		}).ToImmutableArray();
 	}
 
 	private static string GetBaseType(EnumDeclarationSyntax enumDeclaration)
@@ -268,7 +265,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		return enumDeclaration.BaseList?.Types.FirstOrDefault()?.ToString() ?? "int";
 	}
 
-	private static uint? TryParseEnumValue(ExpressionSyntax expression)
+	private static uint TryParseEnumValue(ExpressionSyntax expression)
 	{
 		if (expression is LiteralExpressionSyntax literalExpression &&
 			uint.TryParse(literalExpression.Token.ValueText, out var value))
@@ -276,6 +273,6 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 			return value;
 		}
 		// Handle other cases or return null if the value cannot be parsed
-		return null;
+		throw new NotImplementedException($"Unsupported mavlink value {expression}");
 	}
 }
