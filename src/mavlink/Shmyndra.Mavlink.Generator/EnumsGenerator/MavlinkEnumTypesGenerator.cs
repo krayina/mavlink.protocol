@@ -15,14 +15,14 @@ public interface IMavlinkEnumTypesGenerator
 	/// <param name="includes">A list of included files that may contain existing enums to merge with.</param>
 	/// <param name="filePath">The file path where the generated enums will be saved.</param>
 	/// <param name="generatedTypes">An output parameter that maps enum names to their generated enum types.</param>
-	/// <returns>A list of syntax nodes representing the generated enum declarations.</returns>
+	/// <returns>An array of syntax nodes representing the generated enum declarations.</returns>
 	/// <remarks>
 	/// This method generates enums based on the provided data, merges with existing enums if necessary,
 	/// and maps the generated enum names to their respective namespaces and type names. The resulting
 	/// enums are represented as <see cref="GeneratedMavlinkEnum"/> instances. This method also initializes
 	/// instances of <see cref="GeneratedMavlinkEnumEntry"/> within <see cref="GeneratedMavlinkEnum"/>.
 	/// </remarks>
-	List<EnumDeclarationSyntax> GenerateEnums(
+	ImmutableArray<EnumDeclarationSyntax> GenerateEnums(
 		ImmutableArray<MavlinkEnum> enums,
 		string namespaceName,
 		ImmutableArray<string> includes,
@@ -36,7 +36,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 	private readonly Dictionary<string, HashSet<string>> _namespaceIncludesMap = new();
 	private readonly Dictionary<string, string> _fileNameToPathMap = new();
 
-	public List<EnumDeclarationSyntax> GenerateEnums(
+	public ImmutableArray<EnumDeclarationSyntax> GenerateEnums(
 		ImmutableArray<MavlinkEnum> enums,
 		string namespaceName,
 		ImmutableArray<string> includes,
@@ -100,7 +100,7 @@ public class MavlinkEnumTypesGenerator : IMavlinkEnumTypesGenerator
 		}
 
 		generatedTypes = generatedTypesDict.ToImmutableSortedDictionary();
-		return enumDeclarations;
+		return enumDeclarations.ToImmutableArray();
 	}
 
 	private GeneratedMavlinkEnum GenerateMavlinkEnum(

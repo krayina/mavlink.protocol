@@ -13,13 +13,13 @@ public interface IMavlinkMessageTypesGenerator
 	/// <param name="namespaceName">The namespace in which the generated message types will reside.</param>
 	/// <param name="generatedEnums">A dictionary of generated Mavlink enums used in the message fields or parameters.</param>
 	/// <param name="generatedTypes">An output dictionary that maps the message names to the corresponding generated message types.</param>
-	/// <returns>A list of C# record declarations representing the Mavlink messages.</returns>
+	/// <returns>An array of C# record declarations representing the Mavlink messages.</returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="namespaceName"/>, <paramref name="generatedEnums"/>, or <paramref name="messages"/> is <c>null</c>.</exception>
 	/// <remarks>
 	/// The method ensures that all enums referenced in the messages are resolved using the <paramref name="generatedEnums"/> dictionary.
 	/// The output <paramref name="generatedTypes"/> dictionary will contain the fully qualified names of the generated message types for reference in other parts of the codebase.
 	/// </remarks>
-	List<RecordDeclarationSyntax> GenerateMessages(
+	ImmutableArray<RecordDeclarationSyntax> GenerateMessages(
 		ImmutableArray<MavlinkMessage> messages,
 		string namespaceName,
 		IImmutableDictionary<string, GeneratedMavlinkEnum> generatedEnums,
@@ -46,7 +46,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 
 	private readonly HashSet<string> _generatedMessageNames = new();
 
-	public List<RecordDeclarationSyntax> GenerateMessages(
+	public ImmutableArray<RecordDeclarationSyntax> GenerateMessages(
 		ImmutableArray<MavlinkMessage> messages,
 		string namespaceName,
 		IImmutableDictionary<string, GeneratedMavlinkEnum> generatedEnums,
@@ -69,7 +69,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 		}
 
 		generatedTypes = generatedTypesDict.ToImmutableDictionary();
-		return messageDeclarations;
+		return messageDeclarations.ToImmutableArray();
 	}
 
 	private GeneratedMavlinkMessage GenerateMavlinkMessage(
