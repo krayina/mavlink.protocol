@@ -126,13 +126,13 @@ public class MavlinkMessagesGeneratorTests
 	}
 
 	[Fact]
-	public async Task GenerateMessagesCache_ShouldMatchExpectedSnapshot()
+	public async Task GenerateMessagesExtensions_ShouldMatchExpectedSnapshot()
 	{
 		// Arrange
 		var messages = GeneratedMavlinkMessages;
 
 		// Act
-		var generatedCacheCode = MavlinkMessagesGenerator.GenerateMessagesCache(messages);
+		var generatedCacheCode = MavlinkMessagesGenerator.GenerateMessageExtensions(messages);
 
 		// Assert
 		await Verify(generatedCacheCode)

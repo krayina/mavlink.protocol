@@ -2,7 +2,7 @@
 
 internal static class MavlinkMessagesGenerator
 {
-	public static string GenerateMessagesCache(IEnumerable<GeneratedMavlinkMessage> messages)
+	public static string GenerateMessageExtensions(IEnumerable<GeneratedMavlinkMessage> messages)
 	{
 		var dictionaryEntriesByType = string.Join(",\n", messages.Select(message =>
 			$"\t\t\t{{ typeof({message.GeneratedNamespace}.{message.GeneratedName}), ({message.Id}U, \"{message.Name}\") }}"));
