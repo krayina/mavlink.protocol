@@ -4,29 +4,28 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace Shmyndra.Mavlink.Generator;
 
-public interface IMavlinkMessageTypesGenerator
+public interface IMavlinkMessageGenerator
 {
 	/// <summary>
-	/// Generates C# record declarations for Mavlink messages.
+	/// Generates a C# record declaration for a Mavlink message.
 	/// </summary>
-	/// <param name="messages">A collection of Mavlink messages to be processed.</param>
-	/// <param name="namespaceName">The namespace in which the generated message types will reside.</param>
+	/// <param name="message">The Mavlink message to be processed.</param>
+	/// <param name="namespace">The namespace in which the generated message type will reside.</param>
 	/// <param name="generatedEnums">A dictionary of generated Mavlink enums used in the message fields or parameters.</param>
-	/// <param name="generatedTypes">An output dictionary that maps the message names to the corresponding generated message types.</param>
-	/// <returns>An array of C# record declarations representing the Mavlink messages.</returns>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="namespaceName"/>, <paramref name="generatedEnums"/>, or <paramref name="messages"/> is <c>null</c>.</exception>
+	/// <returns>The generated Mavlink message, including its declaration syntax and metadata.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="namespace"/>, <paramref name="generatedEnums"/>, or <paramref name="message"/> is <c>null</c>.</exception>
+	/// <exception cref="InvalidOperationException">Thrown when a message with the same name in the specified namespace has already been generated.</exception>
 	/// <remarks>
-	/// The method ensures that all enums referenced in the messages are resolved using the <paramref name="generatedEnums"/> dictionary.
-	/// The output <paramref name="generatedTypes"/> dictionary will contain the fully qualified names of the generated message types for reference in other parts of the codebase.
+	/// This method ensures that all enums referenced in the message are resolved using the <paramref name="generatedEnums"/> dictionary.
+	/// It also caches the generated messages to avoid duplicate generation. If a message with the same name in the specified namespace has already been generated, an <see cref="InvalidOperationException"/> will be thrown.
 	/// </remarks>
-	ImmutableArray<RecordDeclarationSyntax> GenerateMessages(
-		ImmutableArray<MavlinkMessage> messages,
-		string namespaceName,
-		IImmutableDictionary<string, GeneratedMavlinkEnum> generatedEnums,
-		out IImmutableDictionary<string, GeneratedMavlinkMessage> generatedTypes);
+	public GeneratedMavlinkMessage GenerateMavlinkMessage(
+		MavlinkMessage message,
+		string @namespace,
+		IImmutableDictionary<string, GeneratedMavlinkEnum> generatedEnums);
 }
 
-public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
+public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 {
 	private static readonly Dictionary<string, (string TypeName, int Size)> _typeMap = new()
 	{
@@ -44,44 +43,44 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 		{ "uint8_t_mavlink_version", ("byte", 1) }
 	};
 
-	private readonly HashSet<string> _generatedMessageNames = new();
+	private readonly Dictionary<(string Namespace, string MavlinkMessageName), GeneratedMavlinkMessage> _generatedMessages = new();
 
-	public ImmutableArray<RecordDeclarationSyntax> GenerateMessages(
-		ImmutableArray<MavlinkMessage> messages,
-		string namespaceName,
-		IImmutableDictionary<string, GeneratedMavlinkEnum> generatedEnums,
-		out IImmutableDictionary<string, GeneratedMavlinkMessage> generatedTypes)
-	{
-		var generatedTypesDict = new Dictionary<string, GeneratedMavlinkMessage>();
-		var messageDeclarations = new List<RecordDeclarationSyntax>();
-
-		foreach (var messageData in messages)
-		{
-			if (_generatedMessageNames.Contains(messageData.Name))
-			{
-				continue;
-			}
-
-			var generatedMessage = GenerateMavlinkMessage(messageData, namespaceName, generatedEnums);
-			messageDeclarations.Add(generatedMessage.DeclarationSyntax);
-			generatedTypesDict[messageData.Name] = generatedMessage;
-			_generatedMessageNames.Add(messageData.Name);
-		}
-
-		generatedTypes = generatedTypesDict.ToImmutableDictionary();
-		return messageDeclarations.ToImmutableArray();
-	}
-
-	private GeneratedMavlinkMessage GenerateMavlinkMessage(
-		MavlinkMessage messageData,
-		string namespaceName,
+	public GeneratedMavlinkMessage GenerateMavlinkMessage(
+		MavlinkMessage message,
+		string @namespace,
 		IImmutableDictionary<string, GeneratedMavlinkEnum> generatedEnums)
 	{
-		var normalizedName = Utilities.ToCamelCase(messageData.Name);
-		var id = messageData.Id;
+		if (_generatedMessages.ContainsKey((@namespace, message.Name)))
+		{
+			throw new InvalidOperationException($"The message '{message.Name}' in namespace '{@namespace}' has already been generated.");
+		}
 
-		var generatedFields = messageData.Fields
-			.Select(field => GenerateMavlinkMessageField(field, generatedEnums, namespaceName, normalizedName))
+		var generatedMessage = GenerateMavlinkMessageInternal(message, @namespace, generatedEnums);
+		_generatedMessages.Add((@namespace, message.Name), generatedMessage);
+		return generatedMessage;
+	}
+
+	/// <summary>
+	/// Generates a <see cref="GeneratedMavlinkMessage"/> instance based on the provided Mavlink message.
+	/// </summary>
+	/// <param name="message">The Mavlink message to be processed.</param>
+	/// <param name="namespace">The namespace in which the generated message type will reside.</param>
+	/// <param name="generatedEnums">A dictionary of generated Mavlink enums used in the message fields or parameters.</param>
+	/// <returns>The generated Mavlink message, including its declaration syntax and metadata.</returns>
+	/// <remarks>
+	/// This method creates a new <see cref="GeneratedMavlinkMessage"/> instance but does not add it to the cache.
+	/// It is used internally by the <see cref="GenerateMavlinkMessage"/> method to perform the actual message generation logic.
+	/// </remarks>
+	internal GeneratedMavlinkMessage GenerateMavlinkMessageInternal(
+		MavlinkMessage message,
+		string @namespace,
+		IImmutableDictionary<string, GeneratedMavlinkEnum> generatedEnums)
+	{
+		var normalizedName = Utilities.ToCamelCase(message.Name);
+		var id = message.Id;
+
+		var generatedFields = message.Fields
+			.Select(field => GenerateMavlinkMessageFieldInternal(field, generatedEnums, @namespace, normalizedName))
 			.ToImmutableArray();
 
 		var propertyDeclarations = generatedFields
@@ -89,15 +88,15 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 			.ToArray();
 
 		var createInstanceMethod = MavlinkMessagePayloadDeserializationGenerator
-			.CreateCreateInstanceMethod(namespaceName, generatedFields);
+			.CreateCreateInstanceMethod(@namespace, generatedFields);
 
-		var recordDeclaration = CreateRecordStructDeclaration(id, normalizedName, propertyDeclarations, messageData.Description, messageData.Name)
+		var recordDeclaration = CreateRecordStructDeclaration(id, normalizedName, propertyDeclarations, message.Description, message.Name)
 			.AddMembers(createInstanceMethod);
 
-		return new GeneratedMavlinkMessage(namespaceName, normalizedName, generatedFields, recordDeclaration, messageData);
+		return new GeneratedMavlinkMessage(@namespace, normalizedName, generatedFields, recordDeclaration, message);
 	}
 
-	private GeneratedMavlinkMessageField GenerateMavlinkMessageField(
+	internal GeneratedMavlinkMessageField GenerateMavlinkMessageFieldInternal(
 		MavlinkMessageField field,
 		IImmutableDictionary<string, GeneratedMavlinkEnum> generatedEnums,
 		string messageNamespace,

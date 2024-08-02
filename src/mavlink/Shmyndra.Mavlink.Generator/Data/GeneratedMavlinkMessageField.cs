@@ -6,7 +6,7 @@ namespace Shmyndra.Mavlink.Generator;
 /// Represents a Mavlink message field that has been generated with an additional generated name.
 /// </summary>
 /// <remarks>
-/// Instances of this class are created exclusively by implementations of the <see cref="IMavlinkMessageTypesGenerator"/> interface
+/// Instances of this class are created exclusively by implementations of the <see cref="IMavlinkMessageGenerator"/> interface
 /// and should not be instantiated manually.<br/>
 /// The <see cref="MavlinkMessageField.Type"/> property will be an instance of <see cref="GeneratedMavlinkMessageFieldType"/>, 
 /// which includes specific types like <see cref="GeneratedMavlinkMessageFieldEnumType"/>, <see cref="GeneratedMavlinkMessageFieldArrayType"/> and <see cref="GeneratedMavlinkMessageFieldArrayEnumType"/> 

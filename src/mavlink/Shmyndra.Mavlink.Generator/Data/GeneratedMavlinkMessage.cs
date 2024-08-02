@@ -7,7 +7,7 @@ namespace Shmyndra.Mavlink.Generator;
 /// Represents a generated Mavlink message with additional generated fields and namespace.
 /// </summary>
 /// <remarks>
-/// Instances of this class are created exclusively by implementations of the <see cref="IMavlinkMessageTypesGenerator"/> interface
+/// Instances of this class are created exclusively by implementations of the <see cref="IMavlinkMessageGenerator"/> interface
 /// and should not be instantiated manually.
 /// </remarks>
 public record GeneratedMavlinkMessage : MavlinkMessage

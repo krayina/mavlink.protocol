@@ -99,20 +99,23 @@ public class MavlinkMessagesGeneratorTests
 	public async Task GenerateMessages_ShouldMatchExpectedSnapshot()
 	{
 		// Arrange
-		var generator = new MavlinkMessageTypesGenerator();
-		var namespaceName = "Namespace1";
+		var generator = new MavlinkMessageGenerator();
+		var @namespace = "Namespace1";
 
 		// Act
-		var generatedCode = generator.GenerateMessages(
-			MavlinkMessages, namespaceName,
-			GeneratedEnums.ToImmutableDictionary(e => e.Name, e => e),
-			out var generatedTypes);
+		var generatedMessages = MavlinkMessages
+			.Select(message => generator.GenerateMavlinkMessageInternal(
+				message, @namespace,
+				GeneratedEnums.ToImmutableDictionary(e => e.Name, e => e)))
+			.ToImmutableArray();
+
+		// Normalize the generated code for each message
+		var generatedCode = generatedMessages
+			.Select(gm => gm.DeclarationSyntax.NormalizeWhitespace().ToFullString())
+			.Aggregate((current, next) => current + "\n\n" + next);
 
 		// Assert
-		var code = generatedCode.Select(x => x.NormalizeWhitespace().ToFullString())
-								.Aggregate((current, next) => current + "\n\n" + next);
-
-		await Verify(code)
+		await Verify(generatedCode)
 			.UseDirectory(SNAPSHOT_PATH)
 			.UseParameters("GeneratedMessages");
 	}
