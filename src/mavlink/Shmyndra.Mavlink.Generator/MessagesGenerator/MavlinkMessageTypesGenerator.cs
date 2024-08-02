@@ -62,7 +62,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 				continue;
 			}
 
-			var generatedMessage = CreateMavlinkMessage(messageData, namespaceName, generatedEnums);
+			var generatedMessage = GenerateMavlinkMessage(messageData, namespaceName, generatedEnums);
 			messageDeclarations.Add(generatedMessage.DeclarationSyntax);
 			generatedTypesDict[messageData.Name] = generatedMessage;
 			_generatedMessageNames.Add(messageData.Name);
@@ -72,7 +72,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 		return messageDeclarations;
 	}
 
-	private GeneratedMavlinkMessage CreateMavlinkMessage(
+	private GeneratedMavlinkMessage GenerateMavlinkMessage(
 		MavlinkMessage messageData,
 		string namespaceName,
 		IImmutableDictionary<string, GeneratedMavlinkEnum> generatedEnums)
@@ -81,7 +81,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 		var id = messageData.Id;
 
 		var generatedFields = messageData.Fields
-			.Select(field => CreateField(field, generatedEnums, namespaceName, normalizedName))
+			.Select(field => GenerateMavlinkMessageField(field, generatedEnums, namespaceName, normalizedName))
 			.ToImmutableArray();
 
 		var propertyDeclarations = generatedFields
@@ -97,7 +97,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 		return new GeneratedMavlinkMessage(namespaceName, normalizedName, generatedFields, recordDeclaration, messageData);
 	}
 
-	private GeneratedMavlinkMessageField CreateField(
+	private GeneratedMavlinkMessageField GenerateMavlinkMessageField(
 		MavlinkMessageField field,
 		IImmutableDictionary<string, GeneratedMavlinkEnum> generatedEnums,
 		string messageNamespace,
