@@ -78,6 +78,11 @@ public class MavlinkMessagesGeneratorTests
 		new MavlinkMessage(290, "ESC_INFO", "ESC information for lower rate streaming. Recommended streaming rate 1Hz. See ESC_STATUS for higher-rate ESC data.", MavlinkFields, null)
 	];
 
+	private static readonly ImmutableArray<GeneratedMavlinkMessage> GeneratedMavlinkMessages =
+	[
+		new GeneratedMavlinkMessage("Namespace1", "EscInfo", GeneratedFields, SyntaxFactory.RecordDeclaration(SyntaxFactory.Token(SyntaxKind.RecordKeyword), "EscInfo"), MavlinkMessages[0])
+	];
+
 	[Fact]
 	public async Task GenerateCreateInstanceMethod_ShouldMatchExpectedSnapshot()
 	{
@@ -118,5 +123,20 @@ public class MavlinkMessagesGeneratorTests
 		await Verify(generatedCode)
 			.UseDirectory(SNAPSHOT_PATH)
 			.UseParameters("GeneratedMessages");
+	}
+
+	[Fact]
+	public async Task GenerateMessagesCache_ShouldMatchExpectedSnapshot()
+	{
+		// Arrange
+		var messages = GeneratedMavlinkMessages;
+
+		// Act
+		var generatedCacheCode = MavlinkMessagesGenerator.GenerateMessagesCache(messages);
+
+		// Assert
+		await Verify(generatedCacheCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("GeneratedMessagesCache");
 	}
 }
