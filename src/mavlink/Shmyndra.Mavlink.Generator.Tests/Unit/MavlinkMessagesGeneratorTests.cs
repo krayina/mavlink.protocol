@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
 
 namespace Shmyndra.Mavlink.Generator.Tests.Unit;
@@ -92,5 +93,27 @@ public class MavlinkMessagesGeneratorTests
 		await Verify(methodCode)
 			.UseDirectory(SNAPSHOT_PATH)
 			.UseParameters("ESCInfoMessage");
+	}
+
+	[Fact]
+	public async Task GenerateMessages_ShouldMatchExpectedSnapshot()
+	{
+		// Arrange
+		var generator = new MavlinkMessageTypesGenerator();
+		var namespaceName = "Namespace1";
+
+		// Act
+		var generatedCode = generator.GenerateMessages(
+			MavlinkMessages, namespaceName,
+			GeneratedEnums.ToImmutableDictionary(e => e.Name, e => e),
+			out var generatedTypes);
+
+		// Assert
+		var code = generatedCode.Select(x => x.NormalizeWhitespace().ToFullString())
+								.Aggregate((current, next) => current + "\n\n" + next);
+
+		await Verify(code)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("GeneratedMessages");
 	}
 }
