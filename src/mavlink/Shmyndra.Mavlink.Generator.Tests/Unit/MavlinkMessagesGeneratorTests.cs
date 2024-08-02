@@ -139,4 +139,40 @@ public class MavlinkMessagesGeneratorTests
 			.UseDirectory(SNAPSHOT_PATH)
 			.UseParameters("GeneratedMessagesCache");
 	}
+
+
+	[Fact]
+	public async Task GenerateMavlinkMessageWithExtensions_ShouldMatchExpectedSnapshot()
+	{
+		// Arrange
+		var message = new MavlinkMessage(
+			id: 1,
+			name: "SYS_STATUS",
+			description: null,
+			fields:
+			[
+				// This field is required
+				new MavlinkMessageField(new MavlinkMessageFieldType("int16_t"), "current_battery",
+					null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, true, null, null, null, null, false, null, "-1" ),
+				// This field is non-required
+				new MavlinkMessageField(new MavlinkMessageFieldType("int8_t"), "battery_remaining",
+					null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, false, null, null, null, null, false, null, null)
+			],
+			deprecated: null
+		);
+
+		var generatedEnums = ImmutableArray<GeneratedMavlinkEnum>.Empty.ToImmutableDictionary(e => e.Name, e => e);
+		var generator = new MavlinkMessageGenerator();
+		var namespaceName = "TestNamespace";
+
+		// Act
+		var generatedMessage = generator.GenerateMavlinkMessageInternal(message, namespaceName, generatedEnums);
+
+		var normalizedMessage = generatedMessage.DeclarationSyntax.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		await Verify(normalizedMessage)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("SYS_STATUS");
+	}
 }

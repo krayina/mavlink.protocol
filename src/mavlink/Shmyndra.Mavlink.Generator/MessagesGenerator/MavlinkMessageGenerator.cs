@@ -127,7 +127,7 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 					_typeMap[baseTypeName].TypeName,
 					generatedEnumForArray,
 					arrayLength);
-				propertySyntax = CreatePropertyDeclaration($"{immutableArrayNamespace}<{fullEnumTypeName}>", normalizedFieldName)
+				propertySyntax = CreatePropertyDeclaration($"{immutableArrayNamespace}<{fullEnumTypeName}>", normalizedFieldName, field.IsRequired)
 								 .AddArrayLengthAttribute(arrayLength);
 			}
 			else
@@ -137,7 +137,7 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 					field.Type.TypeName,
 					convertedType,
 					arrayLength);
-				propertySyntax = CreatePropertyDeclaration($"{immutableArrayNamespace}<{convertedType}>", normalizedFieldName)
+				propertySyntax = CreatePropertyDeclaration($"{immutableArrayNamespace}<{convertedType}>", normalizedFieldName, field.IsRequired)
 								 .AddArrayLengthAttribute(arrayLength);
 			}
 		}
@@ -150,13 +150,13 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 			var fullEnumTypeName = enumNamespace != messageNamespace ? $"{enumNamespace}.{enumTypeName}" : enumTypeName;
 
 			fieldType = new GeneratedMavlinkMessageFieldEnumType(enumType.TypeName, _typeMap[enumType.TypeName].TypeName, generatedEnum);
-			propertySyntax = CreatePropertyDeclaration(fullEnumTypeName, normalizedFieldName);
+			propertySyntax = CreatePropertyDeclaration(fullEnumTypeName, normalizedFieldName, field.IsRequired);
 		}
 		else
 		{
 			var convertedType = _typeMap[field.Type.TypeName].TypeName;
 			fieldType = new GeneratedMavlinkMessageFieldType(field.Type.TypeName, convertedType);
-			propertySyntax = CreatePropertyDeclaration(convertedType, normalizedFieldName);
+			propertySyntax = CreatePropertyDeclaration(convertedType, normalizedFieldName, field.IsRequired);
 		}
 
 		propertySyntax = propertySyntax
@@ -170,9 +170,13 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 			field);
 	}
 
-	private static PropertyDeclarationSyntax CreatePropertyDeclaration(string propertyType, string fieldName)
+	private static PropertyDeclarationSyntax CreatePropertyDeclaration(string propertyType, string fieldName, bool isRequired)
 	{
-		return SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName(propertyType), fieldName)
+		var typeSyntax = isRequired
+			? SyntaxFactory.ParseTypeName(propertyType)
+			: SyntaxFactory.NullableType(SyntaxFactory.ParseTypeName(propertyType));
+
+		return SyntaxFactory.PropertyDeclaration(typeSyntax, fieldName)
 			.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
 			.AddAccessorListAccessors(
 				SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
