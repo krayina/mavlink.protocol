@@ -78,7 +78,7 @@ public class MavlinkEnumTypesGeneratorTests
 		var generator = new MavlinkEnumGenerator();
 
 		// Act
-		var generatedEnums = enums.Select(e => generator.GenerateMavlinkEnum(e, namespaceName, includes, filePath)).ToList();
+		var generatedEnums = enums.Select(e => generator.GenerateMavlinkEnumInternal(e, namespaceName)).ToList();
 		var normalizedEnums = generatedEnums.Select(e => e.DeclarationSyntax.NormalizeWhitespace().ToFullString()).ToList();
 
 		// Assert
