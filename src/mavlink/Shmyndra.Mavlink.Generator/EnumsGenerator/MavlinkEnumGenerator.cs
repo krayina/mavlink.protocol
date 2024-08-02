@@ -166,6 +166,18 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 		return new GeneratedMavlinkEnum(namespaceName, normalizedEnumName, generatedEntries, enumDeclaration, @enum);
 	}
 
+	/// <summary>
+	/// Generates and merges a new Mavlink enum with an existing generated enum.
+	/// </summary>
+	/// <param name="existingEnum">The existing generated Mavlink enum to merge with.</param>
+	/// <param name="newEnumData">The new Mavlink enum data to merge.</param>
+	/// <param name="existingNamespace">The namespace of the existing generated enum.</param>
+	/// <returns>The merged generated Mavlink enum.</returns>
+	/// <remarks>
+	/// This method combines the entries from an existing generated enum and a new Mavlink enum, creating a new merged enum.
+	/// It updates existing entries to reference their full namespace, creates new entries from the new enum data, and determines
+	/// the appropriate base type for the merged enum. If the enum is a bitmask, it also adds the Flags attribute.
+	/// </remarks>
 	internal GeneratedMavlinkEnum GenerateAndMergeMavlinkEnumInternal(
 		GeneratedMavlinkEnum existingEnum,
 		MavlinkEnum newEnumData,
