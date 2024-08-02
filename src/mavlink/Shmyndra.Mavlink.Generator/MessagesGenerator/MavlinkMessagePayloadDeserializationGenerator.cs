@@ -17,7 +17,7 @@ internal class MavlinkMessagePayloadDeserializationGenerator
 	/// The <c>CreateInstance</c> method is essential for converting raw byte payloads from Mavlink messages into strongly-typed objects, enabling easier manipulation and access to message data in .NET applications.
 	/// </remarks>
 	/// <exception cref="InvalidCastException">Thrown if any field in <paramref name="fields"/> is not of type <see cref="GeneratedMavlinkMessageFieldType"/> or its derived types.</exception>
-	public static MethodDeclarationSyntax GenerateCreateInstanceMethod(
+	public static MethodDeclarationSyntax CreateCreateInstanceMethod(
 		string currentNamespace,
 		ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{

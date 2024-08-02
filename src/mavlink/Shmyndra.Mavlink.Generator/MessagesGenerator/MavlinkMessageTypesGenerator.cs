@@ -89,7 +89,7 @@ public class MavlinkMessageTypesGenerator : IMavlinkMessageTypesGenerator
 			.ToArray();
 
 		var createInstanceMethod = MavlinkMessagePayloadDeserializationGenerator
-			.GenerateCreateInstanceMethod(namespaceName, generatedFields);
+			.CreateCreateInstanceMethod(namespaceName, generatedFields);
 
 		var recordDeclaration = CreateRecordStructDeclaration(id, normalizedName, propertyDeclarations, messageData.Description, messageData.Name)
 			.AddMembers(createInstanceMethod);
