@@ -1,0 +1,76 @@
+﻿public static SomeMessage CreateInstance(byte[] payload)
+{
+    byte? index = null;
+    if (payload.Length > 0)
+    {
+        index = payload[0];
+    }
+
+    ulong? timeUsec = null;
+    if (payload.Length > 1)
+    {
+        timeUsec = BitConverter.ToUInt64(payload, 1);
+    }
+
+    ushort? counter = null;
+    if (payload.Length > 9)
+    {
+        counter = BitConverter.ToUInt16(payload, 9);
+    }
+
+    byte? count = null;
+    if (payload.Length > 11)
+    {
+        count = payload[11];
+    }
+
+    byte? connectionType = null;
+    if (payload.Length > 12)
+    {
+        connectionType = (byte)payload[12];
+        connectionType = (EscConnectionType)connectionType;
+    }
+
+    byte? info = null;
+    if (payload.Length > 13)
+    {
+        info = payload[13];
+    }
+
+    ImmutableArray<EscFailureFlags>? failureFlags = null;
+    if (payload.Length >= 22)
+    {
+        var tempFailureFlagsArray = new EscFailureFlags[4];
+        Buffer.BlockCopy(payload, 14, tempFailureFlagsArray, 0, 8);
+        failureFlags = tempFailureFlagsArray.ToImmutableArray();
+    }
+
+    ImmutableArray<uint>? errorCount = null;
+    if (payload.Length >= 38)
+    {
+        var tempErrorCountArray = new uint[4];
+        Buffer.BlockCopy(payload, 22, tempErrorCountArray, 0, 16);
+        errorCount = tempErrorCountArray.ToImmutableArray();
+    }
+
+    ImmutableArray<short>? temperature = null;
+    if (payload.Length >= 46)
+    {
+        var tempTemperatureArray = new short[4];
+        Buffer.BlockCopy(payload, 38, tempTemperatureArray, 0, 8);
+        temperature = tempTemperatureArray.ToImmutableArray();
+    }
+
+    return new SomeMessage
+    {
+        Index = index,
+        TimeUsec = timeUsec,
+        Counter = counter,
+        Count = count,
+        ConnectionType = connectionType,
+        Info = info,
+        FailureFlags = failureFlags,
+        ErrorCount = errorCount,
+        Temperature = temperature
+    };
+}

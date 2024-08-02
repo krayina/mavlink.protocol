@@ -16,7 +16,12 @@ public record struct SysStatus : MavlinkMessage
     public static SysStatus CreateInstance(byte[] payload)
     {
         var currentBattery = BitConverter.ToInt16(payload, 0);
-        var batteryRemaining = (sbyte)payload[2];
+        sbyte? batteryRemaining = null;
+        if (payload.Length > 2)
+        {
+            batteryRemaining = (sbyte)payload[2];
+        }
+
         return new SysStatus
         {
             CurrentBattery = currentBattery,

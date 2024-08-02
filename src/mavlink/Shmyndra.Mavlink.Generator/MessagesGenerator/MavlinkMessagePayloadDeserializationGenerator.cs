@@ -34,19 +34,19 @@ internal class MavlinkMessagePayloadDeserializationGenerator
 
 			if (fieldType is GeneratedMavlinkMessageFieldArrayType arrayType)
 			{
-				methodBody.AppendLine(GenerateArrayDeserialization(variableName, fieldPropertyName, arrayType, ref offset));
+				methodBody.AppendLine(GenerateArrayDeserialization(variableName, fieldPropertyName, arrayType, ref offset, field.IsRequired));
 			}
 			else if (fieldType is GeneratedMavlinkMessageFieldEnumType enumType)
 			{
-				methodBody.AppendLine(GenerateEnumDeserialization(variableName, enumType, ref offset, @namespace));
+				methodBody.AppendLine(GenerateEnumDeserialization(variableName, enumType, ref offset, @namespace, field.IsRequired));
 			}
 			else if (fieldType is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType)
 			{
-				methodBody.AppendLine(GenerateArrayEnumDeserialization(variableName, fieldPropertyName, arrayEnumType, ref offset, @namespace));
+				methodBody.AppendLine(GenerateArrayEnumDeserialization(variableName, fieldPropertyName, arrayEnumType, ref offset, @namespace, field.IsRequired));
 			}
 			else
 			{
-				methodBody.AppendLine(GenerateSimpleTypeDeserialization(variableName, fieldType.ConvertedType, ref offset));
+				methodBody.AppendLine(GenerateSimpleTypeDeserialization(variableName, fieldType.ConvertedType, ref offset, field.IsRequired));
 			}
 		}
 
@@ -76,77 +76,159 @@ public class TemporaryClass
 		return method;
 	}
 
-	private static string GenerateArrayDeserialization(string variableName, string propertyName, GeneratedMavlinkMessageFieldArrayType arrayType, ref int offset)
+	private static string GenerateArrayDeserialization(string variableName, string propertyName, GeneratedMavlinkMessageFieldArrayType arrayType, ref int offset, bool isRequired)
 	{
 		var tempArrayName = $"temp{propertyName}Array";
 		var elementType = arrayType.ConvertedType;
 		var arrayLength = arrayType.ArrayLength * GetTypeSize(elementType);
-		var result = $@"
+		var result = new StringBuilder();
+
+		if (isRequired)
+		{
+			result.AppendLine($@"
 var {tempArrayName} = new {elementType}[{arrayType.ArrayLength}];
 Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayLength});
-var {variableName} = {tempArrayName}.ToImmutableArray();";
+var {variableName} = {tempArrayName}.ToImmutableArray();");
+		}
+		else
+		{
+			result.AppendLine($@"
+ImmutableArray<{elementType}>? {variableName} = null;
+if (payload.Length >= {offset + arrayLength})
+{{
+    var {tempArrayName} = new {elementType}[{arrayType.ArrayLength}];
+    Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayLength});
+    {variableName} = {tempArrayName}.ToImmutableArray();
+}}");
+		}
+
 		offset += arrayLength;
-		return result;
+		return result.ToString();
 	}
 
-	private static string GenerateEnumDeserialization(string variableName, GeneratedMavlinkMessageFieldEnumType fieldEnumType, ref int offset, string currentNamespace)
+	private static string GenerateEnumDeserialization(string variableName, GeneratedMavlinkMessageFieldEnumType fieldEnumType, ref int offset, string currentNamespace, bool isRequired)
 	{
 		var size = GetTypeSize(fieldEnumType.ConvertedType);
 		var (enumNamespace, enumTypeName) = (fieldEnumType.GeneratedEnum.Namespace, fieldEnumType.GeneratedEnum.GeneratedName);
 		var fullEnumTypeName = enumNamespace == currentNamespace ? enumTypeName : $"{enumNamespace}.{enumTypeName}";
 
-		string deserializationCode;
-		if (size == 1)
+		var result = new StringBuilder();
+
+		if (isRequired)
 		{
-			deserializationCode = $@"
+			if (size == 1)
+			{
+				result.AppendLine($@"
 var {variableName}Value = (byte)payload[{offset}];
-var {variableName} = ({fullEnumTypeName}){variableName}Value;";
+var {variableName} = ({fullEnumTypeName}){variableName}Value;");
+			}
+			else
+			{
+				result.AppendLine($@"
+var {variableName}Value = BitConverter.{GetBitConverterMethodForSize(size)}(payload, {offset});
+var {variableName} = ({fullEnumTypeName}){variableName}Value;");
+			}
 		}
 		else
 		{
-			deserializationCode = $@"
-var {variableName}Value = BitConverter.{GetBitConverterMethodForSize(size)}(payload, {offset});
-var {variableName} = ({fullEnumTypeName}){variableName}Value;";
+			if (size == 1)
+			{
+				result.AppendLine($@"
+byte? {variableName} = null;
+if (payload.Length > {offset})
+{{
+    {variableName} = (byte)payload[{offset}];
+    {variableName} = ({fullEnumTypeName}){variableName};
+}}");
+			}
+			else
+			{
+				result.AppendLine($@"
+{fieldEnumType.ConvertedType}? {variableName} = null;
+if (payload.Length > {offset})
+{{
+    {variableName} = BitConverter.{GetBitConverterMethodForSize(size)}(payload, {offset});
+    {variableName} = ({fullEnumTypeName}){variableName};
+}}");
+			}
 		}
 
 		offset += size;
-		return deserializationCode;
+		return result.ToString();
 	}
 
-	private static string GenerateArrayEnumDeserialization(string variableName, string propertyName, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, ref int offset, string currentNamespace)
+	private static string GenerateArrayEnumDeserialization(string variableName, string propertyName, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, ref int offset, string currentNamespace, bool isRequired)
 	{
 		var tempArrayName = $"temp{propertyName}Array";
 		var (enumNamespace, enumTypeName) = (arrayEnumType.GeneratedEnum.Namespace, arrayEnumType.GeneratedEnum.GeneratedName);
 		var fullEnumTypeName = enumNamespace == currentNamespace ? enumTypeName : $"{enumNamespace}.{enumTypeName}";
 
-		var result = $@"
+		var result = new StringBuilder();
+
+		if (isRequired)
+		{
+			result.AppendLine($@"
 var {tempArrayName} = new {fullEnumTypeName}[{arrayEnumType.ArrayLength}];
 Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayEnumType.ArrayLength * GetTypeSize(arrayEnumType.ConvertedType)});
-var {variableName} = {tempArrayName}.ToImmutableArray();";
-		offset += arrayEnumType.ArrayLength * GetTypeSize(arrayEnumType.ConvertedType);
-		return result;
-	}
-
-	private static string GenerateSimpleTypeDeserialization(string variableName, string typeName, ref int offset)
-	{
-		var size = GetTypeSize(typeName);
-		string deserializationCode;
-
-		if (typeName == "byte")
-		{
-			deserializationCode = $@"var {variableName} = payload[{offset}];";
-		}
-		else if (typeName == "sbyte")
-		{
-			deserializationCode = $@"var {variableName} = (sbyte)payload[{offset}];";
+var {variableName} = {tempArrayName}.ToImmutableArray();");
 		}
 		else
 		{
-			deserializationCode = $@"var {variableName} = BitConverter.{GetBitConverterMethod(typeName)}(payload, {offset});";
+			result.AppendLine($@"
+ImmutableArray<{fullEnumTypeName}>? {variableName} = null;
+if (payload.Length >= {offset + arrayEnumType.ArrayLength * GetTypeSize(arrayEnumType.ConvertedType)})
+{{
+    var {tempArrayName} = new {fullEnumTypeName}[{arrayEnumType.ArrayLength}];
+    Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayEnumType.ArrayLength * GetTypeSize(arrayEnumType.ConvertedType)});
+    {variableName} = {tempArrayName}.ToImmutableArray();
+}}");
+		}
+
+		offset += arrayEnumType.ArrayLength * GetTypeSize(arrayEnumType.ConvertedType);
+		return result.ToString();
+	}
+
+	private static string GenerateSimpleTypeDeserialization(string variableName, string typeName, ref int offset, bool isRequired)
+	{
+		var size = GetTypeSize(typeName);
+		var result = new StringBuilder();
+
+		if (isRequired)
+		{
+			result.AppendLine(typeName switch
+			{
+				"byte" => $@"var {variableName} = payload[{offset}];",
+				"sbyte" => $@"var {variableName} = (sbyte)payload[{offset}];",
+				_ => $@"var {variableName} = BitConverter.{GetBitConverterMethod(typeName)}(payload, {offset});"
+			});
+		}
+		else
+		{
+			result.AppendLine(typeName switch
+			{
+				"byte" => $@"
+byte? {variableName} = null;
+if (payload.Length > {offset})
+{{
+    {variableName} = payload[{offset}];
+}}",
+				"sbyte" => $@"
+sbyte? {variableName} = null;
+if (payload.Length > {offset})
+{{
+    {variableName} = (sbyte)payload[{offset}];
+}}",
+				_ => $@"
+{typeName}? {variableName} = null;
+if (payload.Length > {offset})
+{{
+    {variableName} = BitConverter.{GetBitConverterMethod(typeName)}(payload, {offset});
+}}"
+			});
 		}
 
 		offset += size;
-		return deserializationCode;
+		return result.ToString();
 	}
 
 	private static string GetBitConverterMethodForSize(int size)

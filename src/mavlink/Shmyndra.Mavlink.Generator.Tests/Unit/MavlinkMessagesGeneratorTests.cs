@@ -175,4 +175,21 @@ public class MavlinkMessagesGeneratorTests
 			.UseDirectory(SNAPSHOT_PATH)
 			.UseParameters("SYS_STATUS");
 	}
+
+	[Fact]
+	public async Task CreateCreateInstanceMethod_NullableFields_ShouldMatchExpectedSnapshot()
+	{
+		// Arrange
+		var nonRequiredFields = GeneratedFields.Select(field => field with { IsRequired = false }).ToImmutableArray();
+
+		// Act
+		var methodSyntax = MavlinkMessagePayloadDeserializationGenerator.CreateCreateInstanceMethod("Namespace1", "SomeMessage", nonRequiredFields);
+
+		// Assert
+		var methodCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		await Verify(methodCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("ESCInfoMessage");
+	}
 }
