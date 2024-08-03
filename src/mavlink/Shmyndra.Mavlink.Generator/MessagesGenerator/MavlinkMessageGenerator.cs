@@ -91,7 +91,8 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 			.CreateCreateInstanceMethod(@namespace, normalizedName, generatedFields);
 
 		var recordDeclaration = CreateRecordStructDeclaration(id, normalizedName, propertyDeclarations, message.Description, message.Name)
-			.AddMembers(createInstanceMethod);
+			.AddMembers(createInstanceMethod)
+			.AddObsoleteAttribute(message.Deprecated?.ToString());
 
 		return new GeneratedMavlinkMessage(@namespace, normalizedName, generatedFields, recordDeclaration, message);
 	}
