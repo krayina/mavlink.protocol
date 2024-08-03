@@ -144,12 +144,13 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 			)
 			.WithMembers(new SeparatedSyntaxList<EnumMemberDeclarationSyntax>().AddRange(generatedEntries.Select(entry => entry.DeclarationSyntax)))
 			.AddSummaryTriviaIfNotNull(@enum.Description)
-			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {@enum.Name.ToUpper()}");
+			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {@enum.Name.ToUpper()}")
+			.AddObsoleteAttribute(@enum.Deprecated?.ToString());
 
 		if (!string.IsNullOrEmpty(enumBaseType) && enumBaseType != "int")
 		{
 			enumDeclaration = enumDeclaration.WithBaseList(SyntaxFactory.BaseList(SyntaxFactory.SingletonSeparatedList<BaseTypeSyntax>(
-				SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(enumBaseType)))));
+				SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(enumBaseType!)))));
 		}
 
 		if (@enum.Bitmask == true)
