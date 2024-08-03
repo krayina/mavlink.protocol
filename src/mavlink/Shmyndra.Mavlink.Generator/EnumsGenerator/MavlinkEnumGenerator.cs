@@ -285,10 +285,10 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 			var entryName = normalizedEntryName == enumName ? "_" + normalizedEntryName : normalizedEntryName;
 
 			var enumMemberSyntax = SyntaxFactory.EnumMemberDeclaration(entryName)
+				.AddObsoleteAttribute(entry.Deprecated?.ToString())
 				.AddSummaryTriviaIfNotNull(entry.Description)
 				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {entry.Name.ToUpper()}")
-				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())))
-				.AddObsoleteAttribute(entry.Deprecated?.ToString());
+				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())));
 
 			return new GeneratedMavlinkEnumEntry(enumNamespace, entryName, enumMemberSyntax, entry);
 		}).ToImmutableArray();
