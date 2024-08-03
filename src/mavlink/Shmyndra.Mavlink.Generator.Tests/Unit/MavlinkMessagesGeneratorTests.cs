@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
 
 namespace Shmyndra.Mavlink.Generator.Tests.Unit;
@@ -187,6 +188,51 @@ public class MavlinkMessagesGeneratorTests
 
 		// Assert
 		var methodCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		await Verify(methodCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("ESCInfoMessage");
+	}
+
+	[Fact]
+	public async Task GenerateMavlinkMessageInternal_ShouldAddObsoleteAttribute()
+	{
+		// Arrange
+		const string testNamespace = "TestNamespace";
+
+		var deprecatedInfo = new MavlinkDeprecatedInfo(
+			description: "This message is deprecated.",
+			since: "2023-01",
+			replacedBy: "NewMessage",
+			text: null
+		);
+
+		var mavlinkMessage = new MavlinkMessage(
+			id: 1,
+			name: "DEPRECATED_MESSAGE",
+			description: null,
+			fields: ImmutableArray<MavlinkMessageField>.Empty,
+			deprecated: deprecatedInfo
+		);
+
+		var generatedEnums = ImmutableDictionary<string, GeneratedMavlinkEnum>.Empty;
+
+		var generator = new MavlinkMessageGenerator();
+
+		// Act
+		var generatedMessage = generator.GenerateMavlinkMessageInternal(mavlinkMessage, testNamespace, generatedEnums);
+
+		// Assert
+		var obsoleteAttribute = generatedMessage.DeclarationSyntax.AttributeLists
+			.SelectMany(attrList => attrList.Attributes)
+			.FirstOrDefault(attr => attr.Name.ToString() == "System.Obsolete");
+
+		Assert.NotNull(obsoleteAttribute);
+		var obsoleteMessageArgument = obsoleteAttribute!.ArgumentList!.Arguments.First();
+		var obsoleteMessage = (LiteralExpressionSyntax)obsoleteMessageArgument.Expression;
+		Assert.Equal($"{deprecatedInfo}", obsoleteMessage.Token.ValueText);
+
+		var methodCode = generatedMessage.DeclarationSyntax.NormalizeWhitespace().ToFullString();
 
 		await Verify(methodCode)
 			.UseDirectory(SNAPSHOT_PATH)
