@@ -236,6 +236,6 @@ public class MavlinkMessagesGeneratorTests
 
 		await Verify(recordCode)
 			.UseDirectory(SNAPSHOT_PATH)
-			.UseParameters("ESCInfoMessage");
+			.UseParameters("DEPRECATEDMESSAGE");
 	}
 }
