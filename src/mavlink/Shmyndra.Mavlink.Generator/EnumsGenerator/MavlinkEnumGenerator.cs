@@ -119,8 +119,8 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 			generatedEntries = GenerateEnumMembersInternal(sortedEntries, normalizedEnumName, namespaceName);
 		}
 
-		var allValues = @enum.Entries.Select(entry => entry.Value);
-		var enumBaseType = Utilities.DetermineEnumBaseType(allValues);
+		var allValues = @enum.Entries.Select(entry => entry.Value).ToArray();
+		string? enumBaseType = allValues.Any() ? Utilities.DetermineEnumBaseType(allValues) : null;
 
 		var enumDeclaration = SyntaxFactory.EnumDeclaration(normalizedEnumName)
 			.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
@@ -146,7 +146,7 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 			.AddSummaryTriviaIfNotNull(@enum.Description)
 			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {@enum.Name.ToUpper()}");
 
-		if (enumBaseType != "int")
+		if (!string.IsNullOrEmpty(enumBaseType) && enumBaseType != "int")
 		{
 			enumDeclaration = enumDeclaration.WithBaseList(SyntaxFactory.BaseList(SyntaxFactory.SingletonSeparatedList<BaseTypeSyntax>(
 				SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(enumBaseType)))));
