@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Shmyndra.Mavlink.Generator.Tests.Unit;
 
@@ -239,5 +240,48 @@ public class MavlinkEnumTypesGeneratorTests
 		var argument = obsoleteAttribute?.ArgumentList?.Arguments.FirstOrDefault();
 		Assert.NotNull(argument);
 		Assert.Equal("\"This enum is deprecated. Since: 2023-01. Replaced by: NewEnum. Additional info about deprecation.\"", argument.ToString());
+	}
+
+	[Fact]
+	public void GenerateAndMergeMavlinkEnumInternal_ShouldAddObsoleteAttribute_WhenEnumIsDeprecated()
+	{
+		// Arrange
+		var existingEnum = new GeneratedMavlinkEnum(
+			"Namespace1",
+			"TestEnum",
+			ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
+			SyntaxFactory.EnumDeclaration("TestEnum"),
+			new MavlinkEnum("TestEnum", "Test enum", false, ImmutableArray<MavlinkEnumEntry>.Empty, null)
+		);
+
+		var newEnumData = new MavlinkEnum(
+			"TestEnum",
+			"Test enum with deprecation",
+			false,
+			ImmutableArray<MavlinkEnumEntry>.Empty,
+			new MavlinkDeprecatedInfo("This enum is deprecated", "2024-03", "NewTestEnum", null)
+		);
+
+		var generator = new MavlinkEnumGenerator();
+
+		// Act
+		var mergedEnum = generator.GenerateAndMergeMavlinkEnumInternal(existingEnum, newEnumData, "Namespace1");
+
+		// Assert
+		var obsoleteAttribute = mergedEnum.DeclarationSyntax.AttributeLists
+			.SelectMany(al => al.Attributes)
+			.FirstOrDefault(attr => attr.Name.ToString() == "System.Obsolete");
+
+		Assert.NotNull(obsoleteAttribute);
+
+		if (obsoleteAttribute?.ArgumentList?.Arguments != null)
+		{
+			var argument = obsoleteAttribute.ArgumentList.Arguments.First().ToString();
+			Assert.Contains("This enum is deprecated", argument);
+		}
+		else
+		{
+			Assert.Fail("Obsolete attribute arguments are null or empty.");
+		}
 	}
 }
