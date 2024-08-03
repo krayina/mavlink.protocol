@@ -94,4 +94,22 @@ internal static class Utilities
 			)
 		);
 	}
+
+	public static MemberDeclarationSyntax AddObsoleteAttribute(this EnumMemberDeclarationSyntax enumMember, string? obsoleteMessage)
+	{
+		if (obsoleteMessage is null)
+		{
+			return enumMember;
+		}
+
+		var obsoleteAttribute = SyntaxFactory.Attribute(SyntaxFactory.ParseName("Obsolete"))
+			.WithArgumentList(SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(
+				SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(obsoleteMessage)))
+			)));
+
+		var attributeList = SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(obsoleteAttribute));
+		var attributes = enumMember.AttributeLists.Add(attributeList);
+
+		return enumMember.WithAttributeLists(attributes);
+	}
 }
