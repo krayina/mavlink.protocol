@@ -198,8 +198,8 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 		// Create new members from the new enum data
 		var newEntries = GenerateEnumMembersInternal(newEnumData.Entries, newEnumData.Name, existingNamespace).ToList();
 
-		// Determine the maximum value among new entries
-		var maxNewValue = newEnumData.Entries.Max(e => e.Value);
+		// Determine the maximum value among new entries, if there are any
+		var maxNewValue = newEnumData.Entries.Any() ? newEnumData.Entries.Max(e => e.Value) : 0;
 
 		// Determine the base type for the existing enum
 		var currentBaseType = GetBaseType(existingEnum.DeclarationSyntax);
@@ -213,10 +213,21 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 			existingValues.Add(parsedValue);
 		}
 
+		if (newEnumData.Entries.Any())
+		{
 		existingValues.Add(maxNewValue);
+		}
 
 		// Determine the new base type considering all values
-		var newBaseType = Utilities.DetermineEnumBaseType(existingValues);
+		string newBaseType;
+		if (existingValues.Any())
+		{
+			newBaseType = Utilities.DetermineEnumBaseType(existingValues);
+		}
+		else
+		{
+			newBaseType = "int"; // Default base type when no values are present
+		}
 
 		// Merge the entries
 		var mergedEntries = updatedExistingEntries.Concat(newEntries).ToImmutableArray();
