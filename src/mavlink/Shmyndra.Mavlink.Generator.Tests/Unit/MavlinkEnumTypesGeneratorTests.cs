@@ -165,4 +165,41 @@ public class MavlinkEnumTypesGeneratorTests
 			.UseDirectory(SNAPSHOT_PATH)
 			.UseParameters(namespaceName1, namespaceName2, filePath1, filePath2);
 	}
+
+	[Fact]
+	public void GenerateEnumMembers_ShouldHaveObsoleteAttributeForDeprecatedEntry()
+	{
+		// Arrange
+		ImmutableArray<MavlinkEnumEntry> deprecatedEntries = [ new MavlinkEnumEntry(
+			name: "MAV_FRAME_GLOBAL_INT",
+			value: 5,
+			description: null,
+			details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
+			deprecated: new MavlinkDeprecatedInfo(
+				description: "Use MAV_FRAME_GLOBAL in COMMAND_INT (and elsewhere) as a synonymous replacement.",
+				since: "2024-03",
+				replacedBy: "MAV_FRAME_GLOBAL",
+				text: null
+			),
+			hasLocation: null,
+			isDestination: null,
+			missionOnly: null
+		)];
+
+		var generator = new MavlinkEnumGenerator();
+
+		// Act
+		var generatedEntries = generator.GenerateEnumMembersInternal(deprecatedEntries, "MavFrameGlobalInt", "TestNamespace");
+
+		// Assert
+		var generatedEntry = generatedEntries.First();
+		var obsoleteAttribute = generatedEntry.DeclarationSyntax.AttributeLists
+			.SelectMany(al => al.Attributes)
+			.FirstOrDefault(attr => attr.Name.ToString() == "Obsolete");
+
+		Assert.NotNull(obsoleteAttribute);
+		Assert.Contains("2024-03", obsoleteAttribute.ToFullString());
+		Assert.Contains("MAV_FRAME_GLOBAL", obsoleteAttribute.ToFullString());
+		Assert.Contains("Use MAV_FRAME_GLOBAL in COMMAND_INT (and elsewhere) as a synonymous replacement.", obsoleteAttribute.ToFullString());
+	}
 }
