@@ -202,4 +202,42 @@ public class MavlinkEnumTypesGeneratorTests
 		Assert.Contains("MAV_FRAME_GLOBAL", obsoleteAttribute.ToFullString());
 		Assert.Contains("Use MAV_FRAME_GLOBAL in COMMAND_INT (and elsewhere) as a synonymous replacement.", obsoleteAttribute.ToFullString());
 	}
+
+	[Fact]
+	public void GenerateMavlinkEnumInternal_ShouldAddObsoleteAttribute()
+	{
+		// Arrange
+		var deprecatedInfo = new MavlinkDeprecatedInfo(
+			description: "This enum is deprecated.",
+			since: "2023-01",
+			replacedBy: "NewEnum",
+			text: ["Additional info about deprecation."]
+		);
+
+		var mavlinkEnum = new MavlinkEnum(
+			name: "OLD_ENUM",
+			description: "This is an old enum.",
+			bitmask: false,
+			entries: ImmutableArray<MavlinkEnumEntry>.Empty,
+			deprecated: deprecatedInfo
+		);
+
+		var generator = new MavlinkEnumGenerator();
+
+		// Act
+		var generatedEnum = generator.GenerateMavlinkEnumInternal(mavlinkEnum, "TestNamespace");
+
+		// Assert
+		var enumDeclaration = generatedEnum.DeclarationSyntax;
+		Assert.NotNull(enumDeclaration);
+
+		var obsoleteAttribute = enumDeclaration.AttributeLists
+			.SelectMany(a => a.Attributes)
+			.FirstOrDefault(a => a.Name.ToString() == "System.Obsolete");
+
+		Assert.NotNull(obsoleteAttribute);
+		var argument = obsoleteAttribute?.ArgumentList?.Arguments.FirstOrDefault();
+		Assert.NotNull(argument);
+		Assert.Equal("\"This enum is deprecated. Since: 2023-01. Replaced by: NewEnum. Additional info about deprecation.\"", argument.ToString());
+	}
 }
