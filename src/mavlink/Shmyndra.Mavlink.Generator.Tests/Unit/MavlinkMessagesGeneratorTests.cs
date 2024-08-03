@@ -232,9 +232,9 @@ public class MavlinkMessagesGeneratorTests
 		var obsoleteMessage = (LiteralExpressionSyntax)obsoleteMessageArgument.Expression;
 		Assert.Equal($"{deprecatedInfo}", obsoleteMessage.Token.ValueText);
 
-		var methodCode = generatedMessage.DeclarationSyntax.NormalizeWhitespace().ToFullString();
+		var recordCode = generatedMessage.DeclarationSyntax.NormalizeWhitespace().ToFullString();
 
-		await Verify(methodCode)
+		await Verify(recordCode)
 			.UseDirectory(SNAPSHOT_PATH)
 			.UseParameters("ESCInfoMessage");
 	}
