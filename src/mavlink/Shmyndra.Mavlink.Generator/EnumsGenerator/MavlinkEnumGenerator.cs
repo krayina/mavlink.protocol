@@ -215,7 +215,7 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 
 		if (newEnumData.Entries.Any())
 		{
-		existingValues.Add(maxNewValue);
+			existingValues.Add(maxNewValue);
 		}
 
 		// Determine the new base type considering all values
@@ -256,6 +256,12 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 					)
 				)
 			);
+		}
+
+		// Add Obsolete attribute if the enum is deprecated
+		if (newEnumData.Deprecated != null)
+		{
+			enumDeclaration = enumDeclaration.AddObsoleteAttribute(newEnumData.Deprecated.ToString());
 		}
 
 		// Create the merged GeneratedMavlinkEnum object
