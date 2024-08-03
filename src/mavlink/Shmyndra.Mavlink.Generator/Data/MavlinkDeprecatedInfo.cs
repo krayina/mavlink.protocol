@@ -48,4 +48,14 @@ public record MavlinkDeprecatedInfo
 		Description = description;
 		Text = text;
 	}
+
+	/// <summary>
+	/// Converts the deprecated information to a formatted string.
+	/// </summary>
+	/// <returns>A string representing the deprecated information, suitable for use in an <see cref="System.ObsoleteAttribute"/>.</returns>
+	public override string ToString()
+	{
+		var text = Text != null ? string.Join(" ", Text) : string.Empty;
+		return $"{Description} Since: {Since}. Replaced by: {ReplacedBy}. {text}".Trim();
+	}
 }
