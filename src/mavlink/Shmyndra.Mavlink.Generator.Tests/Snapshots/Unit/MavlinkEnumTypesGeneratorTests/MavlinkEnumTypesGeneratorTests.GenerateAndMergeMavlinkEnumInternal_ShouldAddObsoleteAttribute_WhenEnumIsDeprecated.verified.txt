@@ -1,0 +1,4 @@
+﻿[System.Obsolete("This enum is deprecated Since: 2024-03. Replaced by: NewTestEnum.")]
+enum TestEnum
+{
+}

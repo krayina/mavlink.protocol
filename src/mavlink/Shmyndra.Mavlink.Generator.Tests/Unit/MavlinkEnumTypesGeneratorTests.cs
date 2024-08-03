@@ -168,7 +168,7 @@ public class MavlinkEnumTypesGeneratorTests
 	}
 
 	[Fact]
-	public void GenerateEnumMembers_ShouldHaveObsoleteAttributeForDeprecatedEntry()
+	public async Task GenerateEnumMembers_ShouldHaveObsoleteAttributeForDeprecatedEntry()
 	{
 		// Arrange
 		ImmutableArray<MavlinkEnumEntry> deprecatedEntries = [ new MavlinkEnumEntry(
@@ -202,10 +202,16 @@ public class MavlinkEnumTypesGeneratorTests
 		Assert.Contains("2024-03", obsoleteAttribute.ToFullString());
 		Assert.Contains("MAV_FRAME_GLOBAL", obsoleteAttribute.ToFullString());
 		Assert.Contains("Use MAV_FRAME_GLOBAL in COMMAND_INT (and elsewhere) as a synonymous replacement.", obsoleteAttribute.ToFullString());
+
+		// Verify
+		var generatedCode = generatedEntry.DeclarationSyntax.NormalizeWhitespace().ToFullString();
+		await Verify(generatedCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("DeprecatedEntry");
 	}
 
 	[Fact]
-	public void GenerateMavlinkEnumInternal_ShouldAddObsoleteAttribute()
+	public async Task GenerateMavlinkEnumInternal_ShouldAddObsoleteAttribute()
 	{
 		// Arrange
 		var deprecatedInfo = new MavlinkDeprecatedInfo(
@@ -240,10 +246,15 @@ public class MavlinkEnumTypesGeneratorTests
 		var argument = obsoleteAttribute?.ArgumentList?.Arguments.FirstOrDefault();
 		Assert.NotNull(argument);
 		Assert.Equal("\"This enum is deprecated. Since: 2023-01. Replaced by: NewEnum. Additional info about deprecation.\"", argument.ToString());
+
+		var enumCode = generatedEnum.DeclarationSyntax.NormalizeWhitespace().ToFullString();
+
+		await Verify(enumCode)
+			.UseDirectory(SNAPSHOT_PATH);
 	}
 
 	[Fact]
-	public void GenerateAndMergeMavlinkEnumInternal_ShouldAddObsoleteAttribute_WhenEnumIsDeprecated()
+	public async Task GenerateAndMergeMavlinkEnumInternal_ShouldAddObsoleteAttribute_WhenEnumIsDeprecated()
 	{
 		// Arrange
 		var existingEnum = new GeneratedMavlinkEnum(
@@ -283,5 +294,10 @@ public class MavlinkEnumTypesGeneratorTests
 		{
 			Assert.Fail("Obsolete attribute arguments are null or empty.");
 		}
+
+		var enumCode = mergedEnum.DeclarationSyntax.NormalizeWhitespace().ToFullString();
+
+		await Verify(enumCode)
+			.UseDirectory(SNAPSHOT_PATH);
 	}
 }

@@ -1,0 +1,11 @@
+﻿/// <summary>
+/// This is an old enum.
+/// </summary>
+/// <remarks>
+/// Original name: OLD_ENUM
+/// </remarks>
+[MavlinkType("OLD_ENUM")]
+[System.Obsolete("This enum is deprecated. Since: 2023-01. Replaced by: NewEnum. Additional info about deprecation.")]
+public enum OldEnum
+{
+}
