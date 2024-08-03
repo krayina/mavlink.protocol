@@ -269,9 +269,10 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 			var enumMemberSyntax = SyntaxFactory.EnumMemberDeclaration(entryName)
 				.AddSummaryTriviaIfNotNull(entry.Description)
 				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {entry.Name.ToUpper()}")
-				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())));
+				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())))
+				.AddObsoleteAttribute(entry.Deprecated?.ToString());
 
-			return new GeneratedMavlinkEnumEntry(enumNamespace, entryName, enumMemberSyntax, entry);
+			return new GeneratedMavlinkEnumEntry(enumNamespace, entryName, (EnumMemberDeclarationSyntax)enumMemberSyntax, entry);
 		}).ToImmutableArray();
 	}
 
