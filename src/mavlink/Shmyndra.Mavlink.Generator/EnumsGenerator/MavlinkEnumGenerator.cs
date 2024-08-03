@@ -272,7 +272,7 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())))
 				.AddObsoleteAttribute(entry.Deprecated?.ToString());
 
-			return new GeneratedMavlinkEnumEntry(enumNamespace, entryName, (EnumMemberDeclarationSyntax)enumMemberSyntax, entry);
+			return new GeneratedMavlinkEnumEntry(enumNamespace, entryName, enumMemberSyntax, entry);
 		}).ToImmutableArray();
 	}
 

@@ -95,21 +95,26 @@ internal static class Utilities
 		);
 	}
 
-	public static MemberDeclarationSyntax AddObsoleteAttribute(this EnumMemberDeclarationSyntax enumMember, string? obsoleteMessage)
+	public static T AddObsoleteAttribute<T>(this T member, string? obsoleteMessage) where T : MemberDeclarationSyntax
 	{
 		if (obsoleteMessage is null)
 		{
-			return enumMember;
+			return member;
 		}
 
-		var obsoleteAttribute = SyntaxFactory.Attribute(SyntaxFactory.ParseName("Obsolete"))
-			.WithArgumentList(SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(
-				SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(obsoleteMessage)))
-			)));
-
+		var obsoleteAttribute = CreateObsoleteAttribute(obsoleteMessage);
 		var attributeList = SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(obsoleteAttribute));
-		var attributes = enumMember.AttributeLists.Add(attributeList);
+		var attributes = member.AttributeLists.Add(attributeList);
 
-		return enumMember.WithAttributeLists(attributes);
+		// Ensure the cast back to the original type T
+		return (T)member.WithAttributeLists(attributes);
+	}
+
+	public static AttributeSyntax CreateObsoleteAttribute(string message)
+	{
+		return SyntaxFactory.Attribute(SyntaxFactory.ParseName("System.Obsolete"))
+			.WithArgumentList(SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(
+				SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(message)))
+			)));
 	}
 }

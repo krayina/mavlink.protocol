@@ -195,7 +195,7 @@ public class MavlinkEnumTypesGeneratorTests
 		var generatedEntry = generatedEntries.First();
 		var obsoleteAttribute = generatedEntry.DeclarationSyntax.AttributeLists
 			.SelectMany(al => al.Attributes)
-			.FirstOrDefault(attr => attr.Name.ToString() == "Obsolete");
+			.FirstOrDefault(attr => attr.Name.ToString() == "System.Obsolete");
 
 		Assert.NotNull(obsoleteAttribute);
 		Assert.Contains("2024-03", obsoleteAttribute.ToFullString());
