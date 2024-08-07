@@ -119,15 +119,15 @@ public class MavlinkEnumTypesGeneratorTests
 				entries:
 				[
 					new MavlinkEnumEntry(
-									name: "ESC_TYPE2",
-									value: 1,
-									description: "Type 2",
-									details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
-									deprecated: null,
-									hasLocation: null,
-									isDestination: null,
-									missionOnly: null
-								),
+						name: "ESC_TYPE2",
+						value: 1,
+						description: "Type 2",
+						details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
+						deprecated: null,
+						hasLocation: null,
+						isDestination: null,
+						missionOnly: null
+					),
 					new MavlinkEnumEntry(
 						name: "ESC_TYPE3",
 						value: 2,
