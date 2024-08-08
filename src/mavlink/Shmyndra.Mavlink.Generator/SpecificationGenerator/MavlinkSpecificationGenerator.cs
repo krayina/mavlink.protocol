@@ -1,15 +1,14 @@
-﻿#if false
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Shmyndra.Mavlink.Generator;
 
-public interface IMavlinkSpecificationTypeGenerator
+public interface IMavlinkSpecificationGenerator
 {
 	ClassDeclarationSyntax GenerateSpecification(MavlinkData mavlinkData, string namespaceName);
 }
 
-public class MavlinkSpecificationTypeGenerator : IMavlinkSpecificationTypeGenerator
+public class MavlinkSpecificationGenerator : IMavlinkSpecificationGenerator
 {
 	public ClassDeclarationSyntax GenerateSpecification(MavlinkData mavlinkData, string namespaceName)
 	{
@@ -33,4 +32,3 @@ public class MavlinkSpecificationTypeGenerator : IMavlinkSpecificationTypeGenera
 			.WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
 	}
 }
-#endif
