@@ -1,23 +1,23 @@
 ﻿namespace Shmyndra.Mavlink.Generator;
 
-public interface IMavlinkFilesTreeBuilder
-{
-	List<MavlinkFilesTreeBuilder.MavlinkFileNode> Build(Dictionary<string, string> fileContents);
-}
+/// <summary>
+/// Represents a node in the MAVLink files tree.
+/// </summary>
+/// <param name="FilePath">The path to the MAVLink file.</param>
+/// <param name="Data">The parsed MAVLink data for the file.</param>
+/// <param name="Includes">The list of included files for this node.</param>
+public record MavlinkFileNode(string FilePath, MavlinkData Data, List<MavlinkFileNode> Includes);
 
 /// <summary>
 /// Provides functionality to build a tree of MAVLink files based on include dependencies and parse them into MavlinkData.
 /// </summary>
+public interface IMavlinkFilesTreeBuilder
+{
+	List<MavlinkFileNode> Build(Dictionary<string, string> fileContents);
+}
+
 public class MavlinkFilesTreeBuilder : IMavlinkFilesTreeBuilder
 {
-	/// <summary>
-	/// Represents a node in the MAVLink files tree.
-	/// </summary>
-	/// <param name="FilePath">The path to the MAVLink file.</param>
-	/// <param name="Data">The parsed MAVLink data for the file.</param>
-	/// <param name="Includes">The list of included files for this node.</param>
-	public record MavlinkFileNode(string FilePath, MavlinkData Data, List<MavlinkFileNode> Includes);
-
 	private readonly IMavlinkParser _parser;
 
 	public MavlinkFilesTreeBuilder(IMavlinkParser parser)
