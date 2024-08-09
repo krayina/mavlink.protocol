@@ -45,6 +45,32 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 
 	private readonly Dictionary<(string Namespace, string MavlinkMessageName), GeneratedMavlinkMessage> _generatedMessages = new();
 
+	/// <summary>
+	/// Returns an immutable array of generated Mavlink messages. 
+	/// If a predicate is provided, only messages matching the predicate will be returned.
+	/// If the predicate is null, all messages will be returned.
+	/// </summary>
+	/// <param name="predicate">
+	/// An optional predicate to filter the messages by their keys (Namespace, MavlinkMessageName).
+	/// If null, the method returns all generated messages.
+	/// </param>
+	/// <returns>
+	/// An immutable array of <see cref="GeneratedMavlinkMessage"/> that match the specified predicate,
+	/// or all messages if the predicate is null.
+	/// </returns>
+	internal ImmutableArray<GeneratedMavlinkMessage> GetGeneratedMessages(Func<(string Namespace, string MavlinkMessageName), bool>? predicate = null)
+	{
+		if (predicate == null)
+		{
+			return _generatedMessages.Values.ToImmutableArray();
+		}
+
+		return _generatedMessages
+			.Where(keyValuePair => predicate(keyValuePair.Key))
+			.Select(keyValuePair => keyValuePair.Value)
+			.ToImmutableArray();
+	}
+
 	public GeneratedMavlinkMessage GenerateMavlinkMessage(
 		MavlinkMessage message,
 		string @namespace,
