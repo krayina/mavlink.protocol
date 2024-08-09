@@ -35,6 +35,32 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 	private readonly Dictionary<string, HashSet<string>> _namespaceIncludesMap = new();
 	private readonly Dictionary<string, string> _fileNameToPathMap = new();
 
+	/// <summary>
+	/// Returns an immutable array of generated Mavlink enums. 
+	/// If a predicate is provided, only enums matching the predicate will be returned.
+	/// If the predicate is null, all enums will be returned.
+	/// </summary>
+	/// <param name="predicate">
+	/// An optional predicate to filter the enums by their keys (Namespace, Name).
+	/// If null, the method returns all generated enums.
+	/// </param>
+	/// <returns>
+	/// An immutable array of <see cref="GeneratedMavlinkEnum"/> that match the specified predicate,
+	/// or all enums if the predicate is null.
+	/// </returns>
+	internal ImmutableArray<GeneratedMavlinkEnum> GetGeneratedEnums(Func<(string Namespace, string Name), bool>? predicate = null)
+	{
+		if (predicate == null)
+		{
+			return _generatedEnums.Values.ToImmutableArray();
+		}
+
+		return _generatedEnums
+			.Where(keyValuePair => predicate(keyValuePair.Key))
+			.Select(keyValuePair => keyValuePair.Value)
+			.ToImmutableArray();
+	}
+
 	public GeneratedMavlinkEnum GenerateMavlinkEnum(
 		MavlinkEnum @enum,
 		string @namespace,
