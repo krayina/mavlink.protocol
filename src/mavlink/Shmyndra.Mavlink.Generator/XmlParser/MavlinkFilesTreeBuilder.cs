@@ -13,7 +13,7 @@ public record MavlinkFileNode(string FilePath, MavlinkData Data, List<MavlinkFil
 /// </summary>
 public interface IMavlinkFilesTreeBuilder
 {
-	List<MavlinkFileNode> Build(Dictionary<string, string> fileContents);
+	List<MavlinkFileNode> Build(IReadOnlyDictionary<string, string> fileContents);
 }
 
 public class MavlinkFilesTreeBuilder : IMavlinkFilesTreeBuilder
@@ -30,7 +30,7 @@ public class MavlinkFilesTreeBuilder : IMavlinkFilesTreeBuilder
 	/// </summary>
 	/// <param name="fileContents">A dictionary with file paths as keys and file contents as values.</param>
 	/// <returns>The list of root nodes of the MAVLink files tree.</returns>
-	public List<MavlinkFileNode> Build(Dictionary<string, string> fileContents)
+	public List<MavlinkFileNode> Build(IReadOnlyDictionary<string, string> fileContents)
 	{
 		// Create nodes with parsed MavlinkData for each file
 		var nodes = fileContents.ToDictionary(
