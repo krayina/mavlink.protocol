@@ -6,10 +6,12 @@ namespace Shmyndra.Mavlink.Generator;
 public class ReadOnlyMavlinkTree : IReadOnlyCollection<MavlinkFileNode>
 {
 	private readonly ImmutableHashSet<MavlinkFileNode> _nodes;
+	private readonly Dictionary<MavlinkFileNode, MavlinkFileNode?> _parentMap;
 
 	public ReadOnlyMavlinkTree(IEnumerable<MavlinkFileNode> nodes)
 	{
 		_nodes = nodes.ToImmutableHashSet();
+		_parentMap = BuildParentMap(_nodes);
 	}
 
 	public int Count => _nodes.Count;
@@ -18,10 +20,15 @@ public class ReadOnlyMavlinkTree : IReadOnlyCollection<MavlinkFileNode>
 
 	IEnumerator IEnumerable.GetEnumerator() => _nodes.GetEnumerator();
 
-	/// <summary>
-	/// Executes the specified action for each node in the tree in the correct hierarchical order.
-	/// </summary>
-	/// <param name="action">The action to be performed on each node in the tree.</param>
+	public MavlinkFileNode? GetParent(MavlinkFileNode node)
+	{
+		if (_parentMap.TryGetValue(node, out var parentNode))
+		{
+			return parentNode;
+		}
+		return null;
+	}
+
 	public void ForEachTree(Action<MavlinkFileNode> action)
 	{
 		var visited = new HashSet<MavlinkFileNode>();
@@ -45,5 +52,26 @@ public class ReadOnlyMavlinkTree : IReadOnlyCollection<MavlinkFileNode>
 
 			action(node);
 		}
+	}
+
+	private Dictionary<MavlinkFileNode, MavlinkFileNode?> BuildParentMap(IEnumerable<MavlinkFileNode> nodes)
+	{
+		var parentMap = new Dictionary<MavlinkFileNode, MavlinkFileNode?>();
+
+		foreach (var node in nodes)
+		{
+			foreach (var include in node.Includes)
+			{
+				parentMap[include] = node;
+			}
+
+			if (!parentMap.ContainsKey(node))
+			{
+				// Root node
+				parentMap[node] = null;
+			}
+		}
+
+		return parentMap;
 	}
 }
