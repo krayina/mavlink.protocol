@@ -5,12 +5,12 @@ namespace Shmyndra.Mavlink.Generator;
 
 public interface IMavlinkSpecificationGenerator
 {
-	ClassDeclarationSyntax GenerateSpecification(MavlinkData mavlinkData, string namespaceName);
+	ClassDeclarationSyntax GenerateSpecification(MavlinkData mavlinkData);
 }
 
 public class MavlinkSpecificationGenerator : IMavlinkSpecificationGenerator
 {
-	public ClassDeclarationSyntax GenerateSpecification(MavlinkData mavlinkData, string namespaceName)
+	public ClassDeclarationSyntax GenerateSpecification(MavlinkData mavlinkData)
 	{
 		var versionProperty = CreateProperty("Version", "byte?", mavlinkData.Version);
 		var dialectProperty = CreateProperty("Dialect", "byte?", mavlinkData.Dialect);
