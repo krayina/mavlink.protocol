@@ -12,4 +12,6 @@ internal static class MavlinkGeneratorConstants
 // </auto-generated>
 //------------------------------------------------------------------------------
 ";
+
+	public const string TypesNamespace = "MavlinkTypes";
 }
