@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -39,8 +40,9 @@ public class MavlinkGenerator
 	public IImmutableDictionary<string, CompilationUnitSyntax> GenerateMavlink(IReadOnlyDictionary<string, string> mavlinkFileContents)
 	{
 		var fileTreeNods = _filesTreeBuilder.Build(mavlinkFileContents);
-		var generatedFiles = ImmutableDictionary.CreateBuilder<string, CompilationUnitSyntax>();
+		var generatedFiles = new Dictionary<string, (int Index, CompilationUnitSyntax Syntax)>();
 
+		int i = 0;
 		fileTreeNods.ForEachTree(node =>
 		{
 			var members = new List<MemberDeclarationSyntax>();
@@ -53,10 +55,10 @@ public class MavlinkGenerator
 			GenerateSpecification(node, members);
 
 			var compilationUnit = CreateCompilationUnit(namespaceName, members);
-			generatedFiles.Add(node.FilePath, compilationUnit);
+			generatedFiles.Add(node.FilePath, (i++, compilationUnit));
 		});
 
-		return generatedFiles.ToImmutable();
+		return generatedFiles.ToImmutableIndexSortedDictionary();
 	}
 
 	private string GenerateNamespaceName(string filePath)
