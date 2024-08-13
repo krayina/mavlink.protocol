@@ -1,33 +1,45 @@
-﻿#if false
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
 namespace Shmyndra.Mavlink.Generator.Tests.Integration;
 
-public class MavlinkIncrementalGeneratorTests
+public class MavlinkGeneratorTests
 {
+	private const string SNAPSHOT_PATH = "..\\Snapshots/Integration/MavlinkGeneratorTests";
+
 	[Fact]
-	public Task MavlinkIncrementalGenerator_GenerateAllTypes_Verify()
+	public async Task MavlinkGenerator_Verify()
 	{
-		// arrange
-		var generator = new MavlinkIncrementalGenerator();
+		// Arrange
+		IMavlinkParser mavlinkParser = new MavlinkXmlParser();
+		IMavlinkFilesTreeBuilder filesTreeBuilder = new MavlinkFilesTreeBuilder(mavlinkParser);
+		IMavlinkEnumGenerator enumGenerator = new MavlinkEnumGenerator();
+		IMavlinkMessageGenerator messageGenerator = new MavlinkMessageGenerator();
+		IMavlinkSpecificationGenerator specificationGenerator = new MavlinkSpecificationGenerator();
+
+		var generator = new MavlinkGenerator(filesTreeBuilder, enumGenerator, messageGenerator, specificationGenerator);
 
 		var additional = TestsHelper.GetAdditionalTextList([
 			"Stubs\\test-mavlink-common.xml",
-			"Stubs\\test-mavlink-third-empty-include.xml",
 			"Stubs\\test-mavlink-minimal.xml",
-			"Stubs\\test-mavlink-standard.xml",
-			"Stubs\\test-mavlink-second-empty-include.xml"
+			"Stubs\\test-mavlink-standard.xml"
 		]);
 
-		// act
-		var driver = generator.RunIncrementalGeneratorDriver(additional);
-		var runResult = driver.GetRunResult().Results.Single();
-		var generatedCode = string.Join(Environment.NewLine, runResult.GeneratedSources.Select(source => source.SourceText.ToString()));
+		var fileContents = additional.ToImmutableDictionary(key => key.Path, value => value.GetText()!.ToString());
 
-		// assert
-		return Verify(generatedCode).UseDirectory("..\\Snapshots");
+		// Act
+		var generatedFiles = generator.GenerateMavlink(fileContents);
+
+		// Assert
+		Assert.NotEmpty(generatedFiles);
+
+		var minimalFile = generatedFiles.First().Value;
+		Assert.Contains("MavType", minimalFile.ToFullString());
+
+		await Verify(string.Join("\n", generatedFiles.Values.Select(x => x.NormalizeWhitespace().ToFullString())))
+			.UseDirectory(SNAPSHOT_PATH);
 	}
+#if false
 
 	[Fact]
 	public Task MavlinkIncrementalGenerator_GenerateTypeWithFieldWhichDependsOnOtherFile_Verify()
@@ -283,5 +295,5 @@ public class MavlinkIncrementalGeneratorTests
 		// assert
 		return Verify(generatedCode).UseDirectory("..\\Snapshots");
 	}
-}
 #endif
+}
