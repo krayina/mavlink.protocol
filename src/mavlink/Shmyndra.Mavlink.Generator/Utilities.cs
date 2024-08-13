@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Immutable;
 
 namespace Shmyndra.Mavlink.Generator;
 
@@ -116,5 +117,17 @@ internal static class Utilities
 			.WithArgumentList(SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(
 				SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(message)))
 			)));
+	}
+
+	public static IImmutableDictionary<TKey, TValue> ToImmutableIndexSortedDictionary<TKey, TValue>(
+		this Dictionary<TKey, (int Index, TValue Value)> dictionary) where TKey : notnull
+	{
+		return dictionary
+			.ToImmutableSortedDictionary(
+				kv => kv.Key,
+				kv => kv.Value.Value,
+				Comparer<TKey>.Create((x, y) =>
+					dictionary[x].Index.CompareTo(dictionary[y].Index))
+			);
 	}
 }
