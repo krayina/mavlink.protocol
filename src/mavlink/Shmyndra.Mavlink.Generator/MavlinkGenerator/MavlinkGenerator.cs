@@ -18,7 +18,7 @@ public interface IMavlinkGenerator
 	IImmutableDictionary<string, CompilationUnitSyntax> GenerateMavlink(IReadOnlyDictionary<string, string> mavlinkFileContents);
 }
 
-public class MavlinkGenerator
+public class MavlinkGenerator : IMavlinkGenerator
 {
 	private readonly IMavlinkFilesTreeBuilder _filesTreeBuilder;
 	private readonly IMavlinkEnumGenerator _enumGenerator;
