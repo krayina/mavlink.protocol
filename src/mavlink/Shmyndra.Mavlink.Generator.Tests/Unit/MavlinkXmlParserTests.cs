@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Xml.Serialization;
 using Microsoft.CodeAnalysis;
+using Moq;
 
 namespace Shmyndra.Mavlink.Generator.Tests.Unit;
 
@@ -224,6 +225,89 @@ public class MavlinkXmlParserTests
 		var secondNode = thirdNode.Includes.SingleOrDefault(node => node.FilePath == "ThisFileShouldBeSecond.xml");
 		Assert.NotNull(secondNode);
 		Assert.Empty(secondNode.Includes);
+	}
+
+	[Fact]
+	public void FindNode_ShouldReturnCorrectNode_WhenNodeExistsInTree()
+	{
+		// Arrange
+		var mockParser = new Mock<IMavlinkParser>();
+
+		// Creating mock MavlinkData with includes
+		var rootMavlinkData = new MavlinkData(ImmutableArray<MavlinkEnum>.Empty, ImmutableArray<MavlinkMessage>.Empty, ["include1.xml", "include2.xml"], version: null, dialect: null);
+		var include1MavlinkData = new MavlinkData(ImmutableArray<MavlinkEnum>.Empty, ImmutableArray<MavlinkMessage>.Empty, ["include3.xml"], version: null, dialect: null);
+		var include2MavlinkData = new MavlinkData(ImmutableArray<MavlinkEnum>.Empty, ImmutableArray<MavlinkMessage>.Empty, ImmutableArray<string>.Empty, version: null, dialect: null);
+		var include3MavlinkData = new MavlinkData(ImmutableArray<MavlinkEnum>.Empty, ImmutableArray<MavlinkMessage>.Empty, ImmutableArray<string>.Empty, version: null, dialect: null);
+
+		// Setting up the mock parser to return the correct MavlinkData based on XML file names
+		var fileContents = new Dictionary<string, string>
+		{
+			{ "include3.xml", "<mavlink />" },
+			{ "include1.xml", "<mavlink><include>include3.xml</include></mavlink>" },
+			{ "root.xml", "<mavlink><include>include1.xml</include><include>include2.xml</include></mavlink>" },
+			{ "include2.xml", "<mavlink/>" }
+		};
+		var mavlinkDataByContent = new Dictionary<string, MavlinkData>
+		{
+			{ fileContents["root.xml"], rootMavlinkData },
+			{ fileContents["include1.xml"], include1MavlinkData },
+			{ fileContents["include2.xml"], include2MavlinkData },
+			{ fileContents["include3.xml"], include3MavlinkData }
+		};
+
+		mockParser.Setup(p => p.Parse(It.IsAny<string>()))
+			.Returns((string content) => mavlinkDataByContent[content]);
+
+		var builder = new MavlinkFilesTreeBuilder(mockParser.Object);
+
+		// Act
+		var mavlinkTree = builder.Build(fileContents);
+		var rootNode = mavlinkTree.First();
+		var foundNode = rootNode.FindNode(n => n.FilePath == "include3.xml");
+
+		// Assert
+		Assert.NotNull(foundNode);
+		Assert.Equal("include3.xml", foundNode.FilePath);
+	}
+
+	[Fact]
+	public void FindNode_ShouldReturnNull_WhenNodeDoesNotExistInTree()
+	{
+		// Arrange
+		var mockParser = new Mock<IMavlinkParser>();
+
+		// Creating mock MavlinkData with includes
+		var rootMavlinkData = new MavlinkData(ImmutableArray<MavlinkEnum>.Empty, ImmutableArray<MavlinkMessage>.Empty, ["include1.xml", "include2.xml"], version: null, dialect: null);
+		var include1MavlinkData = new MavlinkData(ImmutableArray<MavlinkEnum>.Empty, ImmutableArray<MavlinkMessage>.Empty, ImmutableArray<string>.Empty, version: null, dialect: null);
+		var include2MavlinkData = new MavlinkData(ImmutableArray<MavlinkEnum>.Empty, ImmutableArray<MavlinkMessage>.Empty, ImmutableArray<string>.Empty, version: null, dialect: null);
+
+		var fileContents = new Dictionary<string, string>
+		{
+			{ "root.xml", "<mavlink><include>include1.xml</include><include>include2.xml</include></mavlink>" },
+			{ "include1.xml", "<mavlink />" },
+			{ "include2.xml", "<mavlink/>" }
+		};
+
+		// Map file contents to corresponding MavlinkData
+		var mavlinkDataByContent = new Dictionary<string, MavlinkData>
+		{
+			{ fileContents["root.xml"], rootMavlinkData },
+			{ fileContents["include1.xml"], include1MavlinkData },
+			{ fileContents["include2.xml"], include2MavlinkData }
+		};
+
+		mockParser.Setup(p => p.Parse(It.IsAny<string>()))
+			.Returns((string content) => mavlinkDataByContent[content]);
+
+		var builder = new MavlinkFilesTreeBuilder(mockParser.Object);
+
+		// Act
+		var mavlinkTree = builder.Build(fileContents);
+		var rootNode = mavlinkTree.First();
+		var foundNode = rootNode.FindNode(n => n.FilePath == "nonexistent.xml");
+
+		// Assert
+		Assert.Null(foundNode);
 	}
 
 	[Fact]
