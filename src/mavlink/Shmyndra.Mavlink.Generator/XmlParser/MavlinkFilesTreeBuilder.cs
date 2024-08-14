@@ -6,7 +6,35 @@
 /// <param name="FilePath">The path to the MAVLink file.</param>
 /// <param name="Data">The parsed MAVLink data for the file.</param>
 /// <param name="Includes">The list of included files for this node.</param>
-public record MavlinkFileNode(string FilePath, MavlinkData Data, List<MavlinkFileNode> Includes);
+public record MavlinkFileNode(string FilePath, MavlinkData Data, List<MavlinkFileNode> Includes)
+{
+	/// <summary>
+	/// Finds a node in the MAVLink files tree that matches the specified condition.
+	/// </summary>
+	/// <param name="predicate">The condition to match the node.</param>
+	/// <returns>The found node, or null if no matching node is found.</returns>
+	public MavlinkFileNode? FindNode(Func<MavlinkFileNode, bool> predicate)
+	{
+		// Check if the current node matches the condition
+		if (predicate(this))
+		{
+			return this;
+		}
+
+		// Recursively search in the included nodes
+		foreach (var include in Includes)
+		{
+			var found = include.FindNode(predicate);
+			if (found != null)
+			{
+				return found;
+			}
+		}
+
+		// Return null if no matching node is found
+		return null;
+	}
+}
 
 /// <summary>
 /// Provides functionality to build a tree of MAVLink files based on include dependencies and parse them into MavlinkData.
