@@ -94,23 +94,12 @@ public class MavlinkGenerator : IMavlinkGenerator
 			if (field.Type is MavlinkMessageFieldEnumType enumType
 				&& !dependedEnums.ContainsKey(enumType.EnumName))
 			{
-				GeneratedMavlinkEnum? generatedDependedEnum = null;
+				var nodeWithDependedEnum = node.FindNode(node => node.Data.Enums.FirstOrDefault(@enum => @enum.Name == enumType.EnumName) != null);
 
-				var currentOrParentNode = node;
-				while (currentOrParentNode != null)
+				if (nodeWithDependedEnum is not null)
 				{
-					var currentOrParentEnum = currentOrParentNode.Data.Enums.FirstOrDefault(x => x.Name == enumType.EnumName);
-					if (currentOrParentEnum != null)
-					{
-						var enumNamespace = $"{MavlinkGeneratorConstants.TypesNamespace}.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(currentOrParentNode.FilePath))}";
-						generatedDependedEnum = _enumGenerator.GetGeneratedTypes(@enum => @enum.Namespace == enumNamespace && @enum.Name == enumType.EnumName).First();
-						break;
-					}
-					currentOrParentNode = fileTreeNods.GetParent(currentOrParentNode);
-				}
-
-				if (generatedDependedEnum != null)
-				{
+					var enumNamespace = $"{MavlinkGeneratorConstants.TypesNamespace}.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(nodeWithDependedEnum.FilePath))}";
+					GeneratedMavlinkEnum generatedDependedEnum = _enumGenerator.GetGeneratedTypes(@enum => @enum.Namespace == enumNamespace && @enum.Name == enumType.EnumName).First();
 					dependedEnums.Add(enumType.EnumName, generatedDependedEnum);
 				}
 				else
