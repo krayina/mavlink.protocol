@@ -15,7 +15,7 @@ public interface IMavlinkGenerator
 	/// An immutable dictionary containing generated <see cref="CompilationUnitSyntax"/> objects, 
 	/// where the key is the file path and the value is the generated code for the corresponding file.
 	/// </returns>
-	IImmutableDictionary<string, CompilationUnitSyntax> GenerateMavlink(IReadOnlyDictionary<string, string> mavlinkFileContents);
+	IImmutableDictionary<string, (string Namespace, CompilationUnitSyntax Syntax)> GenerateMavlink(IReadOnlyDictionary<string, string> mavlinkFileContents);
 }
 
 public class MavlinkGenerator : IMavlinkGenerator
@@ -37,10 +37,10 @@ public class MavlinkGenerator : IMavlinkGenerator
 		_specificationGenerator = specificationGenerator;
 	}
 
-	public IImmutableDictionary<string, CompilationUnitSyntax> GenerateMavlink(IReadOnlyDictionary<string, string> mavlinkFileContents)
+	public IImmutableDictionary<string, (string Namespace, CompilationUnitSyntax Syntax)> GenerateMavlink(IReadOnlyDictionary<string, string> mavlinkFileContents)
 	{
 		var fileTreeNods = _filesTreeBuilder.Build(mavlinkFileContents);
-		var generatedFiles = new Dictionary<string, (int Index, CompilationUnitSyntax Syntax)>();
+		var generatedFiles = new Dictionary<string, (int Index, (string Namespace, CompilationUnitSyntax Syntax))>();
 
 		int i = 0;
 		fileTreeNods.ForEachTree(node =>
@@ -55,7 +55,7 @@ public class MavlinkGenerator : IMavlinkGenerator
 			GenerateSpecification(node, members);
 
 			var compilationUnit = CreateCompilationUnit(namespaceName, members);
-			generatedFiles.Add(node.FilePath, (i++, compilationUnit));
+			generatedFiles.Add(node.FilePath, (i++, (namespaceName, compilationUnit)));
 		});
 
 		return generatedFiles.ToImmutableIndexSortedDictionary();
