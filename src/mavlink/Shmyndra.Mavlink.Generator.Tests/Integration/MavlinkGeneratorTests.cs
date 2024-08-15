@@ -34,9 +34,9 @@ public class MavlinkGeneratorTests
 		Assert.NotEmpty(generatedFiles);
 
 		var minimalFile = generatedFiles.First().Value;
-		Assert.Contains("MavType", minimalFile.ToFullString());
+		Assert.Contains("MavType", minimalFile.Syntax.ToFullString());
 
-		await Verify(string.Join("\n", generatedFiles.Values.Select(x => x.NormalizeWhitespace().ToFullString())))
+		await Verify(string.Join("\n", generatedFiles.Values.Select(x => x.Syntax.NormalizeWhitespace().ToFullString())))
 			.UseDirectory(SNAPSHOT_PATH);
 	}
 #if false
