@@ -7,7 +7,7 @@ namespace Shmyndra.Mavlink.Generator;
 
 internal class MavlinkMessagePayloadDeserializationGenerator
 {
-	private const string CREATE_IMMUTABLE_RANGE_METHOD = "System.Collections.Immutable.ImmutableArray.CreateRange";
+	private const string CreateRangeWithNamespace = "System.Collections.Immutable.ImmutableArray.CreateRange";
 
 	/// <summary>
 	/// Generates the <c>CreateInstance</c> method for deserializing Mavlink message payloads into instances of the generated message type.
@@ -90,7 +90,7 @@ public class TemporaryClass
 			result.AppendLine($@"
 var {tempArrayName} = new {elementType}[{arrayType.ArrayLength}];
 Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayLength});
-var {variableName} = {CREATE_IMMUTABLE_RANGE_METHOD}({tempArrayName});");
+var {variableName} = {CreateRangeWithNamespace}({tempArrayName});");
 		}
 		else
 		{
@@ -100,7 +100,7 @@ if (payload.Length >= {offset + arrayLength})
 {{
     var {tempArrayName} = new {elementType}[{arrayType.ArrayLength}];
     Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayLength});
-    {variableName} = {CREATE_IMMUTABLE_RANGE_METHOD}({tempArrayName});
+    {variableName} = {CreateRangeWithNamespace}({tempArrayName});
 }}");
 		}
 
@@ -172,7 +172,7 @@ var {variableName} = {variableName}Value.HasValue ? ({fullEnumTypeName}?){variab
 			result.AppendLine($@"
 var {tempArrayName} = new {fullEnumTypeName}[{arrayEnumType.ArrayLength}];
 Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayEnumType.ArrayLength * GetTypeSize(arrayEnumType.ConvertedType)});
-var {variableName} = {CREATE_IMMUTABLE_RANGE_METHOD}({tempArrayName});");
+var {variableName} = {CreateRangeWithNamespace}({tempArrayName});");
 		}
 		else
 		{
@@ -182,7 +182,7 @@ if (payload.Length >= {offset + arrayEnumType.ArrayLength * GetTypeSize(arrayEnu
 {{
     var {tempArrayName} = new {fullEnumTypeName}[{arrayEnumType.ArrayLength}];
     Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayEnumType.ArrayLength * GetTypeSize(arrayEnumType.ConvertedType)});
-    {variableName} = {CREATE_IMMUTABLE_RANGE_METHOD}({tempArrayName});
+    {variableName} = {CreateRangeWithNamespace}({tempArrayName});
 }}");
 		}
 
