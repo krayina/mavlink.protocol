@@ -88,13 +88,13 @@ public record struct EscInfoMavlinkMessage : MavlinkMessage
         var info = payload[13];
         var tempFailureFlagsArray = new EscFailureFlags[4];
         Buffer.BlockCopy(payload, 14, tempFailureFlagsArray, 0, 8);
-        var failureFlags = tempFailureFlagsArray.ToImmutableArray();
+        var failureFlags = System.Collections.Immutable.ImmutableArray.CreateRange(tempFailureFlagsArray);
         var tempErrorCountArray = new uint[4];
         Buffer.BlockCopy(payload, 22, tempErrorCountArray, 0, 16);
-        var errorCount = tempErrorCountArray.ToImmutableArray();
+        var errorCount = System.Collections.Immutable.ImmutableArray.CreateRange(tempErrorCountArray);
         var tempTemperatureArray = new short[4];
         Buffer.BlockCopy(payload, 38, tempTemperatureArray, 0, 8);
-        var temperature = tempTemperatureArray.ToImmutableArray();
+        var temperature = System.Collections.Immutable.ImmutableArray.CreateRange(tempTemperatureArray);
         return new EscInfoMavlinkMessage
         {
             Index = index,

@@ -1757,10 +1757,10 @@
             var maxVersion = BitConverter.ToUInt16(payload, 4);
             var tempSpecVersionHashArray = new byte[8];
             Buffer.BlockCopy(payload, 6, tempSpecVersionHashArray, 0, 8);
-            var specVersionHash = tempSpecVersionHashArray.ToImmutableArray();
+            var specVersionHash = System.Collections.Immutable.ImmutableArray.CreateRange(tempSpecVersionHashArray);
             var tempLibraryVersionHashArray = new byte[8];
             Buffer.BlockCopy(payload, 14, tempLibraryVersionHashArray, 0, 8);
-            var libraryVersionHash = tempLibraryVersionHashArray.ToImmutableArray();
+            var libraryVersionHash = System.Collections.Immutable.ImmutableArray.CreateRange(tempLibraryVersionHashArray);
             return new ProtocolVersionMavlinkMessage
             {
                 Version = version,
@@ -2570,7 +2570,7 @@ namespace MavlinkTypes.TestMavlinkCommon
             var version = payload[2];
             var tempPasskeyArray = new char[25];
             Buffer.BlockCopy(payload, 3, tempPasskeyArray, 0, 50);
-            var passkey = tempPasskeyArray.ToImmutableArray();
+            var passkey = System.Collections.Immutable.ImmutableArray.CreateRange(tempPasskeyArray);
             return new ChangeOperatorControlMavlinkMessage
             {
                 TargetSystem = targetSystem,

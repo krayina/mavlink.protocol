@@ -42,7 +42,7 @@
     {
         var tempFailureFlagsArray = new EscFailureFlags[4];
         Buffer.BlockCopy(payload, 14, tempFailureFlagsArray, 0, 8);
-        failureFlags = tempFailureFlagsArray.ToImmutableArray();
+        failureFlags = System.Collections.Immutable.ImmutableArray.CreateRange(tempFailureFlagsArray);
     }
 
     ImmutableArray<uint>? errorCount = null;
@@ -50,7 +50,7 @@
     {
         var tempErrorCountArray = new uint[4];
         Buffer.BlockCopy(payload, 22, tempErrorCountArray, 0, 16);
-        errorCount = tempErrorCountArray.ToImmutableArray();
+        errorCount = System.Collections.Immutable.ImmutableArray.CreateRange(tempErrorCountArray);
     }
 
     ImmutableArray<short>? temperature = null;
@@ -58,7 +58,7 @@
     {
         var tempTemperatureArray = new short[4];
         Buffer.BlockCopy(payload, 38, tempTemperatureArray, 0, 8);
-        temperature = tempTemperatureArray.ToImmutableArray();
+        temperature = System.Collections.Immutable.ImmutableArray.CreateRange(tempTemperatureArray);
     }
 
     return new SomeMessage

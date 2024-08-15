@@ -7,6 +7,8 @@ namespace Shmyndra.Mavlink.Generator;
 
 internal class MavlinkMessagePayloadDeserializationGenerator
 {
+	private const string CREATE_IMMUTABLE_RANGE_METHOD = "System.Collections.Immutable.ImmutableArray.CreateRange";
+
 	/// <summary>
 	/// Generates the <c>CreateInstance</c> method for deserializing Mavlink message payloads into instances of the generated message type.
 	/// </summary>
@@ -88,7 +90,7 @@ public class TemporaryClass
 			result.AppendLine($@"
 var {tempArrayName} = new {elementType}[{arrayType.ArrayLength}];
 Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayLength});
-var {variableName} = {tempArrayName}.ToImmutableArray();");
+var {variableName} = {CREATE_IMMUTABLE_RANGE_METHOD}({tempArrayName});");
 		}
 		else
 		{
@@ -98,7 +100,7 @@ if (payload.Length >= {offset + arrayLength})
 {{
     var {tempArrayName} = new {elementType}[{arrayType.ArrayLength}];
     Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayLength});
-    {variableName} = {tempArrayName}.ToImmutableArray();
+    {variableName} = {CREATE_IMMUTABLE_RANGE_METHOD}({tempArrayName});
 }}");
 		}
 
@@ -170,7 +172,7 @@ if (payload.Length > {offset})
 			result.AppendLine($@"
 var {tempArrayName} = new {fullEnumTypeName}[{arrayEnumType.ArrayLength}];
 Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayEnumType.ArrayLength * GetTypeSize(arrayEnumType.ConvertedType)});
-var {variableName} = {tempArrayName}.ToImmutableArray();");
+var {variableName} = {CREATE_IMMUTABLE_RANGE_METHOD}({tempArrayName});");
 		}
 		else
 		{
@@ -180,7 +182,7 @@ if (payload.Length >= {offset + arrayEnumType.ArrayLength * GetTypeSize(arrayEnu
 {{
     var {tempArrayName} = new {fullEnumTypeName}[{arrayEnumType.ArrayLength}];
     Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayEnumType.ArrayLength * GetTypeSize(arrayEnumType.ConvertedType)});
-    {variableName} = {tempArrayName}.ToImmutableArray();
+    {variableName} = {CREATE_IMMUTABLE_RANGE_METHOD}({tempArrayName});
 }}");
 		}
 
