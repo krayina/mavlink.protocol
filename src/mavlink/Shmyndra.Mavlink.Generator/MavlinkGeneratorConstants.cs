@@ -16,4 +16,6 @@ internal static class MavlinkGeneratorConstants
 	public const string TypesNamespace = "MavlinkTypes";
 
 	public const string MessagesPostfix = "MavlinkMessage";
+
+	public const string ImmutableArrayNamespace = "System.Collections.Immutable.ImmutableArray";
 }

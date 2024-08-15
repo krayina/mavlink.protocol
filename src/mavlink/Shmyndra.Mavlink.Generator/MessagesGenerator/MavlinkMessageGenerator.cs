@@ -116,7 +116,6 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 		string messageNamespace,
 		string messageName)
 	{
-		const string immutableArrayNamespace = "System.Collections.Immutable.ImmutableArray";
 		string normalizedFieldName = Utilities.ToCamelCase(field.Name);
 		bool isArray = field.Type.TypeName.Contains("[");
 
@@ -141,7 +140,7 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 					_typeMap[baseTypeName].TypeName,
 					generatedEnumForArray,
 					arrayLength);
-				propertySyntax = CreatePropertyDeclaration($"{immutableArrayNamespace}<{fullEnumTypeName}>", normalizedFieldName, field.IsRequired)
+				propertySyntax = CreatePropertyDeclaration($"{MavlinkGeneratorConstants.ImmutableArrayNamespace}<{fullEnumTypeName}>", normalizedFieldName, field.IsRequired)
 								 .AddArrayLengthAttribute(arrayLength);
 			}
 			else
@@ -151,7 +150,7 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 					field.Type.TypeName,
 					convertedType,
 					arrayLength);
-				propertySyntax = CreatePropertyDeclaration($"{immutableArrayNamespace}<{convertedType}>", normalizedFieldName, field.IsRequired)
+				propertySyntax = CreatePropertyDeclaration($"{MavlinkGeneratorConstants.ImmutableArrayNamespace}<{convertedType}>", normalizedFieldName, field.IsRequired)
 								 .AddArrayLengthAttribute(arrayLength);
 			}
 		}
