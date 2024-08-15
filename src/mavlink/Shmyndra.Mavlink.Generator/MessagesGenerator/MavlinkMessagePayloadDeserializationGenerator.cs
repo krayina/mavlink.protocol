@@ -136,22 +136,22 @@ var {variableName} = ({fullEnumTypeName}){variableName}Value;");
 			if (size == 1)
 			{
 				result.AppendLine($@"
-byte? {variableName} = null;
+byte? {variableName}Value = null;
 if (payload.Length > {offset})
 {{
-    {variableName} = (byte)payload[{offset}];
-    {variableName} = ({fullEnumTypeName}){variableName};
-}}");
+    {variableName}Value = (byte)payload[{offset}];
+}}
+var {variableName} = {variableName}Value.HasValue ? ({fullEnumTypeName}?){variableName}Value.Value : null;");
 			}
 			else
 			{
 				result.AppendLine($@"
-{fieldEnumType.ConvertedType}? {variableName} = null;
+{fieldEnumType.ConvertedType}? {variableName}Value = null;
 if (payload.Length > {offset})
 {{
-    {variableName} = BitConverter.{GetBitConverterMethodForSize(size)}(payload, {offset});
-    {variableName} = ({fullEnumTypeName}){variableName};
-}}");
+    {variableName}Value = BitConverter.{GetBitConverterMethodForSize(size)}(payload, {offset});
+}}
+var {variableName} = {variableName}Value.HasValue ? ({fullEnumTypeName}?){variableName}Value.Value : null;");
 			}
 		}
 
