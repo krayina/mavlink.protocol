@@ -37,7 +37,7 @@
         info = payload[13];
     }
 
-    ImmutableArray<EscFailureFlags>? failureFlags = null;
+    System.Collections.Immutable.ImmutableArray<EscFailureFlags>? failureFlags = null;
     if (payload.Length >= 22)
     {
         var tempFailureFlagsArray = new EscFailureFlags[4];
@@ -45,7 +45,7 @@
         failureFlags = System.Collections.Immutable.ImmutableArray.CreateRange(tempFailureFlagsArray);
     }
 
-    ImmutableArray<uint>? errorCount = null;
+    System.Collections.Immutable.ImmutableArray<uint>? errorCount = null;
     if (payload.Length >= 38)
     {
         var tempErrorCountArray = new uint[4];
@@ -53,7 +53,7 @@
         errorCount = System.Collections.Immutable.ImmutableArray.CreateRange(tempErrorCountArray);
     }
 
-    ImmutableArray<short>? temperature = null;
+    System.Collections.Immutable.ImmutableArray<short>? temperature = null;
     if (payload.Length >= 46)
     {
         var tempTemperatureArray = new short[4];

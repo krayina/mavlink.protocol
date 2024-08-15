@@ -95,7 +95,7 @@ var {variableName} = {CREATE_IMMUTABLE_RANGE_METHOD}({tempArrayName});");
 		else
 		{
 			result.AppendLine($@"
-ImmutableArray<{elementType}>? {variableName} = null;
+{MavlinkGeneratorConstants.ImmutableArrayNamespace}<{elementType}>? {variableName} = null;
 if (payload.Length >= {offset + arrayLength})
 {{
     var {tempArrayName} = new {elementType}[{arrayType.ArrayLength}];
@@ -177,7 +177,7 @@ var {variableName} = {CREATE_IMMUTABLE_RANGE_METHOD}({tempArrayName});");
 		else
 		{
 			result.AppendLine($@"
-ImmutableArray<{fullEnumTypeName}>? {variableName} = null;
+{MavlinkGeneratorConstants.ImmutableArrayNamespace}<{fullEnumTypeName}>? {variableName} = null;
 if (payload.Length >= {offset + arrayEnumType.ArrayLength * GetTypeSize(arrayEnumType.ConvertedType)})
 {{
     var {tempArrayName} = new {fullEnumTypeName}[{arrayEnumType.ArrayLength}];
