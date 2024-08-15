@@ -163,7 +163,7 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 		var newEntries = GenerateEnumMembersInternal(newEnumData.Entries, newEnumData.Name, existingNamespace).ToList();
 
 		var existingValues = existingEnum.GeneratedEntries
-			.Select(entry => TryParseEnumValue(entry.DeclarationSyntax.EqualsValue!.Value))
+			.Select(entry => entry.Value)
 			.ToList();
 
 		if (newEnumData.Entries.Any())
@@ -253,16 +253,5 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 	private static string GetBaseType(EnumDeclarationSyntax enumDeclaration)
 	{
 		return enumDeclaration.BaseList?.Types.FirstOrDefault()?.ToString() ?? "int";
-	}
-
-	private static uint TryParseEnumValue(ExpressionSyntax expression)
-	{
-		if (expression is LiteralExpressionSyntax literalExpression &&
-			uint.TryParse(literalExpression.Token.ValueText, out var value))
-		{
-			return value;
-		}
-		// Handle other cases or return null if the value cannot be parsed
-		throw new NotImplementedException($"Unsupported mavlink value {expression}");
 	}
 }
