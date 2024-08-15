@@ -31,8 +31,8 @@ internal class MavlinkMessagePayloadDeserializationGenerator
 		foreach (var field in fields)
 		{
 			var fieldType = (GeneratedMavlinkMessageFieldType)field.Type;
-			var fieldPropertyName = field.GeneratedName;
-			var variableName = char.ToLowerInvariant(fieldPropertyName[0]) + fieldPropertyName.Substring(1);
+			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
+			var variableName = EscapeReservedKeyword(char.ToLowerInvariant(fieldPropertyName[0]) + fieldPropertyName.Substring(1));
 
 			if (fieldType is GeneratedMavlinkMessageFieldArrayType arrayType)
 			{
@@ -54,8 +54,8 @@ internal class MavlinkMessagePayloadDeserializationGenerator
 
 		var propertiesAssignment = string.Join(", ", fields.Select(field =>
 		{
-			var variableName = char.ToLowerInvariant(field.GeneratedName[0]) + field.GeneratedName.Substring(1);
-			return $"{field.GeneratedName} = {variableName}";
+			var variableName = EscapeReservedKeyword(char.ToLowerInvariant(field.GeneratedName[0]) + field.GeneratedName.Substring(1));
+			return $"{EscapeReservedKeyword(field.GeneratedName)} = {variableName}";
 		}));
 
 		methodBody.AppendLine($"return new {messageName} {{ {propertiesAssignment} }};");
@@ -231,6 +231,11 @@ if (payload.Length > {offset})
 
 		offset += size;
 		return result.ToString();
+	}
+
+	private static string EscapeReservedKeyword(string name)
+	{
+		return SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None ? "@" + name : name;
 	}
 
 	private static string GetBitConverterMethodForSize(int size)
