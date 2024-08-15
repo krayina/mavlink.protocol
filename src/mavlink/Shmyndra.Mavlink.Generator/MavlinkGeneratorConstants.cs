@@ -14,4 +14,6 @@ internal static class MavlinkGeneratorConstants
 ";
 
 	public const string TypesNamespace = "MavlinkTypes";
+
+	public const string MessagesPostfix = "MavlinkMessage";
 }

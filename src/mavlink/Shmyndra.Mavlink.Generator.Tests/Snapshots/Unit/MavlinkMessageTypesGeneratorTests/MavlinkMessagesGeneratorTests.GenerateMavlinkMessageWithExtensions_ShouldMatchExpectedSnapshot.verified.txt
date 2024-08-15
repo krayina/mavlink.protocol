@@ -2,7 +2,7 @@
 /// Original name: SYS_STATUS
 /// </remarks>
 [MavlinkIdentifiedType(1U, "SYS_STATUS")]
-public record struct SysStatus : MavlinkMessage
+public record struct SysStatusMavlinkMessage : MavlinkMessage
 {
     /// <remarks>
     /// Original name: CURRENT_BATTERY
@@ -13,7 +13,7 @@ public record struct SysStatus : MavlinkMessage
     /// </remarks>
     public sbyte? BatteryRemaining { get; init; }
 
-    public static SysStatus CreateInstance(byte[] payload)
+    public static SysStatusMavlinkMessage CreateInstance(byte[] payload)
     {
         var currentBattery = BitConverter.ToInt16(payload, 0);
         sbyte? batteryRemaining = null;
@@ -22,7 +22,7 @@ public record struct SysStatus : MavlinkMessage
             batteryRemaining = (sbyte)payload[2];
         }
 
-        return new SysStatus
+        return new SysStatusMavlinkMessage
         {
             CurrentBattery = currentBattery,
             BatteryRemaining = batteryRemaining

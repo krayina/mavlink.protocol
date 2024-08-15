@@ -5,7 +5,7 @@
 /// Original name: ESC_INFO
 /// </remarks>
 [MavlinkIdentifiedType(290U, "ESC_INFO")]
-public record struct EscInfo : MavlinkMessage
+public record struct EscInfoMavlinkMessage : MavlinkMessage
 {
     /// <summary>
     /// Index of the first ESC in this message
@@ -77,7 +77,7 @@ public record struct EscInfo : MavlinkMessage
     [System.ComponentModel.DataAnnotations.RequiredArrayLength(4)]
     public System.Collections.Immutable.ImmutableArray<short> Temperature { get; init; }
 
-    public static EscInfo CreateInstance(byte[] payload)
+    public static EscInfoMavlinkMessage CreateInstance(byte[] payload)
     {
         var index = payload[0];
         var timeUsec = BitConverter.ToUInt64(payload, 1);
@@ -95,7 +95,7 @@ public record struct EscInfo : MavlinkMessage
         var tempTemperatureArray = new short[4];
         Buffer.BlockCopy(payload, 38, tempTemperatureArray, 0, 8);
         var temperature = tempTemperatureArray.ToImmutableArray();
-        return new EscInfo
+        return new EscInfoMavlinkMessage
         {
             Index = index,
             TimeUsec = timeUsec,

@@ -89,7 +89,7 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 		string @namespace,
 		IImmutableDictionary<string, GeneratedMavlinkEnum> generatedEnums)
 	{
-		var normalizedName = Utilities.ToCamelCase(message.Name);
+		var normalizedName = Utilities.ToCamelCase(message.Name) + MavlinkGeneratorConstants.MessagesPostfix;
 		var id = message.Id;
 
 		var generatedFields = message.Fields

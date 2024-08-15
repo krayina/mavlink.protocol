@@ -1665,7 +1665,7 @@
     /// Original name: HEARTBEAT
     /// </remarks>
     [MavlinkIdentifiedType(0U, "HEARTBEAT")]
-    public record struct Heartbeat : MavlinkMessage
+    public record struct HeartbeatMavlinkMessage : MavlinkMessage
     {
         /// <remarks>
         /// Original name: TYPE
@@ -1692,7 +1692,7 @@
         /// </remarks>
         public byte MavlinkVersion { get; init; }
 
-        public static Heartbeat CreateInstance(byte[] payload)
+        public static HeartbeatMavlinkMessage CreateInstance(byte[] payload)
         {
             var typeValue = (byte)payload[0];
             var type = (MavType)typeValue;
@@ -1704,7 +1704,7 @@
             var systemStatusValue = (byte)payload[7];
             var systemStatus = (MavState)systemStatusValue;
             var mavlinkVersion = payload[8];
-            return new Heartbeat
+            return new HeartbeatMavlinkMessage
             {
                 Type = type,
                 Autopilot = autopilot,
@@ -1723,7 +1723,7 @@
     /// Original name: PROTOCOL_VERSION
     /// </remarks>
     [MavlinkIdentifiedType(300U, "PROTOCOL_VERSION")]
-    public record struct ProtocolVersion : MavlinkMessage
+    public record struct ProtocolVersionMavlinkMessage : MavlinkMessage
     {
         /// <remarks>
         /// Original name: VERSION
@@ -1750,7 +1750,7 @@
         [System.ComponentModel.DataAnnotations.RequiredArrayLength(8)]
         public System.Collections.Immutable.ImmutableArray<byte> LibraryVersionHash { get; init; }
 
-        public static ProtocolVersion CreateInstance(byte[] payload)
+        public static ProtocolVersionMavlinkMessage CreateInstance(byte[] payload)
         {
             var version = BitConverter.ToUInt16(payload, 0);
             var minVersion = BitConverter.ToUInt16(payload, 2);
@@ -1761,7 +1761,7 @@
             var tempLibraryVersionHashArray = new byte[8];
             Buffer.BlockCopy(payload, 14, tempLibraryVersionHashArray, 0, 8);
             var libraryVersionHash = tempLibraryVersionHashArray.ToImmutableArray();
-            return new ProtocolVersion
+            return new ProtocolVersionMavlinkMessage
             {
                 Version = version,
                 MinVersion = minVersion,
@@ -2335,7 +2335,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// Original name: SYS_STATUS
     /// </remarks>
     [MavlinkIdentifiedType(1U, "SYS_STATUS")]
-    public record struct SysStatus : MavlinkMessage
+    public record struct SysStatusMavlinkMessage : MavlinkMessage
     {
         /// <remarks>
         /// Original name: ONBOARD_CONTROL_SENSORS_PRESENT
@@ -2402,7 +2402,7 @@ namespace MavlinkTypes.TestMavlinkCommon
         /// </remarks>
         public MavSysStatusSensorExtended? OnboardControlSensorsHealthExtended { get; init; }
 
-        public static SysStatus CreateInstance(byte[] payload)
+        public static SysStatusMavlinkMessage CreateInstance(byte[] payload)
         {
             var onboardControlSensorsPresentValue = BitConverter.ToUInt32(payload, 0);
             var onboardControlSensorsPresent = (MavSysStatusSensor)onboardControlSensorsPresentValue;
@@ -2441,7 +2441,7 @@ namespace MavlinkTypes.TestMavlinkCommon
                 onboardControlSensorsHealthExtended = (MavSysStatusSensorExtended)onboardControlSensorsHealthExtended;
             }
 
-            return new SysStatus
+            return new SysStatusMavlinkMessage
             {
                 OnboardControlSensorsPresent = onboardControlSensorsPresent,
                 OnboardControlSensorsEnabled = onboardControlSensorsEnabled,
@@ -2470,7 +2470,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// Original name: SYSTEM_TIME
     /// </remarks>
     [MavlinkIdentifiedType(2U, "SYSTEM_TIME")]
-    public record struct SystemTime : MavlinkMessage
+    public record struct SystemTimeMavlinkMessage : MavlinkMessage
     {
         /// <remarks>
         /// Original name: TIME_UNIX_USEC
@@ -2481,11 +2481,11 @@ namespace MavlinkTypes.TestMavlinkCommon
         /// </remarks>
         public uint TimeBootMs { get; init; }
 
-        public static SystemTime CreateInstance(byte[] payload)
+        public static SystemTimeMavlinkMessage CreateInstance(byte[] payload)
         {
             var timeUnixUsec = BitConverter.ToUInt64(payload, 0);
             var timeBootMs = BitConverter.ToUInt32(payload, 8);
-            return new SystemTime
+            return new SystemTimeMavlinkMessage
             {
                 TimeUnixUsec = timeUnixUsec,
                 TimeBootMs = timeBootMs
@@ -2500,7 +2500,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// Original name: PING
     /// </remarks>
     [MavlinkIdentifiedType(4U, "PING")]
-    public record struct Ping : MavlinkMessage
+    public record struct PingMavlinkMessage : MavlinkMessage
     {
         /// <remarks>
         /// Original name: TIME_USEC
@@ -2519,13 +2519,13 @@ namespace MavlinkTypes.TestMavlinkCommon
         /// </remarks>
         public byte TargetComponent { get; init; }
 
-        public static Ping CreateInstance(byte[] payload)
+        public static PingMavlinkMessage CreateInstance(byte[] payload)
         {
             var timeUsec = BitConverter.ToUInt64(payload, 0);
             var seq = BitConverter.ToUInt32(payload, 8);
             var targetSystem = payload[12];
             var targetComponent = payload[13];
-            return new Ping
+            return new PingMavlinkMessage
             {
                 TimeUsec = timeUsec,
                 Seq = seq,
@@ -2542,7 +2542,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// Original name: CHANGE_OPERATOR_CONTROL
     /// </remarks>
     [MavlinkIdentifiedType(5U, "CHANGE_OPERATOR_CONTROL")]
-    public record struct ChangeOperatorControl : MavlinkMessage
+    public record struct ChangeOperatorControlMavlinkMessage : MavlinkMessage
     {
         /// <remarks>
         /// Original name: TARGET_SYSTEM
@@ -2563,7 +2563,7 @@ namespace MavlinkTypes.TestMavlinkCommon
         [System.ComponentModel.DataAnnotations.RequiredArrayLength(25)]
         public System.Collections.Immutable.ImmutableArray<char> Passkey { get; init; }
 
-        public static ChangeOperatorControl CreateInstance(byte[] payload)
+        public static ChangeOperatorControlMavlinkMessage CreateInstance(byte[] payload)
         {
             var targetSystem = payload[0];
             var controlRequest = payload[1];
@@ -2571,7 +2571,7 @@ namespace MavlinkTypes.TestMavlinkCommon
             var tempPasskeyArray = new char[25];
             Buffer.BlockCopy(payload, 3, tempPasskeyArray, 0, 50);
             var passkey = tempPasskeyArray.ToImmutableArray();
-            return new ChangeOperatorControl
+            return new ChangeOperatorControlMavlinkMessage
             {
                 TargetSystem = targetSystem,
                 ControlRequest = controlRequest,
