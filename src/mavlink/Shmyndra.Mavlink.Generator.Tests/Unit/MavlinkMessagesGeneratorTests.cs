@@ -136,6 +136,43 @@ public class MavlinkMessagesGeneratorTests
 	}
 
 	[Fact]
+	public void CreateCreateInstanceMethod_ShouldAvoidNameConflictsByAddingUnderscore()
+	{
+		// Arrange
+		var fieldType = new GeneratedMavlinkMessageFieldType("uint8_t", "byte");
+
+		var originalField = new MavlinkMessageField(
+			type: fieldType, name: "Payload",
+			description: null, display: default, systemUnit: default, isRequired: true, printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null
+		);
+
+		var generatedField = new GeneratedMavlinkMessageField(
+			generatedName: "Payload",
+			generatedFieldType: fieldType,
+			declarationSyntax: SyntaxFactory.PropertyDeclaration(
+				SyntaxFactory.ParseTypeName("test"),
+				SyntaxFactory.Identifier("Payload")
+			),
+			original: originalField
+		);
+
+		var fields = ImmutableArray.Create(generatedField);
+
+		// Act
+		var method = MavlinkMessagePayloadDeserializationGenerator.CreateCreateInstanceMethod(
+			@namespace: "TestNamespace",
+			messageName: "FileTransferProtocolMavlinkMessage",
+			fields: fields
+		);
+
+		var generatedCode = method.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		Assert.Contains("var _payload =", generatedCode);
+		Assert.Contains("Payload = _payload", generatedCode);
+	}
+
+	[Fact]
 	public void CreateCreateInstanceMethod_ShouldGenerateNullableEnumDeserialization()
 	{
 		// Arrange
