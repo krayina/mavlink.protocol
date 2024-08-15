@@ -300,4 +300,68 @@ public class MavlinkEnumTypesGeneratorTests
 		await Verify(enumCode)
 			.UseDirectory(SNAPSHOT_PATH);
 	}
+
+	[Fact]
+	public void GenerateAndMergeMavlinkEnumInternal_ShouldMergeThreeEnumsCorrectly()
+	{
+		// Arrange
+		var generator = new MavlinkEnumGenerator();
+
+		var enum1 = new MavlinkEnum(
+			name: "Test_Enum",
+			entries:
+			[
+				new MavlinkEnumEntry("Value_A", 1, "First value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+				new MavlinkEnumEntry("Value_B", 2, "Second value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+			],
+			bitmask: false,
+			description: "First enum",
+			deprecated: null
+		);
+
+		var enum2 = new MavlinkEnum(
+			name: "Test_Enum",
+			entries:
+			[
+				new MavlinkEnumEntry("Value_C", 3, "Third value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+				new MavlinkEnumEntry("Value_D", 4, "Fourth value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+			],
+			bitmask: false,
+			description: "Second enum",
+			deprecated: null
+		);
+
+		var enum3 = new MavlinkEnum(
+			name: "Test_Enum",
+			entries:
+			[
+				new MavlinkEnumEntry("Value_E", 5, "Fifth value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+				new MavlinkEnumEntry("Value_F", 6, "Sixth value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+			],
+			bitmask: false,
+			description: "Third enum",
+			deprecated: null
+		);
+
+		// Generate the initial enum from enum1
+		var generatedEnum1 = generator.GenerateMavlinkEnum(enum1, "Namespace1", ImmutableArray<string>.Empty, "enum1.xml");
+
+		// Act: Merge enum2 and enum3 with generatedEnum1
+		var mergedEnum = generator.GenerateAndMergeMavlinkEnumInternal(generatedEnum1, enum2, "Namespace1");
+		mergedEnum = generator.GenerateAndMergeMavlinkEnumInternal(mergedEnum, enum3, "Namespace1");
+
+		// Assert: Check that the merged enum contains all entries from the three enums
+		Assert.NotNull(mergedEnum);
+		Assert.Equal("TestEnum", mergedEnum.GeneratedName);
+		Assert.Equal("Namespace1", mergedEnum.Namespace);
+
+		var expectedEntries = new List<string> { "ValueA", "ValueB", "ValueC", "ValueD", "ValueE", "ValueF" };
+		var actualEntries = mergedEnum.GeneratedEntries.Select(e => e.GeneratedName).ToList();
+
+		Assert.Equal(expectedEntries.Count, actualEntries.Count);
+		foreach (var entry in expectedEntries)
+		{
+			Assert.Contains(entry, actualEntries);
+		}
+	}
 }
