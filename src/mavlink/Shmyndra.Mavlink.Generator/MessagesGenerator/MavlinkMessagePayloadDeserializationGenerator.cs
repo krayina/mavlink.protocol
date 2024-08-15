@@ -8,6 +8,7 @@ namespace Shmyndra.Mavlink.Generator;
 internal class MavlinkMessagePayloadDeserializationGenerator
 {
 	private const string CreateRangeWithNamespace = "System.Collections.Immutable.ImmutableArray.CreateRange";
+	private const string CreateInstanceParameterName = "payload";
 
 	/// <summary>
 	/// Generates the <c>CreateInstance</c> method for deserializing Mavlink message payloads into instances of the generated message type.
@@ -34,6 +35,11 @@ internal class MavlinkMessagePayloadDeserializationGenerator
 			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
 			var variableName = EscapeReservedKeyword(char.ToLowerInvariant(fieldPropertyName[0]) + fieldPropertyName.Substring(1));
 
+			if (variableName == CreateInstanceParameterName)
+			{
+				variableName = "_" + variableName;
+			}
+
 			if (fieldType is GeneratedMavlinkMessageFieldArrayType arrayType)
 			{
 				methodBody.AppendLine(GenerateArrayDeserialization(variableName, fieldPropertyName, arrayType, ref offset, field.IsRequired));
@@ -55,6 +61,10 @@ internal class MavlinkMessagePayloadDeserializationGenerator
 		var propertiesAssignment = string.Join(", ", fields.Select(field =>
 		{
 			var variableName = EscapeReservedKeyword(char.ToLowerInvariant(field.GeneratedName[0]) + field.GeneratedName.Substring(1));
+			if (variableName == CreateInstanceParameterName)
+			{
+				variableName = "_" + variableName;
+			}
 			return $"{EscapeReservedKeyword(field.GeneratedName)} = {variableName}";
 		}));
 
