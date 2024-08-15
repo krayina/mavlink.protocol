@@ -25,6 +25,7 @@
     <DebugType>portable</DebugType>
     <DebugSymbols>True</DebugSymbols>
     <NoWarn>Uno0001;CS1998;CA1416;NU1504;NU1505;NU1507</NoWarn>
+    <WarningsNotAsErrors>CS0618</WarningsNotAsErrors>
     <SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
   </PropertyGroup>
 </Project>
