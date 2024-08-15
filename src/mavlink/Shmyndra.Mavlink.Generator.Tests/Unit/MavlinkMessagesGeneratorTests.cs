@@ -136,6 +136,60 @@ public class MavlinkMessagesGeneratorTests
 	}
 
 	[Fact]
+	public void CreateCreateInstanceMethod_ShouldGenerateNullableEnumDeserialization()
+	{
+		// Arrange
+		var enumType = new GeneratedMavlinkMessageFieldEnumType(
+			TypeName: "uint",
+			ConvertedType: "uint",
+			GeneratedEnum: new GeneratedMavlinkEnum(
+				@namespace: "TestNamespace",
+				generatedName: "MavSysStatusSensorExtended",
+				generatedEntries: ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
+				declarationSyntax: SyntaxFactory.EnumDeclaration("MavSysStatusSensorExtended"),
+				original: new MavlinkEnum(
+					name: "MavSysStatusSensorExtended",
+					description: null,
+					bitmask: null,
+					entries: ImmutableArray<MavlinkEnumEntry>.Empty,
+					deprecated: null)
+			)
+		);
+
+		var generatedField = new GeneratedMavlinkMessageField(
+			generatedName: "OnboardControlSensorsPresentExtended",
+			generatedFieldType: enumType,
+			declarationSyntax: SyntaxFactory.PropertyDeclaration(
+				SyntaxFactory.ParseTypeName("MavSysStatusSensorExtended?"),
+				SyntaxFactory.Identifier("OnboardControlSensorsPresentExtended")
+			),
+			original: new MavlinkMessageField(
+				type: enumType,
+				name: "OnboardControlSensorsPresentExtended",
+				description: null, display: default, systemUnit: default,
+				isRequired: false, // Nullable
+				printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null)
+		);
+
+		var fields = ImmutableArray.Create(generatedField);
+
+		// Act
+		var method = MavlinkMessagePayloadDeserializationGenerator.CreateCreateInstanceMethod(
+			@namespace: "TestNamespace",
+			messageName: "SysStatusMavlinkMessage",
+			fields: fields
+		);
+
+		var generatedCode = method.NormalizeWhitespace().ToFullString().Replace("? )", "?)");
+
+		// Assert
+		Assert.Contains("uint? onboardControlSensorsPresentExtendedValue = null;", generatedCode);
+		Assert.Contains("if (payload.Length > 0)", generatedCode);
+		Assert.Contains("onboardControlSensorsPresentExtendedValue = BitConverter.ToUInt32(payload, 0);", generatedCode);
+		Assert.Contains("var onboardControlSensorsPresentExtended = onboardControlSensorsPresentExtendedValue.HasValue ? (MavSysStatusSensorExtended?)onboardControlSensorsPresentExtendedValue.Value : null;", generatedCode);
+	}
+
+	[Fact]
 	public async Task GenerateMessages_ShouldMatchExpectedSnapshot()
 	{
 		// Arrange
