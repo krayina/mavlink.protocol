@@ -130,4 +130,9 @@ internal static class Utilities
 					dictionary[x].Index.CompareTo(dictionary[y].Index))
 			);
 	}
+
+	public static string ToNormalizedString(this SyntaxNode syntax)
+	{
+		return syntax.NormalizeWhitespace().ToFullString().Replace("? )", "?)");
+	}
 }

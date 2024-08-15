@@ -24,13 +24,13 @@
         count = payload[11];
     }
 
-    byte? connectionType = null;
+    byte? connectionTypeValue = null;
     if (payload.Length > 12)
     {
-        connectionType = (byte)payload[12];
-        connectionType = (EscConnectionType)connectionType;
+        connectionTypeValue = (byte)payload[12];
     }
 
+    var connectionType = connectionTypeValue.HasValue ? (EscConnectionType?)connectionTypeValue.Value : null;
     byte? info = null;
     if (payload.Length > 13)
     {

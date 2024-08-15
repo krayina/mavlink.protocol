@@ -94,7 +94,7 @@ public class MavlinkMessagesGeneratorTests
 		var methodSyntax = MavlinkMessagePayloadDeserializationGenerator.CreateCreateInstanceMethod(currentNamespace, "ESCInfoMessage", GeneratedFields);
 
 		// Assert
-		var methodCode = methodSyntax.NormalizeWhitespace().ToFullString();
+		var methodCode = methodSyntax.ToNormalizedString();
 
 		await Verify(methodCode)
 			.UseDirectory(SNAPSHOT_PATH)
@@ -128,7 +128,7 @@ public class MavlinkMessagesGeneratorTests
 			fields: fields
 		);
 
-		var generatedCode = method.NormalizeWhitespace().ToFullString();
+		var generatedCode = method.ToNormalizedString();
 
 		// Assert
 		Assert.Contains("var @fixed = BitConverter.ToUInt16", generatedCode);
@@ -180,7 +180,7 @@ public class MavlinkMessagesGeneratorTests
 			fields: fields
 		);
 
-		var generatedCode = method.NormalizeWhitespace().ToFullString().Replace("? )", "?)");
+		var generatedCode = method.ToNormalizedString();
 
 		// Assert
 		Assert.Contains("uint? onboardControlSensorsPresentExtendedValue = null;", generatedCode);
@@ -205,7 +205,7 @@ public class MavlinkMessagesGeneratorTests
 
 		// Normalize the generated code for each message
 		var generatedCode = generatedMessages
-			.Select(gm => gm.DeclarationSyntax.NormalizeWhitespace().ToFullString())
+			.Select(gm => gm.DeclarationSyntax.ToNormalizedString())
 			.Aggregate((current, next) => current + "\n\n" + next);
 
 		// Assert
@@ -257,7 +257,7 @@ public class MavlinkMessagesGeneratorTests
 		// Act
 		var generatedMessage = generator.GenerateMavlinkMessageInternal(message, namespaceName, generatedEnums);
 
-		var normalizedMessage = generatedMessage.DeclarationSyntax.NormalizeWhitespace().ToFullString();
+		var normalizedMessage = generatedMessage.DeclarationSyntax.ToNormalizedString();
 
 		// Assert
 		await Verify(normalizedMessage)
@@ -275,7 +275,7 @@ public class MavlinkMessagesGeneratorTests
 		var methodSyntax = MavlinkMessagePayloadDeserializationGenerator.CreateCreateInstanceMethod("Namespace1", "SomeMessage", nonRequiredFields);
 
 		// Assert
-		var methodCode = methodSyntax.NormalizeWhitespace().ToFullString();
+		var methodCode = methodSyntax.ToNormalizedString();
 
 		await Verify(methodCode)
 			.UseDirectory(SNAPSHOT_PATH)
@@ -320,7 +320,7 @@ public class MavlinkMessagesGeneratorTests
 		var obsoleteMessage = (LiteralExpressionSyntax)obsoleteMessageArgument.Expression;
 		Assert.Equal($"{deprecatedInfo}", obsoleteMessage.Token.ValueText);
 
-		var recordCode = generatedMessage.DeclarationSyntax.NormalizeWhitespace().ToFullString();
+		var recordCode = generatedMessage.DeclarationSyntax.ToNormalizedString();
 
 		await Verify(recordCode)
 			.UseDirectory(SNAPSHOT_PATH)
