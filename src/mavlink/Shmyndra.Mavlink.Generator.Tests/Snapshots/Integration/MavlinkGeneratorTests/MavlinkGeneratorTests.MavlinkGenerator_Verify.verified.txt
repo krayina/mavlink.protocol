@@ -1665,7 +1665,7 @@
     /// Original name: HEARTBEAT
     /// </remarks>
     [MavlinkIdentifiedType(0U, "HEARTBEAT")]
-    public record struct HeartbeatMavlinkMessage : MavlinkMessage
+    public readonly record struct HeartbeatMavlinkMessage : MavlinkMessage
     {
         /// <remarks>
         /// Original name: TYPE
@@ -1723,7 +1723,7 @@
     /// Original name: PROTOCOL_VERSION
     /// </remarks>
     [MavlinkIdentifiedType(300U, "PROTOCOL_VERSION")]
-    public record struct ProtocolVersionMavlinkMessage : MavlinkMessage
+    public readonly record struct ProtocolVersionMavlinkMessage : MavlinkMessage
     {
         /// <remarks>
         /// Original name: VERSION
@@ -2335,7 +2335,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// Original name: SYS_STATUS
     /// </remarks>
     [MavlinkIdentifiedType(1U, "SYS_STATUS")]
-    public record struct SysStatusMavlinkMessage : MavlinkMessage
+    public readonly record struct SysStatusMavlinkMessage : MavlinkMessage
     {
         /// <remarks>
         /// Original name: ONBOARD_CONTROL_SENSORS_PRESENT
@@ -2470,7 +2470,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// Original name: SYSTEM_TIME
     /// </remarks>
     [MavlinkIdentifiedType(2U, "SYSTEM_TIME")]
-    public record struct SystemTimeMavlinkMessage : MavlinkMessage
+    public readonly record struct SystemTimeMavlinkMessage : MavlinkMessage
     {
         /// <remarks>
         /// Original name: TIME_UNIX_USEC
@@ -2500,7 +2500,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// Original name: PING
     /// </remarks>
     [MavlinkIdentifiedType(4U, "PING")]
-    public record struct PingMavlinkMessage : MavlinkMessage
+    public readonly record struct PingMavlinkMessage : MavlinkMessage
     {
         /// <remarks>
         /// Original name: TIME_USEC
@@ -2542,7 +2542,7 @@ namespace MavlinkTypes.TestMavlinkCommon
     /// Original name: CHANGE_OPERATOR_CONTROL
     /// </remarks>
     [MavlinkIdentifiedType(5U, "CHANGE_OPERATOR_CONTROL")]
-    public record struct ChangeOperatorControlMavlinkMessage : MavlinkMessage
+    public readonly record struct ChangeOperatorControlMavlinkMessage : MavlinkMessage
     {
         /// <remarks>
         /// Original name: TARGET_SYSTEM

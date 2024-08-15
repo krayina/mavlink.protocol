@@ -5,7 +5,7 @@
 /// Original name: ESC_INFO
 /// </remarks>
 [MavlinkIdentifiedType(290U, "ESC_INFO")]
-public record struct EscInfoMavlinkMessage : MavlinkMessage
+public readonly record struct EscInfoMavlinkMessage : MavlinkMessage
 {
     /// <summary>
     /// Index of the first ESC in this message

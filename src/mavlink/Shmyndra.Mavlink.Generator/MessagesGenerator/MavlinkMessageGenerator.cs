@@ -216,7 +216,7 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 				members: SyntaxFactory.List<MemberDeclarationSyntax>(properties),
 				closeBraceToken: SyntaxFactory.Token(SyntaxKind.CloseBraceToken),
 				semicolonToken: default)
-			.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
+			.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.ReadOnlyKeyword))
 			.AddAttributeLists(
 				SyntaxFactory.AttributeList(
 					SyntaxFactory.SingletonSeparatedList(

@@ -3,7 +3,7 @@
 /// </remarks>
 [MavlinkIdentifiedType(1U, "DEPRECATED_MESSAGE")]
 [System.Obsolete("This message is deprecated. Since: 2023-01. Replaced by: NewMessage.")]
-public record struct DeprecatedMessageMavlinkMessage : MavlinkMessage
+public readonly record struct DeprecatedMessageMavlinkMessage : MavlinkMessage
 {
     public static DeprecatedMessageMavlinkMessage CreateInstance(byte[] payload)
     {
