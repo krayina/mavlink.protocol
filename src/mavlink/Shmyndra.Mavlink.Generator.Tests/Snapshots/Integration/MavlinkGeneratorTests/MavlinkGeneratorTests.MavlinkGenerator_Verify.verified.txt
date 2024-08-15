@@ -2420,27 +2420,27 @@ namespace MavlinkTypes.TestMavlinkCommon
             var errorsCount2 = BitConverter.ToUInt16(payload, 25);
             var errorsCount3 = BitConverter.ToUInt16(payload, 27);
             var errorsCount4 = BitConverter.ToUInt16(payload, 29);
-            uint? onboardControlSensorsPresentExtended = null;
+            uint? onboardControlSensorsPresentExtendedValue = null;
             if (payload.Length > 31)
             {
-                onboardControlSensorsPresentExtended = BitConverter.ToUInt32(payload, 31);
-                onboardControlSensorsPresentExtended = (MavSysStatusSensorExtended)onboardControlSensorsPresentExtended;
+                onboardControlSensorsPresentExtendedValue = BitConverter.ToUInt32(payload, 31);
             }
 
-            uint? onboardControlSensorsEnabledExtended = null;
+            var onboardControlSensorsPresentExtended = onboardControlSensorsPresentExtendedValue.HasValue ? (MavSysStatusSensorExtended?)onboardControlSensorsPresentExtendedValue.Value : null;
+            uint? onboardControlSensorsEnabledExtendedValue = null;
             if (payload.Length > 35)
             {
-                onboardControlSensorsEnabledExtended = BitConverter.ToUInt32(payload, 35);
-                onboardControlSensorsEnabledExtended = (MavSysStatusSensorExtended)onboardControlSensorsEnabledExtended;
+                onboardControlSensorsEnabledExtendedValue = BitConverter.ToUInt32(payload, 35);
             }
 
-            uint? onboardControlSensorsHealthExtended = null;
+            var onboardControlSensorsEnabledExtended = onboardControlSensorsEnabledExtendedValue.HasValue ? (MavSysStatusSensorExtended?)onboardControlSensorsEnabledExtendedValue.Value : null;
+            uint? onboardControlSensorsHealthExtendedValue = null;
             if (payload.Length > 39)
             {
-                onboardControlSensorsHealthExtended = BitConverter.ToUInt32(payload, 39);
-                onboardControlSensorsHealthExtended = (MavSysStatusSensorExtended)onboardControlSensorsHealthExtended;
+                onboardControlSensorsHealthExtendedValue = BitConverter.ToUInt32(payload, 39);
             }
 
+            var onboardControlSensorsHealthExtended = onboardControlSensorsHealthExtendedValue.HasValue ? (MavSysStatusSensorExtended?)onboardControlSensorsHealthExtendedValue.Value : null;
             return new SysStatusMavlinkMessage
             {
                 OnboardControlSensorsPresent = onboardControlSensorsPresent,
