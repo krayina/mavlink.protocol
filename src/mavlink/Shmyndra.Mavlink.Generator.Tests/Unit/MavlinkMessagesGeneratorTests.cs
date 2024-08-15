@@ -102,6 +102,40 @@ public class MavlinkMessagesGeneratorTests
 	}
 
 	[Fact]
+	public void CreateCreateInstanceMethod_ShouldEscapeReservedKeyword()
+	{
+		// Arrange
+		var fieldType = new GeneratedMavlinkMessageFieldType("ushort", "ushort");
+		var originalField = new MavlinkMessageField(type: fieldType, name: "fixed",
+			description: null, display: default, systemUnit: default, isRequired: true, printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null);
+
+		var generatedField = new GeneratedMavlinkMessageField(
+			generatedName: "Fixed",
+			generatedFieldType: fieldType,
+			declarationSyntax: SyntaxFactory.PropertyDeclaration(
+				SyntaxFactory.ParseTypeName("ushort"),
+				SyntaxFactory.Identifier("Fixed")
+			),
+			original: originalField
+		);
+
+		var fields = ImmutableArray.Create(generatedField);
+
+		// Act
+		var method = MavlinkMessagePayloadDeserializationGenerator.CreateCreateInstanceMethod(
+			@namespace: "TestNamespace",
+			messageName: "RadioMavlinkMessage",
+			fields: fields
+		);
+
+		var generatedCode = method.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		Assert.Contains("var @fixed = BitConverter.ToUInt16", generatedCode);
+		Assert.Contains("Fixed = @fixed", generatedCode);
+	}
+
+	[Fact]
 	public async Task GenerateMessages_ShouldMatchExpectedSnapshot()
 	{
 		// Arrange
