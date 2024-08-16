@@ -18,10 +18,16 @@
   
   <!-- DEBUG -->
   <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
-    <!--<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <CompilerGeneratedFilesOutputPath>Generated/Analyzers</CompilerGeneratedFilesOutputPath>-->
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated/Analyzers</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
-  
+
+  <!-- DEBUG -->
+  <ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+    <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**" />
+    <None Include="$(CompilerGeneratedFilesOutputPath)/**" />
+  </ItemGroup>
+
   <ItemGroup>
     <AdditionalFiles Include="**/*.xml" />
   </ItemGroup>
