@@ -5,14 +5,14 @@ namespace MavlinkTypes
 {
     public static class MavlinkMessages
     {
-        private static readonly Dictionary<Type, (uint Id, string MavlinkName)> _mavlinkMessagesByType = new()
+        private static readonly Dictionary<Type, (uint Id, string MavlinkName, Func<byte[], MavlinkMessage> Creator)> _mavlinkMessagesByType = new()
         {
-			{ typeof(Namespace1.EscInfo), (290U, "ESC_INFO") }
+			{ typeof(Namespace1.EscInfo), (290U, "ESC_INFO", payload => Namespace1.EscInfo.CreateInstance(payload)) }
         };
 
-        private static readonly Dictionary<uint, (Type Type, string MavlinkName)> _mavlinkMessagesById = new()
+        private static readonly Dictionary<uint, (Type Type, string MavlinkName, Func<byte[], MavlinkMessage> Creator)> _mavlinkMessagesById = new()
         {
-			{ 290U, (typeof(Namespace1.EscInfo), "ESC_INFO") }
+			{ 290U, (typeof(Namespace1.EscInfo), "ESC_INFO", payload => Namespace1.EscInfo.CreateInstance(payload)) }
         };
 
         public static uint GetId<T>() where T : MavlinkMessage
@@ -33,6 +33,38 @@ namespace MavlinkTypes
         public static Type GetType(uint id)
         {
             return _mavlinkMessagesById[id].Type;
+        }
+
+        public static MavlinkMessage CreateMessageInstance(uint messageId, byte[] payload)
+        {
+            return _mavlinkMessagesById[messageId].Creator(payload);
+        }
+
+        public static MavlinkMessage CreateMessageInstance(Type messageType, byte[] payload)
+        {
+            return _mavlinkMessagesByType[messageType].Creator(payload);
+        }
+
+        public static bool TryCreateMessageInstance(uint messageId, byte[] payload, out MavlinkMessage message)
+        {
+            if (_mavlinkMessagesById.TryGetValue(messageId, out var value))
+            {
+                message = value.Creator(payload);
+                return true;
+            }
+            message = default(MavlinkMessage);
+            return false;
+        }
+
+        public static bool TryCreateMessageInstance(Type messageType, byte[] payload, out MavlinkMessage message)
+        {
+            if (_mavlinkMessagesByType.TryGetValue(messageType, out var value))
+            {
+                message = value.Creator(payload);
+                return true;
+            }
+            message = default(MavlinkMessage);
+            return false;
         }
 
         public static bool TryGetId<T>(out uint id) where T : MavlinkMessage
