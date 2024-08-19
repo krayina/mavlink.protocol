@@ -135,4 +135,23 @@ internal static class Utilities
 	{
 		return syntax.NormalizeWhitespace().ToFullString().Replace("? )", "?)");
 	}
+
+	public static int GetDotNetTypeSize(string convertedType)
+	{
+		return convertedType switch
+		{
+			"byte" => 1,
+			"sbyte" => 1,
+			"ushort" => 2,
+			"short" => 2,
+			"uint" => 4,
+			"int" => 4,
+			"ulong" => 8,
+			"long" => 8,
+			"float" => 4,
+			"double" => 8,
+			"char" => 2,
+			_ => throw new InvalidOperationException($"Unknown type: {convertedType}"),
+		};
+	}
 }

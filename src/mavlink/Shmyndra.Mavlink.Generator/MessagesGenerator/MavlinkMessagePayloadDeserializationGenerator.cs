@@ -92,7 +92,7 @@ public class TemporaryClass
 	{
 		var tempArrayName = $"temp{propertyName}Array";
 		var elementType = arrayType.ConvertedType;
-		var arrayLength = arrayType.ArrayLength * GetTypeSize(elementType);
+		var arrayLength = arrayType.ArrayLength * Utilities.GetDotNetTypeSize(elementType);
 		var result = new StringBuilder();
 
 		if (isRequired)
@@ -120,7 +120,7 @@ if (payload.Length >= {offset + arrayLength})
 
 	private static string GenerateEnumDeserialization(string variableName, GeneratedMavlinkMessageFieldEnumType fieldEnumType, ref int offset, string currentNamespace, bool isRequired)
 	{
-		var size = GetTypeSize(fieldEnumType.ConvertedType);
+		var size = Utilities.GetDotNetTypeSize(fieldEnumType.ConvertedType);
 		var (enumNamespace, enumTypeName) = (fieldEnumType.GeneratedEnum.Namespace, fieldEnumType.GeneratedEnum.GeneratedName);
 		var fullEnumTypeName = enumNamespace == currentNamespace ? enumTypeName : $"{enumNamespace}.{enumTypeName}";
 
@@ -181,28 +181,28 @@ var {variableName} = {variableName}Value.HasValue ? ({fullEnumTypeName}?){variab
 		{
 			result.AppendLine($@"
 var {tempArrayName} = new {fullEnumTypeName}[{arrayEnumType.ArrayLength}];
-Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayEnumType.ArrayLength * GetTypeSize(arrayEnumType.ConvertedType)});
+Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayEnumType.ArrayLength * Utilities.GetDotNetTypeSize(arrayEnumType.ConvertedType)});
 var {variableName} = {CreateRangeWithNamespace}({tempArrayName});");
 		}
 		else
 		{
 			result.AppendLine($@"
 {MavlinkGeneratorConstants.ImmutableArrayNamespace}<{fullEnumTypeName}>? {variableName} = null;
-if (payload.Length >= {offset + arrayEnumType.ArrayLength * GetTypeSize(arrayEnumType.ConvertedType)})
+if (payload.Length >= {offset + arrayEnumType.ArrayLength * Utilities.GetDotNetTypeSize(arrayEnumType.ConvertedType)})
 {{
     var {tempArrayName} = new {fullEnumTypeName}[{arrayEnumType.ArrayLength}];
-    Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayEnumType.ArrayLength * GetTypeSize(arrayEnumType.ConvertedType)});
+    Buffer.BlockCopy(payload, {offset}, {tempArrayName}, 0, {arrayEnumType.ArrayLength * Utilities.GetDotNetTypeSize(arrayEnumType.ConvertedType)});
     {variableName} = {CreateRangeWithNamespace}({tempArrayName});
 }}");
 		}
 
-		offset += arrayEnumType.ArrayLength * GetTypeSize(arrayEnumType.ConvertedType);
+		offset += arrayEnumType.ArrayLength * Utilities.GetDotNetTypeSize(arrayEnumType.ConvertedType);
 		return result.ToString();
 	}
 
 	private static string GenerateSimpleTypeDeserialization(string variableName, string typeName, ref int offset, bool isRequired)
 	{
-		var size = GetTypeSize(typeName);
+		var size = Utilities.GetDotNetTypeSize(typeName);
 		var result = new StringBuilder();
 
 		if (isRequired)
@@ -275,25 +275,6 @@ if (payload.Length > {offset})
 			"sbyte" => "ToSByte",
 			"byte" => "ToByte",
 			"char" => "ToChar",
-			_ => throw new NotSupportedException($"Unsupported type: {typeName}")
-		};
-	}
-
-	private static int GetTypeSize(string typeName)
-	{
-		return typeName switch
-		{
-			"byte" => 1,
-			"sbyte" => 1,
-			"ushort" => 2,
-			"short" => 2,
-			"uint" => 4,
-			"int" => 4,
-			"ulong" => 8,
-			"long" => 8,
-			"float" => 4,
-			"double" => 8,
-			"char" => 2,
 			_ => throw new NotSupportedException($"Unsupported type: {typeName}")
 		};
 	}
