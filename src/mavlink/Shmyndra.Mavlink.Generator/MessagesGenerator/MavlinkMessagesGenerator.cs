@@ -34,7 +34,7 @@ internal static class MavlinkMessagesGenerator
 
 		foreach (var field in message.GeneratedFields)
 		{
-			int fieldSize = GetFieldSize(field);
+			int fieldSize = field.GetFieldSize();
 			maxSize += fieldSize;
 
 			if (field.IsRequired)
@@ -44,16 +44,6 @@ internal static class MavlinkMessagesGenerator
 		}
 
 		return (minSize, maxSize);
-	}
-
-	private static int GetFieldSize(GeneratedMavlinkMessageField field)
-	{
-		return field.Type switch
-		{
-			GeneratedMavlinkMessageFieldArrayType arrayField => Utilities.GetDotNetTypeSize(arrayField.ConvertedType) * arrayField.ArrayLength,
-			GeneratedMavlinkMessageFieldArrayEnumType arrayEnumField => Utilities.GetDotNetTypeSize(arrayEnumField.ConvertedType) * arrayEnumField.ArrayLength,
-			_ => Utilities.GetDotNetTypeSize(((GeneratedMavlinkMessageFieldType)field.Type).ConvertedType)
-		};
 	}
 
 	private static string GetStringCode(string dictionaryEntriesByType, string dictionaryEntriesById)

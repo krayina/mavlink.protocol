@@ -136,6 +136,16 @@ internal static class Utilities
 		return syntax.NormalizeWhitespace().ToFullString().Replace("? )", "?)");
 	}
 
+	public static int GetFieldSize(this GeneratedMavlinkMessageField field)
+	{
+		return field.Type switch
+		{
+			GeneratedMavlinkMessageFieldArrayType arrayField => Utilities.GetDotNetTypeSize(arrayField.ConvertedType) * arrayField.ArrayLength,
+			GeneratedMavlinkMessageFieldArrayEnumType arrayEnumField => Utilities.GetDotNetTypeSize(arrayEnumField.ConvertedType) * arrayEnumField.ArrayLength,
+			_ => GetDotNetTypeSize(((GeneratedMavlinkMessageFieldType)field.Type).ConvertedType)
+		};
+	}
+
 	public static int GetDotNetTypeSize(string convertedType)
 	{
 		return convertedType switch
