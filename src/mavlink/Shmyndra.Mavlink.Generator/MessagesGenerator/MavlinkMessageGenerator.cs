@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
+using Shmyndra.Mavlink.Generator.MessagesGenerator;
 
 namespace Shmyndra.Mavlink.Generator;
 
@@ -103,8 +104,12 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 		var createInstanceMethod = MavlinkMessageDeserializationGenerator
 			.CreateCreateInstanceMethod(@namespace, normalizedName, generatedFields);
 
+		var createSerializeMethod = MavlinkMessageSerializationGenerator
+			.CreateSerializeMethod(@namespace, normalizedName, generatedFields);
+
 		var recordDeclaration = CreateRecordStructDeclaration(id, normalizedName, propertyDeclarations, message.Description, message.Name)
 			.AddMembers(createInstanceMethod)
+			.AddMembers(createSerializeMethod)
 			.AddObsoleteAttribute(message.Deprecated?.ToString());
 
 		return new GeneratedMavlinkMessage(@namespace, normalizedName, generatedFields, recordDeclaration, message);
