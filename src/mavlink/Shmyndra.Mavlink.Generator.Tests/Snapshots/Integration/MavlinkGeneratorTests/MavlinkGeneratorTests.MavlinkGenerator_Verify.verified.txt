@@ -1,0 +1,2682 @@
+﻿namespace MavlinkTypes.TestMavlinkMinimal
+{
+    /// <summary>
+    /// Micro air vehicle / autopilot classes. This identifies the individual model.
+    /// </summary>
+    /// <remarks>
+    /// Original name: MAV_AUTOPILOT
+    /// </remarks>
+    [MavlinkType("MAV_AUTOPILOT")]
+    public enum MavAutopilot : byte
+    {
+        /// <summary>
+        /// Generic autopilot, full support for everything
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_GENERIC
+        /// </remarks>
+        MavAutopilotGeneric = 0,
+        /// <summary>
+        /// Reserved for future use.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_RESERVED
+        /// </remarks>
+        MavAutopilotReserved = 1,
+        /// <summary>
+        /// SLUGS autopilot, http://slugsuav.soe.ucsc.edu
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_SLUGS
+        /// </remarks>
+        MavAutopilotSlugs = 2,
+        /// <summary>
+        /// ArduPilot - Plane/Copter/Rover/Sub/Tracker, https://ardupilot.org
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_ARDUPILOTMEGA
+        /// </remarks>
+        MavAutopilotArdupilotmega = 3,
+        /// <summary>
+        /// OpenPilot, http://openpilot.org
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_OPENPILOT
+        /// </remarks>
+        MavAutopilotOpenpilot = 4,
+        /// <summary>
+        /// Generic autopilot only supporting simple waypoints
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_GENERIC_WAYPOINTS_ONLY
+        /// </remarks>
+        MavAutopilotGenericWaypointsOnly = 5,
+        /// <summary>
+        /// Generic autopilot supporting waypoints and other simple navigation commands
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_GENERIC_WAYPOINTS_AND_SIMPLE_NAVIGATION_ONLY
+        /// </remarks>
+        MavAutopilotGenericWaypointsAndSimpleNavigationOnly = 6,
+        /// <summary>
+        /// Generic autopilot supporting the full mission command set
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_GENERIC_MISSION_FULL
+        /// </remarks>
+        MavAutopilotGenericMissionFull = 7,
+        /// <summary>
+        /// No valid autopilot, e.g. a GCS or other MAVLink component
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_INVALID
+        /// </remarks>
+        MavAutopilotInvalid = 8,
+        /// <summary>
+        /// PPZ UAV - http://nongnu.org/paparazzi
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_PPZ
+        /// </remarks>
+        MavAutopilotPpz = 9,
+        /// <summary>
+        /// UAV Dev Board
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_UDB
+        /// </remarks>
+        MavAutopilotUdb = 10,
+        /// <summary>
+        /// FlexiPilot
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_FP
+        /// </remarks>
+        MavAutopilotFp = 11,
+        /// <summary>
+        /// PX4 Autopilot - http://px4.io/
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_PX4
+        /// </remarks>
+        MavAutopilotPx4 = 12,
+        /// <summary>
+        /// SMACCMPilot - http://smaccmpilot.org
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_SMACCMPILOT
+        /// </remarks>
+        MavAutopilotSmaccmpilot = 13,
+        /// <summary>
+        /// AutoQuad -- http://autoquad.org
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_AUTOQUAD
+        /// </remarks>
+        MavAutopilotAutoquad = 14,
+        /// <summary>
+        /// Armazila -- http://armazila.com
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_ARMAZILA
+        /// </remarks>
+        MavAutopilotArmazila = 15,
+        /// <summary>
+        /// Aerob -- http://aerob.ru
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_AEROB
+        /// </remarks>
+        MavAutopilotAerob = 16,
+        /// <summary>
+        /// ASLUAV autopilot -- http://www.asl.ethz.ch
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_ASLUAV
+        /// </remarks>
+        MavAutopilotAsluav = 17,
+        /// <summary>
+        /// SmartAP Autopilot - http://sky-drones.com
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_SMARTAP
+        /// </remarks>
+        MavAutopilotSmartap = 18,
+        /// <summary>
+        /// AirRails - http://uaventure.com
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_AIRRAILS
+        /// </remarks>
+        MavAutopilotAirrails = 19,
+        /// <summary>
+        /// Fusion Reflex - https://fusion.engineering
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_AUTOPILOT_REFLEX
+        /// </remarks>
+        MavAutopilotReflex = 20
+    }
+
+    /// <summary>
+    /// MAVLINK component type reported in HEARTBEAT message. Flight controllers must report the type of the vehicle on which they are mounted (e.g. MAV_TYPE_OCTOROTOR). All other components must report a value appropriate for their type (e.g. a camera must use MAV_TYPE_CAMERA).
+    /// </summary>
+    /// <remarks>
+    /// Original name: MAV_TYPE
+    /// </remarks>
+    [MavlinkType("MAV_TYPE")]
+    public enum MavType : byte
+    {
+        /// <summary>
+        /// Generic micro air vehicle
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_GENERIC
+        /// </remarks>
+        MavTypeGeneric = 0,
+        /// <summary>
+        /// Fixed wing aircraft.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_FIXED_WING
+        /// </remarks>
+        MavTypeFixedWing = 1,
+        /// <summary>
+        /// Quadrotor
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_QUADROTOR
+        /// </remarks>
+        MavTypeQuadrotor = 2,
+        /// <summary>
+        /// Coaxial helicopter
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_COAXIAL
+        /// </remarks>
+        MavTypeCoaxial = 3,
+        /// <summary>
+        /// Normal helicopter with tail rotor.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_HELICOPTER
+        /// </remarks>
+        MavTypeHelicopter = 4,
+        /// <summary>
+        /// Ground installation
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_ANTENNA_TRACKER
+        /// </remarks>
+        MavTypeAntennaTracker = 5,
+        /// <summary>
+        /// Operator control unit / ground control station
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_GCS
+        /// </remarks>
+        MavTypeGcs = 6,
+        /// <summary>
+        /// Airship, controlled
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_AIRSHIP
+        /// </remarks>
+        MavTypeAirship = 7,
+        /// <summary>
+        /// Free balloon, uncontrolled
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_FREE_BALLOON
+        /// </remarks>
+        MavTypeFreeBalloon = 8,
+        /// <summary>
+        /// Rocket
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_ROCKET
+        /// </remarks>
+        MavTypeRocket = 9,
+        /// <summary>
+        /// Ground rover
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_GROUND_ROVER
+        /// </remarks>
+        MavTypeGroundRover = 10,
+        /// <summary>
+        /// Surface vessel, boat, ship
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_SURFACE_BOAT
+        /// </remarks>
+        MavTypeSurfaceBoat = 11,
+        /// <summary>
+        /// Submarine
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_SUBMARINE
+        /// </remarks>
+        MavTypeSubmarine = 12,
+        /// <summary>
+        /// Hexarotor
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_HEXAROTOR
+        /// </remarks>
+        MavTypeHexarotor = 13,
+        /// <summary>
+        /// Octorotor
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_OCTOROTOR
+        /// </remarks>
+        MavTypeOctorotor = 14,
+        /// <summary>
+        /// Tricopter
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_TRICOPTER
+        /// </remarks>
+        MavTypeTricopter = 15,
+        /// <summary>
+        /// Flapping wing
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_FLAPPING_WING
+        /// </remarks>
+        MavTypeFlappingWing = 16,
+        /// <summary>
+        /// Kite
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_KITE
+        /// </remarks>
+        MavTypeKite = 17,
+        /// <summary>
+        /// Onboard companion controller
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_ONBOARD_CONTROLLER
+        /// </remarks>
+        MavTypeOnboardController = 18,
+        /// <summary>
+        /// Two-rotor Tailsitter VTOL that additionally uses control surfaces in vertical operation. Note, value previously named MAV_TYPE_VTOL_DUOROTOR.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_VTOL_TAILSITTER_DUOROTOR
+        /// </remarks>
+        MavTypeVtolTailsitterDuorotor = 19,
+        /// <summary>
+        /// Quad-rotor Tailsitter VTOL using a V-shaped quad config in vertical operation. Note: value previously named MAV_TYPE_VTOL_QUADROTOR.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_VTOL_TAILSITTER_QUADROTOR
+        /// </remarks>
+        MavTypeVtolTailsitterQuadrotor = 20,
+        /// <summary>
+        /// Tiltrotor VTOL. Fuselage and wings stay (nominally) horizontal in all flight phases. It able to tilt (some) rotors to provide thrust in cruise flight.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_VTOL_TILTROTOR
+        /// </remarks>
+        MavTypeVtolTiltrotor = 21,
+        /// <summary>
+        /// VTOL with separate fixed rotors for hover and cruise flight. Fuselage and wings stay (nominally) horizontal in all flight phases.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_VTOL_FIXEDROTOR
+        /// </remarks>
+        MavTypeVtolFixedrotor = 22,
+        /// <summary>
+        /// Tailsitter VTOL. Fuselage and wings orientation changes depending on flight phase: vertical for hover, horizontal for cruise. Use more specific VTOL MAV_TYPE_VTOL_TAILSITTER_DUOROTOR or MAV_TYPE_VTOL_TAILSITTER_QUADROTOR if appropriate.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_VTOL_TAILSITTER
+        /// </remarks>
+        MavTypeVtolTailsitter = 23,
+        /// <summary>
+        /// Tiltwing VTOL. Fuselage stays horizontal in all flight phases. The whole wing, along with any attached engine, can tilt between vertical and horizontal mode.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_VTOL_TILTWING
+        /// </remarks>
+        MavTypeVtolTiltwing = 24,
+        /// <summary>
+        /// VTOL reserved 5
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_VTOL_RESERVED5
+        /// </remarks>
+        MavTypeVtolReserved5 = 25,
+        /// <summary>
+        /// Gimbal
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_GIMBAL
+        /// </remarks>
+        MavTypeGimbal = 26,
+        /// <summary>
+        /// ADSB system
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_ADSB
+        /// </remarks>
+        MavTypeAdsb = 27,
+        /// <summary>
+        /// Steerable, nonrigid airfoil
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_PARAFOIL
+        /// </remarks>
+        MavTypeParafoil = 28,
+        /// <summary>
+        /// Dodecarotor
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_DODECAROTOR
+        /// </remarks>
+        MavTypeDodecarotor = 29,
+        /// <summary>
+        /// Camera
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_CAMERA
+        /// </remarks>
+        MavTypeCamera = 30,
+        /// <summary>
+        /// Charging station
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_CHARGING_STATION
+        /// </remarks>
+        MavTypeChargingStation = 31,
+        /// <summary>
+        /// FLARM collision avoidance system
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_FLARM
+        /// </remarks>
+        MavTypeFlarm = 32,
+        /// <summary>
+        /// Servo
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_SERVO
+        /// </remarks>
+        MavTypeServo = 33,
+        /// <summary>
+        /// Open Drone ID. See https://mavlink.io/en/services/opendroneid.html.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_ODID
+        /// </remarks>
+        MavTypeOdid = 34,
+        /// <summary>
+        /// Decarotor
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_DECAROTOR
+        /// </remarks>
+        MavTypeDecarotor = 35,
+        /// <summary>
+        /// Battery
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_BATTERY
+        /// </remarks>
+        MavTypeBattery = 36,
+        /// <summary>
+        /// Parachute
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_PARACHUTE
+        /// </remarks>
+        MavTypeParachute = 37,
+        /// <summary>
+        /// Log
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_LOG
+        /// </remarks>
+        MavTypeLog = 38,
+        /// <summary>
+        /// OSD
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_OSD
+        /// </remarks>
+        MavTypeOsd = 39,
+        /// <summary>
+        /// IMU
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_IMU
+        /// </remarks>
+        MavTypeImu = 40,
+        /// <summary>
+        /// GPS
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_GPS
+        /// </remarks>
+        MavTypeGps = 41,
+        /// <summary>
+        /// Winch
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_WINCH
+        /// </remarks>
+        MavTypeWinch = 42,
+        /// <summary>
+        /// Generic multirotor that does not fit into a specific type or whose type is unknown
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_GENERIC_MULTIROTOR
+        /// </remarks>
+        MavTypeGenericMultirotor = 43,
+        /// <summary>
+        /// Illuminator. An illuminator is a light source that is used for lighting up dark areas external to the sytstem: e.g. a torch or searchlight (as opposed to a light source for illuminating the system itself, e.g. an indicator light).
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_TYPE_ILLUMINATOR
+        /// </remarks>
+        MavTypeIlluminator = 44
+    }
+
+    /// <summary>
+    /// These flags encode the MAV mode.
+    /// </summary>
+    /// <remarks>
+    /// Original name: MAV_MODE_FLAG
+    /// </remarks>
+    [MavlinkType("MAV_MODE_FLAG")]
+    [System.FlagsAttribute]
+    public enum MavModeFlag : byte
+    {
+        /// <summary>
+        /// 0b00000001 Reserved for future use.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_CUSTOM_MODE_ENABLED
+        /// </remarks>
+        MavModeFlagCustomModeEnabled = 1,
+        /// <summary>
+        /// 0b00000010 system has a test mode enabled. This flag is intended for temporary system tests and should not be used for stable implementations.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_TEST_ENABLED
+        /// </remarks>
+        MavModeFlagTestEnabled = 2,
+        /// <summary>
+        /// 0b00000100 autonomous mode enabled, system finds its own goal positions. Guided flag can be set or not, depends on the actual implementation.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_AUTO_ENABLED
+        /// </remarks>
+        MavModeFlagAutoEnabled = 4,
+        /// <summary>
+        /// 0b00001000 guided mode enabled, system flies waypoints / mission items.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_GUIDED_ENABLED
+        /// </remarks>
+        MavModeFlagGuidedEnabled = 8,
+        /// <summary>
+        /// 0b00010000 system stabilizes electronically its attitude (and optionally position). It needs however further control inputs to move around.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_STABILIZE_ENABLED
+        /// </remarks>
+        MavModeFlagStabilizeEnabled = 16,
+        /// <summary>
+        /// 0b00100000 hardware in the loop simulation. All motors / actuators are blocked, but internal software is full operational.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_HIL_ENABLED
+        /// </remarks>
+        MavModeFlagHilEnabled = 32,
+        /// <summary>
+        /// 0b01000000 remote control input is enabled.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_MANUAL_INPUT_ENABLED
+        /// </remarks>
+        MavModeFlagManualInputEnabled = 64,
+        /// <summary>
+        /// 0b10000000 MAV safety set to armed. Motors are enabled / running / can start. Ready to fly. Additional note: this flag is to be ignore when sent in the command MAV_CMD_DO_SET_MODE and MAV_CMD_COMPONENT_ARM_DISARM shall be used instead. The flag can still be used to report the armed state.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_SAFETY_ARMED
+        /// </remarks>
+        MavModeFlagSafetyArmed = 128
+    }
+
+    /// <summary>
+    /// These values encode the bit positions of the decode position. These values can be used to read the value of a flag bit by combining the base_mode variable with AND with the flag position value. The result will be either 0 or 1, depending on if the flag is set or not.
+    /// </summary>
+    /// <remarks>
+    /// Original name: MAV_MODE_FLAG_DECODE_POSITION
+    /// </remarks>
+    [MavlinkType("MAV_MODE_FLAG_DECODE_POSITION")]
+    [System.FlagsAttribute]
+    public enum MavModeFlagDecodePosition : byte
+    {
+        /// <summary>
+        /// Eighth bit: 00000001
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_CUSTOM_MODE
+        /// </remarks>
+        MavModeFlagDecodePositionCustomMode = 1,
+        /// <summary>
+        /// Seventh bit: 00000010
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_TEST
+        /// </remarks>
+        MavModeFlagDecodePositionTest = 2,
+        /// <summary>
+        /// Sixth bit:   00000100
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_AUTO
+        /// </remarks>
+        MavModeFlagDecodePositionAuto = 4,
+        /// <summary>
+        /// Fifth bit:  00001000
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_GUIDED
+        /// </remarks>
+        MavModeFlagDecodePositionGuided = 8,
+        /// <summary>
+        /// Fourth bit: 00010000
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_STABILIZE
+        /// </remarks>
+        MavModeFlagDecodePositionStabilize = 16,
+        /// <summary>
+        /// Third bit:  00100000
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_HIL
+        /// </remarks>
+        MavModeFlagDecodePositionHil = 32,
+        /// <summary>
+        /// Second bit: 01000000
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_MANUAL
+        /// </remarks>
+        MavModeFlagDecodePositionManual = 64,
+        /// <summary>
+        /// First bit:  10000000
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_FLAG_DECODE_POSITION_SAFETY
+        /// </remarks>
+        MavModeFlagDecodePositionSafety = 128
+    }
+
+    /// <remarks>
+    /// Original name: MAV_STATE
+    /// </remarks>
+    [MavlinkType("MAV_STATE")]
+    public enum MavState : byte
+    {
+        /// <summary>
+        /// Uninitialized system, state is unknown.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_UNINIT
+        /// </remarks>
+        MavStateUninit = 0,
+        /// <summary>
+        /// System is booting up.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_BOOT
+        /// </remarks>
+        MavStateBoot = 1,
+        /// <summary>
+        /// System is calibrating and not flight-ready.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_CALIBRATING
+        /// </remarks>
+        MavStateCalibrating = 2,
+        /// <summary>
+        /// System is grounded and on standby. It can be launched any time.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_STANDBY
+        /// </remarks>
+        MavStateStandby = 3,
+        /// <summary>
+        /// System is active and might be already airborne. Motors are engaged.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_ACTIVE
+        /// </remarks>
+        MavStateActive = 4,
+        /// <summary>
+        /// System is in a non-normal flight mode (failsafe). It can however still navigate.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_CRITICAL
+        /// </remarks>
+        MavStateCritical = 5,
+        /// <summary>
+        /// System is in a non-normal flight mode (failsafe). It lost control over parts or over the whole airframe. It is in mayday and going down.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_EMERGENCY
+        /// </remarks>
+        MavStateEmergency = 6,
+        /// <summary>
+        /// System just initialized its power-down sequence, will shut down now.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_POWEROFF
+        /// </remarks>
+        MavStatePoweroff = 7,
+        /// <summary>
+        /// System is terminating itself (failsafe or commanded).
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_STATE_FLIGHT_TERMINATION
+        /// </remarks>
+        MavStateFlightTermination = 8
+    }
+
+    /// <summary>
+    /// Component ids (values) for the different types and instances of onboard hardware/software that might make up a MAVLink system (autopilot, cameras, servos, GPS systems, avoidance systems etc.).
+    /// Components must use the appropriate ID in their source address when sending messages. Components can also use IDs to determine if they are the intended recipient of an incoming message. The MAV_COMP_ID_ALL value is used to indicate messages that must be processed by all components.
+    /// When creating new entries, components that can have multiple instances (e.g. cameras, servos etc.) should be allocated sequential values. An appropriate number of values should be left free after these components to allow the number of instances to be expanded.
+    /// </summary>
+    /// <remarks>
+    /// Original name: MAV_COMPONENT
+    /// </remarks>
+    [MavlinkType("MAV_COMPONENT")]
+    public enum MavComponent : byte
+    {
+        /// <summary>
+        /// Target id (target_component) used to broadcast messages to all components of the receiving system. Components should attempt to process messages with this component ID and forward to components on any other interfaces. Note: This is not a valid *source* component id for a message.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_ALL
+        /// </remarks>
+        MavCompIdAll = 0,
+        /// <summary>
+        /// System flight controller component ("autopilot"). Only one autopilot is expected in a particular system.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_AUTOPILOT1
+        /// </remarks>
+        MavCompIdAutopilot1 = 1,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER1
+        /// </remarks>
+        MavCompIdUser1 = 25,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER2
+        /// </remarks>
+        MavCompIdUser2 = 26,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER3
+        /// </remarks>
+        MavCompIdUser3 = 27,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER4
+        /// </remarks>
+        MavCompIdUser4 = 28,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER5
+        /// </remarks>
+        MavCompIdUser5 = 29,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER6
+        /// </remarks>
+        MavCompIdUser6 = 30,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER7
+        /// </remarks>
+        MavCompIdUser7 = 31,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER8
+        /// </remarks>
+        MavCompIdUser8 = 32,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER9
+        /// </remarks>
+        MavCompIdUser9 = 33,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER10
+        /// </remarks>
+        MavCompIdUser10 = 34,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER11
+        /// </remarks>
+        MavCompIdUser11 = 35,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER12
+        /// </remarks>
+        MavCompIdUser12 = 36,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER13
+        /// </remarks>
+        MavCompIdUser13 = 37,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER14
+        /// </remarks>
+        MavCompIdUser14 = 38,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER15
+        /// </remarks>
+        MavCompIdUser15 = 39,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER16
+        /// </remarks>
+        MavCompIdUser16 = 40,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER17
+        /// </remarks>
+        MavCompIdUser17 = 41,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER18
+        /// </remarks>
+        MavCompIdUser18 = 42,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER19
+        /// </remarks>
+        MavCompIdUser19 = 43,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER20
+        /// </remarks>
+        MavCompIdUser20 = 44,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER21
+        /// </remarks>
+        MavCompIdUser21 = 45,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER22
+        /// </remarks>
+        MavCompIdUser22 = 46,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER23
+        /// </remarks>
+        MavCompIdUser23 = 47,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER24
+        /// </remarks>
+        MavCompIdUser24 = 48,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER25
+        /// </remarks>
+        MavCompIdUser25 = 49,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER26
+        /// </remarks>
+        MavCompIdUser26 = 50,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER27
+        /// </remarks>
+        MavCompIdUser27 = 51,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER28
+        /// </remarks>
+        MavCompIdUser28 = 52,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER29
+        /// </remarks>
+        MavCompIdUser29 = 53,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER30
+        /// </remarks>
+        MavCompIdUser30 = 54,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER31
+        /// </remarks>
+        MavCompIdUser31 = 55,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER32
+        /// </remarks>
+        MavCompIdUser32 = 56,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER33
+        /// </remarks>
+        MavCompIdUser33 = 57,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER34
+        /// </remarks>
+        MavCompIdUser34 = 58,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER35
+        /// </remarks>
+        MavCompIdUser35 = 59,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER36
+        /// </remarks>
+        MavCompIdUser36 = 60,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER37
+        /// </remarks>
+        MavCompIdUser37 = 61,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER38
+        /// </remarks>
+        MavCompIdUser38 = 62,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER39
+        /// </remarks>
+        MavCompIdUser39 = 63,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER40
+        /// </remarks>
+        MavCompIdUser40 = 64,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER41
+        /// </remarks>
+        MavCompIdUser41 = 65,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER42
+        /// </remarks>
+        MavCompIdUser42 = 66,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER43
+        /// </remarks>
+        MavCompIdUser43 = 67,
+        /// <summary>
+        /// Telemetry radio (e.g. SiK radio, or other component that emits RADIO_STATUS messages).
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_TELEMETRY_RADIO
+        /// </remarks>
+        MavCompIdTelemetryRadio = 68,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER45
+        /// </remarks>
+        MavCompIdUser45 = 69,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER46
+        /// </remarks>
+        MavCompIdUser46 = 70,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER47
+        /// </remarks>
+        MavCompIdUser47 = 71,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER48
+        /// </remarks>
+        MavCompIdUser48 = 72,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER49
+        /// </remarks>
+        MavCompIdUser49 = 73,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER50
+        /// </remarks>
+        MavCompIdUser50 = 74,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER51
+        /// </remarks>
+        MavCompIdUser51 = 75,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER52
+        /// </remarks>
+        MavCompIdUser52 = 76,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER53
+        /// </remarks>
+        MavCompIdUser53 = 77,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER54
+        /// </remarks>
+        MavCompIdUser54 = 78,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER55
+        /// </remarks>
+        MavCompIdUser55 = 79,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER56
+        /// </remarks>
+        MavCompIdUser56 = 80,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER57
+        /// </remarks>
+        MavCompIdUser57 = 81,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER58
+        /// </remarks>
+        MavCompIdUser58 = 82,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER59
+        /// </remarks>
+        MavCompIdUser59 = 83,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER60
+        /// </remarks>
+        MavCompIdUser60 = 84,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER61
+        /// </remarks>
+        MavCompIdUser61 = 85,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER62
+        /// </remarks>
+        MavCompIdUser62 = 86,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER63
+        /// </remarks>
+        MavCompIdUser63 = 87,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER64
+        /// </remarks>
+        MavCompIdUser64 = 88,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER65
+        /// </remarks>
+        MavCompIdUser65 = 89,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER66
+        /// </remarks>
+        MavCompIdUser66 = 90,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER67
+        /// </remarks>
+        MavCompIdUser67 = 91,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER68
+        /// </remarks>
+        MavCompIdUser68 = 92,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER69
+        /// </remarks>
+        MavCompIdUser69 = 93,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER70
+        /// </remarks>
+        MavCompIdUser70 = 94,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER71
+        /// </remarks>
+        MavCompIdUser71 = 95,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER72
+        /// </remarks>
+        MavCompIdUser72 = 96,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER73
+        /// </remarks>
+        MavCompIdUser73 = 97,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER74
+        /// </remarks>
+        MavCompIdUser74 = 98,
+        /// <summary>
+        /// Id for a component on privately managed MAVLink network. Can be used for any purpose but may not be published by components outside of the private network.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_USER75
+        /// </remarks>
+        MavCompIdUser75 = 99,
+        /// <summary>
+        /// Camera #1.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_CAMERA
+        /// </remarks>
+        MavCompIdCamera = 100,
+        /// <summary>
+        /// Camera #2.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_CAMERA2
+        /// </remarks>
+        MavCompIdCamera2 = 101,
+        /// <summary>
+        /// Camera #3.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_CAMERA3
+        /// </remarks>
+        MavCompIdCamera3 = 102,
+        /// <summary>
+        /// Camera #4.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_CAMERA4
+        /// </remarks>
+        MavCompIdCamera4 = 103,
+        /// <summary>
+        /// Camera #5.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_CAMERA5
+        /// </remarks>
+        MavCompIdCamera5 = 104,
+        /// <summary>
+        /// Camera #6.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_CAMERA6
+        /// </remarks>
+        MavCompIdCamera6 = 105,
+        /// <summary>
+        /// Servo #1.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_SERVO1
+        /// </remarks>
+        MavCompIdServo1 = 140,
+        /// <summary>
+        /// Servo #2.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_SERVO2
+        /// </remarks>
+        MavCompIdServo2 = 141,
+        /// <summary>
+        /// Servo #3.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_SERVO3
+        /// </remarks>
+        MavCompIdServo3 = 142,
+        /// <summary>
+        /// Servo #4.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_SERVO4
+        /// </remarks>
+        MavCompIdServo4 = 143,
+        /// <summary>
+        /// Servo #5.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_SERVO5
+        /// </remarks>
+        MavCompIdServo5 = 144,
+        /// <summary>
+        /// Servo #6.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_SERVO6
+        /// </remarks>
+        MavCompIdServo6 = 145,
+        /// <summary>
+        /// Servo #7.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_SERVO7
+        /// </remarks>
+        MavCompIdServo7 = 146,
+        /// <summary>
+        /// Servo #8.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_SERVO8
+        /// </remarks>
+        MavCompIdServo8 = 147,
+        /// <summary>
+        /// Servo #9.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_SERVO9
+        /// </remarks>
+        MavCompIdServo9 = 148,
+        /// <summary>
+        /// Servo #10.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_SERVO10
+        /// </remarks>
+        MavCompIdServo10 = 149,
+        /// <summary>
+        /// Servo #11.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_SERVO11
+        /// </remarks>
+        MavCompIdServo11 = 150,
+        /// <summary>
+        /// Servo #12.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_SERVO12
+        /// </remarks>
+        MavCompIdServo12 = 151,
+        /// <summary>
+        /// Servo #13.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_SERVO13
+        /// </remarks>
+        MavCompIdServo13 = 152,
+        /// <summary>
+        /// Servo #14.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_SERVO14
+        /// </remarks>
+        MavCompIdServo14 = 153,
+        /// <summary>
+        /// Gimbal #1.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_GIMBAL
+        /// </remarks>
+        MavCompIdGimbal = 154,
+        /// <summary>
+        /// Logging component.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_LOG
+        /// </remarks>
+        MavCompIdLog = 155,
+        /// <summary>
+        /// Automatic Dependent Surveillance-Broadcast (ADS-B) component.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_ADSB
+        /// </remarks>
+        MavCompIdAdsb = 156,
+        /// <summary>
+        /// On Screen Display (OSD) devices for video links.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_OSD
+        /// </remarks>
+        MavCompIdOsd = 157,
+        /// <summary>
+        /// Generic autopilot peripheral component ID. Meant for devices that do not implement the parameter microservice.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_PERIPHERAL
+        /// </remarks>
+        MavCompIdPeripheral = 158,
+        /// <summary>
+        /// Gimbal ID for QX1.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_QX1_GIMBAL
+        /// </remarks>
+        [System.Obsolete("Since: 2018-11. Replaced by: MAV_COMP_ID_GIMBAL. All gimbals should use MAV_COMP_ID_GIMBAL.")]
+        MavCompIdQx1Gimbal = 159,
+        /// <summary>
+        /// FLARM collision alert component.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_FLARM
+        /// </remarks>
+        MavCompIdFlarm = 160,
+        /// <summary>
+        /// Parachute component.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_PARACHUTE
+        /// </remarks>
+        MavCompIdParachute = 161,
+        /// <summary>
+        /// Winch component.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_WINCH
+        /// </remarks>
+        MavCompIdWinch = 169,
+        /// <summary>
+        /// Gimbal #2.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_GIMBAL2
+        /// </remarks>
+        MavCompIdGimbal2 = 171,
+        /// <summary>
+        /// Gimbal #3.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_GIMBAL3
+        /// </remarks>
+        MavCompIdGimbal3 = 172,
+        /// <summary>
+        /// Gimbal #4
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_GIMBAL4
+        /// </remarks>
+        MavCompIdGimbal4 = 173,
+        /// <summary>
+        /// Gimbal #5.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_GIMBAL5
+        /// </remarks>
+        MavCompIdGimbal5 = 174,
+        /// <summary>
+        /// Gimbal #6.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_GIMBAL6
+        /// </remarks>
+        MavCompIdGimbal6 = 175,
+        /// <summary>
+        /// Battery #1.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_BATTERY
+        /// </remarks>
+        MavCompIdBattery = 180,
+        /// <summary>
+        /// Battery #2.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_BATTERY2
+        /// </remarks>
+        MavCompIdBattery2 = 181,
+        /// <summary>
+        /// CAN over MAVLink client.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_MAVCAN
+        /// </remarks>
+        MavCompIdMavcan = 189,
+        /// <summary>
+        /// Component that can generate/supply a mission flight plan (e.g. GCS or developer API).
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_MISSIONPLANNER
+        /// </remarks>
+        MavCompIdMissionplanner = 190,
+        /// <summary>
+        /// Component that lives on the onboard computer (companion computer) and has some generic functionalities, such as settings system parameters and monitoring the status of some processes that don't directly speak mavlink and so on.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_ONBOARD_COMPUTER
+        /// </remarks>
+        MavCompIdOnboardComputer = 191,
+        /// <summary>
+        /// Component that lives on the onboard computer (companion computer) and has some generic functionalities, such as settings system parameters and monitoring the status of some processes that don't directly speak mavlink and so on.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_ONBOARD_COMPUTER2
+        /// </remarks>
+        MavCompIdOnboardComputer2 = 192,
+        /// <summary>
+        /// Component that lives on the onboard computer (companion computer) and has some generic functionalities, such as settings system parameters and monitoring the status of some processes that don't directly speak mavlink and so on.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_ONBOARD_COMPUTER3
+        /// </remarks>
+        MavCompIdOnboardComputer3 = 193,
+        /// <summary>
+        /// Component that lives on the onboard computer (companion computer) and has some generic functionalities, such as settings system parameters and monitoring the status of some processes that don't directly speak mavlink and so on.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_ONBOARD_COMPUTER4
+        /// </remarks>
+        MavCompIdOnboardComputer4 = 194,
+        /// <summary>
+        /// Component that finds an optimal path between points based on a certain constraint (e.g. minimum snap, shortest path, cost, etc.).
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_PATHPLANNER
+        /// </remarks>
+        MavCompIdPathplanner = 195,
+        /// <summary>
+        /// Component that plans a collision free path between two points.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_OBSTACLE_AVOIDANCE
+        /// </remarks>
+        MavCompIdObstacleAvoidance = 196,
+        /// <summary>
+        /// Component that provides position estimates using VIO techniques.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_VISUAL_INERTIAL_ODOMETRY
+        /// </remarks>
+        MavCompIdVisualInertialOdometry = 197,
+        /// <summary>
+        /// Component that manages pairing of vehicle and GCS.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_PAIRING_MANAGER
+        /// </remarks>
+        MavCompIdPairingManager = 198,
+        /// <summary>
+        /// Inertial Measurement Unit (IMU) #1.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_IMU
+        /// </remarks>
+        MavCompIdImu = 200,
+        /// <summary>
+        /// Inertial Measurement Unit (IMU) #2.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_IMU_2
+        /// </remarks>
+        MavCompIdImu2 = 201,
+        /// <summary>
+        /// Inertial Measurement Unit (IMU) #3.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_IMU_3
+        /// </remarks>
+        MavCompIdImu3 = 202,
+        /// <summary>
+        /// GPS #1.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_GPS
+        /// </remarks>
+        MavCompIdGps = 220,
+        /// <summary>
+        /// GPS #2.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_GPS2
+        /// </remarks>
+        MavCompIdGps2 = 221,
+        /// <summary>
+        /// Open Drone ID transmitter/receiver (Bluetooth/WiFi/Internet).
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_ODID_TXRX_1
+        /// </remarks>
+        MavCompIdOdidTxrx1 = 236,
+        /// <summary>
+        /// Open Drone ID transmitter/receiver (Bluetooth/WiFi/Internet).
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_ODID_TXRX_2
+        /// </remarks>
+        MavCompIdOdidTxrx2 = 237,
+        /// <summary>
+        /// Open Drone ID transmitter/receiver (Bluetooth/WiFi/Internet).
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_ODID_TXRX_3
+        /// </remarks>
+        MavCompIdOdidTxrx3 = 238,
+        /// <summary>
+        /// Component to bridge MAVLink to UDP (i.e. from a UART).
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_UDP_BRIDGE
+        /// </remarks>
+        MavCompIdUdpBridge = 240,
+        /// <summary>
+        /// Component to bridge to UART (i.e. from UDP).
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_UART_BRIDGE
+        /// </remarks>
+        MavCompIdUartBridge = 241,
+        /// <summary>
+        /// Component handling TUNNEL messages (e.g. vendor specific GUI of a component).
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_TUNNEL_NODE
+        /// </remarks>
+        MavCompIdTunnelNode = 242,
+        /// <summary>
+        /// Illuminator
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_ILLUMINATOR
+        /// </remarks>
+        MavCompIdIlluminator = 243,
+        /// <summary>
+        /// Deprecated, don't use. Component for handling system messages (e.g. to ARM, takeoff, etc.).
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_COMP_ID_SYSTEM_CONTROL
+        /// </remarks>
+        [System.Obsolete("Since: 2018-11. Replaced by: MAV_COMP_ID_ALL. System control does not require a separate component ID. Instead, system commands should be sent with target_component=MAV_COMP_ID_ALL allowing the target component to use any appropriate component id.")]
+        MavCompIdSystemControl = 250
+    }
+
+    /// <summary>
+    /// The heartbeat message shows that a system or component is present and responding. The type and autopilot fields (along with the message component id), allow the receiving system to treat further messages from this system appropriately (e.g. by laying out the user interface based on the autopilot). This microservice is documented at https://mavlink.io/en/services/heartbeat.html
+    /// </summary>
+    /// <remarks>
+    /// Original name: HEARTBEAT
+    /// </remarks>
+    [MavlinkIdentifiedType(0U, "HEARTBEAT")]
+    public readonly record struct HeartbeatMavlinkMessage : MavlinkMessage
+    {
+        /// <remarks>
+        /// Original name: TYPE
+        /// </remarks>
+        public MavType Type { get; init; }
+        /// <remarks>
+        /// Original name: AUTOPILOT
+        /// </remarks>
+        public MavAutopilot Autopilot { get; init; }
+        /// <remarks>
+        /// Original name: BASE_MODE
+        /// </remarks>
+        public MavModeFlag BaseMode { get; init; }
+        /// <remarks>
+        /// Original name: CUSTOM_MODE
+        /// </remarks>
+        public uint CustomMode { get; init; }
+        /// <remarks>
+        /// Original name: SYSTEM_STATUS
+        /// </remarks>
+        public MavState SystemStatus { get; init; }
+        /// <remarks>
+        /// Original name: MAVLINK_VERSION
+        /// </remarks>
+        public byte MavlinkVersion { get; init; }
+
+        public static HeartbeatMavlinkMessage CreateInstance(byte[] payload)
+        {
+            if (payload.Length == 0)
+            {
+                return new HeartbeatMavlinkMessage();
+            }
+
+            if (payload.Length < 9)
+            {
+                var paddedPayload = new byte[9];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
+            var typeValue = (byte)payload[0];
+            var type = (MavType)typeValue;
+            var autopilotValue = (byte)payload[1];
+            var autopilot = (MavAutopilot)autopilotValue;
+            var baseModeValue = (byte)payload[2];
+            var baseMode = (MavModeFlag)baseModeValue;
+            var customMode = BitConverter.ToUInt32(payload, 3);
+            var systemStatusValue = (byte)payload[7];
+            var systemStatus = (MavState)systemStatusValue;
+            var mavlinkVersion = payload[8];
+            return new HeartbeatMavlinkMessage
+            {
+                Type = type,
+                Autopilot = autopilot,
+                BaseMode = baseMode,
+                CustomMode = customMode,
+                SystemStatus = systemStatus,
+                MavlinkVersion = mavlinkVersion
+            };
+        }
+    }
+
+    /// <summary>
+    /// Version and capability of protocol version. This message can be requested with MAV_CMD_REQUEST_MESSAGE and is used as part of the handshaking to establish which MAVLink version should be used on the network. Every node should respond to a request for PROTOCOL_VERSION to enable the handshaking. Library implementers should consider adding this into the default decoding state machine to allow the protocol core to respond directly.
+    /// </summary>
+    /// <remarks>
+    /// Original name: PROTOCOL_VERSION
+    /// </remarks>
+    [MavlinkIdentifiedType(300U, "PROTOCOL_VERSION")]
+    public readonly record struct ProtocolVersionMavlinkMessage : MavlinkMessage
+    {
+        /// <remarks>
+        /// Original name: VERSION
+        /// </remarks>
+        public ushort Version { get; init; }
+        /// <remarks>
+        /// Original name: MIN_VERSION
+        /// </remarks>
+        public ushort MinVersion { get; init; }
+        /// <remarks>
+        /// Original name: MAX_VERSION
+        /// </remarks>
+        public ushort MaxVersion { get; init; }
+
+        /// <remarks>
+        /// Original name: SPEC_VERSION_HASH
+        /// </remarks>
+        [System.ComponentModel.DataAnnotations.RequiredArrayLength(8)]
+        public System.Collections.Immutable.ImmutableArray<byte> SpecVersionHash { get; init; }
+
+        /// <remarks>
+        /// Original name: LIBRARY_VERSION_HASH
+        /// </remarks>
+        [System.ComponentModel.DataAnnotations.RequiredArrayLength(8)]
+        public System.Collections.Immutable.ImmutableArray<byte> LibraryVersionHash { get; init; }
+
+        public static ProtocolVersionMavlinkMessage CreateInstance(byte[] payload)
+        {
+            if (payload.Length == 0)
+            {
+                return new ProtocolVersionMavlinkMessage();
+            }
+
+            if (payload.Length < 22)
+            {
+                var paddedPayload = new byte[22];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
+            var version = BitConverter.ToUInt16(payload, 0);
+            var minVersion = BitConverter.ToUInt16(payload, 2);
+            var maxVersion = BitConverter.ToUInt16(payload, 4);
+            var tempSpecVersionHashArray = new byte[8];
+            Buffer.BlockCopy(payload, 6, tempSpecVersionHashArray, 0, 8);
+            var specVersionHash = System.Collections.Immutable.ImmutableArray.CreateRange(tempSpecVersionHashArray);
+            var tempLibraryVersionHashArray = new byte[8];
+            Buffer.BlockCopy(payload, 14, tempLibraryVersionHashArray, 0, 8);
+            var libraryVersionHash = System.Collections.Immutable.ImmutableArray.CreateRange(tempLibraryVersionHashArray);
+            return new ProtocolVersionMavlinkMessage
+            {
+                Version = version,
+                MinVersion = minVersion,
+                MaxVersion = maxVersion,
+                SpecVersionHash = specVersionHash,
+                LibraryVersionHash = libraryVersionHash
+            };
+        }
+    }
+
+    public static class MavlinkSpecification
+    {
+        public static byte? Version = 3;
+        public static byte? Dialect = 0;
+    }
+}
+namespace MavlinkTypes.TestMavlinkStandard
+{
+    public static class MavlinkSpecification
+    {
+        public static byte? Version = 0;
+        public static byte? Dialect = 0;
+    }
+}
+namespace MavlinkTypes.TestMavlinkCommon
+{
+    /// <summary>
+    /// These values define the type of firmware release.  These values indicate the first version or release of this type.  For example the first alpha release would be 64, the second would be 65.
+    /// </summary>
+    /// <remarks>
+    /// Original name: FIRMWARE_VERSION_TYPE
+    /// </remarks>
+    [MavlinkType("FIRMWARE_VERSION_TYPE")]
+    public enum FirmwareVersionType : byte
+    {
+        /// <summary>
+        /// development release
+        /// </summary>
+        /// <remarks>
+        /// Original name: FIRMWARE_VERSION_TYPE_DEV
+        /// </remarks>
+        FirmwareVersionTypeDev = 0,
+        /// <summary>
+        /// alpha release
+        /// </summary>
+        /// <remarks>
+        /// Original name: FIRMWARE_VERSION_TYPE_ALPHA
+        /// </remarks>
+        FirmwareVersionTypeAlpha = 64,
+        /// <summary>
+        /// beta release
+        /// </summary>
+        /// <remarks>
+        /// Original name: FIRMWARE_VERSION_TYPE_BETA
+        /// </remarks>
+        FirmwareVersionTypeBeta = 128,
+        /// <summary>
+        /// release candidate
+        /// </summary>
+        /// <remarks>
+        /// Original name: FIRMWARE_VERSION_TYPE_RC
+        /// </remarks>
+        FirmwareVersionTypeRc = 192,
+        /// <summary>
+        /// official stable release
+        /// </summary>
+        /// <remarks>
+        /// Original name: FIRMWARE_VERSION_TYPE_OFFICIAL
+        /// </remarks>
+        FirmwareVersionTypeOfficial = 255
+    }
+
+    /// <summary>
+    /// Flags to report failure cases over the high latency telemetry.
+    /// </summary>
+    /// <remarks>
+    /// Original name: HL_FAILURE_FLAG
+    /// </remarks>
+    [MavlinkType("HL_FAILURE_FLAG")]
+    [System.FlagsAttribute]
+    public enum HlFailureFlag : ushort
+    {
+        /// <summary>
+        /// GPS failure.
+        /// </summary>
+        /// <remarks>
+        /// Original name: HL_FAILURE_FLAG_GPS
+        /// </remarks>
+        HlFailureFlagGps = 1,
+        /// <summary>
+        /// Differential pressure sensor failure.
+        /// </summary>
+        /// <remarks>
+        /// Original name: HL_FAILURE_FLAG_DIFFERENTIAL_PRESSURE
+        /// </remarks>
+        HlFailureFlagDifferentialPressure = 2,
+        /// <summary>
+        /// Absolute pressure sensor failure.
+        /// </summary>
+        /// <remarks>
+        /// Original name: HL_FAILURE_FLAG_ABSOLUTE_PRESSURE
+        /// </remarks>
+        HlFailureFlagAbsolutePressure = 4,
+        /// <summary>
+        /// Accelerometer sensor failure.
+        /// </summary>
+        /// <remarks>
+        /// Original name: HL_FAILURE_FLAG_3D_ACCEL
+        /// </remarks>
+        HlFailureFlag3dAccel = 8,
+        /// <summary>
+        /// Gyroscope sensor failure.
+        /// </summary>
+        /// <remarks>
+        /// Original name: HL_FAILURE_FLAG_3D_GYRO
+        /// </remarks>
+        HlFailureFlag3dGyro = 16,
+        /// <summary>
+        /// Magnetometer sensor failure.
+        /// </summary>
+        /// <remarks>
+        /// Original name: HL_FAILURE_FLAG_3D_MAG
+        /// </remarks>
+        HlFailureFlag3dMag = 32,
+        /// <summary>
+        /// Terrain subsystem failure.
+        /// </summary>
+        /// <remarks>
+        /// Original name: HL_FAILURE_FLAG_TERRAIN
+        /// </remarks>
+        HlFailureFlagTerrain = 64,
+        /// <summary>
+        /// Battery failure/critical low battery.
+        /// </summary>
+        /// <remarks>
+        /// Original name: HL_FAILURE_FLAG_BATTERY
+        /// </remarks>
+        HlFailureFlagBattery = 128,
+        /// <summary>
+        /// RC receiver failure/no RC connection.
+        /// </summary>
+        /// <remarks>
+        /// Original name: HL_FAILURE_FLAG_RC_RECEIVER
+        /// </remarks>
+        HlFailureFlagRcReceiver = 256,
+        /// <summary>
+        /// Offboard link failure.
+        /// </summary>
+        /// <remarks>
+        /// Original name: HL_FAILURE_FLAG_OFFBOARD_LINK
+        /// </remarks>
+        HlFailureFlagOffboardLink = 512,
+        /// <summary>
+        /// Engine failure.
+        /// </summary>
+        /// <remarks>
+        /// Original name: HL_FAILURE_FLAG_ENGINE
+        /// </remarks>
+        HlFailureFlagEngine = 1024,
+        /// <summary>
+        /// Geofence violation.
+        /// </summary>
+        /// <remarks>
+        /// Original name: HL_FAILURE_FLAG_GEOFENCE
+        /// </remarks>
+        HlFailureFlagGeofence = 2048,
+        /// <summary>
+        /// Estimator failure, for example measurement rejection or large variances.
+        /// </summary>
+        /// <remarks>
+        /// Original name: HL_FAILURE_FLAG_ESTIMATOR
+        /// </remarks>
+        HlFailureFlagEstimator = 4096,
+        /// <summary>
+        /// Mission failure.
+        /// </summary>
+        /// <remarks>
+        /// Original name: HL_FAILURE_FLAG_MISSION
+        /// </remarks>
+        HlFailureFlagMission = 8192
+    }
+
+    /// <summary>
+    /// Actions that may be specified in MAV_CMD_OVERRIDE_GOTO to override mission execution.
+    /// </summary>
+    /// <remarks>
+    /// Original name: MAV_GOTO
+    /// </remarks>
+    [MavlinkType("MAV_GOTO")]
+    public enum MavGoto : byte
+    {
+        /// <summary>
+        /// Hold at the current position.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_GOTO_DO_HOLD
+        /// </remarks>
+        MavGotoDoHold = 0,
+        /// <summary>
+        /// Continue with the next item in mission execution.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_GOTO_DO_CONTINUE
+        /// </remarks>
+        MavGotoDoContinue = 1,
+        /// <summary>
+        /// Hold at the current position of the system
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_GOTO_HOLD_AT_CURRENT_POSITION
+        /// </remarks>
+        MavGotoHoldAtCurrentPosition = 2,
+        /// <summary>
+        /// Hold at the position specified in the parameters of the DO_HOLD action
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_GOTO_HOLD_AT_SPECIFIED_POSITION
+        /// </remarks>
+        MavGotoHoldAtSpecifiedPosition = 3
+    }
+
+    /// <summary>
+    /// These defines are predefined OR-combined mode flags. There is no need to use values from this enum, but it
+    /// simplifies the use of the mode flags. Note that manual input is enabled in all modes as a safety override.
+    /// 
+    /// </summary>
+    /// <remarks>
+    /// Original name: MAV_MODE
+    /// </remarks>
+    [MavlinkType("MAV_MODE")]
+    public enum MavMode : byte
+    {
+        /// <summary>
+        /// System is not ready to fly, booting, calibrating, etc. No flag is set.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_PREFLIGHT
+        /// </remarks>
+        MavModePreflight = 0,
+        /// <summary>
+        /// System is allowed to be active, under manual (RC) control, no stabilization
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_MANUAL_DISARMED
+        /// </remarks>
+        MavModeManualDisarmed = 64,
+        /// <summary>
+        /// UNDEFINED mode. This solely depends on the autopilot - use with caution, intended for developers only.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_TEST_DISARMED
+        /// </remarks>
+        MavModeTestDisarmed = 66,
+        /// <summary>
+        /// System is allowed to be active, under assisted RC control.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_STABILIZE_DISARMED
+        /// </remarks>
+        MavModeStabilizeDisarmed = 80,
+        /// <summary>
+        /// System is allowed to be active, under autonomous control, manual setpoint
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_GUIDED_DISARMED
+        /// </remarks>
+        MavModeGuidedDisarmed = 88,
+        /// <summary>
+        /// System is allowed to be active, under autonomous control and navigation (the trajectory is decided onboard and not pre-programmed by waypoints)
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_AUTO_DISARMED
+        /// </remarks>
+        MavModeAutoDisarmed = 92,
+        /// <summary>
+        /// System is allowed to be active, under manual (RC) control, no stabilization
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_MANUAL_ARMED
+        /// </remarks>
+        MavModeManualArmed = 192,
+        /// <summary>
+        /// UNDEFINED mode. This solely depends on the autopilot - use with caution, intended for developers only.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_TEST_ARMED
+        /// </remarks>
+        MavModeTestArmed = 194,
+        /// <summary>
+        /// System is allowed to be active, under assisted RC control.
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_STABILIZE_ARMED
+        /// </remarks>
+        MavModeStabilizeArmed = 208,
+        /// <summary>
+        /// System is allowed to be active, under autonomous control, manual setpoint
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_GUIDED_ARMED
+        /// </remarks>
+        MavModeGuidedArmed = 216,
+        /// <summary>
+        /// System is allowed to be active, under autonomous control and navigation (the trajectory is decided onboard and not pre-programmed by waypoints)
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_MODE_AUTO_ARMED
+        /// </remarks>
+        MavModeAutoArmed = 220
+    }
+
+    /// <summary>
+    /// These encode the sensors whose status is sent as part of the SYS_STATUS message.
+    /// </summary>
+    /// <remarks>
+    /// Original name: MAV_SYS_STATUS_SENSOR
+    /// </remarks>
+    [MavlinkType("MAV_SYS_STATUS_SENSOR")]
+    [System.FlagsAttribute]
+    public enum MavSysStatusSensor : uint
+    {
+        /// <summary>
+        /// 0x01 3D gyro
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_3D_GYRO
+        /// </remarks>
+        MavSysStatusSensor3dGyro = 1,
+        /// <summary>
+        /// 0x02 3D accelerometer
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_3D_ACCEL
+        /// </remarks>
+        MavSysStatusSensor3dAccel = 2,
+        /// <summary>
+        /// 0x04 3D magnetometer
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_3D_MAG
+        /// </remarks>
+        MavSysStatusSensor3dMag = 4,
+        /// <summary>
+        /// 0x08 absolute pressure
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE
+        /// </remarks>
+        MavSysStatusSensorAbsolutePressure = 8,
+        /// <summary>
+        /// 0x10 differential pressure
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_DIFFERENTIAL_PRESSURE
+        /// </remarks>
+        MavSysStatusSensorDifferentialPressure = 16,
+        /// <summary>
+        /// 0x20 GPS
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_GPS
+        /// </remarks>
+        MavSysStatusSensorGps = 32,
+        /// <summary>
+        /// 0x40 optical flow
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_OPTICAL_FLOW
+        /// </remarks>
+        MavSysStatusSensorOpticalFlow = 64,
+        /// <summary>
+        /// 0x80 computer vision position
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_VISION_POSITION
+        /// </remarks>
+        MavSysStatusSensorVisionPosition = 128,
+        /// <summary>
+        /// 0x100 laser based position
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_LASER_POSITION
+        /// </remarks>
+        MavSysStatusSensorLaserPosition = 256,
+        /// <summary>
+        /// 0x200 external ground truth (Vicon or Leica)
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_EXTERNAL_GROUND_TRUTH
+        /// </remarks>
+        MavSysStatusSensorExternalGroundTruth = 512,
+        /// <summary>
+        /// 0x400 3D angular rate control
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_ANGULAR_RATE_CONTROL
+        /// </remarks>
+        MavSysStatusSensorAngularRateControl = 1024,
+        /// <summary>
+        /// 0x800 attitude stabilization
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_ATTITUDE_STABILIZATION
+        /// </remarks>
+        MavSysStatusSensorAttitudeStabilization = 2048,
+        /// <summary>
+        /// 0x1000 yaw position
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_YAW_POSITION
+        /// </remarks>
+        MavSysStatusSensorYawPosition = 4096,
+        /// <summary>
+        /// 0x2000 z/altitude control
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_Z_ALTITUDE_CONTROL
+        /// </remarks>
+        MavSysStatusSensorZAltitudeControl = 8192,
+        /// <summary>
+        /// 0x4000 x/y position control
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_XY_POSITION_CONTROL
+        /// </remarks>
+        MavSysStatusSensorXyPositionControl = 16384,
+        /// <summary>
+        /// 0x8000 motor outputs / control
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_MOTOR_OUTPUTS
+        /// </remarks>
+        MavSysStatusSensorMotorOutputs = 32768,
+        /// <summary>
+        /// 0x10000 RC receiver
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_RC_RECEIVER
+        /// </remarks>
+        MavSysStatusSensorRcReceiver = 65536,
+        /// <summary>
+        /// 0x20000 2nd 3D gyro
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_3D_GYRO2
+        /// </remarks>
+        MavSysStatusSensor3dGyro2 = 131072,
+        /// <summary>
+        /// 0x40000 2nd 3D accelerometer
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_3D_ACCEL2
+        /// </remarks>
+        MavSysStatusSensor3dAccel2 = 262144,
+        /// <summary>
+        /// 0x80000 2nd 3D magnetometer
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_3D_MAG2
+        /// </remarks>
+        MavSysStatusSensor3dMag2 = 524288,
+        /// <summary>
+        /// 0x100000 geofence
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_GEOFENCE
+        /// </remarks>
+        MavSysStatusGeofence = 1048576,
+        /// <summary>
+        /// 0x200000 AHRS subsystem health
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_AHRS
+        /// </remarks>
+        MavSysStatusAhrs = 2097152,
+        /// <summary>
+        /// 0x400000 Terrain subsystem health
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_TERRAIN
+        /// </remarks>
+        MavSysStatusTerrain = 4194304,
+        /// <summary>
+        /// 0x800000 Motors are reversed
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_REVERSE_MOTOR
+        /// </remarks>
+        MavSysStatusReverseMotor = 8388608,
+        /// <summary>
+        /// 0x1000000 Logging
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_LOGGING
+        /// </remarks>
+        MavSysStatusLogging = 16777216,
+        /// <summary>
+        /// 0x2000000 Battery
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_BATTERY
+        /// </remarks>
+        MavSysStatusSensorBattery = 33554432,
+        /// <summary>
+        /// 0x4000000 Proximity
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_PROXIMITY
+        /// </remarks>
+        MavSysStatusSensorProximity = 67108864,
+        /// <summary>
+        /// 0x8000000 Satellite Communication
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_SATCOM
+        /// </remarks>
+        MavSysStatusSensorSatcom = 134217728,
+        /// <summary>
+        /// 0x10000000 pre-arm check status. Always healthy when armed
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_PREARM_CHECK
+        /// </remarks>
+        MavSysStatusPrearmCheck = 268435456,
+        /// <summary>
+        /// 0x20000000 Avoidance/collision prevention
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_OBSTACLE_AVOIDANCE
+        /// </remarks>
+        MavSysStatusObstacleAvoidance = 536870912,
+        /// <summary>
+        /// 0x40000000 propulsion (actuator, esc, motor or propellor)
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_SENSOR_PROPULSION
+        /// </remarks>
+        MavSysStatusSensorPropulsion = 1073741824,
+        /// <summary>
+        /// 0x80000000 Extended bit-field are used for further sensor status bits (needs to be set in onboard_control_sensors_present only)
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_EXTENSION_USED
+        /// </remarks>
+        MavSysStatusExtensionUsed = 2147483648
+    }
+
+    /// <summary>
+    /// These encode the sensors whose status is sent as part of the SYS_STATUS message in the extended fields.
+    /// </summary>
+    /// <remarks>
+    /// Original name: MAV_SYS_STATUS_SENSOR_EXTENDED
+    /// </remarks>
+    [MavlinkType("MAV_SYS_STATUS_SENSOR_EXTENDED")]
+    [System.FlagsAttribute]
+    public enum MavSysStatusSensorExtended : byte
+    {
+        /// <summary>
+        /// 0x01 Recovery system (parachute, balloon, retracts etc)
+        /// </summary>
+        /// <remarks>
+        /// Original name: MAV_SYS_STATUS_RECOVERY_SYSTEM
+        /// </remarks>
+        MavSysStatusRecoverySystem = 1
+    }
+
+    /// <summary>
+    /// The general system state. If the system is following the MAVLink standard, the system state is mainly defined by three orthogonal states/modes: The system mode, which is either LOCKED (motors shut down and locked), MANUAL (system under RC control), GUIDED (system with autonomous position control, position setpoint controlled manually) or AUTO (system guided by path/waypoint planner). The NAV_MODE defined the current flight state: LIFTOFF (often an open-loop maneuver), LANDING, WAYPOINTS or VECTOR. This represents the internal navigation state machine. The system status shows whether the system is currently active or not and if an emergency occurred. During the CRITICAL and EMERGENCY states the MAV is still considered to be active, but should start emergency procedures autonomously. After a failure occurred it should first move from active to critical to allow manual intervention and then move to emergency after a certain timeout.
+    /// </summary>
+    /// <remarks>
+    /// Original name: SYS_STATUS
+    /// </remarks>
+    [MavlinkIdentifiedType(1U, "SYS_STATUS")]
+    public readonly record struct SysStatusMavlinkMessage : MavlinkMessage
+    {
+        /// <remarks>
+        /// Original name: ONBOARD_CONTROL_SENSORS_PRESENT
+        /// </remarks>
+        public MavSysStatusSensor OnboardControlSensorsPresent { get; init; }
+        /// <remarks>
+        /// Original name: ONBOARD_CONTROL_SENSORS_ENABLED
+        /// </remarks>
+        public MavSysStatusSensor OnboardControlSensorsEnabled { get; init; }
+        /// <remarks>
+        /// Original name: ONBOARD_CONTROL_SENSORS_HEALTH
+        /// </remarks>
+        public MavSysStatusSensor OnboardControlSensorsHealth { get; init; }
+        /// <remarks>
+        /// Original name: LOAD
+        /// </remarks>
+        public ushort Load { get; init; }
+        /// <remarks>
+        /// Original name: VOLTAGE_BATTERY
+        /// </remarks>
+        public ushort VoltageBattery { get; init; }
+        /// <remarks>
+        /// Original name: CURRENT_BATTERY
+        /// </remarks>
+        public short CurrentBattery { get; init; }
+        /// <remarks>
+        /// Original name: BATTERY_REMAINING
+        /// </remarks>
+        public sbyte BatteryRemaining { get; init; }
+        /// <remarks>
+        /// Original name: DROP_RATE_COMM
+        /// </remarks>
+        public ushort DropRateComm { get; init; }
+        /// <remarks>
+        /// Original name: ERRORS_COMM
+        /// </remarks>
+        public ushort ErrorsComm { get; init; }
+        /// <remarks>
+        /// Original name: ERRORS_COUNT1
+        /// </remarks>
+        public ushort ErrorsCount1 { get; init; }
+        /// <remarks>
+        /// Original name: ERRORS_COUNT2
+        /// </remarks>
+        public ushort ErrorsCount2 { get; init; }
+        /// <remarks>
+        /// Original name: ERRORS_COUNT3
+        /// </remarks>
+        public ushort ErrorsCount3 { get; init; }
+        /// <remarks>
+        /// Original name: ERRORS_COUNT4
+        /// </remarks>
+        public ushort ErrorsCount4 { get; init; }
+        /// <remarks>
+        /// Original name: ONBOARD_CONTROL_SENSORS_PRESENT_EXTENDED
+        /// </remarks>
+        public MavSysStatusSensorExtended? OnboardControlSensorsPresentExtended { get; init; }
+        /// <remarks>
+        /// Original name: ONBOARD_CONTROL_SENSORS_ENABLED_EXTENDED
+        /// </remarks>
+        public MavSysStatusSensorExtended? OnboardControlSensorsEnabledExtended { get; init; }
+        /// <remarks>
+        /// Original name: ONBOARD_CONTROL_SENSORS_HEALTH_EXTENDED
+        /// </remarks>
+        public MavSysStatusSensorExtended? OnboardControlSensorsHealthExtended { get; init; }
+
+        public static SysStatusMavlinkMessage CreateInstance(byte[] payload)
+        {
+            if (payload.Length == 0)
+            {
+                return new SysStatusMavlinkMessage();
+            }
+
+            if (payload.Length < 31)
+            {
+                var paddedPayload = new byte[31];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
+            var onboardControlSensorsPresentValue = BitConverter.ToUInt32(payload, 0);
+            var onboardControlSensorsPresent = (MavSysStatusSensor)onboardControlSensorsPresentValue;
+            var onboardControlSensorsEnabledValue = BitConverter.ToUInt32(payload, 4);
+            var onboardControlSensorsEnabled = (MavSysStatusSensor)onboardControlSensorsEnabledValue;
+            var onboardControlSensorsHealthValue = BitConverter.ToUInt32(payload, 8);
+            var onboardControlSensorsHealth = (MavSysStatusSensor)onboardControlSensorsHealthValue;
+            var load = BitConverter.ToUInt16(payload, 12);
+            var voltageBattery = BitConverter.ToUInt16(payload, 14);
+            var currentBattery = BitConverter.ToInt16(payload, 16);
+            var batteryRemaining = (sbyte)payload[18];
+            var dropRateComm = BitConverter.ToUInt16(payload, 19);
+            var errorsComm = BitConverter.ToUInt16(payload, 21);
+            var errorsCount1 = BitConverter.ToUInt16(payload, 23);
+            var errorsCount2 = BitConverter.ToUInt16(payload, 25);
+            var errorsCount3 = BitConverter.ToUInt16(payload, 27);
+            var errorsCount4 = BitConverter.ToUInt16(payload, 29);
+            if (payload.Length > 31 && payload.Length < 35)
+            {
+                var paddedPayload = new byte[35];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
+            uint? onboardControlSensorsPresentExtendedValue = null;
+            if (payload.Length > 31)
+            {
+                onboardControlSensorsPresentExtendedValue = BitConverter.ToUInt32(payload, 31);
+            }
+
+            var onboardControlSensorsPresentExtended = onboardControlSensorsPresentExtendedValue.HasValue ? (MavSysStatusSensorExtended?)onboardControlSensorsPresentExtendedValue.Value : null;
+            if (payload.Length > 35 && payload.Length < 39)
+            {
+                var paddedPayload = new byte[39];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
+            uint? onboardControlSensorsEnabledExtendedValue = null;
+            if (payload.Length > 35)
+            {
+                onboardControlSensorsEnabledExtendedValue = BitConverter.ToUInt32(payload, 35);
+            }
+
+            var onboardControlSensorsEnabledExtended = onboardControlSensorsEnabledExtendedValue.HasValue ? (MavSysStatusSensorExtended?)onboardControlSensorsEnabledExtendedValue.Value : null;
+            if (payload.Length > 39 && payload.Length < 43)
+            {
+                var paddedPayload = new byte[43];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
+            uint? onboardControlSensorsHealthExtendedValue = null;
+            if (payload.Length > 39)
+            {
+                onboardControlSensorsHealthExtendedValue = BitConverter.ToUInt32(payload, 39);
+            }
+
+            var onboardControlSensorsHealthExtended = onboardControlSensorsHealthExtendedValue.HasValue ? (MavSysStatusSensorExtended?)onboardControlSensorsHealthExtendedValue.Value : null;
+            return new SysStatusMavlinkMessage
+            {
+                OnboardControlSensorsPresent = onboardControlSensorsPresent,
+                OnboardControlSensorsEnabled = onboardControlSensorsEnabled,
+                OnboardControlSensorsHealth = onboardControlSensorsHealth,
+                Load = load,
+                VoltageBattery = voltageBattery,
+                CurrentBattery = currentBattery,
+                BatteryRemaining = batteryRemaining,
+                DropRateComm = dropRateComm,
+                ErrorsComm = errorsComm,
+                ErrorsCount1 = errorsCount1,
+                ErrorsCount2 = errorsCount2,
+                ErrorsCount3 = errorsCount3,
+                ErrorsCount4 = errorsCount4,
+                OnboardControlSensorsPresentExtended = onboardControlSensorsPresentExtended,
+                OnboardControlSensorsEnabledExtended = onboardControlSensorsEnabledExtended,
+                OnboardControlSensorsHealthExtended = onboardControlSensorsHealthExtended
+            };
+        }
+    }
+
+    /// <summary>
+    /// The system time is the time of the master clock, typically the computer clock of the main onboard computer.
+    /// </summary>
+    /// <remarks>
+    /// Original name: SYSTEM_TIME
+    /// </remarks>
+    [MavlinkIdentifiedType(2U, "SYSTEM_TIME")]
+    public readonly record struct SystemTimeMavlinkMessage : MavlinkMessage
+    {
+        /// <remarks>
+        /// Original name: TIME_UNIX_USEC
+        /// </remarks>
+        public ulong TimeUnixUsec { get; init; }
+        /// <remarks>
+        /// Original name: TIME_BOOT_MS
+        /// </remarks>
+        public uint TimeBootMs { get; init; }
+
+        public static SystemTimeMavlinkMessage CreateInstance(byte[] payload)
+        {
+            if (payload.Length == 0)
+            {
+                return new SystemTimeMavlinkMessage();
+            }
+
+            if (payload.Length < 12)
+            {
+                var paddedPayload = new byte[12];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
+            var timeUnixUsec = BitConverter.ToUInt64(payload, 0);
+            var timeBootMs = BitConverter.ToUInt32(payload, 8);
+            return new SystemTimeMavlinkMessage
+            {
+                TimeUnixUsec = timeUnixUsec,
+                TimeBootMs = timeBootMs
+            };
+        }
+    }
+
+    /// <summary>
+    /// A ping message either requesting or responding to a ping. This allows to measure the system latencies, including serial port, radio modem and UDP connections. The ping microservice is documented at https://mavlink.io/en/services/ping.html
+    /// </summary>
+    /// <remarks>
+    /// Original name: PING
+    /// </remarks>
+    [MavlinkIdentifiedType(4U, "PING")]
+    public readonly record struct PingMavlinkMessage : MavlinkMessage
+    {
+        /// <remarks>
+        /// Original name: TIME_USEC
+        /// </remarks>
+        public ulong TimeUsec { get; init; }
+        /// <remarks>
+        /// Original name: SEQ
+        /// </remarks>
+        public uint Seq { get; init; }
+        /// <remarks>
+        /// Original name: TARGET_SYSTEM
+        /// </remarks>
+        public byte TargetSystem { get; init; }
+        /// <remarks>
+        /// Original name: TARGET_COMPONENT
+        /// </remarks>
+        public byte TargetComponent { get; init; }
+
+        public static PingMavlinkMessage CreateInstance(byte[] payload)
+        {
+            if (payload.Length == 0)
+            {
+                return new PingMavlinkMessage();
+            }
+
+            if (payload.Length < 14)
+            {
+                var paddedPayload = new byte[14];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
+            var timeUsec = BitConverter.ToUInt64(payload, 0);
+            var seq = BitConverter.ToUInt32(payload, 8);
+            var targetSystem = payload[12];
+            var targetComponent = payload[13];
+            return new PingMavlinkMessage
+            {
+                TimeUsec = timeUsec,
+                Seq = seq,
+                TargetSystem = targetSystem,
+                TargetComponent = targetComponent
+            };
+        }
+    }
+
+    /// <summary>
+    /// Request to control this MAV
+    /// </summary>
+    /// <remarks>
+    /// Original name: CHANGE_OPERATOR_CONTROL
+    /// </remarks>
+    [MavlinkIdentifiedType(5U, "CHANGE_OPERATOR_CONTROL")]
+    public readonly record struct ChangeOperatorControlMavlinkMessage : MavlinkMessage
+    {
+        /// <remarks>
+        /// Original name: TARGET_SYSTEM
+        /// </remarks>
+        public byte TargetSystem { get; init; }
+        /// <remarks>
+        /// Original name: CONTROL_REQUEST
+        /// </remarks>
+        public byte ControlRequest { get; init; }
+        /// <remarks>
+        /// Original name: VERSION
+        /// </remarks>
+        public byte Version { get; init; }
+
+        /// <remarks>
+        /// Original name: PASSKEY
+        /// </remarks>
+        [System.ComponentModel.DataAnnotations.RequiredArrayLength(25)]
+        public System.Collections.Immutable.ImmutableArray<char> Passkey { get; init; }
+
+        public static ChangeOperatorControlMavlinkMessage CreateInstance(byte[] payload)
+        {
+            if (payload.Length == 0)
+            {
+                return new ChangeOperatorControlMavlinkMessage();
+            }
+
+            if (payload.Length < 53)
+            {
+                var paddedPayload = new byte[53];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
+            var targetSystem = payload[0];
+            var controlRequest = payload[1];
+            var version = payload[2];
+            var tempPasskeyArray = new char[25];
+            Buffer.BlockCopy(payload, 3, tempPasskeyArray, 0, 50);
+            var passkey = System.Collections.Immutable.ImmutableArray.CreateRange(tempPasskeyArray);
+            return new ChangeOperatorControlMavlinkMessage
+            {
+                TargetSystem = targetSystem,
+                ControlRequest = controlRequest,
+                Version = version,
+                Passkey = passkey
+            };
+        }
+    }
+
+    public static class MavlinkSpecification
+    {
+        public static byte? Version = 3;
+        public static byte? Dialect = 0;
+    }
+}

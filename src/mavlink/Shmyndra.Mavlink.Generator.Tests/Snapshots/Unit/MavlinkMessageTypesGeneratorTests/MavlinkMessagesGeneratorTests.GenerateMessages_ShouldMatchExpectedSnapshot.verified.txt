@@ -1,0 +1,123 @@
+﻿/// <summary>
+/// ESC information for lower rate streaming. Recommended streaming rate 1Hz. See ESC_STATUS for higher-rate ESC data.
+/// </summary>
+/// <remarks>
+/// Original name: ESC_INFO
+/// </remarks>
+[MavlinkIdentifiedType(290U, "ESC_INFO")]
+public readonly record struct EscInfoMavlinkMessage : MavlinkMessage
+{
+    /// <summary>
+    /// Index of the first ESC in this message
+    /// </summary>
+    /// <remarks>
+    /// Original name: INDEX
+    /// </remarks>
+    public byte Index { get; init; }
+    /// <summary>
+    /// Timestamp
+    /// </summary>
+    /// <remarks>
+    /// Original name: TIME_USEC
+    /// </remarks>
+    public ulong TimeUsec { get; init; }
+    /// <summary>
+    /// Counter of data packets received
+    /// </summary>
+    /// <remarks>
+    /// Original name: COUNTER
+    /// </remarks>
+    public ushort Counter { get; init; }
+    /// <summary>
+    /// Total number of ESCs in all messages of this type
+    /// </summary>
+    /// <remarks>
+    /// Original name: COUNT
+    /// </remarks>
+    public byte Count { get; init; }
+    /// <summary>
+    /// Connection type protocol for all ESC
+    /// </summary>
+    /// <remarks>
+    /// Original name: CONNECTION_TYPE
+    /// </remarks>
+    public EscConnectionType ConnectionType { get; init; }
+    /// <summary>
+    /// Information regarding online/offline status of each ESC
+    /// </summary>
+    /// <remarks>
+    /// Original name: INFO
+    /// </remarks>
+    public byte Info { get; init; }
+
+    /// <summary>
+    /// Bitmap of ESC failure flags
+    /// </summary>
+    /// <remarks>
+    /// Original name: FAILURE_FLAGS
+    /// </remarks>
+    [System.ComponentModel.DataAnnotations.RequiredArrayLength(4)]
+    public System.Collections.Immutable.ImmutableArray<EscFailureFlags> FailureFlags { get; init; }
+
+    /// <summary>
+    /// Number of reported errors by each ESC since boot
+    /// </summary>
+    /// <remarks>
+    /// Original name: ERROR_COUNT
+    /// </remarks>
+    [System.ComponentModel.DataAnnotations.RequiredArrayLength(4)]
+    public System.Collections.Immutable.ImmutableArray<uint> ErrorCount { get; init; }
+
+    /// <summary>
+    /// Temperature of each ESC
+    /// </summary>
+    /// <remarks>
+    /// Original name: TEMPERATURE
+    /// </remarks>
+    [System.ComponentModel.DataAnnotations.RequiredArrayLength(4)]
+    public System.Collections.Immutable.ImmutableArray<short> Temperature { get; init; }
+
+    public static EscInfoMavlinkMessage CreateInstance(byte[] payload)
+    {
+        if (payload.Length == 0)
+        {
+            return new EscInfoMavlinkMessage();
+        }
+
+        if (payload.Length < 46)
+        {
+            var paddedPayload = new byte[46];
+            Array.Copy(payload, paddedPayload, payload.Length);
+            payload = paddedPayload;
+        }
+
+        var index = payload[0];
+        var timeUsec = BitConverter.ToUInt64(payload, 1);
+        var counter = BitConverter.ToUInt16(payload, 9);
+        var count = payload[11];
+        var connectionTypeValue = (byte)payload[12];
+        var connectionType = (EscConnectionType)connectionTypeValue;
+        var info = payload[13];
+        var tempFailureFlagsArray = new EscFailureFlags[4];
+        Buffer.BlockCopy(payload, 14, tempFailureFlagsArray, 0, 8);
+        var failureFlags = System.Collections.Immutable.ImmutableArray.CreateRange(tempFailureFlagsArray);
+        var tempErrorCountArray = new uint[4];
+        Buffer.BlockCopy(payload, 22, tempErrorCountArray, 0, 16);
+        var errorCount = System.Collections.Immutable.ImmutableArray.CreateRange(tempErrorCountArray);
+        var tempTemperatureArray = new short[4];
+        Buffer.BlockCopy(payload, 38, tempTemperatureArray, 0, 8);
+        var temperature = System.Collections.Immutable.ImmutableArray.CreateRange(tempTemperatureArray);
+        return new EscInfoMavlinkMessage
+        {
+            Index = index,
+            TimeUsec = timeUsec,
+            Counter = counter,
+            Count = count,
+            ConnectionType = connectionType,
+            Info = info,
+            FailureFlags = failureFlags,
+            ErrorCount = errorCount,
+            Temperature = temperature
+        };
+    }
+}

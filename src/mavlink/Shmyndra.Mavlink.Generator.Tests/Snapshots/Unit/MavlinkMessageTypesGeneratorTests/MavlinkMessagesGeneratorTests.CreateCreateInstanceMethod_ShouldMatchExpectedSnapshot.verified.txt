@@ -1,0 +1,43 @@
+﻿public static ESCInfoMessage CreateInstance(byte[] payload)
+{
+    if (payload.Length == 0)
+    {
+        return new ESCInfoMessage();
+    }
+
+    if (payload.Length < 46)
+    {
+        var paddedPayload = new byte[46];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    var index = payload[0];
+    var timeUsec = BitConverter.ToUInt64(payload, 1);
+    var counter = BitConverter.ToUInt16(payload, 9);
+    var count = payload[11];
+    var connectionTypeValue = (byte)payload[12];
+    var connectionType = (EscConnectionType)connectionTypeValue;
+    var info = payload[13];
+    var tempFailureFlagsArray = new EscFailureFlags[4];
+    Buffer.BlockCopy(payload, 14, tempFailureFlagsArray, 0, 8);
+    var failureFlags = System.Collections.Immutable.ImmutableArray.CreateRange(tempFailureFlagsArray);
+    var tempErrorCountArray = new uint[4];
+    Buffer.BlockCopy(payload, 22, tempErrorCountArray, 0, 16);
+    var errorCount = System.Collections.Immutable.ImmutableArray.CreateRange(tempErrorCountArray);
+    var tempTemperatureArray = new short[4];
+    Buffer.BlockCopy(payload, 38, tempTemperatureArray, 0, 8);
+    var temperature = System.Collections.Immutable.ImmutableArray.CreateRange(tempTemperatureArray);
+    return new ESCInfoMessage
+    {
+        Index = index,
+        TimeUsec = timeUsec,
+        Counter = counter,
+        Count = count,
+        ConnectionType = connectionType,
+        Info = info,
+        FailureFlags = failureFlags,
+        ErrorCount = errorCount,
+        Temperature = temperature
+    };
+}

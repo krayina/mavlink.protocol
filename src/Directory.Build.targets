@@ -1,0 +1,18 @@
+<Project>
+  <!-- Determine if netstandard2.0 is one of the target frameworks -->
+  <PropertyGroup>
+    <!-- Check if TargetFramework exists and is netstandard2.0 -->
+    <Condition1 Condition="'$(TargetFramework)' == 'netstandard2.0'">true</Condition1>
+    <Condition1 Condition="'$(Condition1)' == ''">false</Condition1>
+
+    <!-- Check if TargetFrameworks exists and contains netstandard2.0 -->
+    <Condition2 Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(TargetFrameworks)', '(^|;|,)\s*netstandard2\.0\s*(;|,|$)'))">true</Condition2>
+    <Condition2 Condition="'$(Condition2)' == ''">false</Condition2>
+
+    <!-- Set the main condition to true if any of the above conditions are true -->
+    <IsNetStandard2_0Condition Condition="'$(Condition1)' == 'true' OR '$(Condition2)' == 'true'">true</IsNetStandard2_0Condition>
+    <IsNetStandard2_0Condition Condition="'$(IsNetStandard2_0Condition)' == ''">false</IsNetStandard2_0Condition>
+  </PropertyGroup>
+
+  <Import Project="PolySharp.targets" />
+</Project>

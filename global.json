@@ -1,6 +1,10 @@
 {
-	"msbuild-sdks": {
-		"Uno.Sdk": "5.1.104",
-		"Microsoft.Build.NoTargets": "3.7.56"
-	}
+  "sdk": {
+    "allowPrerelease": false
+  },
+  "msbuild-sdks": {
+    "Uno.Sdk": "5.1.104",
+    "MSBuild.Sdk.Extras": "3.0.44",
+    "Microsoft.Build.NoTargets": "3.7.56"
+  }
 }

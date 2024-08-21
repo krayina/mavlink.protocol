@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<mavlink>
+  <dialect>0</dialect>
+  <!-- use test-mavlink-minimal enums -->
+  <enums/>
+  <!-- test-mavlink-minimal messages -->
+  <messages/>
+</mavlink>

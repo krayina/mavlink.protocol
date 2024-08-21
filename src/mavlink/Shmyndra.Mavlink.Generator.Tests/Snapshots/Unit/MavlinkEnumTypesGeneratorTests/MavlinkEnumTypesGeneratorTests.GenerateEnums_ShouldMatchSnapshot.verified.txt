@@ -1,0 +1,52 @@
+﻿[  
+/// <summary>
+/// Enum for ESC connection types
+/// </summary>
+/// <remarks>
+/// Original name: ESC_CONNECTION_TYPE
+/// </remarks>
+[MavlinkType("ESC_CONNECTION_TYPE")]
+public enum EscConnectionType : byte
+{
+    /// <summary>
+    /// Type 1
+    /// </summary>
+    /// <remarks>
+    /// Original name: ESC_TYPE1
+    /// </remarks>
+    EscType1 = 0,
+    /// <summary>
+    /// Type 2
+    /// </summary>
+    /// <remarks>
+    /// Original name: ESC_TYPE2
+    /// </remarks>
+    EscType2 = 1
+}
+  
+/// <summary>
+/// Bitmask for ESC failure flags
+/// </summary>
+/// <remarks>
+/// Original name: ESC_FAILURE_FLAGS
+/// </remarks>
+[MavlinkType("ESC_FAILURE_FLAGS")]
+[System.FlagsAttribute]
+public enum EscFailureFlags : byte
+{
+    /// <summary>
+    /// Failure Flag 1
+    /// </summary>
+    /// <remarks>
+    /// Original name: FAILURE_FLAG1
+    /// </remarks>
+    FailureFlag1 = 1,
+    /// <summary>
+    /// Failure Flag 2
+    /// </summary>
+    /// <remarks>
+    /// Original name: FAILURE_FLAG2
+    /// </remarks>
+    FailureFlag2 = 2
+}
+]

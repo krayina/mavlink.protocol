@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+    <PackageReference Include="System.ComponentModel.Annotations" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <InternalsVisibleTo Include="Shmyndra.Mavlink.Generator.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shmyndra.Mavlink\Attributes\MavlinkTypeAttribute.cs">
+      <Link>Attributes\MavlinkTypeAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Shmyndra.Mavlink\Attributes\RequiredArrayLengthAttribute.cs">
+      <Link>Attributes\RequiredArrayLengthAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Shmyndra.Mavlink\Attributes\MavlinkIdentifiedTypeAttribute.cs">
+      <Link>Attributes\MavlinkIdentifiedTypeAttribute.cs</Link>
+    </Compile>
+  </ItemGroup>
+</Project>

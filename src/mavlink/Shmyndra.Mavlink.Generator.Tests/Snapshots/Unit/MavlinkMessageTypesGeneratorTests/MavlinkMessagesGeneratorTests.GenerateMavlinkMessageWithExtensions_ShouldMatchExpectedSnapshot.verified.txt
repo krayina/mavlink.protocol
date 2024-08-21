@@ -1,0 +1,50 @@
+﻿/// <remarks>
+/// Original name: SYS_STATUS
+/// </remarks>
+[MavlinkIdentifiedType(1U, "SYS_STATUS")]
+public readonly record struct SysStatusMavlinkMessage : MavlinkMessage
+{
+    /// <remarks>
+    /// Original name: CURRENT_BATTERY
+    /// </remarks>
+    public short CurrentBattery { get; init; }
+    /// <remarks>
+    /// Original name: BATTERY_REMAINING
+    /// </remarks>
+    public sbyte? BatteryRemaining { get; init; }
+
+    public static SysStatusMavlinkMessage CreateInstance(byte[] payload)
+    {
+        if (payload.Length == 0)
+        {
+            return new SysStatusMavlinkMessage();
+        }
+
+        if (payload.Length < 2)
+        {
+            var paddedPayload = new byte[2];
+            Array.Copy(payload, paddedPayload, payload.Length);
+            payload = paddedPayload;
+        }
+
+        var currentBattery = BitConverter.ToInt16(payload, 0);
+        if (payload.Length > 2 && payload.Length < 3)
+        {
+            var paddedPayload = new byte[3];
+            Array.Copy(payload, paddedPayload, payload.Length);
+            payload = paddedPayload;
+        }
+
+        sbyte? batteryRemaining = null;
+        if (payload.Length > 2)
+        {
+            batteryRemaining = (sbyte)payload[2];
+        }
+
+        return new SysStatusMavlinkMessage
+        {
+            CurrentBattery = currentBattery,
+            BatteryRemaining = batteryRemaining
+        };
+    }
+}
