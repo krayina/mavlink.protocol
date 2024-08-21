@@ -91,7 +91,7 @@ public class MavlinkMessagesGeneratorTests
 		var currentNamespace = "Namespace1";
 
 		// Act
-		var methodSyntax = MavlinkMessagePayloadDeserializationGenerator.CreateCreateInstanceMethod(currentNamespace, "ESCInfoMessage", GeneratedFields);
+		var methodSyntax = MavlinkMessageDeserializationGenerator.CreateCreateInstanceMethod(currentNamespace, "ESCInfoMessage", GeneratedFields);
 
 		// Assert
 		var methodCode = methodSyntax.ToNormalizedString();
@@ -122,7 +122,7 @@ public class MavlinkMessagesGeneratorTests
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
-		var method = MavlinkMessagePayloadDeserializationGenerator.CreateCreateInstanceMethod(
+		var method = MavlinkMessageDeserializationGenerator.CreateCreateInstanceMethod(
 			@namespace: "TestNamespace",
 			messageName: "RadioMavlinkMessage",
 			fields: fields
@@ -159,7 +159,7 @@ public class MavlinkMessagesGeneratorTests
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
-		var method = MavlinkMessagePayloadDeserializationGenerator.CreateCreateInstanceMethod(
+		var method = MavlinkMessageDeserializationGenerator.CreateCreateInstanceMethod(
 			@namespace: "TestNamespace",
 			messageName: "FileTransferProtocolMavlinkMessage",
 			fields: fields
@@ -211,7 +211,7 @@ public class MavlinkMessagesGeneratorTests
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
-		var method = MavlinkMessagePayloadDeserializationGenerator.CreateCreateInstanceMethod(
+		var method = MavlinkMessageDeserializationGenerator.CreateCreateInstanceMethod(
 			@namespace: "TestNamespace",
 			messageName: "SysStatusMavlinkMessage",
 			fields: fields
@@ -309,7 +309,7 @@ public class MavlinkMessagesGeneratorTests
 		var nonRequiredFields = GeneratedFields.Select(field => field with { IsRequired = false }).ToImmutableArray();
 
 		// Act
-		var methodSyntax = MavlinkMessagePayloadDeserializationGenerator.CreateCreateInstanceMethod("Namespace1", "SomeMessage", nonRequiredFields);
+		var methodSyntax = MavlinkMessageDeserializationGenerator.CreateCreateInstanceMethod("Namespace1", "SomeMessage", nonRequiredFields);
 
 		// Assert
 		var methodCode = methodSyntax.ToNormalizedString();

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Shmyndra.Mavlink.Generator;
 
-internal class MavlinkMessagePayloadDeserializationGenerator
+internal class MavlinkMessageDeserializationGenerator
 {
 	private const string CreateRangeWithNamespace = "System.Collections.Immutable.ImmutableArray.CreateRange";
 	private const string CreateInstanceParameterName = "payload";
