@@ -15,13 +15,13 @@ internal static class MavlinkMessagesGenerator
 		var dictionaryEntriesByType = string.Join(",\n", messages.Select(message =>
 		{
 			var sizeInfo = messageSizeDictionary[message];
-			return $"\t\t\t{{ typeof({message.GeneratedNamespace}.{message.GeneratedName}), ({message.Id}U, \"{message.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.CreateInstance(payload), () => new {message.GeneratedNamespace}.{message.GeneratedName}()) }}";
+			return $"\t\t\t{{ typeof({message.GeneratedNamespace}.{message.GeneratedName}), ({message.Id}U, \"{message.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.CreateInstance(payload)) }}";
 		}));
 
 		var dictionaryEntriesById = string.Join(",\n", messages.Select(message =>
 		{
 			var sizeInfo = messageSizeDictionary[message];
-			return $"\t\t\t{{ {message.Id}U, (typeof({message.GeneratedNamespace}.{message.GeneratedName}), \"{message.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.CreateInstance(payload), () => new {message.GeneratedNamespace}.{message.GeneratedName}()) }}";
+			return $"\t\t\t{{ {message.Id}U, (typeof({message.GeneratedNamespace}.{message.GeneratedName}), \"{message.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.CreateInstance(payload)) }}";
 		}));
 
 		return GetStringCode(dictionaryEntriesByType, dictionaryEntriesById);
@@ -56,12 +56,12 @@ namespace MavlinkTypes
 {{
     public static class MavlinkMessages
     {{
-        private static readonly Dictionary<Type, (uint Id, string MavlinkName, int MinSize, int MaxSize, Func<byte[], MavlinkMessage> Creator, Func<MavlinkMessage> EmptyCreator)> _mavlinkMessagesByType = new()
+        private static readonly Dictionary<Type, (uint Id, string MavlinkName, int MinSize, int MaxSize, Func<byte[], MavlinkMessage> Creator)> _mavlinkMessagesByType = new()
         {{
 {dictionaryEntriesByType}
         }};
 
-        private static readonly Dictionary<uint, (Type Type, string MavlinkName, int MinSize, int MaxSize, Func<byte[], MavlinkMessage> Creator, Func<MavlinkMessage> EmptyCreator)> _mavlinkMessagesById = new()
+        private static readonly Dictionary<uint, (Type Type, string MavlinkName, int MinSize, int MaxSize, Func<byte[], MavlinkMessage> Creator)> _mavlinkMessagesById = new()
         {{
 {dictionaryEntriesById}
         }};
@@ -88,21 +88,21 @@ namespace MavlinkTypes
 
         public static MavlinkMessage CreateMessageInstance(uint messageId, byte[] payload)
         {{
-            var (type, name, minSize, maxSize, creator, emptyCreator) = _mavlinkMessagesById[messageId];
-            return CreateMessageWithHandling(payload, minSize, creator, emptyCreator);
+            var value = _mavlinkMessagesById[messageId];
+            return value.Creator(payload);
         }}
 
         public static MavlinkMessage CreateMessageInstance(Type messageType, byte[] payload)
         {{
-            var (id, name, minSize, maxSize, creator, emptyCreator) = _mavlinkMessagesByType[messageType];
-            return CreateMessageWithHandling(payload, minSize, creator, emptyCreator);
+            var value = _mavlinkMessagesByType[messageType];
+            return value.Creator(payload);
         }}
 
         public static bool TryCreateMessageInstance(uint messageId, byte[] payload, out MavlinkMessage message)
         {{
             if (_mavlinkMessagesById.TryGetValue(messageId, out var value))
             {{
-                message = CreateMessageWithHandling(payload, value.MinSize, value.Creator, value.EmptyCreator);
+                message = value.Creator(payload);
                 return true;
             }}
             message = default(MavlinkMessage);
@@ -113,7 +113,7 @@ namespace MavlinkTypes
         {{
             if (_mavlinkMessagesByType.TryGetValue(messageType, out var value))
             {{
-                message = CreateMessageWithHandling(payload, value.MinSize, value.Creator, value.EmptyCreator);
+                message = value.Creator(payload);
                 return true;
             }}
             message = default(MavlinkMessage);
@@ -146,23 +146,6 @@ namespace MavlinkTypes
             var isExists = _mavlinkMessagesById.TryGetValue(id, out var value);
             type = isExists ? value.Type : default;
             return isExists;
-        }}
-
-        private static MavlinkMessage CreateMessageWithHandling(byte[] payload, int minSize, Func<byte[], MavlinkMessage> creator, Func<MavlinkMessage> emptyCreator)
-        {{
-			if (payload.Length == 0)
-			{{
-				return emptyCreator();
-			}}
-
-            if (payload.Length < minSize)
-            {{
-                byte[] paddedPayload = new byte[minSize];
-                Array.Copy(payload, paddedPayload, payload.Length);
-                return creator(paddedPayload);
-            }}
-
-            return creator(payload);
         }}
     }}
 }}";

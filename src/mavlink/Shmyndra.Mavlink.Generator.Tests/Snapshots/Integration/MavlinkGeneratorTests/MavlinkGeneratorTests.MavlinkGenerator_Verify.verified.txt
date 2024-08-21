@@ -1694,6 +1694,13 @@
 
         public static HeartbeatMavlinkMessage CreateInstance(byte[] payload)
         {
+            if (payload.Length < 9)
+            {
+                var paddedPayload = new byte[9];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
             var typeValue = (byte)payload[0];
             var type = (MavType)typeValue;
             var autopilotValue = (byte)payload[1];
@@ -1752,6 +1759,13 @@
 
         public static ProtocolVersionMavlinkMessage CreateInstance(byte[] payload)
         {
+            if (payload.Length < 22)
+            {
+                var paddedPayload = new byte[22];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
             var version = BitConverter.ToUInt16(payload, 0);
             var minVersion = BitConverter.ToUInt16(payload, 2);
             var maxVersion = BitConverter.ToUInt16(payload, 4);
@@ -2404,6 +2418,13 @@ namespace MavlinkTypes.TestMavlinkCommon
 
         public static SysStatusMavlinkMessage CreateInstance(byte[] payload)
         {
+            if (payload.Length < 31)
+            {
+                var paddedPayload = new byte[31];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
             var onboardControlSensorsPresentValue = BitConverter.ToUInt32(payload, 0);
             var onboardControlSensorsPresent = (MavSysStatusSensor)onboardControlSensorsPresentValue;
             var onboardControlSensorsEnabledValue = BitConverter.ToUInt32(payload, 4);
@@ -2420,6 +2441,13 @@ namespace MavlinkTypes.TestMavlinkCommon
             var errorsCount2 = BitConverter.ToUInt16(payload, 25);
             var errorsCount3 = BitConverter.ToUInt16(payload, 27);
             var errorsCount4 = BitConverter.ToUInt16(payload, 29);
+            if (payload.Length > 31 && payload.Length < 35)
+            {
+                var paddedPayload = new byte[35];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
             uint? onboardControlSensorsPresentExtendedValue = null;
             if (payload.Length > 31)
             {
@@ -2427,6 +2455,13 @@ namespace MavlinkTypes.TestMavlinkCommon
             }
 
             var onboardControlSensorsPresentExtended = onboardControlSensorsPresentExtendedValue.HasValue ? (MavSysStatusSensorExtended?)onboardControlSensorsPresentExtendedValue.Value : null;
+            if (payload.Length > 35 && payload.Length < 39)
+            {
+                var paddedPayload = new byte[39];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
             uint? onboardControlSensorsEnabledExtendedValue = null;
             if (payload.Length > 35)
             {
@@ -2434,6 +2469,13 @@ namespace MavlinkTypes.TestMavlinkCommon
             }
 
             var onboardControlSensorsEnabledExtended = onboardControlSensorsEnabledExtendedValue.HasValue ? (MavSysStatusSensorExtended?)onboardControlSensorsEnabledExtendedValue.Value : null;
+            if (payload.Length > 39 && payload.Length < 43)
+            {
+                var paddedPayload = new byte[43];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
             uint? onboardControlSensorsHealthExtendedValue = null;
             if (payload.Length > 39)
             {
@@ -2483,6 +2525,13 @@ namespace MavlinkTypes.TestMavlinkCommon
 
         public static SystemTimeMavlinkMessage CreateInstance(byte[] payload)
         {
+            if (payload.Length < 12)
+            {
+                var paddedPayload = new byte[12];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
             var timeUnixUsec = BitConverter.ToUInt64(payload, 0);
             var timeBootMs = BitConverter.ToUInt32(payload, 8);
             return new SystemTimeMavlinkMessage
@@ -2521,6 +2570,13 @@ namespace MavlinkTypes.TestMavlinkCommon
 
         public static PingMavlinkMessage CreateInstance(byte[] payload)
         {
+            if (payload.Length < 14)
+            {
+                var paddedPayload = new byte[14];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
             var timeUsec = BitConverter.ToUInt64(payload, 0);
             var seq = BitConverter.ToUInt32(payload, 8);
             var targetSystem = payload[12];
@@ -2565,6 +2621,13 @@ namespace MavlinkTypes.TestMavlinkCommon
 
         public static ChangeOperatorControlMavlinkMessage CreateInstance(byte[] payload)
         {
+            if (payload.Length < 53)
+            {
+                var paddedPayload = new byte[53];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
             var targetSystem = payload[0];
             var controlRequest = payload[1];
             var version = payload[2];

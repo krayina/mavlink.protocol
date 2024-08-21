@@ -1,5 +1,12 @@
 ﻿public static ESCInfoMessage CreateInstance(byte[] payload)
 {
+    if (payload.Length < 46)
+    {
+        var paddedPayload = new byte[46];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
     var index = payload[0];
     var timeUsec = BitConverter.ToUInt64(payload, 1);
     var counter = BitConverter.ToUInt16(payload, 9);

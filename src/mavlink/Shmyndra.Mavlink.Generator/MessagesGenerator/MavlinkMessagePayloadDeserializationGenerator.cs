@@ -27,6 +27,17 @@ internal class MavlinkMessagePayloadDeserializationGenerator
 		ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
 		var methodBody = new StringBuilder();
+
+		var minSize = CalculateMinSize(fields);
+
+		methodBody.AppendLine($@"
+if (payload.Length < {minSize})
+{{
+    var paddedPayload = new byte[{minSize}];
+    Array.Copy(payload, paddedPayload, payload.Length);
+    payload = paddedPayload;
+}}");
+
 		var offset = 0;
 
 		foreach (var field in fields)
@@ -38,6 +49,19 @@ internal class MavlinkMessagePayloadDeserializationGenerator
 			if (variableName == CreateInstanceParameterName)
 			{
 				variableName = "_" + variableName;
+			}
+
+			if (!field.IsRequired)
+			{
+				var fieldSize = field.GetFieldSize();
+
+				methodBody.AppendLine($@"
+if (payload.Length > {offset} && payload.Length < {offset + fieldSize})
+{{
+    var paddedPayload = new byte[{offset + fieldSize}];
+    Array.Copy(payload, paddedPayload, payload.Length);
+    payload = paddedPayload;
+}}");
 			}
 
 			if (fieldType is GeneratedMavlinkMessageFieldArrayType arrayType)
@@ -246,6 +270,23 @@ if (payload.Length > {offset})
 	private static string EscapeReservedKeyword(string name)
 	{
 		return SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None ? "@" + name : name;
+	}
+
+	private static int CalculateMinSize(ImmutableArray<GeneratedMavlinkMessageField> fields)
+	{
+		int minSize = 0;
+
+		foreach (var field in fields)
+		{
+			int fieldSize = field.GetFieldSize();
+
+			if (field.IsRequired)
+			{
+				minSize += fieldSize;
+			}
+		}
+
+		return minSize;
 	}
 
 	private static string GetBitConverterMethodForSize(int size)
