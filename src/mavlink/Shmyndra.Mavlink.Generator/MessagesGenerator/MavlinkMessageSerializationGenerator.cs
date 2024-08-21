@@ -48,7 +48,7 @@ var buffer = new byte[{totalSize}];
 			}
 			else
 			{
-				methodBody.AppendLine(GenerateSimpleTypeSerialization(variableName, fieldType.ConvertedType, currentOffset));
+				methodBody.AppendLine(GenerateSimpleTypeSerialization(variableName, fieldType.ConvertedType, currentOffset, field.IsRequired));
 			}
 
 			currentOffset += field.GetFieldSize();
@@ -109,17 +109,41 @@ if ({variableName} != null)
 }}";
 	}
 
-	private static string GenerateSimpleTypeSerialization(string variableName, string typeName, int offset)
+	private static string GenerateSimpleTypeSerialization(string variableName, string typeName, int offset, bool isRequired)
 	{
-		return typeName switch
+		if (isRequired)
 		{
-			"byte" => $@"
+			return typeName switch
+			{
+				"byte" => $@"
 buffer[{offset}] = {variableName};",
-			"sbyte" => $@"
+				"sbyte" => $@"
 buffer[{offset}] = (byte){variableName};",
-			_ => $@"
+				_ => $@"
 BitConverter.GetBytes({variableName}).CopyTo(buffer, {offset});"
-		};
+			};
+		}
+		else
+		{
+			return typeName switch
+			{
+				"byte?" => $@"
+if ({variableName}.HasValue)
+{{
+    buffer[{offset}] = {variableName}.Value;
+}}",
+				"sbyte?" => $@"
+if ({variableName}.HasValue)
+{{
+    buffer[{offset}] = (byte){variableName}.Value;
+}}",
+				_ => $@"
+if ({variableName}.HasValue)
+{{
+    BitConverter.GetBytes({variableName}.Value).CopyTo(buffer, {offset});
+}}"
+			};
+		}
 	}
 
 	private static string EscapeReservedKeyword(string name)
