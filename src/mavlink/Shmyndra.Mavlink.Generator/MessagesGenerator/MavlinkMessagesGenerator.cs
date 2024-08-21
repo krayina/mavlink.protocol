@@ -4,13 +4,61 @@ internal static class MavlinkMessagesGenerator
 {
 	public static string GenerateMessageExtensions(IEnumerable<GeneratedMavlinkMessage> messages)
 	{
+		var messageSizeDictionary = new Dictionary<GeneratedMavlinkMessage, (int MinSize, int MaxSize)>();
+
+		foreach (var message in messages)
+		{
+			var sizeInfo = CalculateMinAndMaxSize(message);
+			messageSizeDictionary[message] = sizeInfo;
+		}
+
 		var dictionaryEntriesByType = string.Join(",\n", messages.Select(message =>
-			$"\t\t\t{{ typeof({message.GeneratedNamespace}.{message.GeneratedName}), ({message.Id}U, \"{message.Name}\", payload => {message.GeneratedNamespace}.{message.GeneratedName}.CreateInstance(payload)) }}"));
+		{
+			var sizeInfo = messageSizeDictionary[message];
+			return $"\t\t\t{{ typeof({message.GeneratedNamespace}.{message.GeneratedName}), ({message.Id}U, \"{message.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.CreateInstance(payload), () => new {message.GeneratedNamespace}.{message.GeneratedName}()) }}";
+		}));
 
 		var dictionaryEntriesById = string.Join(",\n", messages.Select(message =>
-			$"\t\t\t{{ {message.Id}U, (typeof({message.GeneratedNamespace}.{message.GeneratedName}), \"{message.Name}\", payload => {message.GeneratedNamespace}.{message.GeneratedName}.CreateInstance(payload)) }}"));
+		{
+			var sizeInfo = messageSizeDictionary[message];
+			return $"\t\t\t{{ {message.Id}U, (typeof({message.GeneratedNamespace}.{message.GeneratedName}), \"{message.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.CreateInstance(payload), () => new {message.GeneratedNamespace}.{message.GeneratedName}()) }}";
+		}));
 
-		var classCode =
+		return GetStringCode(dictionaryEntriesByType, dictionaryEntriesById);
+	}
+
+	private static (int MinSize, int MaxSize) CalculateMinAndMaxSize(GeneratedMavlinkMessage message)
+	{
+		int minSize = 0;
+		int maxSize = 0;
+
+		foreach (var field in message.GeneratedFields)
+		{
+			int fieldSize = GetFieldSize(field);
+			maxSize += fieldSize;
+
+			if (field.IsRequired)
+			{
+				minSize += fieldSize;
+			}
+		}
+
+		return (minSize, maxSize);
+	}
+
+	private static int GetFieldSize(GeneratedMavlinkMessageField field)
+	{
+		return field.Type switch
+		{
+			GeneratedMavlinkMessageFieldArrayType arrayField => Utilities.GetDotNetTypeSize(arrayField.ConvertedType) * arrayField.ArrayLength,
+			GeneratedMavlinkMessageFieldArrayEnumType arrayEnumField => Utilities.GetDotNetTypeSize(arrayEnumField.ConvertedType) * arrayEnumField.ArrayLength,
+			_ => Utilities.GetDotNetTypeSize(((GeneratedMavlinkMessageFieldType)field.Type).ConvertedType)
+		};
+	}
+
+	private static string GetStringCode(string dictionaryEntriesByType, string dictionaryEntriesById)
+	{
+		return
 $@"using System;
 using System.Collections.Generic;
 
@@ -18,12 +66,12 @@ namespace MavlinkTypes
 {{
     public static class MavlinkMessages
     {{
-        private static readonly Dictionary<Type, (uint Id, string MavlinkName, Func<byte[], MavlinkMessage> Creator)> _mavlinkMessagesByType = new()
+        private static readonly Dictionary<Type, (uint Id, string MavlinkName, int MinSize, int MaxSize, Func<byte[], MavlinkMessage> Creator, Func<MavlinkMessage> EmptyCreator)> _mavlinkMessagesByType = new()
         {{
 {dictionaryEntriesByType}
         }};
 
-        private static readonly Dictionary<uint, (Type Type, string MavlinkName, Func<byte[], MavlinkMessage> Creator)> _mavlinkMessagesById = new()
+        private static readonly Dictionary<uint, (Type Type, string MavlinkName, int MinSize, int MaxSize, Func<byte[], MavlinkMessage> Creator, Func<MavlinkMessage> EmptyCreator)> _mavlinkMessagesById = new()
         {{
 {dictionaryEntriesById}
         }};
@@ -50,19 +98,21 @@ namespace MavlinkTypes
 
         public static MavlinkMessage CreateMessageInstance(uint messageId, byte[] payload)
         {{
-            return _mavlinkMessagesById[messageId].Creator(payload);
+            var (type, name, minSize, maxSize, creator, emptyCreator) = _mavlinkMessagesById[messageId];
+            return CreateMessageWithHandling(payload, minSize, creator, emptyCreator);
         }}
 
         public static MavlinkMessage CreateMessageInstance(Type messageType, byte[] payload)
         {{
-            return _mavlinkMessagesByType[messageType].Creator(payload);
+            var (id, name, minSize, maxSize, creator, emptyCreator) = _mavlinkMessagesByType[messageType];
+            return CreateMessageWithHandling(payload, minSize, creator, emptyCreator);
         }}
 
         public static bool TryCreateMessageInstance(uint messageId, byte[] payload, out MavlinkMessage message)
         {{
             if (_mavlinkMessagesById.TryGetValue(messageId, out var value))
             {{
-                message = value.Creator(payload);
+                message = CreateMessageWithHandling(payload, value.MinSize, value.Creator, value.EmptyCreator);
                 return true;
             }}
             message = default(MavlinkMessage);
@@ -73,7 +123,7 @@ namespace MavlinkTypes
         {{
             if (_mavlinkMessagesByType.TryGetValue(messageType, out var value))
             {{
-                message = value.Creator(payload);
+                message = CreateMessageWithHandling(payload, value.MinSize, value.Creator, value.EmptyCreator);
                 return true;
             }}
             message = default(MavlinkMessage);
@@ -107,8 +157,24 @@ namespace MavlinkTypes
             type = isExists ? value.Type : default;
             return isExists;
         }}
+
+        private static MavlinkMessage CreateMessageWithHandling(byte[] payload, int minSize, Func<byte[], MavlinkMessage> creator, Func<MavlinkMessage> emptyCreator)
+        {{
+			if (payload.Length == 0)
+			{{
+				return emptyCreator();
+			}}
+
+            if (payload.Length < minSize)
+            {{
+                byte[] paddedPayload = new byte[minSize];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                return creator(paddedPayload);
+            }}
+
+            return creator(payload);
+        }}
     }}
 }}";
-		return classCode;
 	}
 }

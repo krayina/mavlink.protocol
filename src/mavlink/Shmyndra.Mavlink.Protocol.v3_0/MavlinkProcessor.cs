@@ -25,60 +25,20 @@ public class MavlinkProcessor
 
 	private void ProcessPacket(uint messageId, byte[] payload)
 	{
-		if (MavlinkMessages.TryGetType(messageId, out var messageType))
+		try
 		{
-			var properties = messageType.GetProperties();
-			int offset = 0;
-
-			Debug.WriteLine($"ID:{messageId}");
-			foreach (var property in properties)
+			if (MavlinkMessages.TryCreateMessageInstance(messageId, payload, out var messageInstance))
 			{
-				var value = ReadValueFromPayload(property.PropertyType, payload, ref offset);
-				Debug.WriteLine($"\t{property.Name}: {value}");
+				Debug.WriteLine($"Processed message ID: {messageId}, Type: {messageInstance.GetType().Name}");
+			}
+			else
+			{
+				Debug.WriteLine($"Unknown or unsupported message ID: {messageId}");
 			}
 		}
-		else
+		catch (Exception ex)
 		{
-			Debug.WriteLine($"Unknown message ID: {messageId}");
+			Debug.WriteLine($"____Exception: {ex}");
 		}
-	}
-
-	private dynamic? ReadValueFromPayload(Type type, byte[] payload, ref int offset)
-	{
-		dynamic? value = null;
-
-		if (type == typeof(byte))
-		{
-			value = payload[offset];
-			offset += sizeof(byte);
-		}
-		else if (type == typeof(uint))
-		{
-			value = BitConverter.ToUInt32(payload, offset);
-			offset += sizeof(uint);
-		}
-		else if (type == typeof(int))
-		{
-			value = BitConverter.ToInt32(payload, offset);
-			offset += sizeof(int);
-		}
-		else if (type == typeof(short))
-		{
-			value = BitConverter.ToInt16(payload, offset);
-			offset += sizeof(short);
-		}
-		else if (type == typeof(ushort))
-		{
-			value = BitConverter.ToUInt16(payload, offset);
-			offset += sizeof(ushort);
-		}
-		else if (type == typeof(float))
-		{
-			value = BitConverter.ToSingle(payload, offset);
-			offset += sizeof(float);
-		}
-		// Додайте підтримку інших типів даних за потреби
-
-		return value;
 	}
 }
