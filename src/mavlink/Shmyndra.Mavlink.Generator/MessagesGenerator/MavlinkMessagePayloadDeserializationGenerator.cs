@@ -28,8 +28,13 @@ internal class MavlinkMessagePayloadDeserializationGenerator
 	{
 		var methodBody = new StringBuilder();
 
-		var minSize = CalculateMinSize(fields);
+		methodBody.AppendLine($@"
+if (payload.Length == 0)
+{{
+    return new {messageName}();
+}}");
 
+		var minSize = CalculateMinSize(fields);
 		methodBody.AppendLine($@"
 if (payload.Length < {minSize})
 {{

@@ -15,6 +15,11 @@ public readonly record struct SysStatusMavlinkMessage : MavlinkMessage
 
     public static SysStatusMavlinkMessage CreateInstance(byte[] payload)
     {
+        if (payload.Length == 0)
+        {
+            return new SysStatusMavlinkMessage();
+        }
+
         if (payload.Length < 2)
         {
             var paddedPayload = new byte[2];

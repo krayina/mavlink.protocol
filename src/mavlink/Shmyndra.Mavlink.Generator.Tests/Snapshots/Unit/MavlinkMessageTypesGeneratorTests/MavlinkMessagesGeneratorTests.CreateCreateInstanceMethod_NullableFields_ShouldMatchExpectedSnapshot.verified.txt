@@ -1,5 +1,10 @@
 ﻿public static SomeMessage CreateInstance(byte[] payload)
 {
+    if (payload.Length == 0)
+    {
+        return new SomeMessage();
+    }
+
     if (payload.Length < 0)
     {
         var paddedPayload = new byte[0];

@@ -79,6 +79,11 @@ public readonly record struct EscInfoMavlinkMessage : MavlinkMessage
 
     public static EscInfoMavlinkMessage CreateInstance(byte[] payload)
     {
+        if (payload.Length == 0)
+        {
+            return new EscInfoMavlinkMessage();
+        }
+
         if (payload.Length < 46)
         {
             var paddedPayload = new byte[46];

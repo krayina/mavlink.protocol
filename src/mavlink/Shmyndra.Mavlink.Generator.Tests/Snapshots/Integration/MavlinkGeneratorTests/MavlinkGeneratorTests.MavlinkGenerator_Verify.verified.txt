@@ -1694,6 +1694,11 @@
 
         public static HeartbeatMavlinkMessage CreateInstance(byte[] payload)
         {
+            if (payload.Length == 0)
+            {
+                return new HeartbeatMavlinkMessage();
+            }
+
             if (payload.Length < 9)
             {
                 var paddedPayload = new byte[9];
@@ -1759,6 +1764,11 @@
 
         public static ProtocolVersionMavlinkMessage CreateInstance(byte[] payload)
         {
+            if (payload.Length == 0)
+            {
+                return new ProtocolVersionMavlinkMessage();
+            }
+
             if (payload.Length < 22)
             {
                 var paddedPayload = new byte[22];
@@ -2418,6 +2428,11 @@ namespace MavlinkTypes.TestMavlinkCommon
 
         public static SysStatusMavlinkMessage CreateInstance(byte[] payload)
         {
+            if (payload.Length == 0)
+            {
+                return new SysStatusMavlinkMessage();
+            }
+
             if (payload.Length < 31)
             {
                 var paddedPayload = new byte[31];
@@ -2525,6 +2540,11 @@ namespace MavlinkTypes.TestMavlinkCommon
 
         public static SystemTimeMavlinkMessage CreateInstance(byte[] payload)
         {
+            if (payload.Length == 0)
+            {
+                return new SystemTimeMavlinkMessage();
+            }
+
             if (payload.Length < 12)
             {
                 var paddedPayload = new byte[12];
@@ -2570,6 +2590,11 @@ namespace MavlinkTypes.TestMavlinkCommon
 
         public static PingMavlinkMessage CreateInstance(byte[] payload)
         {
+            if (payload.Length == 0)
+            {
+                return new PingMavlinkMessage();
+            }
+
             if (payload.Length < 14)
             {
                 var paddedPayload = new byte[14];
@@ -2621,6 +2646,11 @@ namespace MavlinkTypes.TestMavlinkCommon
 
         public static ChangeOperatorControlMavlinkMessage CreateInstance(byte[] payload)
         {
+            if (payload.Length == 0)
+            {
+                return new ChangeOperatorControlMavlinkMessage();
+            }
+
             if (payload.Length < 53)
             {
                 var paddedPayload = new byte[53];

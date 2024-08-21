@@ -1,5 +1,10 @@
 ﻿public static ESCInfoMessage CreateInstance(byte[] payload)
 {
+    if (payload.Length == 0)
+    {
+        return new ESCInfoMessage();
+    }
+
     if (payload.Length < 46)
     {
         var paddedPayload = new byte[46];
