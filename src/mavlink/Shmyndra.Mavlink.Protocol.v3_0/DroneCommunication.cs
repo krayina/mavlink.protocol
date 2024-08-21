@@ -7,7 +7,7 @@ public class DroneCommunication
 	private readonly TcpStream _tcpStream;
 	private readonly byte[] _buffer = new byte[1024];
 
-	public event EventHandler<byte[]>? DataReceived;
+	public event EventHandler<byte[]>? PacketReceived;
 
 	public DroneCommunication(string url)
 	{
@@ -36,7 +36,7 @@ public class DroneCommunication
 				int bytesRead = _tcpStream.Read(_buffer, 0, _buffer.Length);
 				if (bytesRead > 0)
 				{
-					DataReceived?.Invoke(this, _buffer);
+					PacketReceived?.Invoke(this, _buffer);
 					//ProcessReceivedData(_buffer, bytesRead);
 				}
 			}

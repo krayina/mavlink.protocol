@@ -30,4 +30,9 @@
     <PackageVersion Include="System.Collections.Immutable" Version="8.0.0" />
     <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0" />
   </ItemGroup>
+
+  <!-- Mavlink packages -->
+  <ItemGroup>
+    <PackageVersion Include="SerialPortStream" Version="2.4.2" />
+  </ItemGroup>
 </Project>
