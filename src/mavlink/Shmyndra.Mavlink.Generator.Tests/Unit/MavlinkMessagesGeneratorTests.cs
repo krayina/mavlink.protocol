@@ -363,4 +363,20 @@ public class MavlinkMessagesGeneratorTests
 			.UseDirectory(SNAPSHOT_PATH)
 			.UseParameters("DEPRECATEDMESSAGE");
 	}
+
+	[Fact]
+	public async Task Generate_SimpleSerializeMethod_ForTestMavlinkMessage_Verify()
+	{
+		// Arrange
+		var testFields = GeneratedFields;
+
+		// Act
+		var methodSyntax = MavlinkMessageSerializationGenerator.CreateSerializeMethod("TestNamespace", "TestMavlinkMessage", testFields);
+		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		await Verify(generatedCode)
+		  .UseDirectory(SNAPSHOT_PATH)
+		  .UseParameters("TestMavlinkMessage");
+	}
 }
