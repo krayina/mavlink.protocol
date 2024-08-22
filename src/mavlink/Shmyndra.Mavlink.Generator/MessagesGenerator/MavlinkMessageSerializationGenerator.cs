@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
 using System.Text;
 
-namespace Shmyndra.Mavlink.Generator.MessagesGenerator;
+namespace Shmyndra.Mavlink.Generator;
 
 internal class MavlinkMessageSerializationGenerator
 {

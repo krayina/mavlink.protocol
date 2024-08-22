@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
-using Shmyndra.Mavlink.Generator.MessagesGenerator;
 
 namespace Shmyndra.Mavlink.Generator;
 
