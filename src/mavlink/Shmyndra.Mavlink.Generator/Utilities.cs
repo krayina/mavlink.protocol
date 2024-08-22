@@ -136,6 +136,23 @@ internal static class Utilities
 		return syntax.NormalizeWhitespace().ToFullString().Replace("? )", "?)");
 	}
 
+	public static int CalculateMinSize(this ImmutableArray<GeneratedMavlinkMessageField> fields)
+	{
+		int minSize = 0;
+
+		foreach (var field in fields)
+		{
+			int fieldSize = field.GetFieldSize();
+
+			if (field.IsRequired)
+			{
+				minSize += fieldSize;
+			}
+		}
+
+		return minSize;
+	}
+
 	public static int GetFieldSize(this GeneratedMavlinkMessageField field)
 	{
 		return field.Type switch

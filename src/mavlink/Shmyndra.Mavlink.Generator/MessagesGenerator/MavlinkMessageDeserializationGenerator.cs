@@ -34,7 +34,7 @@ if (payload.Length == 0)
     return new {messageName}();
 }}");
 
-		var minSize = CalculateMinSize(fields);
+		var minSize = fields.CalculateMinSize();
 		methodBody.AppendLine($@"
 if (payload.Length < {minSize})
 {{
@@ -275,23 +275,6 @@ if (payload.Length > {offset})
 	private static string EscapeReservedKeyword(string name)
 	{
 		return SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None ? "@" + name : name;
-	}
-
-	private static int CalculateMinSize(ImmutableArray<GeneratedMavlinkMessageField> fields)
-	{
-		int minSize = 0;
-
-		foreach (var field in fields)
-		{
-			int fieldSize = field.GetFieldSize();
-
-			if (field.IsRequired)
-			{
-				minSize += fieldSize;
-			}
-		}
-
-		return minSize;
 	}
 
 	private static string GetBitConverterMethodForSize(int size)
