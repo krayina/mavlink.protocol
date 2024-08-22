@@ -120,4 +120,31 @@ public readonly record struct EscInfoMavlinkMessage : MavlinkMessage
             Temperature = temperature
         };
     }
+
+    public static byte[] Serialize(EscInfoMavlinkMessage instance)
+    {
+        var buffer = new byte[46];
+        buffer[0] = instance.Index;
+        BitConverter.GetBytes(instance.TimeUsec).CopyTo(buffer, 1);
+        BitConverter.GetBytes(instance.Counter).CopyTo(buffer, 9);
+        buffer[11] = instance.Count;
+        buffer[12] = (byte)instance.ConnectionType;
+        buffer[13] = instance.Info;
+        if (!instance.FailureFlags.IsDefaultOrEmpty)
+        {
+            Buffer.BlockCopy(instance.FailureFlags.ToArray(), 0, buffer, 14, 8);
+        }
+
+        if (!instance.ErrorCount.IsDefaultOrEmpty)
+        {
+            Buffer.BlockCopy(instance.ErrorCount.ToArray(), 0, buffer, 22, 16);
+        }
+
+        if (!instance.Temperature.IsDefaultOrEmpty)
+        {
+            Buffer.BlockCopy(instance.Temperature.ToArray(), 0, buffer, 38, 8);
+        }
+
+        return buffer;
+    }
 }

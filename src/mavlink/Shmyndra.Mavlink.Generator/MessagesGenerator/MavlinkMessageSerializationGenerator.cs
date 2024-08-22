@@ -36,7 +36,7 @@ var buffer = new byte[{totalSize}];
 
 			if (fieldType is GeneratedMavlinkMessageFieldArrayType arrayType)
 			{
-				methodBody.AppendLine(GenerateArraySerialization(variableName, arrayType, currentOffset));
+				methodBody.AppendLine(GenerateArraySerialization(variableName, arrayType, currentOffset, field.IsRequired));
 			}
 			else if (fieldType is GeneratedMavlinkMessageFieldEnumType enumType)
 			{
@@ -44,7 +44,7 @@ var buffer = new byte[{totalSize}];
 			}
 			else if (fieldType is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType)
 			{
-				methodBody.AppendLine(GenerateArrayEnumSerialization(variableName, arrayEnumType, currentOffset));
+				methodBody.AppendLine(GenerateArrayEnumSerialization(variableName, arrayEnumType, currentOffset, field.IsRequired));
 			}
 			else
 			{
@@ -74,16 +74,27 @@ public class TemporaryClass
 		return method;
 	}
 
-	private static string GenerateArraySerialization(string variableName, GeneratedMavlinkMessageFieldArrayType arrayType, int offset)
+	private static string GenerateArraySerialization(string variableName, GeneratedMavlinkMessageFieldArrayType arrayType, int offset, bool isRequired)
 	{
 		var elementType = arrayType.ConvertedType;
 		var arrayLength = arrayType.ArrayLength * Utilities.GetDotNetTypeSize(elementType);
 
-		return $@"
-if ({variableName} != null)
+		if (isRequired)
+		{
+			return $@"
+if (!{variableName}.IsDefaultOrEmpty)
 {{
     Buffer.BlockCopy({variableName}.ToArray(), 0, buffer, {offset}, {arrayLength});
 }}";
+		}
+		else
+		{
+			return $@"
+if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
+{{
+    Buffer.BlockCopy({variableName}.Value.ToArray(), 0, buffer, {offset}, {arrayLength});
+}}";
+		}
 	}
 
 	private static string GenerateEnumSerialization(string variableName, GeneratedMavlinkMessageFieldEnumType enumType, int offset)
@@ -97,16 +108,27 @@ buffer[{offset}] = (byte){variableName};"
 BitConverter.GetBytes((uint){variableName}).CopyTo(buffer, {offset});";
 	}
 
-	private static string GenerateArrayEnumSerialization(string variableName, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, int offset)
+	private static string GenerateArrayEnumSerialization(string variableName, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, int offset, bool isRequired)
 	{
 		var elementType = arrayEnumType.ConvertedType;
 		var arrayLength = arrayEnumType.ArrayLength * Utilities.GetDotNetTypeSize(elementType);
 
-		return $@"
-if ({variableName} != null)
+		if (isRequired)
+		{
+			return $@"
+if (!{variableName}.IsDefaultOrEmpty)
 {{
     Buffer.BlockCopy({variableName}.ToArray(), 0, buffer, {offset}, {arrayLength});
 }}";
+		}
+		else
+		{
+			return $@"
+if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
+{{
+    Buffer.BlockCopy({variableName}.Value.ToArray(), 0, buffer, {offset}, {arrayLength});
+}}";
+		}
 	}
 
 	private static string GenerateSimpleTypeSerialization(string variableName, string typeName, int offset, bool isRequired)

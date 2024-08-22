@@ -23,4 +23,10 @@ public readonly record struct DeprecatedMessageMavlinkMessage : MavlinkMessage
         {
         };
     }
+
+    public static byte[] Serialize(DeprecatedMessageMavlinkMessage instance)
+    {
+        var buffer = new byte[0];
+        return buffer;
+    }
 }
