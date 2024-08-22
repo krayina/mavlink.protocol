@@ -173,7 +173,7 @@ public class MavlinkGeneratorTests
 	}
 
 	[Fact]
-	public Task MavlinkIncrementalGenerator_GenerateMessageWithCreateInstanceMethod_Verify()
+	public Task MavlinkIncrementalGenerator_GenerateMessageWithDeserializeMethod_Verify()
 	{
 		// arrange
 		var generator = new MavlinkIncrementalGenerator();

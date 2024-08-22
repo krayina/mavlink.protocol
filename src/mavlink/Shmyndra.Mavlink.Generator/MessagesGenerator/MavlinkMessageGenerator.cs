@@ -100,15 +100,15 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 			.Select(generatedField => generatedField.DeclarationSyntax)
 			.ToArray();
 
-		var createInstanceMethod = MavlinkMessageDeserializationGenerator
-			.CreateCreateInstanceMethod(@namespace, normalizedName, generatedFields);
+		var deserializeMethod = MavlinkMessageDeserializationGenerator
+			.CreateDeserializeMethod(@namespace, normalizedName, generatedFields);
 
-		var createSerializeMethod = MavlinkMessageSerializationGenerator
+		var serializeMethod = MavlinkMessageSerializationGenerator
 			.CreateSerializeMethod(@namespace, normalizedName, generatedFields);
 
 		var recordDeclaration = CreateRecordStructDeclaration(id, normalizedName, propertyDeclarations, message.Description, message.Name)
-			.AddMembers(createInstanceMethod)
-			.AddMembers(createSerializeMethod)
+			.AddMembers(deserializeMethod)
+			.AddMembers(serializeMethod)
 			.AddObsoleteAttribute(message.Deprecated?.ToString());
 
 		return new GeneratedMavlinkMessage(@namespace, normalizedName, generatedFields, recordDeclaration, message);

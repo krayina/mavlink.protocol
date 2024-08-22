@@ -8,20 +8,20 @@ namespace Shmyndra.Mavlink.Generator;
 internal class MavlinkMessageDeserializationGenerator
 {
 	private const string CreateRangeWithNamespace = "System.Collections.Immutable.ImmutableArray.CreateRange";
-	private const string CreateInstanceParameterName = "payload";
+	private const string DeserializeParameterName = "payload";
 
 	/// <summary>
-	/// Generates the <c>CreateInstance</c> method for deserializing Mavlink message payloads into instances of the generated message type.
+	/// Generates the <c>Deserialize</c> method for deserializing Mavlink message payloads into instances of the generated message type.
 	/// </summary>
 	/// <param name="namespace">The namespace of the generated message type.</param>
 	/// <param name="messageName">The name of the generated message type.</param>
 	/// <param name="fields">The array of fields in the Mavlink message, each represented as a <see cref="GeneratedMavlinkMessageField"/>.</param>
-	/// <returns>A <see cref="MethodDeclarationSyntax"/> representing the <c>CreateInstance</c> method.</returns>
+	/// <returns>A <see cref="MethodDeclarationSyntax"/> representing the <c>Deserialize</c> method.</returns>
 	/// <remarks>
-	/// The <c>CreateInstance</c> method is essential for converting raw byte payloads from Mavlink messages into strongly-typed objects, enabling easier manipulation and access to message data in .NET applications.
+	/// The <c>Deserialize</c> method is essential for converting raw byte payloads from Mavlink messages into strongly-typed objects, enabling easier manipulation and access to message data in .NET applications.
 	/// </remarks>
 	/// <exception cref="InvalidCastException">Thrown if any field in <paramref name="fields"/> is not of type <see cref="GeneratedMavlinkMessageFieldType"/> or its derived types.</exception>
-	public static MethodDeclarationSyntax CreateCreateInstanceMethod(
+	public static MethodDeclarationSyntax CreateDeserializeMethod(
 		string @namespace,
 		string messageName,
 		ImmutableArray<GeneratedMavlinkMessageField> fields)
@@ -51,7 +51,7 @@ if (payload.Length < {minSize})
 			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
 			var variableName = EscapeReservedKeyword(char.ToLowerInvariant(fieldPropertyName[0]) + fieldPropertyName.Substring(1));
 
-			if (variableName == CreateInstanceParameterName)
+			if (variableName == DeserializeParameterName)
 			{
 				variableName = "_" + variableName;
 			}
@@ -90,7 +90,7 @@ if (payload.Length > {offset} && payload.Length < {offset + fieldSize})
 		var propertiesAssignment = string.Join(", ", fields.Select(field =>
 		{
 			var variableName = EscapeReservedKeyword(char.ToLowerInvariant(field.GeneratedName[0]) + field.GeneratedName.Substring(1));
-			if (variableName == CreateInstanceParameterName)
+			if (variableName == DeserializeParameterName)
 			{
 				variableName = "_" + variableName;
 			}
@@ -100,7 +100,7 @@ if (payload.Length > {offset} && payload.Length < {offset + fieldSize})
 		methodBody.AppendLine($"return new {messageName} {{ {propertiesAssignment} }};");
 
 		var methodString = $@"
-public static {messageName} CreateInstance(byte[] payload)
+public static {messageName} Deserialize(byte[] payload)
 {{
     {methodBody}
 }}";
@@ -113,7 +113,7 @@ public class TemporaryClass
 
 		var syntaxTree = CSharpSyntaxTree.ParseText(classWrapper);
 		var root = syntaxTree.GetRoot();
-		var method = root.DescendantNodes().OfType<MethodDeclarationSyntax>().First(m => m.Identifier.Text == "CreateInstance");
+		var method = root.DescendantNodes().OfType<MethodDeclarationSyntax>().First(m => m.Identifier.Text == "Deserialize");
 		return method;
 	}
 

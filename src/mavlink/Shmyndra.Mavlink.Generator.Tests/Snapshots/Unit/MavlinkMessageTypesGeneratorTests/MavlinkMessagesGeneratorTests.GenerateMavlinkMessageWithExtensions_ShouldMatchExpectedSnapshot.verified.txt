@@ -13,7 +13,7 @@ public readonly record struct SysStatusMavlinkMessage : MavlinkMessage
     /// </remarks>
     public sbyte? BatteryRemaining { get; init; }
 
-    public static SysStatusMavlinkMessage CreateInstance(byte[] payload)
+    public static SysStatusMavlinkMessage Deserialize(byte[] payload)
     {
         if (payload.Length == 0)
         {

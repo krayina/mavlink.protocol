@@ -77,7 +77,7 @@ public readonly record struct EscInfoMavlinkMessage : MavlinkMessage
     [System.ComponentModel.DataAnnotations.RequiredArrayLength(4)]
     public System.Collections.Immutable.ImmutableArray<short> Temperature { get; init; }
 
-    public static EscInfoMavlinkMessage CreateInstance(byte[] payload)
+    public static EscInfoMavlinkMessage Deserialize(byte[] payload)
     {
         if (payload.Length == 0)
         {

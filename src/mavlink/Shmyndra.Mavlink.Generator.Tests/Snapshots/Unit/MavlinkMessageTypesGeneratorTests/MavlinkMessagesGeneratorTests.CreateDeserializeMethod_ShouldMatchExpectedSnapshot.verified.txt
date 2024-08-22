@@ -1,4 +1,4 @@
-﻿public static ESCInfoMessage CreateInstance(byte[] payload)
+﻿public static ESCInfoMessage Deserialize(byte[] payload)
 {
     if (payload.Length == 0)
     {

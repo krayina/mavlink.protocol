@@ -5,7 +5,7 @@
 [System.Obsolete("This message is deprecated. Since: 2023-01. Replaced by: NewMessage.")]
 public readonly record struct DeprecatedMessageMavlinkMessage : MavlinkMessage
 {
-    public static DeprecatedMessageMavlinkMessage CreateInstance(byte[] payload)
+    public static DeprecatedMessageMavlinkMessage Deserialize(byte[] payload)
     {
         if (payload.Length == 0)
         {

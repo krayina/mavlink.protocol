@@ -15,13 +15,13 @@ internal static class MavlinkMessagesGenerator
 		var dictionaryEntriesByType = string.Join(",\n", messages.Select(message =>
 		{
 			var sizeInfo = messageSizeDictionary[message];
-			return $"\t\t\t{{ typeof({message.GeneratedNamespace}.{message.GeneratedName}), ({message.Id}U, \"{message.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.CreateInstance(payload)) }}";
+			return $"\t\t\t{{ typeof({message.GeneratedNamespace}.{message.GeneratedName}), ({message.Id}U, \"{message.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.Deserialize(payload)) }}";
 		}));
 
 		var dictionaryEntriesById = string.Join(",\n", messages.Select(message =>
 		{
 			var sizeInfo = messageSizeDictionary[message];
-			return $"\t\t\t{{ {message.Id}U, (typeof({message.GeneratedNamespace}.{message.GeneratedName}), \"{message.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.CreateInstance(payload)) }}";
+			return $"\t\t\t{{ {message.Id}U, (typeof({message.GeneratedNamespace}.{message.GeneratedName}), \"{message.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.Deserialize(payload)) }}";
 		}));
 
 		return GetStringCode(dictionaryEntriesByType, dictionaryEntriesById);
@@ -56,12 +56,12 @@ namespace MavlinkTypes
 {{
     public static class MavlinkMessages
     {{
-        private static readonly Dictionary<Type, (uint Id, string MavlinkName, int MinSize, int MaxSize, Func<byte[], MavlinkMessage> Creator)> _mavlinkMessagesByType = new()
+        private static readonly Dictionary<Type, (uint Id, string MavlinkName, int MinSize, int MaxSize, Func<byte[], MavlinkMessage> Deserializer)> _mavlinkMessagesByType = new()
         {{
 {dictionaryEntriesByType}
         }};
 
-        private static readonly Dictionary<uint, (Type Type, string MavlinkName, int MinSize, int MaxSize, Func<byte[], MavlinkMessage> Creator)> _mavlinkMessagesById = new()
+        private static readonly Dictionary<uint, (Type Type, string MavlinkName, int MinSize, int MaxSize, Func<byte[], MavlinkMessage> Deserializer)> _mavlinkMessagesById = new()
         {{
 {dictionaryEntriesById}
         }};
@@ -86,34 +86,34 @@ namespace MavlinkTypes
             return _mavlinkMessagesById[id].Type;
         }}
 
-        public static MavlinkMessage CreateMessageInstance(uint messageId, byte[] payload)
+        public static MavlinkMessage Deserialize(uint messageId, byte[] payload)
         {{
             var value = _mavlinkMessagesById[messageId];
-            return value.Creator(payload);
+            return value.Deserializer(payload);
         }}
 
-        public static MavlinkMessage CreateMessageInstance(Type messageType, byte[] payload)
+        public static MavlinkMessage Deserialize(Type messageType, byte[] payload)
         {{
             var value = _mavlinkMessagesByType[messageType];
-            return value.Creator(payload);
+            return value.Deserializer(payload);
         }}
 
-        public static bool TryCreateMessageInstance(uint messageId, byte[] payload, out MavlinkMessage message)
+        public static bool TryDeserialize(uint messageId, byte[] payload, out MavlinkMessage message)
         {{
             if (_mavlinkMessagesById.TryGetValue(messageId, out var value))
             {{
-                message = value.Creator(payload);
+                message = value.Deserializer(payload);
                 return true;
             }}
             message = default(MavlinkMessage);
             return false;
         }}
 
-        public static bool TryCreateMessageInstance(Type messageType, byte[] payload, out MavlinkMessage message)
+        public static bool TryDeserialize(Type messageType, byte[] payload, out MavlinkMessage message)
         {{
             if (_mavlinkMessagesByType.TryGetValue(messageType, out var value))
             {{
-                message = value.Creator(payload);
+                message = value.Deserializer(payload);
                 return true;
             }}
             message = default(MavlinkMessage);

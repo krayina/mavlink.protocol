@@ -85,13 +85,13 @@ public class MavlinkMessagesGeneratorTests
 	];
 
 	[Fact]
-	public async Task CreateCreateInstanceMethod_ShouldMatchExpectedSnapshot()
+	public async Task CreateDeserializeMethod_ShouldMatchExpectedSnapshot()
 	{
 		// Arrange
 		var currentNamespace = "Namespace1";
 
 		// Act
-		var methodSyntax = MavlinkMessageDeserializationGenerator.CreateCreateInstanceMethod(currentNamespace, "ESCInfoMessage", GeneratedFields);
+		var methodSyntax = MavlinkMessageDeserializationGenerator.CreateDeserializeMethod(currentNamespace, "ESCInfoMessage", GeneratedFields);
 
 		// Assert
 		var methodCode = methodSyntax.ToNormalizedString();
@@ -102,7 +102,7 @@ public class MavlinkMessagesGeneratorTests
 	}
 
 	[Fact]
-	public void CreateCreateInstanceMethod_ShouldEscapeReservedKeyword()
+	public void CreateDeserializeMethod_ShouldEscapeReservedKeyword()
 	{
 		// Arrange
 		var fieldType = new GeneratedMavlinkMessageFieldType("ushort", "ushort");
@@ -122,7 +122,7 @@ public class MavlinkMessagesGeneratorTests
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
-		var method = MavlinkMessageDeserializationGenerator.CreateCreateInstanceMethod(
+		var method = MavlinkMessageDeserializationGenerator.CreateDeserializeMethod(
 			@namespace: "TestNamespace",
 			messageName: "RadioMavlinkMessage",
 			fields: fields
@@ -136,7 +136,7 @@ public class MavlinkMessagesGeneratorTests
 	}
 
 	[Fact]
-	public void CreateCreateInstanceMethod_ShouldAvoidNameConflictsByAddingUnderscore()
+	public void CreateDeserializeMethod_ShouldAvoidNameConflictsByAddingUnderscore()
 	{
 		// Arrange
 		var fieldType = new GeneratedMavlinkMessageFieldType("uint8_t", "byte");
@@ -159,7 +159,7 @@ public class MavlinkMessagesGeneratorTests
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
-		var method = MavlinkMessageDeserializationGenerator.CreateCreateInstanceMethod(
+		var method = MavlinkMessageDeserializationGenerator.CreateDeserializeMethod(
 			@namespace: "TestNamespace",
 			messageName: "FileTransferProtocolMavlinkMessage",
 			fields: fields
@@ -173,7 +173,7 @@ public class MavlinkMessagesGeneratorTests
 	}
 
 	[Fact]
-	public void CreateCreateInstanceMethod_ShouldGenerateNullableEnumDeserialization()
+	public void CreateDeserializeMethod_ShouldGenerateNullableEnumDeserialization()
 	{
 		// Arrange
 		var enumType = new GeneratedMavlinkMessageFieldEnumType(
@@ -211,7 +211,7 @@ public class MavlinkMessagesGeneratorTests
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
-		var method = MavlinkMessageDeserializationGenerator.CreateCreateInstanceMethod(
+		var method = MavlinkMessageDeserializationGenerator.CreateDeserializeMethod(
 			@namespace: "TestNamespace",
 			messageName: "SysStatusMavlinkMessage",
 			fields: fields
@@ -303,13 +303,13 @@ public class MavlinkMessagesGeneratorTests
 	}
 
 	[Fact]
-	public async Task CreateCreateInstanceMethod_NullableFields_ShouldMatchExpectedSnapshot()
+	public async Task CreateDeserializeMethod_NullableFields_ShouldMatchExpectedSnapshot()
 	{
 		// Arrange
 		var nonRequiredFields = GeneratedFields.Select(field => field with { IsRequired = false }).ToImmutableArray();
 
 		// Act
-		var methodSyntax = MavlinkMessageDeserializationGenerator.CreateCreateInstanceMethod("Namespace1", "SomeMessage", nonRequiredFields);
+		var methodSyntax = MavlinkMessageDeserializationGenerator.CreateDeserializeMethod("Namespace1", "SomeMessage", nonRequiredFields);
 
 		// Assert
 		var methodCode = methodSyntax.ToNormalizedString();

@@ -1,4 +1,4 @@
-﻿public static SomeMessage CreateInstance(byte[] payload)
+﻿public static SomeMessage Deserialize(byte[] payload)
 {
     if (payload.Length == 0)
     {

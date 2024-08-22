@@ -1692,7 +1692,7 @@
         /// </remarks>
         public byte MavlinkVersion { get; init; }
 
-        public static HeartbeatMavlinkMessage CreateInstance(byte[] payload)
+        public static HeartbeatMavlinkMessage Deserialize(byte[] payload)
         {
             if (payload.Length == 0)
             {
@@ -1774,7 +1774,7 @@
         [System.ComponentModel.DataAnnotations.RequiredArrayLength(8)]
         public System.Collections.Immutable.ImmutableArray<byte> LibraryVersionHash { get; init; }
 
-        public static ProtocolVersionMavlinkMessage CreateInstance(byte[] payload)
+        public static ProtocolVersionMavlinkMessage Deserialize(byte[] payload)
         {
             if (payload.Length == 0)
             {
@@ -2449,7 +2449,7 @@ namespace MavlinkTypes.TestMavlinkCommon
         /// </remarks>
         public MavSysStatusSensorExtended? OnboardControlSensorsHealthExtended { get; init; }
 
-        public static SysStatusMavlinkMessage CreateInstance(byte[] payload)
+        public static SysStatusMavlinkMessage Deserialize(byte[] payload)
         {
             if (payload.Length == 0)
             {
@@ -2583,7 +2583,7 @@ namespace MavlinkTypes.TestMavlinkCommon
         /// </remarks>
         public uint TimeBootMs { get; init; }
 
-        public static SystemTimeMavlinkMessage CreateInstance(byte[] payload)
+        public static SystemTimeMavlinkMessage Deserialize(byte[] payload)
         {
             if (payload.Length == 0)
             {
@@ -2641,7 +2641,7 @@ namespace MavlinkTypes.TestMavlinkCommon
         /// </remarks>
         public byte TargetComponent { get; init; }
 
-        public static PingMavlinkMessage CreateInstance(byte[] payload)
+        public static PingMavlinkMessage Deserialize(byte[] payload)
         {
             if (payload.Length == 0)
             {
@@ -2707,7 +2707,7 @@ namespace MavlinkTypes.TestMavlinkCommon
         [System.ComponentModel.DataAnnotations.RequiredArrayLength(25)]
         public System.Collections.Immutable.ImmutableArray<char> Passkey { get; init; }
 
-        public static ChangeOperatorControlMavlinkMessage CreateInstance(byte[] payload)
+        public static ChangeOperatorControlMavlinkMessage Deserialize(byte[] payload)
         {
             if (payload.Length == 0)
             {
