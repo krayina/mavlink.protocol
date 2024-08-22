@@ -1813,16 +1813,8 @@
             BitConverter.GetBytes(instance.Version).CopyTo(buffer, 0);
             BitConverter.GetBytes(instance.MinVersion).CopyTo(buffer, 2);
             BitConverter.GetBytes(instance.MaxVersion).CopyTo(buffer, 4);
-            if (!instance.SpecVersionHash.IsDefaultOrEmpty)
-            {
-                Buffer.BlockCopy(instance.SpecVersionHash.ToArray(), 0, buffer, 6, 8);
-            }
-
-            if (!instance.LibraryVersionHash.IsDefaultOrEmpty)
-            {
-                Buffer.BlockCopy(instance.LibraryVersionHash.ToArray(), 0, buffer, 14, 8);
-            }
-
+            Buffer.BlockCopy(instance.SpecVersionHash.ToArray(), 0, buffer, 6, 8);
+            Buffer.BlockCopy(instance.LibraryVersionHash.ToArray(), 0, buffer, 14, 8);
             return buffer;
         }
     }
@@ -2552,7 +2544,7 @@ namespace MavlinkTypes.TestMavlinkCommon
 
         public static byte[] Serialize(SysStatusMavlinkMessage instance)
         {
-            var buffer = new byte[43];
+            var buffer = new byte[31];
             BitConverter.GetBytes((uint)instance.OnboardControlSensorsPresent).CopyTo(buffer, 0);
             BitConverter.GetBytes((uint)instance.OnboardControlSensorsEnabled).CopyTo(buffer, 4);
             BitConverter.GetBytes((uint)instance.OnboardControlSensorsHealth).CopyTo(buffer, 8);
@@ -2750,11 +2742,7 @@ namespace MavlinkTypes.TestMavlinkCommon
             buffer[0] = instance.TargetSystem;
             buffer[1] = instance.ControlRequest;
             buffer[2] = instance.Version;
-            if (!instance.Passkey.IsDefaultOrEmpty)
-            {
-                Buffer.BlockCopy(instance.Passkey.ToArray(), 0, buffer, 3, 50);
-            }
-
+            Buffer.BlockCopy(instance.Passkey.ToArray(), 0, buffer, 3, 50);
             return buffer;
         }
     }

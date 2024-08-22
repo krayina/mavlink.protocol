@@ -20,10 +20,10 @@ internal class MavlinkMessageSerializationGenerator
 		ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
 		var methodBody = new StringBuilder();
-		var totalSize = CalculateTotalSize(fields);
+		var minSize = fields.CalculateMinSize();
 
 		methodBody.AppendLine($@"
-var buffer = new byte[{totalSize}];
+var buffer = new byte[{minSize}];
 ");
 
 		int currentOffset = 0;
@@ -82,16 +82,14 @@ public class TemporaryClass
 		if (isRequired)
 		{
 			return $@"
-if (!{variableName}.IsDefaultOrEmpty)
-{{
-    Buffer.BlockCopy({variableName}.ToArray(), 0, buffer, {offset}, {arrayLength});
-}}";
+Buffer.BlockCopy({variableName}.ToArray(), 0, buffer, {offset}, {arrayLength});";
 		}
 		else
 		{
 			return $@"
 if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
 {{
+    Array.Resize(ref buffer, {offset} + {arrayLength});
     Buffer.BlockCopy({variableName}.Value.ToArray(), 0, buffer, {offset}, {arrayLength});
 }}";
 		}
@@ -105,7 +103,7 @@ if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
 			? $@"
 buffer[{offset}] = (byte){variableName};"
 			: $@"
-BitConverter.GetBytes((uint){variableName}).CopyTo(buffer, {offset});";
+BitConverter.GetBytes(({enumType.ConvertedType}){variableName}).CopyTo(buffer, {offset});";
 	}
 
 	private static string GenerateArrayEnumSerialization(string variableName, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, int offset, bool isRequired)
@@ -116,16 +114,14 @@ BitConverter.GetBytes((uint){variableName}).CopyTo(buffer, {offset});";
 		if (isRequired)
 		{
 			return $@"
-if (!{variableName}.IsDefaultOrEmpty)
-{{
-    Buffer.BlockCopy({variableName}.ToArray(), 0, buffer, {offset}, {arrayLength});
-}}";
+Buffer.BlockCopy({variableName}.ToArray(), 0, buffer, {offset}, {arrayLength});";
 		}
 		else
 		{
 			return $@"
 if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
 {{
+    Array.Resize(ref buffer, {offset} + {arrayLength});
     Buffer.BlockCopy({variableName}.Value.ToArray(), 0, buffer, {offset}, {arrayLength});
 }}";
 		}
@@ -152,17 +148,21 @@ BitConverter.GetBytes({variableName}).CopyTo(buffer, {offset});"
 				"byte?" => $@"
 if ({variableName}.HasValue)
 {{
+    Array.Resize(ref buffer, {offset} + 1);
     buffer[{offset}] = {variableName}.Value;
 }}",
 				"sbyte?" => $@"
 if ({variableName}.HasValue)
 {{
+    Array.Resize(ref buffer, {offset} + 1);
     buffer[{offset}] = (byte){variableName}.Value;
 }}",
 				_ => $@"
 if ({variableName}.HasValue)
 {{
-    BitConverter.GetBytes({variableName}.Value).CopyTo(buffer, {offset});
+    var valueBytes = BitConverter.GetBytes({variableName}.Value);
+    Array.Resize(ref buffer, {offset} + valueBytes.Length);
+    valueBytes.CopyTo(buffer, {offset});
 }}"
 			};
 		}
@@ -171,18 +171,5 @@ if ({variableName}.HasValue)
 	private static string EscapeReservedKeyword(string name)
 	{
 		return SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None ? "@" + name : name;
-	}
-
-	private static int CalculateTotalSize(ImmutableArray<GeneratedMavlinkMessageField> fields)
-	{
-		int totalSize = 0;
-
-		foreach (var field in fields)
-		{
-			int fieldSize = field.GetFieldSize();
-			totalSize += fieldSize;
-		}
-
-		return totalSize;
 	}
 }

@@ -50,11 +50,13 @@ public readonly record struct SysStatusMavlinkMessage : MavlinkMessage
 
     public static byte[] Serialize(SysStatusMavlinkMessage instance)
     {
-        var buffer = new byte[3];
+        var buffer = new byte[2];
         BitConverter.GetBytes(instance.CurrentBattery).CopyTo(buffer, 0);
         if (instance.BatteryRemaining.HasValue)
         {
-            BitConverter.GetBytes(instance.BatteryRemaining.Value).CopyTo(buffer, 2);
+            var valueBytes = BitConverter.GetBytes(instance.BatteryRemaining.Value);
+            Array.Resize(ref buffer, 2 + valueBytes.Length);
+            valueBytes.CopyTo(buffer, 2);
         }
 
         return buffer;
