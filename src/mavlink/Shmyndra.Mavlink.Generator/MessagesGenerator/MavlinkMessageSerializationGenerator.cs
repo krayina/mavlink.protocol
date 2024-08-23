@@ -41,9 +41,10 @@ var buffer = new byte[{minSize}];
 			return size2.CompareTo(size1); // Sort descending
 		});
 
-		// Combine sorted required fields, array fields (in original order), and non-required fields (in original order)
-		var sortedFields = requiredFields.Concat(arrayFields).Concat(nonRequiredFields).ToList();
+		// Combine sorted required fields, array fields (in original order)
+		var sortedFields = requiredFields.Concat(arrayFields).ToList();
 
+		// Serialize required and array fields
 		foreach (var field in sortedFields)
 		{
 			var fieldType = (GeneratedMavlinkMessageFieldType)field.Type;
@@ -70,8 +71,8 @@ var buffer = new byte[{minSize}];
 			currentOffset += field.GetFieldSize();
 		}
 
-		// Handle extensions
-		foreach (var field in fields.Where(f => !f.IsRequired))
+		// Handle non-required fields (extensions)
+		foreach (var field in nonRequiredFields)
 		{
 			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
 			var variableName = $"instance.{fieldPropertyName}";

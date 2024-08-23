@@ -2558,9 +2558,6 @@ namespace MavlinkTypes.TestMavlinkCommon
             BitConverter.GetBytes(instance.ErrorsCount3).CopyTo(buffer, 26);
             BitConverter.GetBytes(instance.ErrorsCount4).CopyTo(buffer, 28);
             buffer[30] = (byte)instance.BatteryRemaining;
-            BitConverter.GetBytes((uint)instance.OnboardControlSensorsPresentExtended).CopyTo(buffer, 31);
-            BitConverter.GetBytes((uint)instance.OnboardControlSensorsEnabledExtended).CopyTo(buffer, 35);
-            BitConverter.GetBytes((uint)instance.OnboardControlSensorsHealthExtended).CopyTo(buffer, 39);
             if (instance.OnboardControlSensorsPresentExtended.HasValue)
             {
                 Array.Resize(ref buffer, buffer.Length + 4);
@@ -2761,6 +2758,126 @@ namespace MavlinkTypes.TestMavlinkCommon
             buffer[1] = instance.ControlRequest;
             buffer[2] = instance.Version;
             Buffer.BlockCopy(instance.Passkey.ToArray(), 0, buffer, 3, 50);
+            return buffer;
+        }
+    }
+
+    /// <summary>
+    /// The attitude in the aeronautical frame (right-handed, Z-down, X-front, Y-right), expressed as quaternion. Quaternion order is w, x, y, z and a zero rotation would be expressed as (1 0 0 0).
+    /// </summary>
+    /// <remarks>
+    /// Original name: ATTITUDE_QUATERNION
+    /// </remarks>
+    [MavlinkIdentifiedType(31U, "ATTITUDE_QUATERNION")]
+    public readonly record struct AttitudeQuaternionMavlinkMessage : MavlinkMessage
+    {
+        /// <remarks>
+        /// Original name: TIME_BOOT_MS
+        /// </remarks>
+        public uint TimeBootMs { get; init; }
+        /// <remarks>
+        /// Original name: Q1
+        /// </remarks>
+        public float Q1 { get; init; }
+        /// <remarks>
+        /// Original name: Q2
+        /// </remarks>
+        public float Q2 { get; init; }
+        /// <remarks>
+        /// Original name: Q3
+        /// </remarks>
+        public float Q3 { get; init; }
+        /// <remarks>
+        /// Original name: Q4
+        /// </remarks>
+        public float Q4 { get; init; }
+        /// <remarks>
+        /// Original name: ROLLSPEED
+        /// </remarks>
+        public float Rollspeed { get; init; }
+        /// <remarks>
+        /// Original name: PITCHSPEED
+        /// </remarks>
+        public float Pitchspeed { get; init; }
+        /// <remarks>
+        /// Original name: YAWSPEED
+        /// </remarks>
+        public float Yawspeed { get; init; }
+
+        /// <remarks>
+        /// Original name: REPR_OFFSET_Q
+        /// </remarks>
+        [System.ComponentModel.DataAnnotations.RequiredArrayLength(4)]
+        public System.Collections.Immutable.ImmutableArray<float>? ReprOffsetQ { get; init; }
+
+        public static AttitudeQuaternionMavlinkMessage Deserialize(byte[] payload)
+        {
+            if (payload.Length == 0)
+            {
+                return new AttitudeQuaternionMavlinkMessage();
+            }
+
+            if (payload.Length < 32)
+            {
+                var paddedPayload = new byte[32];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
+            var timeBootMs = BitConverter.ToUInt32(payload, 0);
+            var q1 = BitConverter.ToSingle(payload, 4);
+            var q2 = BitConverter.ToSingle(payload, 8);
+            var q3 = BitConverter.ToSingle(payload, 12);
+            var q4 = BitConverter.ToSingle(payload, 16);
+            var rollspeed = BitConverter.ToSingle(payload, 20);
+            var pitchspeed = BitConverter.ToSingle(payload, 24);
+            var yawspeed = BitConverter.ToSingle(payload, 28);
+            if (payload.Length > 32 && payload.Length < 48)
+            {
+                var paddedPayload = new byte[48];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
+            System.Collections.Immutable.ImmutableArray<float>? reprOffsetQ = null;
+            if (payload.Length >= 48)
+            {
+                var tempReprOffsetQArray = new float[4];
+                Buffer.BlockCopy(payload, 32, tempReprOffsetQArray, 0, 16);
+                reprOffsetQ = System.Collections.Immutable.ImmutableArray.CreateRange(tempReprOffsetQArray);
+            }
+
+            return new AttitudeQuaternionMavlinkMessage
+            {
+                TimeBootMs = timeBootMs,
+                Q1 = q1,
+                Q2 = q2,
+                Q3 = q3,
+                Q4 = q4,
+                Rollspeed = rollspeed,
+                Pitchspeed = pitchspeed,
+                Yawspeed = yawspeed,
+                ReprOffsetQ = reprOffsetQ
+            };
+        }
+
+        public static byte[] Serialize(AttitudeQuaternionMavlinkMessage instance)
+        {
+            var buffer = new byte[32];
+            BitConverter.GetBytes(instance.TimeBootMs).CopyTo(buffer, 0);
+            BitConverter.GetBytes(instance.Q1).CopyTo(buffer, 4);
+            BitConverter.GetBytes(instance.Q2).CopyTo(buffer, 8);
+            BitConverter.GetBytes(instance.Q3).CopyTo(buffer, 12);
+            BitConverter.GetBytes(instance.Q4).CopyTo(buffer, 16);
+            BitConverter.GetBytes(instance.Rollspeed).CopyTo(buffer, 20);
+            BitConverter.GetBytes(instance.Pitchspeed).CopyTo(buffer, 24);
+            BitConverter.GetBytes(instance.Yawspeed).CopyTo(buffer, 28);
+            if (instance.ReprOffsetQ.HasValue && !instance.ReprOffsetQ.Value.IsDefaultOrEmpty)
+            {
+                Array.Resize(ref buffer, 32 + 16);
+                Buffer.BlockCopy(instance.ReprOffsetQ.Value.ToArray(), 0, buffer, 32, 16);
+            }
+
             return buffer;
         }
     }
