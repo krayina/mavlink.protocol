@@ -59,6 +59,12 @@ public readonly record struct SysStatusMavlinkMessage : MavlinkMessage
             valueBytes.CopyTo(buffer, 2);
         }
 
+        if (instance.BatteryRemaining.HasValue)
+        {
+            Array.Resize(ref buffer, buffer.Length + 1);
+            BitConverter.GetBytes(instance.BatteryRemaining.Value).CopyTo(buffer, buffer.Length - 1);
+        }
+
         return buffer;
     }
 }

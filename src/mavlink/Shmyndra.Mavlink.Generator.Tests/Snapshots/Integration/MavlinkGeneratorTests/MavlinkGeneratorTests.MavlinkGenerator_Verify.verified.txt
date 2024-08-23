@@ -2561,6 +2561,24 @@ namespace MavlinkTypes.TestMavlinkCommon
             BitConverter.GetBytes((uint)instance.OnboardControlSensorsPresentExtended).CopyTo(buffer, 31);
             BitConverter.GetBytes((uint)instance.OnboardControlSensorsEnabledExtended).CopyTo(buffer, 35);
             BitConverter.GetBytes((uint)instance.OnboardControlSensorsHealthExtended).CopyTo(buffer, 39);
+            if (instance.OnboardControlSensorsPresentExtended.HasValue)
+            {
+                Array.Resize(ref buffer, buffer.Length + 4);
+                BitConverter.GetBytes(instance.OnboardControlSensorsPresentExtended.Value).CopyTo(buffer, buffer.Length - 4);
+            }
+
+            if (instance.OnboardControlSensorsEnabledExtended.HasValue)
+            {
+                Array.Resize(ref buffer, buffer.Length + 4);
+                BitConverter.GetBytes(instance.OnboardControlSensorsEnabledExtended.Value).CopyTo(buffer, buffer.Length - 4);
+            }
+
+            if (instance.OnboardControlSensorsHealthExtended.HasValue)
+            {
+                Array.Resize(ref buffer, buffer.Length + 4);
+                BitConverter.GetBytes(instance.OnboardControlSensorsHealthExtended.Value).CopyTo(buffer, buffer.Length - 4);
+            }
+
             return buffer;
         }
     }

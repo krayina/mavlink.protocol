@@ -70,6 +70,21 @@ var buffer = new byte[{minSize}];
 			currentOffset += field.GetFieldSize();
 		}
 
+		// Handle extensions
+		foreach (var field in fields.Where(f => !f.IsRequired))
+		{
+			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
+			var variableName = $"instance.{fieldPropertyName}";
+			var fieldSize = field.GetFieldSize();
+
+			methodBody.AppendLine($@"
+if ({variableName}.HasValue)
+{{
+    Array.Resize(ref buffer, buffer.Length + {fieldSize});
+    BitConverter.GetBytes({variableName}.Value).CopyTo(buffer, buffer.Length - {fieldSize});
+}}");
+		}
+
 		methodBody.AppendLine("return buffer;");
 
 		var methodString = $@"
