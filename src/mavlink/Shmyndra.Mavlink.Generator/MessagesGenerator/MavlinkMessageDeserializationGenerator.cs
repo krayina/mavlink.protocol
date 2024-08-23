@@ -176,7 +176,7 @@ if (payload.Length >= {offset + arrayLength})
 			if (size == 1)
 			{
 				result.AppendLine($@"
-var {variableName}Value = (byte)payload[{offset}];
+var {variableName}Value = ({fieldEnumType.ConvertedType})payload[{offset}];
 var {variableName} = ({fullEnumTypeName}){variableName}Value;");
 			}
 			else
@@ -191,10 +191,10 @@ var {variableName} = ({fullEnumTypeName}){variableName}Value;");
 			if (size == 1)
 			{
 				result.AppendLine($@"
-byte? {variableName}Value = null;
+{fieldEnumType.ConvertedType}? {variableName}Value = null;
 if (payload.Length > {offset})
 {{
-    {variableName}Value = (byte)payload[{offset}];
+    {variableName}Value = ({fieldEnumType.ConvertedType})payload[{offset}];
 }}
 var {variableName} = {variableName}Value.HasValue ? ({fullEnumTypeName}?){variableName}Value.Value : null;");
 			}
