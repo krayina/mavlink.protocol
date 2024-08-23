@@ -78,12 +78,45 @@ var buffer = new byte[{minSize}];
 			var variableName = $"instance.{fieldPropertyName}";
 			var fieldSize = field.GetFieldSize();
 
-			methodBody.AppendLine($@"
+			if (field.Type is GeneratedMavlinkMessageFieldEnumType enumType)
+			{
+				methodBody.AppendLine($@"
+if ({variableName}.HasValue)
+{{
+    var enumValue = ({enumType.ConvertedType}){variableName}.Value;
+    Array.Resize(ref buffer, buffer.Length + {fieldSize});
+    BitConverter.GetBytes(enumValue).CopyTo(buffer, buffer.Length - {fieldSize});
+}}");
+			}
+			else if (field.Type is GeneratedMavlinkMessageFieldArrayType arrayType)
+			{
+				methodBody.AppendLine($@"
+if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
+{{
+    var arraySize = {fieldSize};
+    Array.Resize(ref buffer, buffer.Length + arraySize);
+    Buffer.BlockCopy({variableName}.Value.ToArray(), 0, buffer, buffer.Length - arraySize, arraySize);
+}}");
+			}
+			else if (field.Type is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType)
+			{
+				methodBody.AppendLine($@"
+if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
+{{
+    var arraySize = {fieldSize};
+    Array.Resize(ref buffer, buffer.Length + arraySize);
+    Buffer.BlockCopy({variableName}.Value.ToArray(), 0, buffer, buffer.Length - arraySize, arraySize);
+}}");
+			}
+			else
+			{
+				methodBody.AppendLine($@"
 if ({variableName}.HasValue)
 {{
     Array.Resize(ref buffer, buffer.Length + {fieldSize});
     BitConverter.GetBytes({variableName}.Value).CopyTo(buffer, buffer.Length - {fieldSize});
 }}");
+			}
 		}
 
 		methodBody.AppendLine("return buffer;");
@@ -133,7 +166,7 @@ if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
 
 		return size == 1
 			? $@"
-buffer[{offset}] = (byte){variableName};"
+buffer[{offset}] = ({enumType.ConvertedType}){variableName};"
 			: $@"
 BitConverter.GetBytes(({enumType.ConvertedType}){variableName}).CopyTo(buffer, {offset});";
 	}

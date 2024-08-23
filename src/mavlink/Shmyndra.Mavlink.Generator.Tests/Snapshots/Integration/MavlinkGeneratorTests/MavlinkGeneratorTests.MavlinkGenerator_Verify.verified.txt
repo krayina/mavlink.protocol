@@ -2560,20 +2560,23 @@ namespace MavlinkTypes.TestMavlinkCommon
             buffer[30] = (byte)instance.BatteryRemaining;
             if (instance.OnboardControlSensorsPresentExtended.HasValue)
             {
+                var enumValue = (uint)instance.OnboardControlSensorsPresentExtended.Value;
                 Array.Resize(ref buffer, buffer.Length + 4);
-                BitConverter.GetBytes(instance.OnboardControlSensorsPresentExtended.Value).CopyTo(buffer, buffer.Length - 4);
+                BitConverter.GetBytes(enumValue).CopyTo(buffer, buffer.Length - 4);
             }
 
             if (instance.OnboardControlSensorsEnabledExtended.HasValue)
             {
+                var enumValue = (uint)instance.OnboardControlSensorsEnabledExtended.Value;
                 Array.Resize(ref buffer, buffer.Length + 4);
-                BitConverter.GetBytes(instance.OnboardControlSensorsEnabledExtended.Value).CopyTo(buffer, buffer.Length - 4);
+                BitConverter.GetBytes(enumValue).CopyTo(buffer, buffer.Length - 4);
             }
 
             if (instance.OnboardControlSensorsHealthExtended.HasValue)
             {
+                var enumValue = (uint)instance.OnboardControlSensorsHealthExtended.Value;
                 Array.Resize(ref buffer, buffer.Length + 4);
-                BitConverter.GetBytes(instance.OnboardControlSensorsHealthExtended.Value).CopyTo(buffer, buffer.Length - 4);
+                BitConverter.GetBytes(enumValue).CopyTo(buffer, buffer.Length - 4);
             }
 
             return buffer;
