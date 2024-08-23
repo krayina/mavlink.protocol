@@ -45,7 +45,23 @@ if (payload.Length < {minSize})
 
 		var offset = 0;
 
-		foreach (var field in fields)
+		// Divide fields into required, non-required, and array groups
+		var requiredFields = fields.Where(f => f.IsRequired && !(f.Type is GeneratedMavlinkMessageFieldArrayType || f.Type is GeneratedMavlinkMessageFieldArrayEnumType)).ToList();
+		var nonRequiredFields = fields.Where(f => !f.IsRequired && !(f.Type is GeneratedMavlinkMessageFieldArrayType || f.Type is GeneratedMavlinkMessageFieldArrayEnumType)).ToList();
+		var arrayFields = fields.Where(f => f.Type is GeneratedMavlinkMessageFieldArrayType || f.Type is GeneratedMavlinkMessageFieldArrayEnumType).ToList();
+
+		// Sort required fields by type size (largest to smallest), excluding array types
+		requiredFields.Sort((field1, field2) =>
+		{
+			var size1 = Utilities.GetDotNetTypeSize(((GeneratedMavlinkMessageFieldType)field1.Type).ConvertedType);
+			var size2 = Utilities.GetDotNetTypeSize(((GeneratedMavlinkMessageFieldType)field2.Type).ConvertedType);
+			return size2.CompareTo(size1); // Sort descending
+		});
+
+		// Combine sorted required fields, array fields (in original order), and non-required fields (in original order)
+		var sortedFields = requiredFields.Concat(arrayFields).Concat(nonRequiredFields).ToList();
+
+		foreach (var field in sortedFields)
 		{
 			var fieldType = (GeneratedMavlinkMessageFieldType)field.Type;
 			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
@@ -87,7 +103,7 @@ if (payload.Length > {offset} && payload.Length < {offset + fieldSize})
 			}
 		}
 
-		var propertiesAssignment = string.Join(", ", fields.Select(field =>
+		var propertiesAssignment = string.Join(", ", sortedFields.Select(field =>
 		{
 			var variableName = EscapeReservedKeyword(char.ToLowerInvariant(field.GeneratedName[0]) + field.GeneratedName.Substring(1));
 			if (variableName == DeserializeParameterName)

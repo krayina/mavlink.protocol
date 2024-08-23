@@ -1706,22 +1706,22 @@
                 payload = paddedPayload;
             }
 
-            var typeValue = (byte)payload[0];
+            var customMode = BitConverter.ToUInt32(payload, 0);
+            var typeValue = (byte)payload[4];
             var type = (MavType)typeValue;
-            var autopilotValue = (byte)payload[1];
+            var autopilotValue = (byte)payload[5];
             var autopilot = (MavAutopilot)autopilotValue;
-            var baseModeValue = (byte)payload[2];
+            var baseModeValue = (byte)payload[6];
             var baseMode = (MavModeFlag)baseModeValue;
-            var customMode = BitConverter.ToUInt32(payload, 3);
             var systemStatusValue = (byte)payload[7];
             var systemStatus = (MavState)systemStatusValue;
             var mavlinkVersion = payload[8];
             return new HeartbeatMavlinkMessage
             {
+                CustomMode = customMode,
                 Type = type,
                 Autopilot = autopilot,
                 BaseMode = baseMode,
-                CustomMode = customMode,
                 SystemStatus = systemStatus,
                 MavlinkVersion = mavlinkVersion
             };
@@ -2472,13 +2472,13 @@ namespace MavlinkTypes.TestMavlinkCommon
             var load = BitConverter.ToUInt16(payload, 12);
             var voltageBattery = BitConverter.ToUInt16(payload, 14);
             var currentBattery = BitConverter.ToInt16(payload, 16);
-            var batteryRemaining = (sbyte)payload[18];
-            var dropRateComm = BitConverter.ToUInt16(payload, 19);
-            var errorsComm = BitConverter.ToUInt16(payload, 21);
-            var errorsCount1 = BitConverter.ToUInt16(payload, 23);
-            var errorsCount2 = BitConverter.ToUInt16(payload, 25);
-            var errorsCount3 = BitConverter.ToUInt16(payload, 27);
-            var errorsCount4 = BitConverter.ToUInt16(payload, 29);
+            var dropRateComm = BitConverter.ToUInt16(payload, 18);
+            var errorsComm = BitConverter.ToUInt16(payload, 20);
+            var errorsCount1 = BitConverter.ToUInt16(payload, 22);
+            var errorsCount2 = BitConverter.ToUInt16(payload, 24);
+            var errorsCount3 = BitConverter.ToUInt16(payload, 26);
+            var errorsCount4 = BitConverter.ToUInt16(payload, 28);
+            var batteryRemaining = (sbyte)payload[30];
             if (payload.Length > 31 && payload.Length < 35)
             {
                 var paddedPayload = new byte[35];
@@ -2529,13 +2529,13 @@ namespace MavlinkTypes.TestMavlinkCommon
                 Load = load,
                 VoltageBattery = voltageBattery,
                 CurrentBattery = currentBattery,
-                BatteryRemaining = batteryRemaining,
                 DropRateComm = dropRateComm,
                 ErrorsComm = errorsComm,
                 ErrorsCount1 = errorsCount1,
                 ErrorsCount2 = errorsCount2,
                 ErrorsCount3 = errorsCount3,
                 ErrorsCount4 = errorsCount4,
+                BatteryRemaining = batteryRemaining,
                 OnboardControlSensorsPresentExtended = onboardControlSensorsPresentExtended,
                 OnboardControlSensorsEnabledExtended = onboardControlSensorsEnabledExtended,
                 OnboardControlSensorsHealthExtended = onboardControlSensorsHealthExtended

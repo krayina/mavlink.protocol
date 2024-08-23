@@ -12,140 +12,140 @@
         payload = paddedPayload;
     }
 
-    if (payload.Length > 0 && payload.Length < 1)
+    if (payload.Length > 0 && payload.Length < 8)
     {
-        var paddedPayload = new byte[1];
-        Array.Copy(payload, paddedPayload, payload.Length);
-        payload = paddedPayload;
-    }
-
-    byte? index = null;
-    if (payload.Length > 0)
-    {
-        index = payload[0];
-    }
-
-    if (payload.Length > 1 && payload.Length < 9)
-    {
-        var paddedPayload = new byte[9];
-        Array.Copy(payload, paddedPayload, payload.Length);
-        payload = paddedPayload;
-    }
-
-    ulong? timeUsec = null;
-    if (payload.Length > 1)
-    {
-        timeUsec = BitConverter.ToUInt64(payload, 1);
-    }
-
-    if (payload.Length > 9 && payload.Length < 11)
-    {
-        var paddedPayload = new byte[11];
-        Array.Copy(payload, paddedPayload, payload.Length);
-        payload = paddedPayload;
-    }
-
-    ushort? counter = null;
-    if (payload.Length > 9)
-    {
-        counter = BitConverter.ToUInt16(payload, 9);
-    }
-
-    if (payload.Length > 11 && payload.Length < 12)
-    {
-        var paddedPayload = new byte[12];
-        Array.Copy(payload, paddedPayload, payload.Length);
-        payload = paddedPayload;
-    }
-
-    byte? count = null;
-    if (payload.Length > 11)
-    {
-        count = payload[11];
-    }
-
-    if (payload.Length > 12 && payload.Length < 13)
-    {
-        var paddedPayload = new byte[13];
-        Array.Copy(payload, paddedPayload, payload.Length);
-        payload = paddedPayload;
-    }
-
-    byte? connectionTypeValue = null;
-    if (payload.Length > 12)
-    {
-        connectionTypeValue = (byte)payload[12];
-    }
-
-    var connectionType = connectionTypeValue.HasValue ? (EscConnectionType?)connectionTypeValue.Value : null;
-    if (payload.Length > 13 && payload.Length < 14)
-    {
-        var paddedPayload = new byte[14];
-        Array.Copy(payload, paddedPayload, payload.Length);
-        payload = paddedPayload;
-    }
-
-    byte? info = null;
-    if (payload.Length > 13)
-    {
-        info = payload[13];
-    }
-
-    if (payload.Length > 14 && payload.Length < 22)
-    {
-        var paddedPayload = new byte[22];
+        var paddedPayload = new byte[8];
         Array.Copy(payload, paddedPayload, payload.Length);
         payload = paddedPayload;
     }
 
     System.Collections.Immutable.ImmutableArray<EscFailureFlags>? failureFlags = null;
-    if (payload.Length >= 22)
+    if (payload.Length >= 8)
     {
         var tempFailureFlagsArray = new EscFailureFlags[4];
-        Buffer.BlockCopy(payload, 14, tempFailureFlagsArray, 0, 8);
+        Buffer.BlockCopy(payload, 0, tempFailureFlagsArray, 0, 8);
         failureFlags = System.Collections.Immutable.ImmutableArray.CreateRange(tempFailureFlagsArray);
     }
 
-    if (payload.Length > 22 && payload.Length < 38)
+    if (payload.Length > 8 && payload.Length < 24)
     {
-        var paddedPayload = new byte[38];
+        var paddedPayload = new byte[24];
         Array.Copy(payload, paddedPayload, payload.Length);
         payload = paddedPayload;
     }
 
     System.Collections.Immutable.ImmutableArray<uint>? errorCount = null;
-    if (payload.Length >= 38)
+    if (payload.Length >= 24)
     {
         var tempErrorCountArray = new uint[4];
-        Buffer.BlockCopy(payload, 22, tempErrorCountArray, 0, 16);
+        Buffer.BlockCopy(payload, 8, tempErrorCountArray, 0, 16);
         errorCount = System.Collections.Immutable.ImmutableArray.CreateRange(tempErrorCountArray);
     }
 
-    if (payload.Length > 38 && payload.Length < 46)
+    if (payload.Length > 24 && payload.Length < 32)
+    {
+        var paddedPayload = new byte[32];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    System.Collections.Immutable.ImmutableArray<short>? temperature = null;
+    if (payload.Length >= 32)
+    {
+        var tempTemperatureArray = new short[4];
+        Buffer.BlockCopy(payload, 24, tempTemperatureArray, 0, 8);
+        temperature = System.Collections.Immutable.ImmutableArray.CreateRange(tempTemperatureArray);
+    }
+
+    if (payload.Length > 32 && payload.Length < 33)
+    {
+        var paddedPayload = new byte[33];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    byte? index = null;
+    if (payload.Length > 32)
+    {
+        index = payload[32];
+    }
+
+    if (payload.Length > 33 && payload.Length < 41)
+    {
+        var paddedPayload = new byte[41];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    ulong? timeUsec = null;
+    if (payload.Length > 33)
+    {
+        timeUsec = BitConverter.ToUInt64(payload, 33);
+    }
+
+    if (payload.Length > 41 && payload.Length < 43)
+    {
+        var paddedPayload = new byte[43];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    ushort? counter = null;
+    if (payload.Length > 41)
+    {
+        counter = BitConverter.ToUInt16(payload, 41);
+    }
+
+    if (payload.Length > 43 && payload.Length < 44)
+    {
+        var paddedPayload = new byte[44];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    byte? count = null;
+    if (payload.Length > 43)
+    {
+        count = payload[43];
+    }
+
+    if (payload.Length > 44 && payload.Length < 45)
+    {
+        var paddedPayload = new byte[45];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    byte? connectionTypeValue = null;
+    if (payload.Length > 44)
+    {
+        connectionTypeValue = (byte)payload[44];
+    }
+
+    var connectionType = connectionTypeValue.HasValue ? (EscConnectionType?)connectionTypeValue.Value : null;
+    if (payload.Length > 45 && payload.Length < 46)
     {
         var paddedPayload = new byte[46];
         Array.Copy(payload, paddedPayload, payload.Length);
         payload = paddedPayload;
     }
 
-    System.Collections.Immutable.ImmutableArray<short>? temperature = null;
-    if (payload.Length >= 46)
+    byte? info = null;
+    if (payload.Length > 45)
     {
-        var tempTemperatureArray = new short[4];
-        Buffer.BlockCopy(payload, 38, tempTemperatureArray, 0, 8);
-        temperature = System.Collections.Immutable.ImmutableArray.CreateRange(tempTemperatureArray);
+        info = payload[45];
     }
 
     return new SomeMessage
     {
+        FailureFlags = failureFlags,
+        ErrorCount = errorCount,
+        Temperature = temperature,
         Index = index,
         TimeUsec = timeUsec,
         Counter = counter,
         Count = count,
         ConnectionType = connectionType,
-        Info = info,
-        FailureFlags = failureFlags,
-        ErrorCount = errorCount,
-        Temperature = temperature
+        Info = info
     };
 }
