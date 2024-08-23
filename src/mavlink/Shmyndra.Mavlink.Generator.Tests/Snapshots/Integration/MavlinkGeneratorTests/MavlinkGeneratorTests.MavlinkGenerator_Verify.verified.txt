@@ -1730,10 +1730,10 @@
         public static byte[] Serialize(HeartbeatMavlinkMessage instance)
         {
             var buffer = new byte[9];
-            buffer[0] = (byte)instance.Type;
-            buffer[1] = (byte)instance.Autopilot;
-            buffer[2] = (byte)instance.BaseMode;
-            BitConverter.GetBytes(instance.CustomMode).CopyTo(buffer, 3);
+            BitConverter.GetBytes(instance.CustomMode).CopyTo(buffer, 0);
+            buffer[4] = (byte)instance.Type;
+            buffer[5] = (byte)instance.Autopilot;
+            buffer[6] = (byte)instance.BaseMode;
             buffer[7] = (byte)instance.SystemStatus;
             buffer[8] = instance.MavlinkVersion;
             return buffer;
@@ -2551,13 +2551,13 @@ namespace MavlinkTypes.TestMavlinkCommon
             BitConverter.GetBytes(instance.Load).CopyTo(buffer, 12);
             BitConverter.GetBytes(instance.VoltageBattery).CopyTo(buffer, 14);
             BitConverter.GetBytes(instance.CurrentBattery).CopyTo(buffer, 16);
-            buffer[18] = (byte)instance.BatteryRemaining;
-            BitConverter.GetBytes(instance.DropRateComm).CopyTo(buffer, 19);
-            BitConverter.GetBytes(instance.ErrorsComm).CopyTo(buffer, 21);
-            BitConverter.GetBytes(instance.ErrorsCount1).CopyTo(buffer, 23);
-            BitConverter.GetBytes(instance.ErrorsCount2).CopyTo(buffer, 25);
-            BitConverter.GetBytes(instance.ErrorsCount3).CopyTo(buffer, 27);
-            BitConverter.GetBytes(instance.ErrorsCount4).CopyTo(buffer, 29);
+            BitConverter.GetBytes(instance.DropRateComm).CopyTo(buffer, 18);
+            BitConverter.GetBytes(instance.ErrorsComm).CopyTo(buffer, 20);
+            BitConverter.GetBytes(instance.ErrorsCount1).CopyTo(buffer, 22);
+            BitConverter.GetBytes(instance.ErrorsCount2).CopyTo(buffer, 24);
+            BitConverter.GetBytes(instance.ErrorsCount3).CopyTo(buffer, 26);
+            BitConverter.GetBytes(instance.ErrorsCount4).CopyTo(buffer, 28);
+            buffer[30] = (byte)instance.BatteryRemaining;
             BitConverter.GetBytes((uint)instance.OnboardControlSensorsPresentExtended).CopyTo(buffer, 31);
             BitConverter.GetBytes((uint)instance.OnboardControlSensorsEnabledExtended).CopyTo(buffer, 35);
             BitConverter.GetBytes((uint)instance.OnboardControlSensorsHealthExtended).CopyTo(buffer, 39);

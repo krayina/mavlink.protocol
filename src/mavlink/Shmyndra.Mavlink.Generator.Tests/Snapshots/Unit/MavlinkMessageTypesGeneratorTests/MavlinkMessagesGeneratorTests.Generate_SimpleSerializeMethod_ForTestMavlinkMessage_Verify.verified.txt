@@ -1,9 +1,9 @@
 ﻿public static byte[] Serialize(TestMavlinkMessage instance)
 {
     var buffer = new byte[46];
-    buffer[0] = instance.Index;
-    BitConverter.GetBytes(instance.TimeUsec).CopyTo(buffer, 1);
-    BitConverter.GetBytes(instance.Counter).CopyTo(buffer, 9);
+    BitConverter.GetBytes(instance.TimeUsec).CopyTo(buffer, 0);
+    BitConverter.GetBytes(instance.Counter).CopyTo(buffer, 8);
+    buffer[10] = instance.Index;
     buffer[11] = instance.Count;
     buffer[12] = (byte)instance.ConnectionType;
     buffer[13] = instance.Info;
