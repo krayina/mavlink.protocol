@@ -2732,9 +2732,9 @@ namespace MavlinkTypes.TestMavlinkCommon
                 return new ChangeOperatorControlMavlinkMessage();
             }
 
-            if (payload.Length < 53)
+            if (payload.Length < 28)
             {
-                var paddedPayload = new byte[53];
+                var paddedPayload = new byte[28];
                 Array.Copy(payload, paddedPayload, payload.Length);
                 payload = paddedPayload;
             }
@@ -2743,7 +2743,7 @@ namespace MavlinkTypes.TestMavlinkCommon
             var controlRequest = payload[1];
             var version = payload[2];
             var tempPasskeyArray = new char[25];
-            Buffer.BlockCopy(payload, 3, tempPasskeyArray, 0, 50);
+            Buffer.BlockCopy(payload, 3, tempPasskeyArray, 0, 25);
             var passkey = System.Collections.Immutable.ImmutableArray.CreateRange(tempPasskeyArray);
             return new ChangeOperatorControlMavlinkMessage
             {
@@ -2756,11 +2756,11 @@ namespace MavlinkTypes.TestMavlinkCommon
 
         public static byte[] Serialize(ChangeOperatorControlMavlinkMessage instance)
         {
-            var buffer = new byte[53];
+            var buffer = new byte[28];
             buffer[0] = instance.TargetSystem;
             buffer[1] = instance.ControlRequest;
             buffer[2] = instance.Version;
-            Buffer.BlockCopy(instance.Passkey.ToArray(), 0, buffer, 3, 50);
+            Buffer.BlockCopy(instance.Passkey.ToArray(), 0, buffer, 3, 25);
             return buffer;
         }
     }
