@@ -169,15 +169,15 @@ internal static class Utilities
 		{
 			"byte" => 1,
 			"sbyte" => 1,
+			"char" => 1,
 			"ushort" => 2,
 			"short" => 2,
 			"uint" => 4,
 			"int" => 4,
+			"float" => 4,
 			"ulong" => 8,
 			"long" => 8,
-			"float" => 4,
 			"double" => 8,
-			"char" => 2,
 			_ => throw new InvalidOperationException($"Unknown type: {convertedType}"),
 		};
 	}
