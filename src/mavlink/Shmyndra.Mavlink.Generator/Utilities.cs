@@ -181,4 +181,44 @@ internal static class Utilities
 			_ => throw new InvalidOperationException($"Unknown type: {convertedType}"),
 		};
 	}
+
+	public static string GetTypeWithoutArray(this MavlinkMessageFieldType type)
+	{
+		string typeName = type.TypeName;
+		int arrayStartIndex = typeName.IndexOf('[');
+		if (arrayStartIndex >= 0)
+		{
+			typeName = typeName.Substring(0, arrayStartIndex);
+		}
+		return typeName;
+	}
+
+	public static byte CalculateCrcExtra(this IEnumerable<GeneratedMavlinkMessageField> fields, string messageName)
+	{
+		ushort crc = X25Crc.CrcSeed;
+
+		crc = X25Crc.Accumulate(messageName + " ", crc);
+
+		var sortedFields = fields.OrderByDescending(
+			field => Utilities.GetDotNetTypeSize(((GeneratedMavlinkMessageFieldType)field.Type).ConvertedType));
+
+		foreach (var field in sortedFields)
+		{
+			if (!field.IsRequired) continue;
+
+			var typeName = field.Type.TypeName.Equals("uint8_t_mavlink_version") ? "uint8_t" : field.Type.GetTypeWithoutArray();
+			crc = X25Crc.Accumulate($"{typeName} {field.Name} ", crc);
+
+			if (field.Type is GeneratedMavlinkMessageFieldArrayType arrayField)
+			{
+				crc = X25Crc.Accumulate(crc, (byte)arrayField.ArrayLength);
+			}
+			else if (field.Type is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumField)
+			{
+				crc = X25Crc.Accumulate(crc, (byte)arrayEnumField.ArrayLength);
+			}
+		}
+
+		return X25Crc.FinalizeCrc(crc);
+	}
 }

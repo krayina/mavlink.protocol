@@ -4,24 +4,25 @@ internal static class MavlinkMessagesGenerator
 {
 	public static string GenerateMessageExtensions(IEnumerable<GeneratedMavlinkMessage> messages)
 	{
-		var messageSizeDictionary = new Dictionary<GeneratedMavlinkMessage, (int MinSize, int MaxSize)>();
+		var messageValues = new Dictionary<GeneratedMavlinkMessage, (int MinSize, int MaxSize, byte CrcExtra)>();
 
 		foreach (var message in messages)
 		{
 			var sizeInfo = CalculateMinAndMaxSize(message);
-			messageSizeDictionary[message] = sizeInfo;
+			byte crcExtra = message.GeneratedFields.CalculateCrcExtra(message.Name);
+			messageValues[message] = (sizeInfo.MinSize, sizeInfo.MaxSize, crcExtra);
 		}
 
 		var dictionaryEntriesByType = string.Join(",\n", messages.Select(message =>
 		{
-			var sizeInfo = messageSizeDictionary[message];
-			return $"\t\t\t{{ typeof({message.GeneratedNamespace}.{message.GeneratedName}), ({message.Id}U, \"{message.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.Deserialize(payload)) }}";
+			var sizeInfo = messageValues[message];
+			return $"\t\t\t{{ typeof({message.GeneratedNamespace}.{message.GeneratedName}), ({message.Id}U, \"{message.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, {sizeInfo.CrcExtra}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.Deserialize(payload)) }}";
 		}));
 
 		var dictionaryEntriesById = string.Join(",\n", messages.Select(message =>
 		{
-			var sizeInfo = messageSizeDictionary[message];
-			return $"\t\t\t{{ {message.Id}U, (typeof({message.GeneratedNamespace}.{message.GeneratedName}), \"{message.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.Deserialize(payload)) }}";
+			var sizeInfo = messageValues[message];
+			return $"\t\t\t{{ {message.Id}U, (typeof({message.GeneratedNamespace}.{message.GeneratedName}), \"{message.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, {sizeInfo.CrcExtra}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.Deserialize(payload)) }}";
 		}));
 
 		return GetStringCode(dictionaryEntriesByType, dictionaryEntriesById);
@@ -56,12 +57,12 @@ namespace MavlinkTypes
 {{
     public static class MavlinkMessages
     {{
-        private static readonly Dictionary<Type, (uint Id, string MavlinkName, int MinSize, int MaxSize, Func<byte[], MavlinkMessage> Deserializer)> _mavlinkMessagesByType = new()
+        private static readonly Dictionary<Type, (uint Id, string MavlinkName, int MinSize, int MaxSize, byte CrcExtra, Func<byte[], MavlinkMessage> Deserializer)> _mavlinkMessagesByType = new()
         {{
 {dictionaryEntriesByType}
         }};
 
-        private static readonly Dictionary<uint, (Type Type, string MavlinkName, int MinSize, int MaxSize, Func<byte[], MavlinkMessage> Deserializer)> _mavlinkMessagesById = new()
+        private static readonly Dictionary<uint, (Type Type, string MavlinkName, int MinSize, int MaxSize, byte CrcExtra, Func<byte[], MavlinkMessage> Deserializer)> _mavlinkMessagesById = new()
         {{
 {dictionaryEntriesById}
         }};
@@ -79,6 +80,30 @@ namespace MavlinkTypes
         public static string GetMavlinkName(uint id)
         {{
             return _mavlinkMessagesById[id].MavlinkName;
+        }}
+
+        public static byte GetCrcExtra<T>() where T : MavlinkMessage
+        {{
+            return _mavlinkMessagesByType[typeof(T)].CrcExtra;
+        }}
+
+        public static byte GetCrcExtra(uint id)
+        {{
+            return _mavlinkMessagesById[id].CrcExtra;
+        }}
+
+        public static bool TryGetCrcExtra<T>(out byte crcExtra) where T : MavlinkMessage
+        {{
+            var isExists = _mavlinkMessagesByType.TryGetValue(typeof(T), out var value);
+            crcExtra = isExists ? value.CrcExtra : default;
+            return isExists;
+        }}
+
+        public static bool TryGetCrcExtra(uint id, out byte crcExtra)
+        {{
+            var isExists = _mavlinkMessagesById.TryGetValue(id, out var value);
+            crcExtra = isExists ? value.CrcExtra : default;
+            return isExists;
         }}
 
         public static Type GetType(uint id)
