@@ -13,6 +13,33 @@ public static class X25Crc
 	public const ushort CrcSeed = 0xFFFF;
 
 	/// <summary>
+	/// Calculates the CRC for a given byte array with optional extra bytes.
+	/// </summary>
+	/// <param name="data">The byte array to calculate the CRC for.</param>
+	/// <param name="start">The starting index in the array.</param>
+	/// <param name="length">The number of bytes to include in the calculation.</param>
+	/// <param name="extraBytes">Optional extra bytes to include at the end of the CRC calculation.</param>
+	/// <returns>The calculated CRC as a ushort.</returns>
+	public static ushort Calculate(byte[] data, int start, int length, params byte[] extraBytes)
+	{
+		ushort crc = CrcSeed;
+
+		// Accumulate CRC for the given data
+		for (int i = start; i < length; i++)
+		{
+			crc = Accumulate(crc, data[i]);
+		}
+
+		// If extra bytes are provided, include them in the CRC calculation
+		foreach (var extra in extraBytes)
+		{
+			crc = Accumulate(crc, extra);
+		}
+
+		return crc;
+	}
+
+	/// <summary>
 	/// Accumulates the CRC checksum for a given string using the X.25 algorithm.
 	/// </summary>
 	/// <param name="s">The input string to accumulate the CRC for.</param>
