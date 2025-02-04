@@ -49,23 +49,22 @@ var buffer = new byte[{minSize}];
 		{
 			var fieldType = (GeneratedMavlinkMessageFieldType)field.Type;
 			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
-			var variableName = $"instance.{fieldPropertyName}";
 
 			if (fieldType is GeneratedMavlinkMessageFieldArrayType arrayType)
 			{
-				methodBody.AppendLine(GenerateArraySerialization(variableName, arrayType, currentOffset, field.IsRequired));
+				methodBody.AppendLine(GenerateArraySerialization(fieldPropertyName, arrayType, currentOffset, field.IsRequired));
 			}
 			else if (fieldType is GeneratedMavlinkMessageFieldEnumType enumType)
 			{
-				methodBody.AppendLine(GenerateEnumSerialization(variableName, enumType, currentOffset));
+				methodBody.AppendLine(GenerateEnumSerialization(fieldPropertyName, enumType, currentOffset));
 			}
 			else if (fieldType is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType)
 			{
-				methodBody.AppendLine(GenerateArrayEnumSerialization(variableName, arrayEnumType, currentOffset, field.IsRequired));
+				methodBody.AppendLine(GenerateArrayEnumSerialization(fieldPropertyName, arrayEnumType, currentOffset, field.IsRequired));
 			}
 			else
 			{
-				methodBody.AppendLine(GenerateSimpleTypeSerialization(variableName, fieldType.ConvertedType, currentOffset, field.IsRequired));
+				methodBody.AppendLine(GenerateSimpleTypeSerialization(fieldPropertyName, fieldType.ConvertedType, currentOffset, field.IsRequired));
 			}
 
 			currentOffset += field.GetFieldSize();
@@ -75,15 +74,14 @@ var buffer = new byte[{minSize}];
 		foreach (var field in nonRequiredFields)
 		{
 			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
-			var variableName = $"instance.{fieldPropertyName}";
 			var fieldSize = field.GetFieldSize();
 
 			if (field.Type is GeneratedMavlinkMessageFieldEnumType enumType)
 			{
 				methodBody.AppendLine($@"
-if ({variableName}.HasValue)
+if ({fieldPropertyName}.HasValue)
 {{
-    var enumValue = ({enumType.ConvertedType}){variableName}.Value;
+    var enumValue = ({enumType.ConvertedType}){fieldPropertyName}.Value;
     Array.Resize(ref buffer, buffer.Length + {fieldSize});
     BitConverter.GetBytes(enumValue).CopyTo(buffer, buffer.Length - {fieldSize});
 }}");
@@ -91,30 +89,30 @@ if ({variableName}.HasValue)
 			else if (field.Type is GeneratedMavlinkMessageFieldArrayType arrayType)
 			{
 				methodBody.AppendLine($@"
-if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
+if ({fieldPropertyName}.HasValue && !{fieldPropertyName}.Value.IsDefaultOrEmpty)
 {{
     var arraySize = {fieldSize};
     Array.Resize(ref buffer, buffer.Length + arraySize);
-    Buffer.BlockCopy({variableName}.Value.ToArray(), 0, buffer, buffer.Length - arraySize, arraySize);
+    Buffer.BlockCopy({fieldPropertyName}.Value.ToArray(), 0, buffer, buffer.Length - arraySize, arraySize);
 }}");
 			}
 			else if (field.Type is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType)
 			{
 				methodBody.AppendLine($@"
-if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
+if ({fieldPropertyName}.HasValue && !{fieldPropertyName}.Value.IsDefaultOrEmpty)
 {{
     var arraySize = {fieldSize};
     Array.Resize(ref buffer, buffer.Length + arraySize);
-    Buffer.BlockCopy({variableName}.Value.ToArray(), 0, buffer, buffer.Length - arraySize, arraySize);
+    Buffer.BlockCopy({fieldPropertyName}.Value.ToArray(), 0, buffer, buffer.Length - arraySize, arraySize);
 }}");
 			}
 			else
 			{
 				methodBody.AppendLine($@"
-if ({variableName}.HasValue)
+if ({fieldPropertyName}.HasValue)
 {{
     Array.Resize(ref buffer, buffer.Length + {fieldSize});
-    BitConverter.GetBytes({variableName}.Value).CopyTo(buffer, buffer.Length - {fieldSize});
+    BitConverter.GetBytes({fieldPropertyName}.Value).CopyTo(buffer, buffer.Length - {fieldSize});
 }}");
 			}
 		}
@@ -122,7 +120,7 @@ if ({variableName}.HasValue)
 		methodBody.AppendLine("return buffer;");
 
 		var methodString = $@"
-public static byte[] Serialize({messageName} instance)
+public byte[] Serialize()
 {{
     {methodBody}
 }}";

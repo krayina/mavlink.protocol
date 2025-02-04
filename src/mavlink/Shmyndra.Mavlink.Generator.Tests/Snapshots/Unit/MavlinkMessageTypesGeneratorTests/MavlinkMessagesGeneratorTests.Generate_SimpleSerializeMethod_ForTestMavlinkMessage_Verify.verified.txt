@@ -1,14 +1,14 @@
-﻿public static byte[] Serialize(TestMavlinkMessage instance)
+﻿public byte[] Serialize()
 {
     var buffer = new byte[46];
-    BitConverter.GetBytes(instance.TimeUsec).CopyTo(buffer, 0);
-    BitConverter.GetBytes(instance.Counter).CopyTo(buffer, 8);
-    buffer[10] = instance.Index;
-    buffer[11] = instance.Count;
-    buffer[12] = (byte)instance.ConnectionType;
-    buffer[13] = instance.Info;
-    Buffer.BlockCopy(instance.FailureFlags.ToArray(), 0, buffer, 14, 8);
-    Buffer.BlockCopy(instance.ErrorCount.ToArray(), 0, buffer, 22, 16);
-    Buffer.BlockCopy(instance.Temperature.ToArray(), 0, buffer, 38, 8);
+    BitConverter.GetBytes(TimeUsec).CopyTo(buffer, 0);
+    BitConverter.GetBytes(Counter).CopyTo(buffer, 8);
+    buffer[10] = Index;
+    buffer[11] = Count;
+    buffer[12] = (byte)ConnectionType;
+    buffer[13] = Info;
+    Buffer.BlockCopy(FailureFlags.ToArray(), 0, buffer, 14, 8);
+    Buffer.BlockCopy(ErrorCount.ToArray(), 0, buffer, 22, 16);
+    Buffer.BlockCopy(Temperature.ToArray(), 0, buffer, 38, 8);
     return buffer;
 }
