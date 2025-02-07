@@ -381,6 +381,30 @@ public class MavlinkMessagesGeneratorTests
 	}
 
 	[Fact]
+	public async Task Generate_SerializeMethod_WithNullableByte_Verify()
+	{
+		// Arrange
+		ImmutableArray<GeneratedMavlinkMessageField> testFields =
+		[
+			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[0]),
+			new GeneratedMavlinkMessageField("Bank", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte?"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, false, null, null, null, null, null, null, null)),
+		];
+
+		// Act
+		var methodSyntax = MavlinkMessageSerializationGenerator.CreateSerializeMethod("TestNamespace", "TestMavlinkMessage", testFields);
+		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		await Verify(generatedCode)
+		  .UseDirectory(SNAPSHOT_PATH)
+		  .UseParameters("TestMavlinkMessage");
+	}
+
+	[Fact]
 	public async Task GenerateMavlinkTypes_GeneratedSimpleCrc_ShouldBe152()
 	{
 		// Arrange
