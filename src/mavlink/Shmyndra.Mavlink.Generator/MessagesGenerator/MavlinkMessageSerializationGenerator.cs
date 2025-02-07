@@ -76,6 +76,20 @@ var buffer = new byte[{minSize}];
 			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
 			var fieldSize = field.GetFieldSize();
 
+			if (field.Type is GeneratedMavlinkMessageFieldType fieldType)
+			{
+				if (fieldType.ConvertedType == "byte")
+				{
+					methodBody.AppendLine($@"
+if ({fieldPropertyName}.HasValue)
+{{
+    Array.Resize(ref buffer, buffer.Length + 1);
+    buffer[buffer.Length - 1] = {fieldPropertyName}.Value;
+}}");
+					continue;
+				}
+			}
+
 			if (field.Type is GeneratedMavlinkMessageFieldEnumType enumType)
 			{
 				methodBody.AppendLine($@"
@@ -211,21 +225,21 @@ BitConverter.GetBytes({variableName}).CopyTo(buffer, {offset});"
 				"byte?" => $@"
 if ({variableName}.HasValue)
 {{
-    Array.Resize(ref buffer, {offset} + 1);
-    buffer[{offset}] = {variableName}.Value;
+ Array.Resize(ref buffer, {offset} + 1);
+ buffer[{offset}] = {variableName}.Value;
 }}",
 				"sbyte?" => $@"
 if ({variableName}.HasValue)
 {{
-    Array.Resize(ref buffer, {offset} + 1);
-    buffer[{offset}] = (byte){variableName}.Value;
+ Array.Resize(ref buffer, {offset} + 1);
+ buffer[{offset}] = (byte){variableName}.Value;
 }}",
 				_ => $@"
 if ({variableName}.HasValue)
 {{
-    var valueBytes = BitConverter.GetBytes({variableName}.Value);
-    Array.Resize(ref buffer, {offset} + valueBytes.Length);
-    valueBytes.CopyTo(buffer, {offset});
+ var valueBytes = BitConverter.GetBytes({variableName}.Value);
+ Array.Resize(ref buffer, {offset} + valueBytes.Length);
+ valueBytes.CopyTo(buffer, {offset});
 }}"
 			};
 		}
