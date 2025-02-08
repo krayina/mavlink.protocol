@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
+using Shmyndra.Mavlink.Generator.MessagesGenerator;
 
 namespace Shmyndra.Mavlink.Generator;
 
@@ -44,6 +45,8 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 	};
 
 	private readonly Dictionary<(string Namespace, string MavlinkMessageName), GeneratedMavlinkMessage> _generatedMessages = new();
+
+	private readonly MavlinkMessageSerializationMethodGeneratorBase _messageSerializationMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
 
 	ImmutableArray<GeneratedMavlinkMessage> IGeneratedStorage<GeneratedMavlinkMessage>.GetGeneratedTypes()
 	{
@@ -103,13 +106,18 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 		var deserializeMethod = MavlinkMessageDeserializationGenerator
 			.CreateDeserializeMethod(@namespace, normalizedName, generatedFields);
 
-		var serializeMethod = MavlinkMessageSerializationGenerator
+		var serializeMethods = _messageSerializationMethodGenerator
 			.CreateSerializeMethod(@namespace, normalizedName, generatedFields);
 
 		var recordDeclaration = CreateRecordStructDeclaration(id, normalizedName, propertyDeclarations, message.Description, message.Name)
 			.AddMembers(deserializeMethod)
-			.AddMembers(serializeMethod)
-			.AddObsoleteAttribute(message.Deprecated?.ToString());
+			.AddMembers(serializeMethods.SerializeWithoutExtensionsMethod);
+
+		if (serializeMethods.SerializeWithExtensionsMethod is not null)
+		{
+			recordDeclaration = recordDeclaration.AddMembers(serializeMethods.SerializeWithExtensionsMethod);
+		}
+		recordDeclaration = recordDeclaration.AddObsoleteAttribute(message.Deprecated?.ToString());
 
 		return new GeneratedMavlinkMessage(@namespace, normalizedName, generatedFields, recordDeclaration, message);
 	}
