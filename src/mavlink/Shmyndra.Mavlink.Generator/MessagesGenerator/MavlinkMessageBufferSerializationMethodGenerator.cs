@@ -27,7 +27,10 @@ public class MavlinkMessageBufferSerializationMethodGenerator : MavlinkMessageSe
 		ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
 		var serializeWithoutExtensionsMethod = CreateSerializeWithoutExtensionsMethodInternal(@namespace, messageName, fields);
-		var serializeWithExtensionsMethod = fields.Any(x => !x.IsRequired) ? CreateSerializeWithExtensionsMethodInternal(@namespace, messageName, fields) : null;
+		var serializeWithExtensionsMethod = fields.Any(x => !x.IsRequired)
+			? CreateSerializeWithExtensionsMethodInternal(@namespace, messageName, fields)
+			: null;
+
 		return new GeneratedMavlinkMessageSerializeMethod(
 			@namespace,
 			messageName,
@@ -36,7 +39,10 @@ public class MavlinkMessageBufferSerializationMethodGenerator : MavlinkMessageSe
 			serializeWithExtensionsMethod);
 	}
 
-	internal override MethodDeclarationSyntax CreateSerializeWithoutExtensionsMethodInternal(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
+	internal override MethodDeclarationSyntax CreateSerializeWithoutExtensionsMethodInternal(
+		string @namespace,
+		string messageName,
+		ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
 		var methodBody = new StringBuilder();
 
@@ -75,24 +81,17 @@ public class MavlinkMessageBufferSerializationMethodGenerator : MavlinkMessageSe
 		return WrapMethod("SerializeWithoutExtensions", methodBody.ToString());
 	}
 
-	internal override MethodDeclarationSyntax CreateSerializeWithExtensionsMethodInternal(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
+	internal override MethodDeclarationSyntax CreateSerializeWithExtensionsMethodInternal(
+		string @namespace,
+		string messageName,
+		ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
 		var methodBody = new StringBuilder();
-
-		var baseSize = fields.CalculateMinSize();
-
-		methodBody.AppendLine("int extensionLength = 0;");
-		var nonRequiredFields = fields.Where(f => !f.IsRequired && !(f.Type is GeneratedMavlinkMessageFieldArrayType ||
-																	 f.Type is GeneratedMavlinkMessageFieldArrayEnumType)).ToList();
-		foreach (var field in nonRequiredFields)
-		{
-			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
-			var fieldSize = field.GetFieldSize();
-			methodBody.AppendLine($@"if ({fieldPropertyName}.HasValue)
-    extensionLength += {fieldSize};");
-		}
-
-		methodBody.AppendLine($"var buffer = new byte[{baseSize} + extensionLength];");
+		int baseSize = fields.CalculateMinSize();
+		var extensionFields = fields.Where(f => !f.IsRequired).ToList();
+		int extensionTotalSize = extensionFields.Sum(f => f.GetFieldSize());
+		int totalSize = baseSize + extensionTotalSize;
+		methodBody.AppendLine($"var buffer = new byte[{totalSize}];");
 
 		int currentOffset = 0;
 		var (requiredFields, arrayFields) = GetSortedFields(fields);
@@ -120,29 +119,49 @@ public class MavlinkMessageBufferSerializationMethodGenerator : MavlinkMessageSe
 			currentOffset += field.GetFieldSize();
 		}
 
-		methodBody.AppendLine("int offset = " + baseSize + ";");
-		foreach (var field in nonRequiredFields)
+		int currentLiteralOffset = baseSize;
+		foreach (var field in extensionFields)
 		{
 			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
-			var fieldSize = field.GetFieldSize();
-			if (field.Type is GeneratedMavlinkMessageFieldType fieldType &&
-				((GeneratedMavlinkMessageFieldType)field.Type).ConvertedType == "byte")
+			int fieldSize = field.GetFieldSize();
+			if (field.Type is GeneratedMavlinkMessageFieldEnumType enumType)
+			{
+				string convertedType = enumType.ConvertedType;
+				methodBody.AppendLine($@"BitConverter.GetBytes({fieldPropertyName}.HasValue ? ({convertedType}){fieldPropertyName}.Value : ({convertedType})0)
+    .CopyTo(buffer, {currentLiteralOffset});");
+			}
+			else if (field.Type is GeneratedMavlinkMessageFieldArrayType)
 			{
 				methodBody.AppendLine($@"
-if ({fieldPropertyName}.HasValue)
+if ({fieldPropertyName}.HasValue && !{fieldPropertyName}.Value.IsDefaultOrEmpty)
 {{
-    buffer[offset] = {fieldPropertyName}.Value;
-    offset += 1;
+    Buffer.BlockCopy({fieldPropertyName}.Value.ToArray(), 0, buffer, {currentLiteralOffset}, {fieldSize});
+}}
+else
+{{
+    for (int i = {currentLiteralOffset}; i < {currentLiteralOffset} + {fieldSize}; i++)
+        buffer[i] = 0;
 }}");
-				continue;
 			}
-			methodBody.AppendLine($@"
-if ({fieldPropertyName}.HasValue)
+			else if (field.Type is GeneratedMavlinkMessageFieldArrayEnumType)
+			{
+				methodBody.AppendLine($@"
+if ({fieldPropertyName}.HasValue && !{fieldPropertyName}.Value.IsDefaultOrEmpty)
 {{
-    var valueBytes = BitConverter.GetBytes({fieldPropertyName}.Value);
-    valueBytes.CopyTo(buffer, offset);
-    offset += {fieldSize};
+    Buffer.BlockCopy({fieldPropertyName}.Value.ToArray(), 0, buffer, {currentLiteralOffset}, {fieldSize});
+}}
+else
+{{
+    for (int i = {currentLiteralOffset}; i < {currentLiteralOffset} + {fieldSize}; i++)
+        buffer[i] = 0;
 }}");
+			}
+			else if (field.Type is GeneratedMavlinkMessageFieldType simpleField)
+			{
+				string convertedType = simpleField.ConvertedType;
+				methodBody.AppendLine(GenerateSimpleTypeSerializationWithTernaryOperator(fieldPropertyName, convertedType, currentLiteralOffset, true));
+			}
+			currentLiteralOffset += fieldSize;
 		}
 
 		methodBody.AppendLine("return buffer;");
@@ -178,6 +197,17 @@ if ({fieldPropertyName}.HasValue)
 			"byte" => $@"buffer[{offset}] = {variableName};",
 			"sbyte" => $@"buffer[{offset}] = (byte){variableName};",
 			_ => $@"BitConverter.GetBytes({variableName}).CopyTo(buffer, {offset});"
+		};
+	}
+
+	private string GenerateSimpleTypeSerializationWithTernaryOperator(string variableName, string typeName, int literalOffset, bool isRequired)
+	{
+		return typeName switch
+		{
+			"byte" => $@"buffer[{literalOffset}] = {variableName}.HasValue ? {variableName}.Value : (byte)0;",
+			"sbyte" => $@"buffer[{literalOffset}] = {variableName}.HasValue ? (byte){variableName}.Value : (byte)0;",
+			_ => $@"BitConverter.GetBytes({variableName}.HasValue ? {variableName}.Value : 0)
+                   .CopyTo(buffer, {literalOffset});"
 		};
 	}
 }
