@@ -143,37 +143,45 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 		return WrapMethod("SerializeWithExtensions", methodBody.ToString());
 	}
 
-	private string GenerateArraySerialization(string variableName, GeneratedMavlinkMessageFieldArrayType arrayType, int offset, bool isRequired)
+	private static string GenerateArraySerialization(string variableName, GeneratedMavlinkMessageFieldArrayType arrayType, int offset, bool isRequired)
 	{
 		var elementType = arrayType.ConvertedType;
 		var arrayLength = arrayType.ArrayLength * Utilities.GetDotNetTypeSize(elementType);
 		return $"Buffer.BlockCopy({variableName}.ToArray(), 0, buffer, {offset}, {arrayLength});";
 	}
 
-	private string GenerateEnumSerialization(string variableName, GeneratedMavlinkMessageFieldEnumType enumType, int offset)
+	private static string GenerateEnumSerialization(string variableName, GeneratedMavlinkMessageFieldEnumType enumType, int offset)
 	{
-		var size = Utilities.GetDotNetTypeSize(enumType.ConvertedType);
-		if (size == 1)
-			return $"finalSpan[{offset}] = (byte){variableName};";
-		else
-			return $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), BitConverter.ToInt32(BitConverter.GetBytes({variableName}), 0));";
+		return enumType.ConvertedType switch
+		{
+			"byte" or "sbyte" => $"finalSpan[{offset}] = (byte){variableName};",
+			"ulong" => $"System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(finalSpan.Slice({offset}, 8), {variableName});",
+			"ushort" => $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset}, 2), {variableName});",
+			"uint" => $"System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName});",
+			"int" => $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName});",
+			_ => $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), BitConverter.ToInt32(BitConverter.GetBytes({variableName}), 0));"
+		};
 	}
 
-	private string GenerateArrayEnumSerialization(string variableName, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, int offset, bool isRequired)
+	private static string GenerateArrayEnumSerialization(string variableName, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, int offset, bool isRequired)
 	{
 		var elementType = arrayEnumType.ConvertedType;
 		var arrayLength = arrayEnumType.ArrayLength * Utilities.GetDotNetTypeSize(elementType);
 		return $"Buffer.BlockCopy({variableName}.ToArray(), 0, buffer, {offset}, {arrayLength});";
 	}
 
-	private string GenerateSimpleTypeSerialization(string variableName, string typeName, int offset, bool isRequired)
+	private static string GenerateSimpleTypeSerialization(string variableName, string typeName, int offset, bool isRequired)
 	{
 		return typeName switch
 		{
 			"byte" => $"finalSpan[{offset}] = {variableName};",
 			"sbyte" => $"finalSpan[{offset}] = (byte){variableName};",
 			"float" => $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), BitConverter.SingleToInt32Bits({variableName}));",
-			_ => $"BitConverter.GetBytes({variableName}).CopyTo(buffer, {offset});"
+			"ulong" => $"System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(finalSpan.Slice({offset}, 8), {variableName});",
+			"ushort" => $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset}, 2), {variableName});",
+			"uint" => $"System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName});",
+			"int" => $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName});",
+			_ => $"BitConverter.GetBytes({variableName}).CopyTo(finalSpan.Slice({offset}, {Utilities.GetDotNetTypeSize(typeName)}));"
 		};
 	}
 }
