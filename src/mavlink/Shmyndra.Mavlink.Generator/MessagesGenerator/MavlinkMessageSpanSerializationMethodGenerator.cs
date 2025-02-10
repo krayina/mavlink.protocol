@@ -10,23 +10,15 @@ namespace Shmyndra.Mavlink.Generator.MessagesGenerator;
 /// </summary>
 public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSerializationMethodGeneratorBase
 {
-	/// <summary>
-	/// Creates a <see cref="GeneratedMavlinkMessageSerializeMethod"/> using the Span serialization approach.
-	/// </summary>
-	/// <param name="namespace">The namespace of the generated message type.</param>
-	/// <param name="messageName">The name of the generated message type.</param>
-	/// <param name="fields">An immutable array of fields representing the Mavlink message.</param>
-	/// <returns>
-	/// A <see cref="GeneratedMavlinkMessageSerializeMethod"/> containing both the SerializeWithoutExtensions and
-	/// SerializeWithExtensions methods for the message.
-	/// </returns>
 	public override GeneratedMavlinkMessageSerializeMethod CreateSerializeMethod(
 		string @namespace,
 		string messageName,
 		ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
 		var serializeWithoutExtensionsMethod = CreateSerializeWithoutExtensionsMethodInternal(@namespace, messageName, fields);
-		var serializeWithExtensionsMethod = fields.Any(x => !x.IsRequired) ? CreateSerializeWithExtensionsMethodInternal(@namespace, messageName, fields) : null;
+		var serializeWithExtensionsMethod = fields.Any(x => !x.IsRequired)
+			? CreateSerializeWithExtensionsMethodInternal(@namespace, messageName, fields)
+			: null;
 		return new GeneratedMavlinkMessageSerializeMethod(
 			@namespace,
 			messageName,
@@ -38,7 +30,6 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 	internal override MethodDeclarationSyntax CreateSerializeWithoutExtensionsMethodInternal(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
 		var methodBody = new StringBuilder();
-
 		var minSize = fields.CalculateMinSize();
 		methodBody.AppendLine($"byte[] buffer = new byte[{minSize}];");
 		methodBody.AppendLine("Span<byte> finalSpan = buffer.AsSpan();");
@@ -46,8 +37,6 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 		int currentOffset = 0;
 		var (requiredFields, arrayFields) = GetSortedFields(fields);
 		var sortedFields = requiredFields.Concat(arrayFields).ToList();
-
-		// Serialize required fields using Span.
 		foreach (var field in sortedFields)
 		{
 			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
@@ -70,7 +59,6 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 			}
 			currentOffset += field.GetFieldSize();
 		}
-
 		methodBody.AppendLine("return buffer;");
 		return WrapMethod("SerializeWithoutExtensions", methodBody.ToString());
 	}
@@ -79,7 +67,7 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 	{
 		var methodBody = new StringBuilder();
 
-		// Base buffer.
+		// Base part
 		var minSize = fields.CalculateMinSize();
 		methodBody.AppendLine($"byte[] baseBuffer = new byte[{minSize}];");
 		methodBody.AppendLine("Span<byte> baseSpan = baseBuffer.AsSpan();");
@@ -110,45 +98,67 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 			currentOffset += field.GetFieldSize();
 		}
 
-		// Process non-required fields (extensions).
-		var nonRequiredFields = fields.Where(f => !f.IsRequired && !(f.Type is GeneratedMavlinkMessageFieldArrayType ||
-																	 f.Type is GeneratedMavlinkMessageFieldArrayEnumType)).ToList();
-		methodBody.AppendLine("int extensionLength = 0;");
-		foreach (var field in nonRequiredFields)
-		{
-			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
-			var fieldSize = field.GetFieldSize();
-			methodBody.AppendLine($@"if ({fieldPropertyName}.HasValue)
-    extensionLength += {fieldSize};");
-		}
-		methodBody.AppendLine($"byte[] buffer = new byte[{minSize} + extensionLength];");
+		// Process extension fields (non-required scalars)
+		var nonRequiredFields = fields.Where(f => !f.IsRequired && !(f.Type is GeneratedMavlinkMessageFieldArrayType || f.Type is GeneratedMavlinkMessageFieldArrayEnumType)).ToList();
+		int extensionLength = nonRequiredFields.Sum(f => f.GetFieldSize());
+		methodBody.AppendLine($"byte[] buffer = new byte[{minSize} + {extensionLength}];");
 		methodBody.AppendLine("Span<byte> finalSpan = buffer.AsSpan();");
 		methodBody.AppendLine("baseBuffer.AsSpan().CopyTo(finalSpan);");
-		methodBody.AppendLine("int offset = baseBuffer.Length;");
+		methodBody.AppendLine($"int offset = {minSize};");
 
 		foreach (var field in nonRequiredFields)
 		{
 			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
-			var fieldSize = field.GetFieldSize();
-			if (field.Type is GeneratedMavlinkMessageFieldType fieldType &&
+			int fieldSize = field.GetFieldSize();
+
+			if (field.Type is GeneratedMavlinkMessageFieldType simpleField &&
 				((GeneratedMavlinkMessageFieldType)field.Type).ConvertedType == "byte")
 			{
 				methodBody.AppendLine($@"
 if ({fieldPropertyName}.HasValue)
 {{
     finalSpan[offset] = {fieldPropertyName}.Value;
-    offset += 1;
-}}");
-				continue;
+}}
+else
+{{
+    finalSpan[offset] = 0;
+}}
+offset += {fieldSize};");
 			}
-			methodBody.AppendLine($@"
+			else if (field.Type is GeneratedMavlinkMessageFieldEnumType enumType)
+			{
+				string convertedType = enumType.ConvertedType;
+				methodBody.AppendLine($@"
 if ({fieldPropertyName}.HasValue)
 {{
-    var valueBytes = BitConverter.GetBytes({fieldPropertyName}.Value);
-    valueBytes.CopyTo(finalSpan.Slice(offset, {fieldSize}));
-    offset += {fieldSize};
-}}");
+    BitConverter.GetBytes(({convertedType}){fieldPropertyName}.Value)
+        .CopyTo(finalSpan.Slice(offset, {fieldSize}));
+}}
+else
+{{
+    for (int i = offset; i < offset + {fieldSize}; i++)
+        finalSpan[i] = 0;
+}}
+offset += {fieldSize};");
+			}
+			else if (field.Type is GeneratedMavlinkMessageFieldType simpleField2)
+			{
+				string convertedType = simpleField2.ConvertedType;
+				methodBody.AppendLine($@"
+if ({fieldPropertyName}.HasValue)
+{{
+    BitConverter.GetBytes({fieldPropertyName}.Value)
+        .CopyTo(finalSpan.Slice(offset, {fieldSize}));
+}}
+else
+{{
+    for (int i = offset; i < offset + {fieldSize}; i++)
+        finalSpan[i] = 0;
+}}
+offset += {fieldSize};");
+			}
 		}
+
 		methodBody.AppendLine("return buffer;");
 		return WrapMethod("SerializeWithExtensions", methodBody.ToString());
 	}
