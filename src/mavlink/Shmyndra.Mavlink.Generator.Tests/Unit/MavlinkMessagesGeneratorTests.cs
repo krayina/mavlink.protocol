@@ -364,14 +364,17 @@ public class MavlinkMessagesGeneratorTests
 			.UseParameters("DEPRECATEDMESSAGE");
 	}
 
+	#region Buffer Serialization tests
+
 	[Fact]
-	public async Task Generate_SimpleSerializeMethod_ForTestMavlinkMessage_Verify()
+	public async Task GenerateSerializeBufferMethodWithoutExtensions_WhenNoExtensions_ShouldMatchSnapshot()
 	{
 		// Arrange
+		var serializeMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
 		var testFields = GeneratedFields;
 
 		// Act
-		var methodSyntax = MavlinkMessageSerializationGenerator.CreateSerializeMethod("TestNamespace", "TestMavlinkMessage", testFields);
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithoutExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
 		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
 
 		// Assert
@@ -381,21 +384,24 @@ public class MavlinkMessagesGeneratorTests
 	}
 
 	[Fact]
-	public async Task Generate_SerializeMethod_WithNullableByte_Verify()
+	public async Task GenerateSerializeBufferMethodWithExtensions_WhenHasOneExtension_ShouldMatchSnapshot()
 	{
 		// Arrange
-		ImmutableArray<GeneratedMavlinkMessageField> testFields =
-		[
+		var serializeMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
+		var testFields = new List<GeneratedMavlinkMessageField>()
+		{
 			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[0]),
-			new GeneratedMavlinkMessageField("Bank", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
-				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte?"), "Bank"),
+			new GeneratedMavlinkMessageField("TimeUsec", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint64_t"), "TimeUsec"), MavlinkFields[1]),
+			new GeneratedMavlinkMessageField("FirstExtension", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
 					new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "Bank", "",
-						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, false, null, null, null, null, null, null, null)),
-		];
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null))
+		}.ToImmutableArray();
 
 		// Act
-		var methodSyntax = MavlinkMessageSerializationGenerator.CreateSerializeMethod("TestNamespace", "TestMavlinkMessage", testFields);
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
 		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
 
 		// Assert
@@ -403,6 +409,101 @@ public class MavlinkMessagesGeneratorTests
 		  .UseDirectory(SNAPSHOT_PATH)
 		  .UseParameters("TestMavlinkMessage");
 	}
+
+	[Fact]
+	public async Task GenerateSerializeBufferMethodWithExtensions_WhenHasOneSimpleExtensionAndCollectionExtension_ShouldMatchSnapshot()
+	{
+		// Arrange
+		var serializeMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
+		var testFields = new List<GeneratedMavlinkMessageField>()
+		{
+			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[0]),
+			new GeneratedMavlinkMessageField("TimeUsec", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint64_t"), "TimeUsec"), MavlinkFields[1]),
+			new GeneratedMavlinkMessageField("FirstExtension", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null)),
+			new GeneratedMavlinkMessageField("SecondExtension", new GeneratedMavlinkMessageFieldArrayType("uint64_t", "ulong", 4),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint64_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null))
+		}.ToImmutableArray();
+
+		// Act
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		await Verify(generatedCode)
+		  .UseDirectory(SNAPSHOT_PATH)
+		  .UseParameters("TestMavlinkMessage");
+	}
+
+	[Fact]
+	public async Task GenerateSerializeBufferMethodWithExtensions_WhenHasOneSimpleExtensionAndEnumExtension_ShouldMatchSnapshot()
+	{
+		// Arrange
+		var serializeMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
+		var testFields = new List<GeneratedMavlinkMessageField>()
+		{
+			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[0]),
+			new GeneratedMavlinkMessageField("TimeUsec", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint64_t"), "TimeUsec"), MavlinkFields[1]),
+			new GeneratedMavlinkMessageField("FirstExtension", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null)),
+			new GeneratedMavlinkMessageField("SecondExtension", new GeneratedMavlinkMessageFieldEnumType("uint64_t", "ulong",
+				new GeneratedMavlinkEnum("TestNamespace", "TestEnum", new(), SyntaxFactory.EnumDeclaration("Test"),
+					new MavlinkEnum("Test", null, null, new(), null))),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint64_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null))
+		}.ToImmutableArray();
+
+		// Act
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		await Verify(generatedCode)
+		  .UseDirectory(SNAPSHOT_PATH)
+		  .UseParameters("TestMavlinkMessage");
+	}
+
+	[Fact]
+	public async Task GenerateSerializeBufferMethodWithExtensions_WhenHasOneSimpleExtensionAndEnumArrayExtension_ShouldMatchSnapshot()
+	{
+		// Arrange
+		var serializeMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
+		var testFields = new List<GeneratedMavlinkMessageField>()
+		{
+			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[0]),
+						new GeneratedMavlinkMessageField("FailureFlags", new GeneratedMavlinkMessageFieldArrayEnumType("uint16_t[4]", "ushort", GeneratedEnums[1], 4),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[6]),
+			new GeneratedMavlinkMessageField("FirstExtension", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null)),
+
+			new GeneratedMavlinkMessageField("SecondExtension", new GeneratedMavlinkMessageFieldArrayEnumType("uint16_t[4]", "ushort", GeneratedEnums[1], 4),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[6] with { IsRequired = false }),
+		}.ToImmutableArray();
+
+		// Act
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		await Verify(generatedCode)
+		  .UseDirectory(SNAPSHOT_PATH)
+		  .UseParameters("TestMavlinkMessage");
+	}
+	#endregion
 
 	[Fact]
 	public async Task GenerateMavlinkTypes_GeneratedSimpleCrc_ShouldBe152()
