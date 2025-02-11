@@ -27,193 +27,171 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 			serializeWithExtensionsMethod);
 	}
 
-	internal override MethodDeclarationSyntax CreateSerializeWithoutExtensionsMethodInternal(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
+	internal override MethodDeclarationSyntax CreateSerializeWithoutExtensionsMethodInternal(
+		string @namespace,
+		string messageName,
+		ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
 		var methodBody = new StringBuilder();
-		var minSize = fields.CalculateMinSize();
+		int minSize = fields.CalculateMinSize();
 		methodBody.AppendLine($"byte[] buffer = new byte[{minSize}];");
 		methodBody.AppendLine("Span<byte> finalSpan = buffer.AsSpan();");
 
 		int currentOffset = 0;
-		var (requiredFields, arrayFields) = GetSortedFields(fields);
-		var sortedFields = requiredFields.Concat(arrayFields).ToList();
-		foreach (var field in sortedFields)
-		{
-			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
-			if (field.Type is GeneratedMavlinkMessageFieldArrayType arrayType)
-			{
-				methodBody.AppendLine(GenerateArraySerialization(fieldPropertyName, arrayType, currentOffset, true));
-			}
-			else if (field.Type is GeneratedMavlinkMessageFieldEnumType enumType)
-			{
-				methodBody.AppendLine(GenerateEnumSerialization(fieldPropertyName, enumType, currentOffset));
-			}
-			else if (field.Type is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType)
-			{
-				methodBody.AppendLine(GenerateArrayEnumSerialization(fieldPropertyName, arrayEnumType, currentOffset, true));
-			}
-			else
-			{
-				var fieldType = ((GeneratedMavlinkMessageFieldType)field.Type).ConvertedType;
-				methodBody.AppendLine(GenerateSimpleTypeSerialization(fieldPropertyName, fieldType, currentOffset, true));
-			}
-			currentOffset += field.GetFieldSize();
-		}
+		var sortedFields = GetSortedFields(fields).requiredFields
+			.Concat(GetSortedFields(fields).arrayFields)
+			.ToList();
+
+		currentOffset = AppendFields(methodBody, sortedFields, currentOffset, isExtension: false);
+
 		methodBody.AppendLine("return buffer;");
 		return WrapMethod("SerializeWithoutExtensions", methodBody.ToString());
 	}
 
-	internal override MethodDeclarationSyntax CreateSerializeWithExtensionsMethodInternal(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
+	internal override MethodDeclarationSyntax CreateSerializeWithExtensionsMethodInternal(
+		string @namespace,
+		string messageName,
+		ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
 		var methodBody = new StringBuilder();
-		var minSize = fields.CalculateMinSize();
-		var extensionNonArrayFields = fields.Where(f => !f.IsRequired && !(f.Type is GeneratedMavlinkMessageFieldArrayType || f.Type is GeneratedMavlinkMessageFieldArrayEnumType)).ToList();
-		int extensionLength = extensionNonArrayFields.Sum(f => f.GetFieldSize());
-		int arrayExtensionSize = fields.Where(f => !f.IsRequired && (f.Type is GeneratedMavlinkMessageFieldArrayType || f.Type is GeneratedMavlinkMessageFieldArrayEnumType)).Sum(f => f.GetFieldSize());
-		int finalSize = minSize + extensionLength + arrayExtensionSize;
+		int finalSize = fields.CalculateFinalSize();
 		methodBody.AppendLine($"byte[] buffer = new byte[{finalSize}];");
 		methodBody.AppendLine("Span<byte> finalSpan = buffer.AsSpan();");
 
 		int currentOffset = 0;
-		var (requiredFields, arrayFields) = GetSortedFields(fields);
-		var sortedFields = requiredFields.Concat(arrayFields).ToList();
-		foreach (var field in sortedFields)
+		var sortedFields = GetSortedFields(fields).requiredFields
+			.Concat(GetSortedFields(fields).arrayFields)
+			.ToList();
+		currentOffset = AppendFields(methodBody, sortedFields, currentOffset, isExtension: false);
+
+		var extensionFields = fields.Where(f => !f.IsRequired).ToList();
+		currentOffset = AppendFields(methodBody, extensionFields, currentOffset, isExtension: true);
+
+		methodBody.AppendLine("return buffer;");
+		return WrapMethod("SerializeWithExtensions", methodBody.ToString());
+	}
+
+	private int AppendFields(StringBuilder sb, IEnumerable<GeneratedMavlinkMessageField> fields, int startingOffset, bool isExtension)
+	{
+		int offset = startingOffset;
+		foreach (var field in fields)
 		{
-			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
-			if (field.Type is GeneratedMavlinkMessageFieldArrayType arrayType)
+			AppendFieldSerialization(sb, field, offset, isExtension);
+			offset += field.GetFieldSize();
+		}
+		return offset;
+	}
+
+	private void AppendFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, int offset, bool isExtension)
+	{
+		var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
+
+		if (field.Type is GeneratedMavlinkMessageFieldArrayType arrayType)
+		{
+			if (isExtension)
 			{
-				methodBody.AppendLine(GenerateArraySerialization(fieldPropertyName, arrayType, currentOffset, true));
-			}
-			else if (field.Type is GeneratedMavlinkMessageFieldEnumType enumType)
-			{
-				methodBody.AppendLine(GenerateEnumSerialization(fieldPropertyName, enumType, currentOffset));
-			}
-			else if (field.Type is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType)
-			{
-				methodBody.AppendLine(GenerateArrayEnumSerialization(fieldPropertyName, arrayEnumType, currentOffset, true));
+				sb.AppendLine($"if ({fieldPropertyName}?.IsDefaultOrEmpty == false)");
+				sb.AppendLine("{");
+				sb.AppendLine(GenerateArraySerialization(fieldPropertyName, arrayType, offset, isRequired: false));
+				sb.AppendLine("}");
 			}
 			else
 			{
-				var fieldType = ((GeneratedMavlinkMessageFieldType)field.Type).ConvertedType;
-				methodBody.AppendLine(GenerateSimpleTypeSerialization(fieldPropertyName, fieldType, currentOffset, true));
+				sb.AppendLine(GenerateArraySerialization(fieldPropertyName, arrayType, offset, isRequired: true));
 			}
-			currentOffset += field.GetFieldSize();
 		}
-
-		foreach (var field in fields.Where(f => !f.IsRequired))
+		else if (field.Type is GeneratedMavlinkMessageFieldEnumType enumType)
 		{
-			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
-			int fieldSize = field.GetFieldSize();
-
-			if (field.Type is GeneratedMavlinkMessageFieldArrayType arrayType)
+			if (isExtension)
 			{
-				methodBody.AppendLine($"if (!{fieldPropertyName}.IsDefaultOrEmpty)");
-				methodBody.AppendLine("{");
-				methodBody.AppendLine(GenerateArraySerialization(fieldPropertyName, arrayType, currentOffset, false));
-				methodBody.AppendLine("}");
+				sb.AppendLine($"if ({fieldPropertyName}.HasValue)");
+				sb.AppendLine("{");
+				sb.AppendLine(GenerateEnumSerialization(fieldPropertyName, enumType, offset));
+				sb.AppendLine("}");
 			}
-			else if (field.Type is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType)
+			else
 			{
-				methodBody.AppendLine($"if (!{fieldPropertyName}.IsDefaultOrEmpty)");
-				methodBody.AppendLine("{");
-				methodBody.AppendLine(GenerateArrayEnumSerialization(fieldPropertyName, arrayEnumType, currentOffset, false));
-				methodBody.AppendLine("}");
+				sb.AppendLine(GenerateEnumSerialization(fieldPropertyName, enumType, offset));
 			}
-			else if (field.Type is GeneratedMavlinkMessageFieldType simpleField && simpleField.ConvertedType == "byte")
-			{
-				methodBody.AppendLine($"if ({fieldPropertyName}.HasValue)");
-				methodBody.AppendLine("{");
-				methodBody.AppendLine($"    finalSpan[{currentOffset}] = {fieldPropertyName}.Value;");
-				methodBody.AppendLine("}");
-			}
-			else if (field.Type is GeneratedMavlinkMessageFieldEnumType enumType)
-			{
-				string convertedType = enumType.ConvertedType;
-				methodBody.AppendLine($"if ({fieldPropertyName}.HasValue)");
-				methodBody.AppendLine("{");
-				switch (convertedType)
-				{
-					case "byte":
-					case "sbyte":
-						methodBody.AppendLine($"    finalSpan[{currentOffset}] = (byte){fieldPropertyName}.Value;");
-						break;
-					case "ushort":
-						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({currentOffset}, 2), (ushort){fieldPropertyName}.Value);");
-						break;
-					case "uint":
-						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(finalSpan.Slice({currentOffset}, 4), (uint){fieldPropertyName}.Value);");
-						break;
-					case "int":
-						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({currentOffset}, 4), (int){fieldPropertyName}.Value);");
-						break;
-					case "ulong":
-						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(finalSpan.Slice({currentOffset}, 8), (ulong){fieldPropertyName}.Value);");
-						break;
-					case "float":
-						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({currentOffset}, 4), BitConverter.SingleToInt32Bits({fieldPropertyName}.Value));");
-						break;
-					default:
-						methodBody.AppendLine($"    BitConverter.GetBytes(({convertedType}){fieldPropertyName}.Value).CopyTo(finalSpan.Slice({currentOffset}, {fieldSize}));");
-						break;
-				}
-				methodBody.AppendLine("}");
-			}
-			else if (field.Type is GeneratedMavlinkMessageFieldType simpleField2)
-			{
-				string convertedType = simpleField2.ConvertedType;
-				methodBody.AppendLine($"if ({fieldPropertyName}.HasValue)");
-				methodBody.AppendLine("{");
-				switch (convertedType)
-				{
-					case "byte":
-						methodBody.AppendLine($"    finalSpan[{currentOffset}] = {fieldPropertyName}.Value;");
-						break;
-					case "sbyte":
-						methodBody.AppendLine($"    finalSpan[{currentOffset}] = (byte){fieldPropertyName}.Value;");
-						break;
-					case "float":
-						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({currentOffset}, 4), BitConverter.SingleToInt32Bits({fieldPropertyName}.Value));");
-						break;
-					case "ulong":
-						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(finalSpan.Slice({currentOffset}, 8), {fieldPropertyName}.Value);");
-						break;
-					case "ushort":
-						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({currentOffset}, 2), {fieldPropertyName}.Value);");
-						break;
-					case "uint":
-						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(finalSpan.Slice({currentOffset}, 4), {fieldPropertyName}.Value);");
-						break;
-					case "int":
-						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({currentOffset}, 4), {fieldPropertyName}.Value);");
-						break;
-					default:
-						methodBody.AppendLine($"    BitConverter.GetBytes({fieldPropertyName}.Value).CopyTo(finalSpan.Slice({currentOffset}, {fieldSize}));");
-						break;
-				}
-				methodBody.AppendLine("}");
-			}
-			currentOffset += fieldSize;
 		}
-		methodBody.AppendLine("return buffer;");
-		return WrapMethod("SerializeWithExtensions", methodBody.ToString());
+		else if (field.Type is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType)
+		{
+			if (isExtension)
+			{
+				sb.AppendLine($"if ({fieldPropertyName}?.IsDefaultOrEmpty == false)");
+				sb.AppendLine("{");
+				sb.AppendLine(GenerateArrayEnumSerialization(fieldPropertyName, arrayEnumType, offset, isRequired: false));
+				sb.AppendLine("}");
+			}
+			else
+			{
+				sb.AppendLine(GenerateArrayEnumSerialization(fieldPropertyName, arrayEnumType, offset, isRequired: true));
+			}
+		}
+		else if (field.Type is GeneratedMavlinkMessageFieldType simpleField)
+		{
+			if (isExtension)
+			{
+				sb.AppendLine($"if ({fieldPropertyName}.HasValue)");
+				sb.AppendLine("{");
+				sb.AppendLine(GenerateSimpleTypeSerialization(fieldPropertyName, simpleField.ConvertedType, offset, isRequired: false));
+				sb.AppendLine("}");
+			}
+			else
+			{
+				sb.AppendLine(GenerateSimpleTypeSerialization(fieldPropertyName, simpleField.ConvertedType, offset, isRequired: true));
+			}
+		}
 	}
 
 	private static string GenerateArraySerialization(string variableName, GeneratedMavlinkMessageFieldArrayType arrayType, int offset, bool isRequired)
 	{
 		var elementType = arrayType.ConvertedType;
-		var arrayLength = arrayType.ArrayLength * Utilities.GetDotNetTypeSize(elementType);
+		int typeSize = Utilities.GetDotNetTypeSize(elementType);
+
+		if (elementType == "byte")
+		{
+			return $@"
+for (int i = 0; i < {arrayType.ArrayLength}; i++)
+{{
+    finalSpan[{offset} + i] = {variableName}[i];
+}}";
+		}
+		else if (elementType == "sbyte")
+		{
+			return $@"
+for (int i = 0; i < {arrayType.ArrayLength}; i++)
+{{
+    finalSpan[{offset} + i] = (byte){variableName}[i];
+}}";
+		}
+		else if (elementType == "float")
+		{
+			return $@"
+for (int i = 0; i < {arrayType.ArrayLength}; i++)
+{{
+    System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(
+        finalSpan.Slice({offset} + i * {typeSize}, {typeSize}),
+        BitConverter.SingleToInt32Bits({variableName}[i])
+    );
+}}";
+		}
+
+		string writeMethod = elementType switch
+		{
+			"ushort" => "WriteUInt16LittleEndian",
+			"uint" => "WriteUInt32LittleEndian",
+			"int" => "WriteInt32LittleEndian",
+			"short" => "WriteInt16LittleEndian",
+			"long" => "WriteInt64LittleEndian",
+			"ulong" => "WriteUInt64LittleEndian",
+			_ => throw new NotSupportedException($"Array element type '{elementType}' is not supported for serialization.")
+		};
+
 		return $@"
 for (int i = 0; i < {arrayType.ArrayLength}; i++)
 {{
-    System.Buffers.Binary.BinaryPrimitives.Write{(elementType == "ushort" ? "UInt16" :
-													  elementType == "uint" ? "UInt32" :
-													  elementType == "int" ? "Int32" :
-													  elementType == "short" ? "Int16" :
-													  elementType == "long" ? "Int64" :
-													  elementType == "ulong" ? "UInt64" : throw new NotSupportedException())}LittleEndian(
-        finalSpan.Slice({offset} + i * {Utilities.GetDotNetTypeSize(elementType)}, {Utilities.GetDotNetTypeSize(elementType)}),
-        {variableName}[i]
-    );
+    System.Buffers.Binary.BinaryPrimitives.{writeMethod}(finalSpan.Slice({offset} + i * {typeSize}, {typeSize}), {variableName}[i]);
 }}";
 	}
 
@@ -221,29 +199,54 @@ for (int i = 0; i < {arrayType.ArrayLength}; i++)
 	{
 		return enumType.ConvertedType switch
 		{
-			"byte" or "sbyte" => $"finalSpan[{offset}] = (byte){variableName};",
-			"ulong" => $"System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(finalSpan.Slice({offset}, 8), {variableName});",
+			"byte" => $"finalSpan[{offset}] = (byte){variableName};",
+			"sbyte" => $"finalSpan[{offset}] = (sbyte){variableName};",
 			"ushort" => $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset}, 2), {variableName});",
 			"uint" => $"System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName});",
 			"int" => $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName});",
-			_ => $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), BitConverter.ToInt32(BitConverter.GetBytes({variableName}), 0));"
+			"ulong" => $"System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(finalSpan.Slice({offset}, 8), {variableName});",
+			"long" => $"System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offset}, 8), {variableName});",
+			_ => throw new NotSupportedException($"Enum type '{enumType.ConvertedType}' is not supported for serialization.")
 		};
 	}
 
 	private static string GenerateArrayEnumSerialization(string variableName, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, int offset, bool isRequired)
 	{
-		var elementType = arrayEnumType.ConvertedType;
-		var arrayLength = arrayEnumType.ArrayLength * Utilities.GetDotNetTypeSize(elementType);
+		int typeSize = Utilities.GetDotNetTypeSize(arrayEnumType.ConvertedType);
+
+		// Для типу "byte" реалізуємо просте копіювання
+		if (arrayEnumType.ConvertedType == "byte")
+		{
+			return $@"
+for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)
+{{
+    finalSpan[{offset} + i] = (byte){variableName}[i];
+}}";
+		}
+		else if (arrayEnumType.ConvertedType == "sbyte")
+		{
+			return $@"
+for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)
+{{
+    finalSpan[{offset} + i] = (sbyte){variableName}[i];
+}}";
+		}
+
+		string writeMethod = arrayEnumType.ConvertedType switch
+		{
+			"ushort" => "WriteUInt16LittleEndian",
+			"uint" => "WriteUInt32LittleEndian",
+			"short" => "WriteInt16LittleEndian",
+			"int" => "WriteInt32LittleEndian",
+			"long" => "WriteInt64LittleEndian",
+			"ulong" => "WriteUInt64LittleEndian",
+			_ => throw new NotSupportedException($"Array enum type '{arrayEnumType.ConvertedType}' is not supported for serialization.")
+		};
+
 		return $@"
 for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)
 {{
-    System.Buffers.Binary.BinaryPrimitives.Write{(arrayEnumType.ConvertedType == "ushort" ? "UInt16" :
-												  arrayEnumType.ConvertedType == "uint" ? "UInt32" :
-												  arrayEnumType.ConvertedType == "byte" ? "Byte" :
-												  arrayEnumType.ConvertedType == "short" ? "Int16" : throw new NotSupportedException())}LittleEndian(
-        finalSpan.Slice({offset} + i * {Utilities.GetDotNetTypeSize(arrayEnumType.ConvertedType)}, {Utilities.GetDotNetTypeSize(arrayEnumType.ConvertedType)}),
-        ({arrayEnumType.ConvertedType}){variableName}[i]
-    );
+    System.Buffers.Binary.BinaryPrimitives.{writeMethod}(finalSpan.Slice({offset} + i * {typeSize}, {typeSize}), ({arrayEnumType.ConvertedType}){variableName}[i]);
 }}";
 	}
 
@@ -251,14 +254,31 @@ for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)
 	{
 		return typeName switch
 		{
-			"byte" => $"finalSpan[{offset}] = {variableName};",
-			"sbyte" => $"finalSpan[{offset}] = (byte){variableName};",
-			"float" => $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), BitConverter.SingleToInt32Bits({variableName}));",
-			"ulong" => $"System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(finalSpan.Slice({offset}, 8), {variableName});",
-			"ushort" => $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset}, 2), {variableName});",
-			"uint" => $"System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName});",
-			"int" => $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName});",
-			_ => $"BitConverter.GetBytes({variableName}).CopyTo(finalSpan.Slice({offset}, {Utilities.GetDotNetTypeSize(typeName)}));"
+			"byte" => isRequired
+						? $"finalSpan[{offset}] = {variableName};"
+						: $"finalSpan[{offset}] = {variableName}.Value;",
+			"sbyte" => isRequired
+						? $"finalSpan[{offset}] = (byte){variableName};"
+						: $"finalSpan[{offset}] = (byte){variableName}.Value;",
+			"float" => isRequired
+						? $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), BitConverter.SingleToInt32Bits({variableName}));"
+						: $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), BitConverter.SingleToInt32Bits({variableName}.Value));",
+			"long" => isRequired
+						? $"System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offset}, 8), {variableName});"
+						: $"System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offset}, 8), {variableName}.Value);",
+			"ulong" => isRequired
+						? $"System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(finalSpan.Slice({offset}, 8), {variableName});"
+						: $"System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(finalSpan.Slice({offset}, 8), {variableName}.Value);",
+			"ushort" => isRequired
+						? $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset}, 2), {variableName});"
+						: $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset}, 2), {variableName}.Value);",
+			"uint" => isRequired
+						? $"System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName});"
+						: $"System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName}.Value);",
+			"int" => isRequired
+						? $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName});"
+						: $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName}.Value);",
+			_ => throw new NotSupportedException($"Simple type '{typeName}' is not supported for serialization.")
 		};
 	}
 }
