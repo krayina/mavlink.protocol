@@ -153,6 +153,18 @@ internal static class Utilities
 		return minSize;
 	}
 
+	public static int CalculateFinalSize(this ImmutableArray<GeneratedMavlinkMessageField> fields)
+	{
+		int minSize = fields.CalculateMinSize();
+		int extensionLength = fields
+			.Where(f => !f.IsRequired && !(f.Type is GeneratedMavlinkMessageFieldArrayType || f.Type is GeneratedMavlinkMessageFieldArrayEnumType))
+			.Sum(f => f.GetFieldSize());
+		int arrayExtensionSize = fields
+			.Where(f => !f.IsRequired && (f.Type is GeneratedMavlinkMessageFieldArrayType || f.Type is GeneratedMavlinkMessageFieldArrayEnumType))
+			.Sum(f => f.GetFieldSize());
+		return minSize + extensionLength + arrayExtensionSize;
+	}
+
 	public static int GetFieldSize(this GeneratedMavlinkMessageField field)
 	{
 		return field.Type switch
