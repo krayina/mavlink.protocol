@@ -67,9 +67,10 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 	{
 		var methodBody = new StringBuilder();
 		var minSize = fields.CalculateMinSize();
-		var nonRequiredFields = fields.Where(f => !f.IsRequired && !(f.Type is GeneratedMavlinkMessageFieldArrayType || f.Type is GeneratedMavlinkMessageFieldArrayEnumType)).ToList();
-		int extensionLength = nonRequiredFields.Sum(f => f.GetFieldSize());
-		int finalSize = minSize + extensionLength;
+		var extensionNonArrayFields = fields.Where(f => !f.IsRequired && !(f.Type is GeneratedMavlinkMessageFieldArrayType || f.Type is GeneratedMavlinkMessageFieldArrayEnumType)).ToList();
+		int extensionLength = extensionNonArrayFields.Sum(f => f.GetFieldSize());
+		int arrayExtensionSize = fields.Where(f => !f.IsRequired && (f.Type is GeneratedMavlinkMessageFieldArrayType || f.Type is GeneratedMavlinkMessageFieldArrayEnumType)).Sum(f => f.GetFieldSize());
+		int finalSize = minSize + extensionLength + arrayExtensionSize;
 		methodBody.AppendLine($"byte[] buffer = new byte[{finalSize}];");
 		methodBody.AppendLine("Span<byte> finalSpan = buffer.AsSpan();");
 
@@ -98,19 +99,31 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 			}
 			currentOffset += field.GetFieldSize();
 		}
-		foreach (var field in nonRequiredFields)
+
+		foreach (var field in fields.Where(f => !f.IsRequired))
 		{
 			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
 			int fieldSize = field.GetFieldSize();
-			if (field.Type is GeneratedMavlinkMessageFieldType simpleField && ((GeneratedMavlinkMessageFieldType)field.Type).ConvertedType == "byte")
+
+			if (field.Type is GeneratedMavlinkMessageFieldArrayType arrayType)
+			{
+				methodBody.AppendLine($"if (!{fieldPropertyName}.IsDefaultOrEmpty)");
+				methodBody.AppendLine("{");
+				methodBody.AppendLine(GenerateArraySerialization(fieldPropertyName, arrayType, currentOffset, false));
+				methodBody.AppendLine("}");
+			}
+			else if (field.Type is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType)
+			{
+				methodBody.AppendLine($"if (!{fieldPropertyName}.IsDefaultOrEmpty)");
+				methodBody.AppendLine("{");
+				methodBody.AppendLine(GenerateArrayEnumSerialization(fieldPropertyName, arrayEnumType, currentOffset, false));
+				methodBody.AppendLine("}");
+			}
+			else if (field.Type is GeneratedMavlinkMessageFieldType simpleField && simpleField.ConvertedType == "byte")
 			{
 				methodBody.AppendLine($"if ({fieldPropertyName}.HasValue)");
 				methodBody.AppendLine("{");
-				methodBody.AppendLine($"    BitConverter.GetBytes({fieldPropertyName}.Value).CopyTo(finalSpan.Slice({currentOffset}, {fieldSize}));");
-				methodBody.AppendLine("}");
-				methodBody.AppendLine("else");
-				methodBody.AppendLine("{");
-				methodBody.AppendLine($"    finalSpan.Slice({currentOffset}, {fieldSize}).Fill(0);");
+				methodBody.AppendLine($"    finalSpan[{currentOffset}] = {fieldPropertyName}.Value;");
 				methodBody.AppendLine("}");
 			}
 			else if (field.Type is GeneratedMavlinkMessageFieldEnumType enumType)
@@ -118,11 +131,31 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 				string convertedType = enumType.ConvertedType;
 				methodBody.AppendLine($"if ({fieldPropertyName}.HasValue)");
 				methodBody.AppendLine("{");
-				methodBody.AppendLine($"    BitConverter.GetBytes(({convertedType}){fieldPropertyName}.Value).CopyTo(finalSpan.Slice({currentOffset}, {fieldSize}));");
-				methodBody.AppendLine("}");
-				methodBody.AppendLine("else");
-				methodBody.AppendLine("{");
-				methodBody.AppendLine($"    finalSpan.Slice({currentOffset}, {fieldSize}).Fill(0);");
+				switch (convertedType)
+				{
+					case "byte":
+					case "sbyte":
+						methodBody.AppendLine($"    finalSpan[{currentOffset}] = (byte){fieldPropertyName}.Value;");
+						break;
+					case "ushort":
+						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({currentOffset}, 2), (ushort){fieldPropertyName}.Value);");
+						break;
+					case "uint":
+						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(finalSpan.Slice({currentOffset}, 4), (uint){fieldPropertyName}.Value);");
+						break;
+					case "int":
+						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({currentOffset}, 4), (int){fieldPropertyName}.Value);");
+						break;
+					case "ulong":
+						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(finalSpan.Slice({currentOffset}, 8), (ulong){fieldPropertyName}.Value);");
+						break;
+					case "float":
+						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({currentOffset}, 4), BitConverter.SingleToInt32Bits({fieldPropertyName}.Value));");
+						break;
+					default:
+						methodBody.AppendLine($"    BitConverter.GetBytes(({convertedType}){fieldPropertyName}.Value).CopyTo(finalSpan.Slice({currentOffset}, {fieldSize}));");
+						break;
+				}
 				methodBody.AppendLine("}");
 			}
 			else if (field.Type is GeneratedMavlinkMessageFieldType simpleField2)
@@ -130,11 +163,33 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 				string convertedType = simpleField2.ConvertedType;
 				methodBody.AppendLine($"if ({fieldPropertyName}.HasValue)");
 				methodBody.AppendLine("{");
-				methodBody.AppendLine($"    BitConverter.GetBytes({fieldPropertyName}.Value).CopyTo(finalSpan.Slice({currentOffset}, {fieldSize}));");
-				methodBody.AppendLine("}");
-				methodBody.AppendLine("else");
-				methodBody.AppendLine("{");
-				methodBody.AppendLine($"    finalSpan.Slice({currentOffset}, {fieldSize}).Fill(0);");
+				switch (convertedType)
+				{
+					case "byte":
+						methodBody.AppendLine($"    finalSpan[{currentOffset}] = {fieldPropertyName}.Value;");
+						break;
+					case "sbyte":
+						methodBody.AppendLine($"    finalSpan[{currentOffset}] = (byte){fieldPropertyName}.Value;");
+						break;
+					case "float":
+						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({currentOffset}, 4), BitConverter.SingleToInt32Bits({fieldPropertyName}.Value));");
+						break;
+					case "ulong":
+						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(finalSpan.Slice({currentOffset}, 8), {fieldPropertyName}.Value);");
+						break;
+					case "ushort":
+						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({currentOffset}, 2), {fieldPropertyName}.Value);");
+						break;
+					case "uint":
+						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(finalSpan.Slice({currentOffset}, 4), {fieldPropertyName}.Value);");
+						break;
+					case "int":
+						methodBody.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({currentOffset}, 4), {fieldPropertyName}.Value);");
+						break;
+					default:
+						methodBody.AppendLine($"    BitConverter.GetBytes({fieldPropertyName}.Value).CopyTo(finalSpan.Slice({currentOffset}, {fieldSize}));");
+						break;
+				}
 				methodBody.AppendLine("}");
 			}
 			currentOffset += fieldSize;
@@ -147,7 +202,19 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 	{
 		var elementType = arrayType.ConvertedType;
 		var arrayLength = arrayType.ArrayLength * Utilities.GetDotNetTypeSize(elementType);
-		return $"Buffer.BlockCopy({variableName}.ToArray(), 0, buffer, {offset}, {arrayLength});";
+		return $@"
+for (int i = 0; i < {arrayType.ArrayLength}; i++)
+{{
+    System.Buffers.Binary.BinaryPrimitives.Write{(elementType == "ushort" ? "UInt16" :
+													  elementType == "uint" ? "UInt32" :
+													  elementType == "int" ? "Int32" :
+													  elementType == "short" ? "Int16" :
+													  elementType == "long" ? "Int64" :
+													  elementType == "ulong" ? "UInt64" : throw new NotSupportedException())}LittleEndian(
+        finalSpan.Slice({offset} + i * {Utilities.GetDotNetTypeSize(elementType)}, {Utilities.GetDotNetTypeSize(elementType)}),
+        {variableName}[i]
+    );
+}}";
 	}
 
 	private static string GenerateEnumSerialization(string variableName, GeneratedMavlinkMessageFieldEnumType enumType, int offset)
@@ -167,7 +234,17 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 	{
 		var elementType = arrayEnumType.ConvertedType;
 		var arrayLength = arrayEnumType.ArrayLength * Utilities.GetDotNetTypeSize(elementType);
-		return $"Buffer.BlockCopy({variableName}.ToArray(), 0, buffer, {offset}, {arrayLength});";
+		return $@"
+for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)
+{{
+    System.Buffers.Binary.BinaryPrimitives.Write{(arrayEnumType.ConvertedType == "ushort" ? "UInt16" :
+												  arrayEnumType.ConvertedType == "uint" ? "UInt32" :
+												  arrayEnumType.ConvertedType == "byte" ? "Byte" :
+												  arrayEnumType.ConvertedType == "short" ? "Int16" : throw new NotSupportedException())}LittleEndian(
+        finalSpan.Slice({offset} + i * {Utilities.GetDotNetTypeSize(arrayEnumType.ConvertedType)}, {Utilities.GetDotNetTypeSize(arrayEnumType.ConvertedType)}),
+        ({arrayEnumType.ConvertedType}){variableName}[i]
+    );
+}}";
 	}
 
 	private static string GenerateSimpleTypeSerialization(string variableName, string typeName, int offset, bool isRequired)
