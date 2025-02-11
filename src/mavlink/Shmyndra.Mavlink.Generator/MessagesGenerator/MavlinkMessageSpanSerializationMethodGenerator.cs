@@ -176,6 +176,25 @@ for (int i = 0; i < {arrayType.ArrayLength}; i++)
     );
 }}";
 		}
+		else if (elementType == "double")
+		{
+			return $@"
+for (int i = 0; i < {arrayType.ArrayLength}; i++)
+{{
+    System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(
+        finalSpan.Slice({offset} + i * {typeSize}, {typeSize}),
+        BitConverter.DoubleToInt64Bits({variableName}[i])
+    );
+}}";
+		}
+		else if (elementType == "char")
+		{
+			return $@"
+for (int i = 0; i < {arrayType.ArrayLength}; i++)
+{{
+    System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset} + i * {typeSize}, {typeSize}), (ushort){variableName}[i]);
+}}";
+		}
 
 		string writeMethod = elementType switch
 		{
@@ -208,6 +227,9 @@ for (int i = 0; i < {arrayType.ArrayLength}; i++)
 			"ushort" => isRequired
 							? $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset}, 2), {variableName});"
 							: $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset}, 2), {variableName}.Value);",
+			"short" => isRequired
+							? $"System.Buffers.Binary.BinaryPrimitives.WriteInt16LittleEndian(finalSpan.Slice({offset}, 2), {variableName});"
+							: $"System.Buffers.Binary.BinaryPrimitives.WriteInt16LittleEndian(finalSpan.Slice({offset}, 2), {variableName}.Value);",
 			"uint" => isRequired
 							? $"System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName});"
 							: $"System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName}.Value);",
@@ -273,9 +295,18 @@ for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)
 			"sbyte" => isRequired
 						? $"finalSpan[{offset}] = (byte){variableName};"
 						: $"finalSpan[{offset}] = (byte){variableName}.Value;",
+			"char" => isRequired
+						? $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset}, 2), (ushort){variableName});"
+						: $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset}, 2), (ushort){variableName}.Value);",
 			"float" => isRequired
 						? $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), BitConverter.SingleToInt32Bits({variableName}));"
 						: $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), BitConverter.SingleToInt32Bits({variableName}.Value));",
+			"double" => isRequired
+						? $"System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offset}, 8), BitConverter.DoubleToInt64Bits({variableName}));"
+						: $"System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offset}, 8), BitConverter.DoubleToInt64Bits({variableName}.Value));",
+			"short" => isRequired
+						? $"System.Buffers.Binary.BinaryPrimitives.WriteInt16LittleEndian(finalSpan.Slice({offset}, 2), {variableName});"
+						: $"System.Buffers.Binary.BinaryPrimitives.WriteInt16LittleEndian(finalSpan.Slice({offset}, 2), {variableName}.Value);",
 			"long" => isRequired
 						? $"System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offset}, 8), {variableName});"
 						: $"System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offset}, 8), {variableName}.Value);",
