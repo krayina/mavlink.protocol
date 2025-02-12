@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
 using Shmyndra.Mavlink.Generator.Data;
 
-namespace Shmyndra.Mavlink.Generator.MessagesGenerator;
+namespace Shmyndra.Mavlink.Generator;
 
 /// <summary>
 /// Provides common helper methods and logic for generating Mavlink message serialization methods.

@@ -3,7 +3,7 @@ using System.Text;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shmyndra.Mavlink.Generator.Data;
 
-namespace Shmyndra.Mavlink.Generator.MessagesGenerator;
+namespace Shmyndra.Mavlink.Generator;
 
 /// <summary>
 /// Generates Mavlink message serialization methods using the Span-based approach (with BinaryPrimitives).
