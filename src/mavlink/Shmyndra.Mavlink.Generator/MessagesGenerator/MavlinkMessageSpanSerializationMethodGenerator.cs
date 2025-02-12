@@ -219,29 +219,29 @@ for (int i = 0; i < {arrayType.ArrayLength}; i++)
 		return enumType.ConvertedType switch
 		{
 			"byte" => isRequired
-							? $"finalSpan[{offset}] = (byte){variableName};"
-							: $"finalSpan[{offset}] = (byte){variableName}.Value;",
+						? $"finalSpan[{offset}] = (byte){variableName};"
+						: $"finalSpan[{offset}] = (byte){variableName}.Value;",
 			"sbyte" => isRequired
-							? $"finalSpan[{offset}] = (sbyte){variableName};"
-							: $"finalSpan[{offset}] = (sbyte){variableName}.Value;",
+						? $"finalSpan[{offset}] = (sbyte){variableName};"
+						: $"finalSpan[{offset}] = (sbyte){variableName}.Value;",
 			"ushort" => isRequired
-							? $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset}, 2), {variableName});"
-							: $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset}, 2), {variableName}.Value);",
+						? $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset}, 2), (ushort){variableName});"
+						: $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset}, 2), (ushort){variableName}.Value);",
 			"short" => isRequired
-							? $"System.Buffers.Binary.BinaryPrimitives.WriteInt16LittleEndian(finalSpan.Slice({offset}, 2), {variableName});"
-							: $"System.Buffers.Binary.BinaryPrimitives.WriteInt16LittleEndian(finalSpan.Slice({offset}, 2), {variableName}.Value);",
+						? $"System.Buffers.Binary.BinaryPrimitives.WriteInt16LittleEndian(finalSpan.Slice({offset}, 2), (short){variableName});"
+						: $"System.Buffers.Binary.BinaryPrimitives.WriteInt16LittleEndian(finalSpan.Slice({offset}, 2), (short){variableName}.Value);",
 			"uint" => isRequired
-							? $"System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName});"
-							: $"System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName}.Value);",
+						? $"System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(finalSpan.Slice({offset}, 4), (uint){variableName});"
+						: $"System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(finalSpan.Slice({offset}, 4), (uint){variableName}.Value);",
 			"int" => isRequired
-							? $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName});"
-							: $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), {variableName}.Value);",
+						? $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), (int){variableName});"
+						: $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset}, 4), (int){variableName}.Value);",
 			"ulong" => isRequired
-							? $"System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(finalSpan.Slice({offset}, 8), {variableName});"
-							: $"System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(finalSpan.Slice({offset}, 8), {variableName}.Value);",
+						? $"System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(finalSpan.Slice({offset}, 8), (ulong){variableName});"
+						: $"System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(finalSpan.Slice({offset}, 8), (ulong){variableName}.Value);",
 			"long" => isRequired
-							? $"System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offset}, 8), {variableName});"
-							: $"System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offset}, 8), {variableName}.Value);",
+						? $"System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offset}, 8), (long){variableName});"
+						: $"System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offset}, 8), (long){variableName}.Value);",
 			_ => throw new NotSupportedException($"Enum type '{enumType.ConvertedType}' is not supported for serialization.")
 		};
 	}
