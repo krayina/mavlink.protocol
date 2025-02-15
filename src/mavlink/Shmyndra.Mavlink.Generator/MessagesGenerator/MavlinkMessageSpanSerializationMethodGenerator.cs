@@ -148,13 +148,14 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 	{
 		var elementType = arrayType.ConvertedType;
 		int typeSize = Utilities.GetDotNetTypeSize(elementType);
+		string arrayAccess = isRequired ? $"{variableName}" : $"{variableName}.Value";
 
 		if (elementType == "byte")
 		{
 			return $@"
 for (int i = 0; i < {arrayType.ArrayLength}; i++)
 {{
-    finalSpan[{offset} + i] = {variableName}[i];
+    finalSpan[{offset} + i] = {arrayAccess}[i];
 }}";
 		}
 		else if (elementType == "sbyte")
@@ -162,7 +163,7 @@ for (int i = 0; i < {arrayType.ArrayLength}; i++)
 			return $@"
 for (int i = 0; i < {arrayType.ArrayLength}; i++)
 {{
-    finalSpan[{offset} + i] = (byte){variableName}[i];
+    finalSpan[{offset} + i] = (byte){arrayAccess}[i];
 }}";
 		}
 		else if (elementType == "float")
@@ -172,7 +173,7 @@ for (int i = 0; i < {arrayType.ArrayLength}; i++)
 {{
     System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(
         finalSpan.Slice({offset} + i * {typeSize}, {typeSize}),
-        BitConverter.SingleToInt32Bits({variableName}[i])
+        BitConverter.SingleToInt32Bits({arrayAccess}[i])
     );
 }}";
 		}
@@ -183,7 +184,7 @@ for (int i = 0; i < {arrayType.ArrayLength}; i++)
 {{
     System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(
         finalSpan.Slice({offset} + i * {typeSize}, {typeSize}),
-        BitConverter.DoubleToInt64Bits({variableName}[i])
+        BitConverter.DoubleToInt64Bits({arrayAccess}[i])
     );
 }}";
 		}
@@ -192,7 +193,7 @@ for (int i = 0; i < {arrayType.ArrayLength}; i++)
 			return $@"
 for (int i = 0; i < {arrayType.ArrayLength}; i++)
 {{
-    System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset} + i * {typeSize}, {typeSize}), (ushort){variableName}[i]);
+    System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset} + i * {typeSize}, {typeSize}), (ushort){arrayAccess}[i]);
 }}";
 		}
 
@@ -210,7 +211,7 @@ for (int i = 0; i < {arrayType.ArrayLength}; i++)
 		return $@"
 for (int i = 0; i < {arrayType.ArrayLength}; i++)
 {{
-    System.Buffers.Binary.BinaryPrimitives.{writeMethod}(finalSpan.Slice({offset} + i * {typeSize}, {typeSize}), {variableName}[i]);
+    System.Buffers.Binary.BinaryPrimitives.{writeMethod}(finalSpan.Slice({offset} + i * {typeSize}, {typeSize}), {arrayAccess}[i]);
 }}";
 	}
 
@@ -249,13 +250,14 @@ for (int i = 0; i < {arrayType.ArrayLength}; i++)
 	private static string GenerateArrayEnumSerialization(string variableName, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, int offset, bool isRequired)
 	{
 		int typeSize = Utilities.GetDotNetTypeSize(arrayEnumType.ConvertedType);
+		string arrayAccess = isRequired ? $"{variableName}" : $"{variableName}.Value";
 
 		if (arrayEnumType.ConvertedType == "byte")
 		{
 			return $@"
 for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)
 {{
-    finalSpan[{offset} + i] = (byte){variableName}[i];
+    finalSpan[{offset} + i] = (byte){arrayAccess}[i];
 }}";
 		}
 		else if (arrayEnumType.ConvertedType == "sbyte")
@@ -263,7 +265,7 @@ for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)
 			return $@"
 for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)
 {{
-    finalSpan[{offset} + i] = (byte)(sbyte){variableName}[i];
+    finalSpan[{offset} + i] = (byte)(sbyte){arrayAccess}[i];
 }}";
 		}
 
@@ -281,7 +283,7 @@ for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)
 		return $@"
 for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)
 {{
-    System.Buffers.Binary.BinaryPrimitives.{writeMethod}(finalSpan.Slice({offset} + i * {typeSize}, {typeSize}), ({arrayEnumType.ConvertedType}){variableName}[i]);
+    System.Buffers.Binary.BinaryPrimitives.{writeMethod}(finalSpan.Slice({offset} + i * {typeSize}, {typeSize}), ({arrayEnumType.ConvertedType}){arrayAccess}[i]);
 }}";
 	}
 
