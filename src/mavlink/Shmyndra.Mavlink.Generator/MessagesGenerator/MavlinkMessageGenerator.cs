@@ -116,6 +116,17 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 		{
 			recordDeclaration = recordDeclaration.AddMembers(serializeMethods.SerializeWithExtensionsMethod);
 		}
+
+		recordDeclaration = recordDeclaration.AddBaseListTypes(
+			SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName("IMavlinkMessageSerializerWithoutExtensions"))
+		);
+		if (serializeMethods.SerializeWithExtensionsMethod is not null)
+		{
+			recordDeclaration = recordDeclaration.AddBaseListTypes(
+				SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName("IMavlinkMessageSerializerWithExtensions"))
+			);
+		}
+
 		recordDeclaration = recordDeclaration.AddObsoleteAttribute(message.Deprecated?.ToString());
 
 		return new GeneratedMavlinkMessage(@namespace, normalizedName, generatedFields, recordDeclaration, message);
