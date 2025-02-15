@@ -222,8 +222,8 @@ for (int i = 0; i < {arrayType.ArrayLength}; i++)
 						? $"finalSpan[{offset}] = (byte){variableName};"
 						: $"finalSpan[{offset}] = (byte){variableName}.Value;",
 			"sbyte" => isRequired
-						? $"finalSpan[{offset}] = (sbyte){variableName};"
-						: $"finalSpan[{offset}] = (sbyte){variableName}.Value;",
+						? $"finalSpan[{offset}] = (byte)(sbyte){variableName};"
+						: $"finalSpan[{offset}] = (byte)(sbyte){variableName}.Value;",
 			"ushort" => isRequired
 						? $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset}, 2), (ushort){variableName});"
 						: $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset}, 2), (ushort){variableName}.Value);",
@@ -263,7 +263,7 @@ for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)
 			return $@"
 for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)
 {{
-    finalSpan[{offset} + i] = (sbyte){variableName}[i];
+    finalSpan[{offset} + i] = (byte)(sbyte){variableName}[i];
 }}";
 		}
 
