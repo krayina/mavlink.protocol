@@ -1,5 +1,5 @@
 <Project>
-  <ItemGroup Condition="'$(IsNetStandard2_0Condition)' == 'true'">
+  <ItemGroup Condition="'$(IsNetStandardCondition)' == 'true'">
     <PackageReference Include="PolySharp">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -14,6 +14,15 @@
       System.Range;
       System.Runtime.CompilerServices.IsExternalInit;
 
+      System.Runtime.CompilerServices.SkipLocalsInitAttribute;
+      System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute;
+      System.Runtime.CompilerServices.RequiredMemberAttribute;
+    </PolySharpIncludeGeneratedTypes>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsNetStandard2_1Condition)' == 'true'">
+    <PolySharpIncludeGeneratedTypes>
+      System.Runtime.CompilerServices.IsExternalInit;
       System.Runtime.CompilerServices.SkipLocalsInitAttribute;
       System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute;
       System.Runtime.CompilerServices.RequiredMemberAttribute;
@@ -70,7 +79,7 @@ internal static class RuntimeHelpers
   </PropertyGroup>
 
   <!-- Add custom RuntimeHelpers for missing GetSubArray method -->
-  <Target Name="AddRuntimeHelpers" Condition="'$(IsNetStandard2_0Condition)' == 'true'" BeforeTargets="BeforeCompile">
+  <Target Name="AddRuntimeHelpers" Condition="'$(IsNetStandardCondition)' == 'true'" BeforeTargets="BeforeCompile">
     <Message Text="IntermediateOutputPath: '$(IntermediateOutputPath)'" Importance="High" />
     <MakeDir Directories="$(IntermediateOutputPath)" />
     <PropertyGroup>

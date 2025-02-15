@@ -1,17 +1,27 @@
 <Project>
-  <!-- Determine if netstandard2.0 is one of the target frameworks -->
   <PropertyGroup>
-    <!-- Check if TargetFramework exists and is netstandard2.0 -->
+    <!-- Check if the target framework is netstandard2.0 -->
     <Condition1 Condition="'$(TargetFramework)' == 'netstandard2.0'">true</Condition1>
     <Condition1 Condition="'$(Condition1)' == ''">false</Condition1>
 
-    <!-- Check if TargetFrameworks exists and contains netstandard2.0 -->
-    <Condition2 Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(TargetFrameworks)', '(^|;|,)\s*netstandard2\.0\s*(;|,|$)'))">true</Condition2>
+    <!-- Check if the target framework is netstandard2.1 -->
+    <Condition2 Condition="'$(TargetFramework)' == 'netstandard2.1'">true</Condition2>
     <Condition2 Condition="'$(Condition2)' == ''">false</Condition2>
 
-    <!-- Set the main condition to true if any of the above conditions are true -->
-    <IsNetStandard2_0Condition Condition="'$(Condition1)' == 'true' OR '$(Condition2)' == 'true'">true</IsNetStandard2_0Condition>
-    <IsNetStandard2_0Condition Condition="'$(IsNetStandard2_0Condition)' == ''">false</IsNetStandard2_0Condition>
+    <!-- Check if netstandard2.0 is included in TargetFrameworks -->
+    <Condition3 Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(TargetFrameworks)', '(^|;|,)\s*netstandard2\.0\s*(;|,|$)'))">true</Condition3>
+    <Condition3 Condition="'$(Condition3)' == ''">false</Condition3>
+
+    <!-- Check if netstandard2.1 is included in TargetFrameworks -->
+    <Condition4 Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(TargetFrameworks)', '(^|;|,)\s*netstandard2\.1\s*(;|,|$)'))">true</Condition4>
+    <Condition4 Condition="'$(Condition4)' == ''">false</Condition4>
+
+    <!-- Define separate conditions for netstandard2.0 and netstandard2.1 -->
+    <IsNetStandard2_0Condition Condition="'$(Condition1)' == 'true' OR '$(Condition3)' == 'true'">true</IsNetStandard2_0Condition>
+    <IsNetStandard2_1Condition Condition="'$(Condition2)' == 'true' OR '$(Condition4)' == 'true'">true</IsNetStandard2_1Condition>
+
+    <!-- Unified condition that checks for either netstandard2.0 or netstandard2.1 -->
+    <IsNetStandardCondition Condition="'$(IsNetStandard2_0Condition)' == 'true' OR '$(IsNetStandard2_1Condition)' == 'true'">true</IsNetStandardCondition>
   </PropertyGroup>
 
   <Import Project="PolySharp.targets" />
