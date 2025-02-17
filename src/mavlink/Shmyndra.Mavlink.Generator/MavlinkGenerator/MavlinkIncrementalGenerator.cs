@@ -53,26 +53,55 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator, IDisposable
 					&& !Path.GetFileName(file.Path).StartsWith("_"))
 				.Select((file, _) => (file.Path, Content: file.GetText()!.ToString()))
 				.Collect();
-			context.RegisterSourceOutput(xmlFiles, GenerateSourceFiles);
+
+			var compilationAndFiles = context.CompilationProvider.Combine(xmlFiles);
+			context.RegisterSourceOutput(compilationAndFiles, GenerateSourceFiles);
 		}
 
-		private void GenerateSourceFiles(SourceProductionContext sourceProductionContext, ImmutableArray<(string Path, string Content)> files)
+		private void GenerateSourceFiles(SourceProductionContext spc, (Compilation Compilation, ImmutableArray<(string Path, string Content)> Files) input)
 		{
-			var messageGenerator = new MavlinkMessageGenerator();
-			var generator = new MavlinkGenerator(_treeBuilder, new MavlinkEnumGenerator(), messageGenerator, new MavlinkSpecificationGenerator());
+			var (compilation, files) = input;
+
+			bool supportsSpan = IsSpanSerializationAvailable(compilation);
+
+			var messageGenerator = supportsSpan
+				? new MavlinkMessageGenerator(new MavlinkMessageSpanSerializationMethodGenerator())
+				: new MavlinkMessageGenerator(new MavlinkMessageBufferSerializationMethodGenerator());
+
+			var generator = new MavlinkGenerator(
+				new MavlinkFilesTreeBuilder(new MavlinkXmlParser()),
+				new MavlinkEnumGenerator(),
+				messageGenerator,
+				new MavlinkSpecificationGenerator());
 
 			var filesDictionary = files.ToImmutableDictionary(item => item.Path, item => item.Content);
 			var generatedFiles = generator.GenerateMavlink(filesDictionary);
 
 			foreach (var generatedFile in generatedFiles.Values)
 			{
-				AddSource(sourceProductionContext, generatedFile.Namespace, generatedFile.Syntax);
+				AddSource(spc, generatedFile.Namespace, generatedFile.Syntax);
 			}
 
 			var messagesStorage = (IGeneratedStorage<GeneratedMavlinkMessage>)messageGenerator;
 			var generatedMessages = messagesStorage.GetGeneratedTypes();
 			var generatedMessagesSourceCode = MavlinkMessagesGenerator.GenerateMessageExtensions(generatedMessages);
-			AddSource(sourceProductionContext, MavlinkGeneratorConstants.TypesNamespace, generatedMessagesSourceCode);
+			AddSource(spc, MavlinkGeneratorConstants.TypesNamespace, generatedMessagesSourceCode);
+		}
+
+		private static bool IsSpanSerializationAvailable(Compilation compilation)
+		{
+			var bitConverterSymbol = compilation.GetTypeByMetadataName("System.BitConverter");
+			if (bitConverterSymbol != null)
+			{
+				var hasSingleToInt32Bits = bitConverterSymbol.GetMembers("SingleToInt32Bits")
+					.OfType<IMethodSymbol>()
+					.Any(method =>
+						 method.Parameters.Length == 1 &&
+						 method.Parameters[0].Type.SpecialType == SpecialType.System_Single &&
+						 method.ReturnType.SpecialType == SpecialType.System_Int32);
+				return hasSingleToInt32Bits;
+			}
+			return false;
 		}
 
 		private void AddSource(SourceProductionContext context, string fileName, CompilationUnitSyntax syntax)
