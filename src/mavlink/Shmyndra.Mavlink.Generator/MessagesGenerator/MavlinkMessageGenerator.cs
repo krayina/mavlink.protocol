@@ -45,7 +45,12 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 
 	private readonly Dictionary<(string Namespace, string MavlinkMessageName), GeneratedMavlinkMessage> _generatedMessages = new();
 
-	private readonly MavlinkMessageSerializationMethodGeneratorBase _messageSerializationMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
+	private readonly MavlinkMessageSerializationMethodGeneratorBase _messageSerializationMethodGenerator;
+
+	public MavlinkMessageGenerator(MavlinkMessageSerializationMethodGeneratorBase messageSerializationMethodGenerator)
+	{
+		_messageSerializationMethodGenerator = messageSerializationMethodGenerator;
+	}
 
 	ImmutableArray<GeneratedMavlinkMessage> IGeneratedStorage<GeneratedMavlinkMessage>.GetGeneratedTypes()
 	{
@@ -241,14 +246,14 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 			.AddAttributeLists(
 				SyntaxFactory.AttributeList(
 					SyntaxFactory.SingletonSeparatedList(
-						SyntaxFactory.Attribute(SyntaxFactory.ParseName(nameof(MavlinkTypes.MavlinkIdentifiedTypeAttribute)[0..^9]))
+						SyntaxFactory.Attribute(SyntaxFactory.ParseName(nameof(MavlinkTypes.MavlinkIdentifiedTypeAttribute).GetAttributeNameWithoutPostfix()))
 						.WithArgumentList(
 							SyntaxFactory.AttributeArgumentList(
-								SyntaxFactory.SeparatedList(new[]
-								{
+								SyntaxFactory.SeparatedList(
+								[
 									SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(id))),
 									SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(originalName)))
-								})
+								])
 							)
 						)
 					)

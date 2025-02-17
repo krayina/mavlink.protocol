@@ -84,7 +84,11 @@ internal static class Utilities
 		return property.AddAttributeLists(
 			SyntaxFactory.AttributeList(
 				SyntaxFactory.SingletonSeparatedList(
-					SyntaxFactory.Attribute(SyntaxFactory.ParseName(typeof(System.ComponentModel.DataAnnotations.RequiredArrayLengthAttribute).FullName[0..^9]))
+					SyntaxFactory.Attribute(
+						SyntaxFactory.ParseName(typeof(System.ComponentModel.DataAnnotations.RequiredArrayLengthAttribute).FullName
+							.GetAttributeNameWithoutPostfix()
+						)
+					)
 					.WithArgumentList(
 						SyntaxFactory.AttributeArgumentList(
 							SyntaxFactory.SingletonSeparatedList(
@@ -94,6 +98,16 @@ internal static class Utilities
 				)
 			)
 		);
+	}
+
+	public static string GetAttributeNameWithoutPostfix(this string attributeName)
+	{
+		const string postfix = "Attribute";
+		if (attributeName.EndsWith(postfix, StringComparison.Ordinal))
+		{
+			return attributeName.Substring(0, attributeName.Length - postfix.Length);
+		}
+		return attributeName;
 	}
 
 	public static T AddObsoleteAttribute<T>(this T member, string? obsoleteMessage) where T : MemberDeclarationSyntax

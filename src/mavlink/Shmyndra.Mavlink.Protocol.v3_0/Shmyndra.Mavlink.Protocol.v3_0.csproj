@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
@@ -14,21 +14,26 @@
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
       <OutputItemType>Analyzer</OutputItemType>
     </ProjectReference>
+    <ProjectReference Include="..\Shmyndra.Mavlink\Shmyndra.Mavlink.csproj" />
   </ItemGroup>
   
-  <!-- DEBUG -->
+  <!-- PropertyGroup for Debugging Generator --> 
   <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <CompilerGeneratedFilesOutputPath>Generated/Analyzers</CompilerGeneratedFilesOutputPath>
+    <CompilerGeneratedFilesOutputPath>Generated/Analyzers/netstandard$(TargetFramework)</CompilerGeneratedFilesOutputPath>
+    <EmitCompilerGeneratedFiles>False</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
-  <!-- DEBUG -->
-  <ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+  <!-- ItemGroup for Debugging Generator -->
+  <ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true' AND '$(EmitCompilerGeneratedFiles)' == 'true'">
     <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**" />
     <None Include="$(CompilerGeneratedFilesOutputPath)/**" />
   </ItemGroup>
 
   <ItemGroup>
     <AdditionalFiles Include="**/*.xml" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Memory" />
   </ItemGroup>
 </Project>
