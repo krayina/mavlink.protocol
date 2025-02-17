@@ -13,7 +13,7 @@ public readonly record struct SysStatusMavlinkMessage : MavlinkMessage
     /// </remarks>
     public sbyte? BatteryRemaining { get; init; }
 
-    public static SysStatusMavlinkMessage CreateInstance(byte[] payload)
+    public static SysStatusMavlinkMessage Deserialize(byte[] payload)
     {
         if (payload.Length == 0)
         {
@@ -46,5 +46,18 @@ public readonly record struct SysStatusMavlinkMessage : MavlinkMessage
             CurrentBattery = currentBattery,
             BatteryRemaining = batteryRemaining
         };
+    }
+
+    public byte[] Serialize()
+    {
+        var buffer = new byte[2];
+        BitConverter.GetBytes(CurrentBattery).CopyTo(buffer, 0);
+        if (BatteryRemaining.HasValue)
+        {
+            Array.Resize(ref buffer, buffer.Length + 1);
+            BitConverter.GetBytes(BatteryRemaining.Value).CopyTo(buffer, buffer.Length - 1);
+        }
+
+        return buffer;
     }
 }

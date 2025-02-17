@@ -1,0 +1,151 @@
+﻿public static SomeMessage Deserialize(byte[] payload)
+{
+    if (payload.Length == 0)
+    {
+        return new SomeMessage();
+    }
+
+    if (payload.Length < 0)
+    {
+        var paddedPayload = new byte[0];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    if (payload.Length > 0 && payload.Length < 8)
+    {
+        var paddedPayload = new byte[8];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    System.Collections.Immutable.ImmutableArray<EscFailureFlags>? failureFlags = null;
+    if (payload.Length >= 8)
+    {
+        var tempFailureFlagsArray = new EscFailureFlags[4];
+        Buffer.BlockCopy(payload, 0, tempFailureFlagsArray, 0, 8);
+        failureFlags = System.Collections.Immutable.ImmutableArray.CreateRange(tempFailureFlagsArray);
+    }
+
+    if (payload.Length > 8 && payload.Length < 24)
+    {
+        var paddedPayload = new byte[24];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    System.Collections.Immutable.ImmutableArray<uint>? errorCount = null;
+    if (payload.Length >= 24)
+    {
+        var tempErrorCountArray = new uint[4];
+        Buffer.BlockCopy(payload, 8, tempErrorCountArray, 0, 16);
+        errorCount = System.Collections.Immutable.ImmutableArray.CreateRange(tempErrorCountArray);
+    }
+
+    if (payload.Length > 24 && payload.Length < 32)
+    {
+        var paddedPayload = new byte[32];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    System.Collections.Immutable.ImmutableArray<short>? temperature = null;
+    if (payload.Length >= 32)
+    {
+        var tempTemperatureArray = new short[4];
+        Buffer.BlockCopy(payload, 24, tempTemperatureArray, 0, 8);
+        temperature = System.Collections.Immutable.ImmutableArray.CreateRange(tempTemperatureArray);
+    }
+
+    if (payload.Length > 32 && payload.Length < 33)
+    {
+        var paddedPayload = new byte[33];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    byte? index = null;
+    if (payload.Length > 32)
+    {
+        index = payload[32];
+    }
+
+    if (payload.Length > 33 && payload.Length < 41)
+    {
+        var paddedPayload = new byte[41];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    ulong? timeUsec = null;
+    if (payload.Length > 33)
+    {
+        timeUsec = BitConverter.ToUInt64(payload, 33);
+    }
+
+    if (payload.Length > 41 && payload.Length < 43)
+    {
+        var paddedPayload = new byte[43];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    ushort? counter = null;
+    if (payload.Length > 41)
+    {
+        counter = BitConverter.ToUInt16(payload, 41);
+    }
+
+    if (payload.Length > 43 && payload.Length < 44)
+    {
+        var paddedPayload = new byte[44];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    byte? count = null;
+    if (payload.Length > 43)
+    {
+        count = payload[43];
+    }
+
+    if (payload.Length > 44 && payload.Length < 45)
+    {
+        var paddedPayload = new byte[45];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    byte? connectionTypeValue = null;
+    if (payload.Length > 44)
+    {
+        connectionTypeValue = (byte)payload[44];
+    }
+
+    var connectionType = connectionTypeValue.HasValue ? (EscConnectionType?)connectionTypeValue.Value : null;
+    if (payload.Length > 45 && payload.Length < 46)
+    {
+        var paddedPayload = new byte[46];
+        Array.Copy(payload, paddedPayload, payload.Length);
+        payload = paddedPayload;
+    }
+
+    byte? info = null;
+    if (payload.Length > 45)
+    {
+        info = payload[45];
+    }
+
+    return new SomeMessage
+    {
+        FailureFlags = failureFlags,
+        ErrorCount = errorCount,
+        Temperature = temperature,
+        Index = index,
+        TimeUsec = timeUsec,
+        Counter = counter,
+        Count = count,
+        ConnectionType = connectionType,
+        Info = info
+    };
+}

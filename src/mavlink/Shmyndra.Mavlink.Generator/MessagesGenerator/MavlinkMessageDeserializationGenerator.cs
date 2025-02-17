@@ -8,20 +8,20 @@ namespace Shmyndra.Mavlink.Generator;
 internal class MavlinkMessageDeserializationGenerator
 {
 	private const string CreateRangeWithNamespace = "System.Collections.Immutable.ImmutableArray.CreateRange";
-	private const string CreateInstanceParameterName = "payload";
+	private const string DeserializeParameterName = "payload";
 
 	/// <summary>
-	/// Generates the <c>CreateInstance</c> method for deserializing Mavlink message payloads into instances of the generated message type.
+	/// Generates the <c>Deserialize</c> method for deserializing Mavlink message payloads into instances of the generated message type.
 	/// </summary>
 	/// <param name="namespace">The namespace of the generated message type.</param>
 	/// <param name="messageName">The name of the generated message type.</param>
 	/// <param name="fields">The array of fields in the Mavlink message, each represented as a <see cref="GeneratedMavlinkMessageField"/>.</param>
-	/// <returns>A <see cref="MethodDeclarationSyntax"/> representing the <c>CreateInstance</c> method.</returns>
+	/// <returns>A <see cref="MethodDeclarationSyntax"/> representing the <c>Deserialize</c> method.</returns>
 	/// <remarks>
-	/// The <c>CreateInstance</c> method is essential for converting raw byte payloads from Mavlink messages into strongly-typed objects, enabling easier manipulation and access to message data in .NET applications.
+	/// The <c>Deserialize</c> method is essential for converting raw byte payloads from Mavlink messages into strongly-typed objects, enabling easier manipulation and access to message data in .NET applications.
 	/// </remarks>
 	/// <exception cref="InvalidCastException">Thrown if any field in <paramref name="fields"/> is not of type <see cref="GeneratedMavlinkMessageFieldType"/> or its derived types.</exception>
-	public static MethodDeclarationSyntax CreateCreateInstanceMethod(
+	public static MethodDeclarationSyntax CreateDeserializeMethod(
 		string @namespace,
 		string messageName,
 		ImmutableArray<GeneratedMavlinkMessageField> fields)
@@ -34,7 +34,7 @@ if (payload.Length == 0)
     return new {messageName}();
 }}");
 
-		var minSize = CalculateMinSize(fields);
+		var minSize = fields.CalculateMinSize();
 		methodBody.AppendLine($@"
 if (payload.Length < {minSize})
 {{
@@ -45,13 +45,29 @@ if (payload.Length < {minSize})
 
 		var offset = 0;
 
-		foreach (var field in fields)
+		// Divide fields into required, non-required, and array groups
+		var requiredFields = fields.Where(f => f.IsRequired && !(f.Type is GeneratedMavlinkMessageFieldArrayType || f.Type is GeneratedMavlinkMessageFieldArrayEnumType)).ToList();
+		var nonRequiredFields = fields.Where(f => !f.IsRequired && !(f.Type is GeneratedMavlinkMessageFieldArrayType || f.Type is GeneratedMavlinkMessageFieldArrayEnumType)).ToList();
+		var arrayFields = fields.Where(f => f.Type is GeneratedMavlinkMessageFieldArrayType || f.Type is GeneratedMavlinkMessageFieldArrayEnumType).ToList();
+
+		// Sort required fields by type size (largest to smallest), excluding array types
+		requiredFields.Sort((field1, field2) =>
+		{
+			var size1 = Utilities.GetDotNetTypeSize(((GeneratedMavlinkMessageFieldType)field1.Type).ConvertedType);
+			var size2 = Utilities.GetDotNetTypeSize(((GeneratedMavlinkMessageFieldType)field2.Type).ConvertedType);
+			return size2.CompareTo(size1); // Sort descending
+		});
+
+		// Combine sorted required fields, array fields (in original order), and non-required fields (in original order)
+		var sortedFields = requiredFields.Concat(arrayFields).Concat(nonRequiredFields).ToList();
+
+		foreach (var field in sortedFields)
 		{
 			var fieldType = (GeneratedMavlinkMessageFieldType)field.Type;
 			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
 			var variableName = EscapeReservedKeyword(char.ToLowerInvariant(fieldPropertyName[0]) + fieldPropertyName.Substring(1));
 
-			if (variableName == CreateInstanceParameterName)
+			if (variableName == DeserializeParameterName)
 			{
 				variableName = "_" + variableName;
 			}
@@ -87,10 +103,10 @@ if (payload.Length > {offset} && payload.Length < {offset + fieldSize})
 			}
 		}
 
-		var propertiesAssignment = string.Join(", ", fields.Select(field =>
+		var propertiesAssignment = string.Join(", ", sortedFields.Select(field =>
 		{
 			var variableName = EscapeReservedKeyword(char.ToLowerInvariant(field.GeneratedName[0]) + field.GeneratedName.Substring(1));
-			if (variableName == CreateInstanceParameterName)
+			if (variableName == DeserializeParameterName)
 			{
 				variableName = "_" + variableName;
 			}
@@ -100,7 +116,7 @@ if (payload.Length > {offset} && payload.Length < {offset + fieldSize})
 		methodBody.AppendLine($"return new {messageName} {{ {propertiesAssignment} }};");
 
 		var methodString = $@"
-public static {messageName} CreateInstance(byte[] payload)
+public static {messageName} Deserialize(byte[] payload)
 {{
     {methodBody}
 }}";
@@ -113,7 +129,7 @@ public class TemporaryClass
 
 		var syntaxTree = CSharpSyntaxTree.ParseText(classWrapper);
 		var root = syntaxTree.GetRoot();
-		var method = root.DescendantNodes().OfType<MethodDeclarationSyntax>().First(m => m.Identifier.Text == "CreateInstance");
+		var method = root.DescendantNodes().OfType<MethodDeclarationSyntax>().First(m => m.Identifier.Text == "Deserialize");
 		return method;
 	}
 
@@ -160,7 +176,7 @@ if (payload.Length >= {offset + arrayLength})
 			if (size == 1)
 			{
 				result.AppendLine($@"
-var {variableName}Value = (byte)payload[{offset}];
+var {variableName}Value = ({fieldEnumType.ConvertedType})payload[{offset}];
 var {variableName} = ({fullEnumTypeName}){variableName}Value;");
 			}
 			else
@@ -175,10 +191,10 @@ var {variableName} = ({fullEnumTypeName}){variableName}Value;");
 			if (size == 1)
 			{
 				result.AppendLine($@"
-byte? {variableName}Value = null;
+{fieldEnumType.ConvertedType}? {variableName}Value = null;
 if (payload.Length > {offset})
 {{
-    {variableName}Value = (byte)payload[{offset}];
+    {variableName}Value = ({fieldEnumType.ConvertedType})payload[{offset}];
 }}
 var {variableName} = {variableName}Value.HasValue ? ({fullEnumTypeName}?){variableName}Value.Value : null;");
 			}
@@ -275,23 +291,6 @@ if (payload.Length > {offset})
 	private static string EscapeReservedKeyword(string name)
 	{
 		return SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None ? "@" + name : name;
-	}
-
-	private static int CalculateMinSize(ImmutableArray<GeneratedMavlinkMessageField> fields)
-	{
-		int minSize = 0;
-
-		foreach (var field in fields)
-		{
-			int fieldSize = field.GetFieldSize();
-
-			if (field.IsRequired)
-			{
-				minSize += fieldSize;
-			}
-		}
-
-		return minSize;
 	}
 
 	private static string GetBitConverterMethodForSize(int size)

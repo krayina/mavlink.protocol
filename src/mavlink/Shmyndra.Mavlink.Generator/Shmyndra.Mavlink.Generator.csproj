@@ -22,14 +22,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Shmyndra.Mavlink\Attributes\MavlinkTypeAttribute.cs">
-      <Link>Attributes\MavlinkTypeAttribute.cs</Link>
+    <Compile Include="..\Shmyndra.Mavlink\Attributes\**\*.cs">
+      <Link>Attributes\%(RecursiveDir)%(FileName)%(Extension)</Link>
     </Compile>
-    <Compile Include="..\Shmyndra.Mavlink\Attributes\RequiredArrayLengthAttribute.cs">
-      <Link>Attributes\RequiredArrayLengthAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\Shmyndra.Mavlink\Attributes\MavlinkIdentifiedTypeAttribute.cs">
-      <Link>Attributes\MavlinkIdentifiedTypeAttribute.cs</Link>
+    <Compile Include="..\Shmyndra.Mavlink\Extensions\**\*.cs">
+      <Link>Extensions\%(RecursiveDir)%(FileName)%(Extension)</Link>
     </Compile>
   </ItemGroup>
 </Project>

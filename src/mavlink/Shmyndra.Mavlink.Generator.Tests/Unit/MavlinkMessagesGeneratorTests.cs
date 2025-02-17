@@ -85,13 +85,13 @@ public class MavlinkMessagesGeneratorTests
 	];
 
 	[Fact]
-	public async Task CreateCreateInstanceMethod_ShouldMatchExpectedSnapshot()
+	public async Task CreateDeserializeMethod_ShouldMatchExpectedSnapshot()
 	{
 		// Arrange
 		var currentNamespace = "Namespace1";
 
 		// Act
-		var methodSyntax = MavlinkMessageDeserializationGenerator.CreateCreateInstanceMethod(currentNamespace, "ESCInfoMessage", GeneratedFields);
+		var methodSyntax = MavlinkMessageDeserializationGenerator.CreateDeserializeMethod(currentNamespace, "ESCInfoMessage", GeneratedFields);
 
 		// Assert
 		var methodCode = methodSyntax.ToNormalizedString();
@@ -102,7 +102,7 @@ public class MavlinkMessagesGeneratorTests
 	}
 
 	[Fact]
-	public void CreateCreateInstanceMethod_ShouldEscapeReservedKeyword()
+	public void CreateDeserializeMethod_ShouldEscapeReservedKeyword()
 	{
 		// Arrange
 		var fieldType = new GeneratedMavlinkMessageFieldType("ushort", "ushort");
@@ -122,7 +122,7 @@ public class MavlinkMessagesGeneratorTests
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
-		var method = MavlinkMessageDeserializationGenerator.CreateCreateInstanceMethod(
+		var method = MavlinkMessageDeserializationGenerator.CreateDeserializeMethod(
 			@namespace: "TestNamespace",
 			messageName: "RadioMavlinkMessage",
 			fields: fields
@@ -136,7 +136,7 @@ public class MavlinkMessagesGeneratorTests
 	}
 
 	[Fact]
-	public void CreateCreateInstanceMethod_ShouldAvoidNameConflictsByAddingUnderscore()
+	public void CreateDeserializeMethod_ShouldAvoidNameConflictsByAddingUnderscore()
 	{
 		// Arrange
 		var fieldType = new GeneratedMavlinkMessageFieldType("uint8_t", "byte");
@@ -159,7 +159,7 @@ public class MavlinkMessagesGeneratorTests
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
-		var method = MavlinkMessageDeserializationGenerator.CreateCreateInstanceMethod(
+		var method = MavlinkMessageDeserializationGenerator.CreateDeserializeMethod(
 			@namespace: "TestNamespace",
 			messageName: "FileTransferProtocolMavlinkMessage",
 			fields: fields
@@ -173,7 +173,7 @@ public class MavlinkMessagesGeneratorTests
 	}
 
 	[Fact]
-	public void CreateCreateInstanceMethod_ShouldGenerateNullableEnumDeserialization()
+	public void CreateDeserializeMethod_ShouldGenerateNullableEnumDeserialization()
 	{
 		// Arrange
 		var enumType = new GeneratedMavlinkMessageFieldEnumType(
@@ -211,7 +211,7 @@ public class MavlinkMessagesGeneratorTests
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
-		var method = MavlinkMessageDeserializationGenerator.CreateCreateInstanceMethod(
+		var method = MavlinkMessageDeserializationGenerator.CreateDeserializeMethod(
 			@namespace: "TestNamespace",
 			messageName: "SysStatusMavlinkMessage",
 			fields: fields
@@ -303,13 +303,13 @@ public class MavlinkMessagesGeneratorTests
 	}
 
 	[Fact]
-	public async Task CreateCreateInstanceMethod_NullableFields_ShouldMatchExpectedSnapshot()
+	public async Task CreateDeserializeMethod_NullableFields_ShouldMatchExpectedSnapshot()
 	{
 		// Arrange
 		var nonRequiredFields = GeneratedFields.Select(field => field with { IsRequired = false }).ToImmutableArray();
 
 		// Act
-		var methodSyntax = MavlinkMessageDeserializationGenerator.CreateCreateInstanceMethod("Namespace1", "SomeMessage", nonRequiredFields);
+		var methodSyntax = MavlinkMessageDeserializationGenerator.CreateDeserializeMethod("Namespace1", "SomeMessage", nonRequiredFields);
 
 		// Assert
 		var methodCode = methodSyntax.ToNormalizedString();
@@ -362,5 +362,511 @@ public class MavlinkMessagesGeneratorTests
 		await Verify(recordCode)
 			.UseDirectory(SNAPSHOT_PATH)
 			.UseParameters("DEPRECATEDMESSAGE");
+	}
+
+	#region Buffer Serialization tests
+
+	[Fact]
+	public async Task GenerateSerializeBufferMethodWithoutExtensions_WhenNoExtensions_ShouldMatchSnapshot()
+	{
+		// Arrange
+		var serializeMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
+		var testFields = GeneratedFields;
+
+		// Act
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithoutExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		await Verify(generatedCode)
+		  .UseDirectory(SNAPSHOT_PATH)
+		  .UseParameters("TestMavlinkMessage");
+	}
+
+	[Fact]
+	public async Task GenerateSerializeBufferMethodWithExtensions_WhenHasOneExtension_ShouldMatchSnapshot()
+	{
+		// Arrange
+		var serializeMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
+		var testFields = new List<GeneratedMavlinkMessageField>()
+		{
+			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[0]),
+			new GeneratedMavlinkMessageField("TimeUsec", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint64_t"), "TimeUsec"), MavlinkFields[1]),
+			new GeneratedMavlinkMessageField("FirstExtension", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null))
+		}.ToImmutableArray();
+
+		// Act
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		await Verify(generatedCode)
+		  .UseDirectory(SNAPSHOT_PATH)
+		  .UseParameters("TestMavlinkMessage");
+	}
+
+	[Fact]
+	public async Task GenerateSerializeBufferMethodWithExtensions_WhenHasOneSimpleExtensionAndCollectionExtension_ShouldMatchSnapshot()
+	{
+		// Arrange
+		var serializeMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
+		var testFields = new List<GeneratedMavlinkMessageField>()
+		{
+			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[0]),
+			new GeneratedMavlinkMessageField("TimeUsec", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint64_t"), "TimeUsec"), MavlinkFields[1]),
+			new GeneratedMavlinkMessageField("FirstExtension", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null)),
+			new GeneratedMavlinkMessageField("SecondExtension", new GeneratedMavlinkMessageFieldArrayType("uint64_t", "ulong", 4),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint64_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null))
+		}.ToImmutableArray();
+
+		// Act
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		await Verify(generatedCode)
+		  .UseDirectory(SNAPSHOT_PATH)
+		  .UseParameters("TestMavlinkMessage");
+	}
+
+	[Fact]
+	public async Task GenerateSerializeBufferMethodWithExtensions_WhenHasOneSimpleExtensionAndEnumExtension_ShouldMatchSnapshot()
+	{
+		// Arrange
+		var serializeMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
+		var testFields = new List<GeneratedMavlinkMessageField>()
+		{
+			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[0]),
+			new GeneratedMavlinkMessageField("TimeUsec", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint64_t"), "TimeUsec"), MavlinkFields[1]),
+			new GeneratedMavlinkMessageField("FirstExtension", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null)),
+			new GeneratedMavlinkMessageField("SecondExtension", new GeneratedMavlinkMessageFieldEnumType("uint64_t", "ulong",
+				new GeneratedMavlinkEnum("TestNamespace", "TestEnum", new(), SyntaxFactory.EnumDeclaration("Test"),
+					new MavlinkEnum("Test", null, null, new(), null))),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint64_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null))
+		}.ToImmutableArray();
+
+		// Act
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		await Verify(generatedCode)
+		  .UseDirectory(SNAPSHOT_PATH)
+		  .UseParameters("TestMavlinkMessage");
+	}
+
+	[Fact]
+	public async Task GenerateSerializeBufferMethodWithExtensions_WhenHasOneSimpleExtensionAndEnumArrayExtension_ShouldMatchSnapshot()
+	{
+		// Arrange
+		var serializeMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
+		var testFields = new List<GeneratedMavlinkMessageField>()
+		{
+			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[0]),
+						new GeneratedMavlinkMessageField("FailureFlags", new GeneratedMavlinkMessageFieldArrayEnumType("uint16_t[4]", "ushort", GeneratedEnums[1], 4),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[6]),
+			new GeneratedMavlinkMessageField("FirstExtension", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null)),
+
+			new GeneratedMavlinkMessageField("SecondExtension", new GeneratedMavlinkMessageFieldArrayEnumType("uint16_t[4]", "ushort", GeneratedEnums[1], 4),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[6] with { IsRequired = false }),
+		}.ToImmutableArray();
+
+		// Act
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		await Verify(generatedCode)
+		  .UseDirectory(SNAPSHOT_PATH)
+		  .UseParameters("TestMavlinkMessage");
+	}
+	#endregion
+
+	[Fact]
+	public async Task GenerateMavlinkTypes_GeneratedSimpleCrc_ShouldBe152()
+	{
+		// Arrange
+		var fields = ImmutableArray.Create(
+			new GeneratedMavlinkMessageField("target_system", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"), SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "TargetSystem"), // Порожній синтаксис
+				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"),
+					"target_system", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"target_component",
+				new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "TargetComponent"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("uint8_t"),
+					"target_component", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"command",
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+				new GeneratedMavlinkMessageFieldEnumType("uint16_t", "ushort", null),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "Command"),
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("uint16_t"),
+					"command", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"confirmation",
+				new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Confirmation"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("uint8_t"),
+					"confirmation", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"param1",
+				new GeneratedMavlinkMessageFieldType("float", "float"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param1"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("float"),
+					"param1", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"param2",
+				new GeneratedMavlinkMessageFieldType("float", "float"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param2"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("float"),
+					"param2", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"param3",
+				new GeneratedMavlinkMessageFieldType("float", "float"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param3"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("float"),
+					"param3", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"param4",
+				new GeneratedMavlinkMessageFieldType("float", "float"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param4"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("float"),
+					"param4", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"param5",
+				new GeneratedMavlinkMessageFieldType("float", "float"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param5"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("float"),
+					"param5", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"param6",
+				new GeneratedMavlinkMessageFieldType("float", "float"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param6"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("float"),
+					"param6", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"param7",
+				new GeneratedMavlinkMessageFieldType("float", "float"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param7"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("float"),
+					"param7", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			)
+		).ToImmutableArray();
+
+		var mavlinkGeneratedMessages = new List<GeneratedMavlinkMessage>
+		{
+			new GeneratedMavlinkMessage("testNamespace", "CommandLong", fields, SyntaxFactory.RecordDeclaration(SyntaxFactory.Token(SyntaxKind.RecordKeyword), "CommandLong"),
+				new MavlinkMessage(76U, "COMMAND_LONG", null, ImmutableArray<MavlinkMessageField>.Empty, null))
+		}.ToImmutableArray();
+
+		// Act
+		var methodSyntax = MavlinkMessagesGenerator.GenerateMessageExtensions(mavlinkGeneratedMessages);
+
+		// Assert
+		Assert.Contains("\"COMMAND_LONG\", 33, 33, 152", methodSyntax);
+	}
+
+	[Fact]
+	public void GenerateMavlinkTypes_GenerateCrcByExtensionField_ShouldBe38()
+	{
+		// Arrange
+		var fields = ImmutableArray.Create(
+			new GeneratedMavlinkMessageField("target_system", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"), SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "TargetSystem"),
+				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"),
+					"target_system", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"target_component",
+				new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "TargetComponent"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("uint8_t"),
+					"target_component", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"seq",
+				new GeneratedMavlinkMessageFieldType("uint16_t", "ushort"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "Seq"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("uint16_t"),
+					"seq", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"frame",
+				new GeneratedMavlinkMessageFieldEnumType("uint8_t", "byte", GeneratedEnums[0]),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Frame"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("uint8_t"),
+					"frame", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"command",
+				new GeneratedMavlinkMessageFieldEnumType("uint16_t", "ushort", GeneratedEnums[0]),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "Command"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("uint16_t"),
+					"command", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"current",
+				new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Current"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("uint8_t"),
+					"current", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"autocontinue",
+				new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Autocontinue"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("uint8_t"),
+					"autocontinue", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"param1",
+				new GeneratedMavlinkMessageFieldType("float", "float"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param1"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("float"),
+					"param1", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"param2",
+				new GeneratedMavlinkMessageFieldType("float", "float"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param2"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("float"),
+					"param2", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"param3",
+				new GeneratedMavlinkMessageFieldType("float", "float"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param3"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("float"),
+					"param3", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"param4",
+				new GeneratedMavlinkMessageFieldType("float", "float"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param4"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("float"),
+					"param4", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"x",
+				new GeneratedMavlinkMessageFieldType("int32_t", "int"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("int"), "X"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("int32_t"),
+					"x", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"y",
+				new GeneratedMavlinkMessageFieldType("int32_t", "int"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("int"), "Y"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("int32_t"),
+					"y", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"z",
+				new GeneratedMavlinkMessageFieldType("float", "float"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Z"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("float"),
+					"z", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField(
+				"mission_type",
+				new GeneratedMavlinkMessageFieldEnumType("uint8_t", "byte", GeneratedEnums[0]),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "MissionType"),
+				new MavlinkMessageField(
+					new MavlinkMessageFieldType("uint8_t"),
+					"mission_type", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: false,
+					null, null, null, null, null, null, null)
+			)
+		).ToImmutableArray();
+
+		var mavlinkGeneratedMessages = new List<GeneratedMavlinkMessage>
+		{
+			new GeneratedMavlinkMessage("testNamespace", "MissionItemInt", fields, SyntaxFactory.RecordDeclaration(SyntaxFactory.Token(SyntaxKind.RecordKeyword), "MissionItemInt"),
+				new MavlinkMessage(73U, "MISSION_ITEM_INT", null, ImmutableArray<MavlinkMessageField>.Empty, null))
+		}.ToImmutableArray();
+
+		// Act
+		var methodSyntax = MavlinkMessagesGenerator.GenerateMessageExtensions(mavlinkGeneratedMessages);
+
+		// Assert
+		Assert.Contains("\"MISSION_ITEM_INT\", 37, 38, 38", methodSyntax);
+	}
+
+	[Fact]
+	public async Task GenerateMavlinkTypes_GeneratedCrcByArrayField_ShouldBe47()
+	{
+		// Arrange
+		var fields = ImmutableArray.Create(
+			new GeneratedMavlinkMessageField("time_usec", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"), SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ulong"), "TimeUsec"),
+				new MavlinkMessageField(new MavlinkMessageFieldType("uint64_t"),
+					"time_usec", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField("controls", new GeneratedMavlinkMessageFieldArrayType("float[16]", "float", 16), SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float[]"), "Controls"),
+				new MavlinkMessageField(new MavlinkMessageFieldType("float[16]"),
+					"controls", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField("mode", new GeneratedMavlinkMessageFieldEnumType("uint8_t", "byte", GeneratedEnums[0]), SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Mode"),
+				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"),
+					"mode", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField("flags", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"), SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Flags"),
+				new MavlinkMessageField(new MavlinkMessageFieldType("uint64_t"),
+					"flags", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			)
+		).ToImmutableArray();
+
+		var mavlinkGeneratedMessages = new List<GeneratedMavlinkMessage>
+		{
+			new GeneratedMavlinkMessage("testNamespace", "HilActuatorControls", fields, SyntaxFactory.RecordDeclaration(SyntaxFactory.Token(SyntaxKind.RecordKeyword), "HilActuatorControls"),
+				new MavlinkMessage(93U, "HIL_ACTUATOR_CONTROLS", null, ImmutableArray<MavlinkMessageField>.Empty, null))
+		}.ToImmutableArray();
+
+		// Act
+		var methodSyntax = MavlinkMessagesGenerator.GenerateMessageExtensions(mavlinkGeneratedMessages);
+
+		// Assert
+		Assert.Contains("\"HIL_ACTUATOR_CONTROLS\", 81, 81, 47", methodSyntax);
+	}
+
+	[Fact]
+	public void GenerateMavlinkTypes_GeneratedCrcByMavlinkVersion_ShouldBe50()
+	{
+		// Arrange
+		var fields = ImmutableArray.Create(
+			new GeneratedMavlinkMessageField("type", new GeneratedMavlinkMessageFieldEnumType("uint8_t", "byte", GeneratedEnums[0]),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Type"),
+				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "type", "MAV_TYPE",
+					MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField("autopilot", new GeneratedMavlinkMessageFieldEnumType("uint8_t", "byte", GeneratedEnums[0]),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Autopilot"),
+				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "autopilot", "MAV_AUTOPILOT",
+					MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField("base_mode", new GeneratedMavlinkMessageFieldEnumType("uint8_t", "byte", GeneratedEnums[0]),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "BaseMode"),
+				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "base_mode", "MAV_MODE_FLAG",
+					MavlinkMessageFieldDisplay.Bitmask, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField("custom_mode", new GeneratedMavlinkMessageFieldType("uint32_t", "uint"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint"), "CustomMode"),
+				new MavlinkMessageField(new MavlinkMessageFieldType("uint32_t"), "custom_mode", null,
+					MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField("system_status", new GeneratedMavlinkMessageFieldEnumType("uint8_t", "byte", GeneratedEnums[0]),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "SystemStatus"),
+				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "system_status", "MAV_STATE",
+					MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			),
+			new GeneratedMavlinkMessageField("mavlink_version", new GeneratedMavlinkMessageFieldType("uint8_t_mavlink_version", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "MavlinkVersion"),
+				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t_mavlink_version"), "mavlink_version", null,
+					MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
+					null, null, null, null, null, null, null)
+			)
+		);
+
+		var mavlinkGeneratedMessages = new List<GeneratedMavlinkMessage>
+		{
+			new GeneratedMavlinkMessage("testNamespace", "Heartbeat", fields,
+				SyntaxFactory.RecordDeclaration(SyntaxFactory.Token(SyntaxKind.RecordKeyword), "Heartbeat"),
+				new MavlinkMessage(0U, "HEARTBEAT", null, ImmutableArray<MavlinkMessageField>.Empty, null))
+		}.ToImmutableArray();
+
+		// Act
+		var methodSyntax = MavlinkMessagesGenerator.GenerateMessageExtensions(mavlinkGeneratedMessages);
+
+		// Assert
+		Assert.Contains("\"HEARTBEAT\", 9, 9, 50", methodSyntax);
 	}
 }

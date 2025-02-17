@@ -1692,7 +1692,7 @@
         /// </remarks>
         public byte MavlinkVersion { get; init; }
 
-        public static HeartbeatMavlinkMessage CreateInstance(byte[] payload)
+        public static HeartbeatMavlinkMessage Deserialize(byte[] payload)
         {
             if (payload.Length == 0)
             {
@@ -1706,25 +1706,37 @@
                 payload = paddedPayload;
             }
 
-            var typeValue = (byte)payload[0];
+            var customMode = BitConverter.ToUInt32(payload, 0);
+            var typeValue = (byte)payload[4];
             var type = (MavType)typeValue;
-            var autopilotValue = (byte)payload[1];
+            var autopilotValue = (byte)payload[5];
             var autopilot = (MavAutopilot)autopilotValue;
-            var baseModeValue = (byte)payload[2];
+            var baseModeValue = (byte)payload[6];
             var baseMode = (MavModeFlag)baseModeValue;
-            var customMode = BitConverter.ToUInt32(payload, 3);
             var systemStatusValue = (byte)payload[7];
             var systemStatus = (MavState)systemStatusValue;
             var mavlinkVersion = payload[8];
             return new HeartbeatMavlinkMessage
             {
+                CustomMode = customMode,
                 Type = type,
                 Autopilot = autopilot,
                 BaseMode = baseMode,
-                CustomMode = customMode,
                 SystemStatus = systemStatus,
                 MavlinkVersion = mavlinkVersion
             };
+        }
+
+        public byte[] Serialize()
+        {
+            var buffer = new byte[9];
+            BitConverter.GetBytes(CustomMode).CopyTo(buffer, 0);
+            buffer[4] = (byte)Type;
+            buffer[5] = (byte)Autopilot;
+            buffer[6] = (byte)BaseMode;
+            buffer[7] = (byte)SystemStatus;
+            buffer[8] = MavlinkVersion;
+            return buffer;
         }
     }
 
@@ -1762,7 +1774,7 @@
         [System.ComponentModel.DataAnnotations.RequiredArrayLength(8)]
         public System.Collections.Immutable.ImmutableArray<byte> LibraryVersionHash { get; init; }
 
-        public static ProtocolVersionMavlinkMessage CreateInstance(byte[] payload)
+        public static ProtocolVersionMavlinkMessage Deserialize(byte[] payload)
         {
             if (payload.Length == 0)
             {
@@ -1793,6 +1805,17 @@
                 SpecVersionHash = specVersionHash,
                 LibraryVersionHash = libraryVersionHash
             };
+        }
+
+        public byte[] Serialize()
+        {
+            var buffer = new byte[22];
+            BitConverter.GetBytes(Version).CopyTo(buffer, 0);
+            BitConverter.GetBytes(MinVersion).CopyTo(buffer, 2);
+            BitConverter.GetBytes(MaxVersion).CopyTo(buffer, 4);
+            Buffer.BlockCopy(SpecVersionHash.ToArray(), 0, buffer, 6, 8);
+            Buffer.BlockCopy(LibraryVersionHash.ToArray(), 0, buffer, 14, 8);
+            return buffer;
         }
     }
 
@@ -2426,7 +2449,7 @@ namespace MavlinkTypes.TestMavlinkCommon
         /// </remarks>
         public MavSysStatusSensorExtended? OnboardControlSensorsHealthExtended { get; init; }
 
-        public static SysStatusMavlinkMessage CreateInstance(byte[] payload)
+        public static SysStatusMavlinkMessage Deserialize(byte[] payload)
         {
             if (payload.Length == 0)
             {
@@ -2449,13 +2472,13 @@ namespace MavlinkTypes.TestMavlinkCommon
             var load = BitConverter.ToUInt16(payload, 12);
             var voltageBattery = BitConverter.ToUInt16(payload, 14);
             var currentBattery = BitConverter.ToInt16(payload, 16);
-            var batteryRemaining = (sbyte)payload[18];
-            var dropRateComm = BitConverter.ToUInt16(payload, 19);
-            var errorsComm = BitConverter.ToUInt16(payload, 21);
-            var errorsCount1 = BitConverter.ToUInt16(payload, 23);
-            var errorsCount2 = BitConverter.ToUInt16(payload, 25);
-            var errorsCount3 = BitConverter.ToUInt16(payload, 27);
-            var errorsCount4 = BitConverter.ToUInt16(payload, 29);
+            var dropRateComm = BitConverter.ToUInt16(payload, 18);
+            var errorsComm = BitConverter.ToUInt16(payload, 20);
+            var errorsCount1 = BitConverter.ToUInt16(payload, 22);
+            var errorsCount2 = BitConverter.ToUInt16(payload, 24);
+            var errorsCount3 = BitConverter.ToUInt16(payload, 26);
+            var errorsCount4 = BitConverter.ToUInt16(payload, 28);
+            var batteryRemaining = (sbyte)payload[30];
             if (payload.Length > 31 && payload.Length < 35)
             {
                 var paddedPayload = new byte[35];
@@ -2506,17 +2529,57 @@ namespace MavlinkTypes.TestMavlinkCommon
                 Load = load,
                 VoltageBattery = voltageBattery,
                 CurrentBattery = currentBattery,
-                BatteryRemaining = batteryRemaining,
                 DropRateComm = dropRateComm,
                 ErrorsComm = errorsComm,
                 ErrorsCount1 = errorsCount1,
                 ErrorsCount2 = errorsCount2,
                 ErrorsCount3 = errorsCount3,
                 ErrorsCount4 = errorsCount4,
+                BatteryRemaining = batteryRemaining,
                 OnboardControlSensorsPresentExtended = onboardControlSensorsPresentExtended,
                 OnboardControlSensorsEnabledExtended = onboardControlSensorsEnabledExtended,
                 OnboardControlSensorsHealthExtended = onboardControlSensorsHealthExtended
             };
+        }
+
+        public byte[] Serialize()
+        {
+            var buffer = new byte[31];
+            BitConverter.GetBytes((uint)OnboardControlSensorsPresent).CopyTo(buffer, 0);
+            BitConverter.GetBytes((uint)OnboardControlSensorsEnabled).CopyTo(buffer, 4);
+            BitConverter.GetBytes((uint)OnboardControlSensorsHealth).CopyTo(buffer, 8);
+            BitConverter.GetBytes(Load).CopyTo(buffer, 12);
+            BitConverter.GetBytes(VoltageBattery).CopyTo(buffer, 14);
+            BitConverter.GetBytes(CurrentBattery).CopyTo(buffer, 16);
+            BitConverter.GetBytes(DropRateComm).CopyTo(buffer, 18);
+            BitConverter.GetBytes(ErrorsComm).CopyTo(buffer, 20);
+            BitConverter.GetBytes(ErrorsCount1).CopyTo(buffer, 22);
+            BitConverter.GetBytes(ErrorsCount2).CopyTo(buffer, 24);
+            BitConverter.GetBytes(ErrorsCount3).CopyTo(buffer, 26);
+            BitConverter.GetBytes(ErrorsCount4).CopyTo(buffer, 28);
+            buffer[30] = (byte)BatteryRemaining;
+            if (OnboardControlSensorsPresentExtended.HasValue)
+            {
+                var enumValue = (uint)OnboardControlSensorsPresentExtended.Value;
+                Array.Resize(ref buffer, buffer.Length + 4);
+                BitConverter.GetBytes(enumValue).CopyTo(buffer, buffer.Length - 4);
+            }
+
+            if (OnboardControlSensorsEnabledExtended.HasValue)
+            {
+                var enumValue = (uint)OnboardControlSensorsEnabledExtended.Value;
+                Array.Resize(ref buffer, buffer.Length + 4);
+                BitConverter.GetBytes(enumValue).CopyTo(buffer, buffer.Length - 4);
+            }
+
+            if (OnboardControlSensorsHealthExtended.HasValue)
+            {
+                var enumValue = (uint)OnboardControlSensorsHealthExtended.Value;
+                Array.Resize(ref buffer, buffer.Length + 4);
+                BitConverter.GetBytes(enumValue).CopyTo(buffer, buffer.Length - 4);
+            }
+
+            return buffer;
         }
     }
 
@@ -2538,7 +2601,7 @@ namespace MavlinkTypes.TestMavlinkCommon
         /// </remarks>
         public uint TimeBootMs { get; init; }
 
-        public static SystemTimeMavlinkMessage CreateInstance(byte[] payload)
+        public static SystemTimeMavlinkMessage Deserialize(byte[] payload)
         {
             if (payload.Length == 0)
             {
@@ -2559,6 +2622,14 @@ namespace MavlinkTypes.TestMavlinkCommon
                 TimeUnixUsec = timeUnixUsec,
                 TimeBootMs = timeBootMs
             };
+        }
+
+        public byte[] Serialize()
+        {
+            var buffer = new byte[12];
+            BitConverter.GetBytes(TimeUnixUsec).CopyTo(buffer, 0);
+            BitConverter.GetBytes(TimeBootMs).CopyTo(buffer, 8);
+            return buffer;
         }
     }
 
@@ -2588,7 +2659,7 @@ namespace MavlinkTypes.TestMavlinkCommon
         /// </remarks>
         public byte TargetComponent { get; init; }
 
-        public static PingMavlinkMessage CreateInstance(byte[] payload)
+        public static PingMavlinkMessage Deserialize(byte[] payload)
         {
             if (payload.Length == 0)
             {
@@ -2613,6 +2684,16 @@ namespace MavlinkTypes.TestMavlinkCommon
                 TargetSystem = targetSystem,
                 TargetComponent = targetComponent
             };
+        }
+
+        public byte[] Serialize()
+        {
+            var buffer = new byte[14];
+            BitConverter.GetBytes(TimeUsec).CopyTo(buffer, 0);
+            BitConverter.GetBytes(Seq).CopyTo(buffer, 8);
+            buffer[12] = TargetSystem;
+            buffer[13] = TargetComponent;
+            return buffer;
         }
     }
 
@@ -2644,16 +2725,16 @@ namespace MavlinkTypes.TestMavlinkCommon
         [System.ComponentModel.DataAnnotations.RequiredArrayLength(25)]
         public System.Collections.Immutable.ImmutableArray<char> Passkey { get; init; }
 
-        public static ChangeOperatorControlMavlinkMessage CreateInstance(byte[] payload)
+        public static ChangeOperatorControlMavlinkMessage Deserialize(byte[] payload)
         {
             if (payload.Length == 0)
             {
                 return new ChangeOperatorControlMavlinkMessage();
             }
 
-            if (payload.Length < 53)
+            if (payload.Length < 28)
             {
-                var paddedPayload = new byte[53];
+                var paddedPayload = new byte[28];
                 Array.Copy(payload, paddedPayload, payload.Length);
                 payload = paddedPayload;
             }
@@ -2662,7 +2743,7 @@ namespace MavlinkTypes.TestMavlinkCommon
             var controlRequest = payload[1];
             var version = payload[2];
             var tempPasskeyArray = new char[25];
-            Buffer.BlockCopy(payload, 3, tempPasskeyArray, 0, 50);
+            Buffer.BlockCopy(payload, 3, tempPasskeyArray, 0, 25);
             var passkey = System.Collections.Immutable.ImmutableArray.CreateRange(tempPasskeyArray);
             return new ChangeOperatorControlMavlinkMessage
             {
@@ -2671,6 +2752,136 @@ namespace MavlinkTypes.TestMavlinkCommon
                 Version = version,
                 Passkey = passkey
             };
+        }
+
+        public byte[] Serialize()
+        {
+            var buffer = new byte[28];
+            buffer[0] = TargetSystem;
+            buffer[1] = ControlRequest;
+            buffer[2] = Version;
+            Buffer.BlockCopy(Passkey.ToArray(), 0, buffer, 3, 25);
+            return buffer;
+        }
+    }
+
+    /// <summary>
+    /// The attitude in the aeronautical frame (right-handed, Z-down, X-front, Y-right), expressed as quaternion. Quaternion order is w, x, y, z and a zero rotation would be expressed as (1 0 0 0).
+    /// </summary>
+    /// <remarks>
+    /// Original name: ATTITUDE_QUATERNION
+    /// </remarks>
+    [MavlinkIdentifiedType(31U, "ATTITUDE_QUATERNION")]
+    public readonly record struct AttitudeQuaternionMavlinkMessage : MavlinkMessage
+    {
+        /// <remarks>
+        /// Original name: TIME_BOOT_MS
+        /// </remarks>
+        public uint TimeBootMs { get; init; }
+        /// <remarks>
+        /// Original name: Q1
+        /// </remarks>
+        public float Q1 { get; init; }
+        /// <remarks>
+        /// Original name: Q2
+        /// </remarks>
+        public float Q2 { get; init; }
+        /// <remarks>
+        /// Original name: Q3
+        /// </remarks>
+        public float Q3 { get; init; }
+        /// <remarks>
+        /// Original name: Q4
+        /// </remarks>
+        public float Q4 { get; init; }
+        /// <remarks>
+        /// Original name: ROLLSPEED
+        /// </remarks>
+        public float Rollspeed { get; init; }
+        /// <remarks>
+        /// Original name: PITCHSPEED
+        /// </remarks>
+        public float Pitchspeed { get; init; }
+        /// <remarks>
+        /// Original name: YAWSPEED
+        /// </remarks>
+        public float Yawspeed { get; init; }
+
+        /// <remarks>
+        /// Original name: REPR_OFFSET_Q
+        /// </remarks>
+        [System.ComponentModel.DataAnnotations.RequiredArrayLength(4)]
+        public System.Collections.Immutable.ImmutableArray<float>? ReprOffsetQ { get; init; }
+
+        public static AttitudeQuaternionMavlinkMessage Deserialize(byte[] payload)
+        {
+            if (payload.Length == 0)
+            {
+                return new AttitudeQuaternionMavlinkMessage();
+            }
+
+            if (payload.Length < 32)
+            {
+                var paddedPayload = new byte[32];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
+            var timeBootMs = BitConverter.ToUInt32(payload, 0);
+            var q1 = BitConverter.ToSingle(payload, 4);
+            var q2 = BitConverter.ToSingle(payload, 8);
+            var q3 = BitConverter.ToSingle(payload, 12);
+            var q4 = BitConverter.ToSingle(payload, 16);
+            var rollspeed = BitConverter.ToSingle(payload, 20);
+            var pitchspeed = BitConverter.ToSingle(payload, 24);
+            var yawspeed = BitConverter.ToSingle(payload, 28);
+            if (payload.Length > 32 && payload.Length < 48)
+            {
+                var paddedPayload = new byte[48];
+                Array.Copy(payload, paddedPayload, payload.Length);
+                payload = paddedPayload;
+            }
+
+            System.Collections.Immutable.ImmutableArray<float>? reprOffsetQ = null;
+            if (payload.Length >= 48)
+            {
+                var tempReprOffsetQArray = new float[4];
+                Buffer.BlockCopy(payload, 32, tempReprOffsetQArray, 0, 16);
+                reprOffsetQ = System.Collections.Immutable.ImmutableArray.CreateRange(tempReprOffsetQArray);
+            }
+
+            return new AttitudeQuaternionMavlinkMessage
+            {
+                TimeBootMs = timeBootMs,
+                Q1 = q1,
+                Q2 = q2,
+                Q3 = q3,
+                Q4 = q4,
+                Rollspeed = rollspeed,
+                Pitchspeed = pitchspeed,
+                Yawspeed = yawspeed,
+                ReprOffsetQ = reprOffsetQ
+            };
+        }
+
+        public byte[] Serialize()
+        {
+            var buffer = new byte[32];
+            BitConverter.GetBytes(TimeBootMs).CopyTo(buffer, 0);
+            BitConverter.GetBytes(Q1).CopyTo(buffer, 4);
+            BitConverter.GetBytes(Q2).CopyTo(buffer, 8);
+            BitConverter.GetBytes(Q3).CopyTo(buffer, 12);
+            BitConverter.GetBytes(Q4).CopyTo(buffer, 16);
+            BitConverter.GetBytes(Rollspeed).CopyTo(buffer, 20);
+            BitConverter.GetBytes(Pitchspeed).CopyTo(buffer, 24);
+            BitConverter.GetBytes(Yawspeed).CopyTo(buffer, 28);
+            if (ReprOffsetQ.HasValue && !ReprOffsetQ.Value.IsDefaultOrEmpty)
+            {
+                Array.Resize(ref buffer, 32 + 16);
+                Buffer.BlockCopy(ReprOffsetQ.Value.ToArray(), 0, buffer, 32, 16);
+            }
+
+            return buffer;
         }
     }
 

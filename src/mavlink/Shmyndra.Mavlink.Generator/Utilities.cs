@@ -84,7 +84,11 @@ internal static class Utilities
 		return property.AddAttributeLists(
 			SyntaxFactory.AttributeList(
 				SyntaxFactory.SingletonSeparatedList(
-					SyntaxFactory.Attribute(SyntaxFactory.ParseName(typeof(System.ComponentModel.DataAnnotations.RequiredArrayLengthAttribute).FullName[0..^9]))
+					SyntaxFactory.Attribute(
+						SyntaxFactory.ParseName(typeof(System.ComponentModel.DataAnnotations.RequiredArrayLengthAttribute).FullName
+							.GetAttributeNameWithoutPostfix()
+						)
+					)
 					.WithArgumentList(
 						SyntaxFactory.AttributeArgumentList(
 							SyntaxFactory.SingletonSeparatedList(
@@ -94,6 +98,16 @@ internal static class Utilities
 				)
 			)
 		);
+	}
+
+	public static string GetAttributeNameWithoutPostfix(this string attributeName)
+	{
+		const string postfix = "Attribute";
+		if (attributeName.EndsWith(postfix, StringComparison.Ordinal))
+		{
+			return attributeName.Substring(0, attributeName.Length - postfix.Length);
+		}
+		return attributeName;
 	}
 
 	public static T AddObsoleteAttribute<T>(this T member, string? obsoleteMessage) where T : MemberDeclarationSyntax
@@ -136,6 +150,35 @@ internal static class Utilities
 		return syntax.NormalizeWhitespace().ToFullString().Replace("? )", "?)");
 	}
 
+	public static int CalculateMinSize(this ImmutableArray<GeneratedMavlinkMessageField> fields)
+	{
+		int minSize = 0;
+
+		foreach (var field in fields)
+		{
+			int fieldSize = field.GetFieldSize();
+
+			if (field.IsRequired)
+			{
+				minSize += fieldSize;
+			}
+		}
+
+		return minSize;
+	}
+
+	public static int CalculateFinalSize(this ImmutableArray<GeneratedMavlinkMessageField> fields)
+	{
+		int minSize = fields.CalculateMinSize();
+		int extensionLength = fields
+			.Where(f => !f.IsRequired && !(f.Type is GeneratedMavlinkMessageFieldArrayType || f.Type is GeneratedMavlinkMessageFieldArrayEnumType))
+			.Sum(f => f.GetFieldSize());
+		int arrayExtensionSize = fields
+			.Where(f => !f.IsRequired && (f.Type is GeneratedMavlinkMessageFieldArrayType || f.Type is GeneratedMavlinkMessageFieldArrayEnumType))
+			.Sum(f => f.GetFieldSize());
+		return minSize + extensionLength + arrayExtensionSize;
+	}
+
 	public static int GetFieldSize(this GeneratedMavlinkMessageField field)
 	{
 		return field.Type switch
@@ -152,16 +195,56 @@ internal static class Utilities
 		{
 			"byte" => 1,
 			"sbyte" => 1,
+			"char" => 1,
 			"ushort" => 2,
 			"short" => 2,
 			"uint" => 4,
 			"int" => 4,
+			"float" => 4,
 			"ulong" => 8,
 			"long" => 8,
-			"float" => 4,
 			"double" => 8,
-			"char" => 2,
 			_ => throw new InvalidOperationException($"Unknown type: {convertedType}"),
 		};
+	}
+
+	public static string GetTypeWithoutArray(this MavlinkMessageFieldType type)
+	{
+		string typeName = type.TypeName;
+		int arrayStartIndex = typeName.IndexOf('[');
+		if (arrayStartIndex >= 0)
+		{
+			typeName = typeName.Substring(0, arrayStartIndex);
+		}
+		return typeName;
+	}
+
+	public static byte CalculateCrcExtra(this IEnumerable<GeneratedMavlinkMessageField> fields, string messageName)
+	{
+		ushort crc = X25Crc.CrcSeed;
+
+		crc = X25Crc.Accumulate(messageName + " ", crc);
+
+		var sortedFields = fields.OrderByDescending(
+			field => Utilities.GetDotNetTypeSize(((GeneratedMavlinkMessageFieldType)field.Type).ConvertedType));
+
+		foreach (var field in sortedFields)
+		{
+			if (!field.IsRequired) continue;
+
+			var typeName = field.Type.TypeName.Equals("uint8_t_mavlink_version") ? "uint8_t" : field.Type.GetTypeWithoutArray();
+			crc = X25Crc.Accumulate($"{typeName} {field.Name} ", crc);
+
+			if (field.Type is GeneratedMavlinkMessageFieldArrayType arrayField)
+			{
+				crc = X25Crc.Accumulate(crc, (byte)arrayField.ArrayLength);
+			}
+			else if (field.Type is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumField)
+			{
+				crc = X25Crc.Accumulate(crc, (byte)arrayEnumField.ArrayLength);
+			}
+		}
+
+		return X25Crc.FinalizeCrc(crc);
 	}
 }

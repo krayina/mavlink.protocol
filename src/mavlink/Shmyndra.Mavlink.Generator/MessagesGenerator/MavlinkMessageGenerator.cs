@@ -45,6 +45,13 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 
 	private readonly Dictionary<(string Namespace, string MavlinkMessageName), GeneratedMavlinkMessage> _generatedMessages = new();
 
+	private readonly MavlinkMessageSerializationMethodGeneratorBase _messageSerializationMethodGenerator;
+
+	public MavlinkMessageGenerator(MavlinkMessageSerializationMethodGeneratorBase messageSerializationMethodGenerator)
+	{
+		_messageSerializationMethodGenerator = messageSerializationMethodGenerator;
+	}
+
 	ImmutableArray<GeneratedMavlinkMessage> IGeneratedStorage<GeneratedMavlinkMessage>.GetGeneratedTypes()
 	{
 		return _generatedMessages.Values.ToImmutableArray();
@@ -100,12 +107,32 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 			.Select(generatedField => generatedField.DeclarationSyntax)
 			.ToArray();
 
-		var createInstanceMethod = MavlinkMessageDeserializationGenerator
-			.CreateCreateInstanceMethod(@namespace, normalizedName, generatedFields);
+		var deserializeMethod = MavlinkMessageDeserializationGenerator
+			.CreateDeserializeMethod(@namespace, normalizedName, generatedFields);
+
+		var serializeMethods = _messageSerializationMethodGenerator
+			.CreateSerializeMethod(@namespace, normalizedName, generatedFields);
 
 		var recordDeclaration = CreateRecordStructDeclaration(id, normalizedName, propertyDeclarations, message.Description, message.Name)
-			.AddMembers(createInstanceMethod)
-			.AddObsoleteAttribute(message.Deprecated?.ToString());
+			.AddMembers(deserializeMethod)
+			.AddMembers(serializeMethods.SerializeWithoutExtensionsMethod);
+
+		if (serializeMethods.SerializeWithExtensionsMethod is not null)
+		{
+			recordDeclaration = recordDeclaration.AddMembers(serializeMethods.SerializeWithExtensionsMethod);
+		}
+
+		recordDeclaration = recordDeclaration.AddBaseListTypes(
+			SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName("IMavlinkMessageSerializerWithoutExtensions"))
+		);
+		if (serializeMethods.SerializeWithExtensionsMethod is not null)
+		{
+			recordDeclaration = recordDeclaration.AddBaseListTypes(
+				SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName("IMavlinkMessageSerializerWithExtensions"))
+			);
+		}
+
+		recordDeclaration = recordDeclaration.AddObsoleteAttribute(message.Deprecated?.ToString());
 
 		return new GeneratedMavlinkMessage(@namespace, normalizedName, generatedFields, recordDeclaration, message);
 	}
@@ -219,14 +246,14 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 			.AddAttributeLists(
 				SyntaxFactory.AttributeList(
 					SyntaxFactory.SingletonSeparatedList(
-						SyntaxFactory.Attribute(SyntaxFactory.ParseName(nameof(MavlinkTypes.MavlinkIdentifiedTypeAttribute)[0..^9]))
+						SyntaxFactory.Attribute(SyntaxFactory.ParseName(nameof(MavlinkTypes.MavlinkIdentifiedTypeAttribute).GetAttributeNameWithoutPostfix()))
 						.WithArgumentList(
 							SyntaxFactory.AttributeArgumentList(
-								SyntaxFactory.SeparatedList(new[]
-								{
+								SyntaxFactory.SeparatedList(
+								[
 									SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(id))),
 									SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(originalName)))
-								})
+								])
 							)
 						)
 					)

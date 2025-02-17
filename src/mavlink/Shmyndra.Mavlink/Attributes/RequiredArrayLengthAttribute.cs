@@ -9,7 +9,7 @@ public class RequiredArrayLengthAttribute : ValidationAttribute
 		_length = length;
 	}
 
-	protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+	protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
 	{
 		if (value is Array array && array.Length == _length)
 		{

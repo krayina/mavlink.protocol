@@ -210,7 +210,11 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 			.AddAttributeLists(
 				SyntaxFactory.AttributeList(
 					SyntaxFactory.SingletonSeparatedList(
-						SyntaxFactory.Attribute(SyntaxFactory.ParseName(nameof(MavlinkTypes.MavlinkTypeAttribute)[0..^9]))
+						SyntaxFactory.Attribute(
+							SyntaxFactory.ParseName(nameof(MavlinkTypes.MavlinkTypeAttribute)
+								.GetAttributeNameWithoutPostfix()
+							)
+						)
 						.WithArgumentList(
 							SyntaxFactory.AttributeArgumentList(
 								SyntaxFactory.SeparatedList(new[]
