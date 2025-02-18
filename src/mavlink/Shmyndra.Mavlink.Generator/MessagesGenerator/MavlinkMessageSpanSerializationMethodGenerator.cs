@@ -38,8 +38,8 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 		methodBody.AppendLine("Span<byte> finalSpan = buffer.AsSpan();");
 
 		int currentOffset = 0;
-		var sortedFields = GetSortedFields(fields).requiredFields
-			.Concat(GetSortedFields(fields).arrayFields)
+		var sortedFields = fields.GetSortedFields().requiredFields
+			.Concat(fields.GetSortedFields().arrayFields)
 			.ToList();
 
 		currentOffset = AppendFields(methodBody, sortedFields, currentOffset, isExtension: false);
@@ -59,8 +59,8 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 		methodBody.AppendLine("Span<byte> finalSpan = buffer.AsSpan();");
 
 		int currentOffset = 0;
-		var sortedFields = GetSortedFields(fields).requiredFields
-			.Concat(GetSortedFields(fields).arrayFields)
+		var sortedFields = fields.GetSortedFields().requiredFields
+			.Concat(fields.GetSortedFields().arrayFields)
 			.ToList();
 		currentOffset = AppendFields(methodBody, sortedFields, currentOffset, isExtension: false);
 

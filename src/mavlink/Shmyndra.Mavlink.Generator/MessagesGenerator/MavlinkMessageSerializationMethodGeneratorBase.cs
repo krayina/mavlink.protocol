@@ -67,39 +67,4 @@ public class TemporaryClass
 						 .First(m => m.Identifier.Text == methodName);
 		return method;
 	}
-
-	/// <summary>
-	/// Gets the sorted required fields and array fields (only required ones) from the provided collection.
-	/// </summary>
-	/// <param name="fields">An immutable array of generated message fields.</param>
-	/// <returns>
-	/// A tuple with two lists:
-	/// <list type="bullet">
-	/// <item><description>requiredFields</description></item>
-	/// <item><description>arrayFields</description></item>
-	/// </list>
-	/// </returns>
-	protected (List<GeneratedMavlinkMessageField> requiredFields, List<GeneratedMavlinkMessageField> arrayFields)
-		GetSortedFields(ImmutableArray<GeneratedMavlinkMessageField> fields)
-	{
-		var requiredFields = fields
-			.Where(f => f.IsRequired && !(f.Type is GeneratedMavlinkMessageFieldArrayType ||
-										  f.Type is GeneratedMavlinkMessageFieldArrayEnumType))
-			.ToList();
-
-		// Sort required fields by type size (largest to smallest) for proper alignment.
-		requiredFields.Sort((field1, field2) =>
-		{
-			var size1 = Utilities.GetDotNetTypeSize(((GeneratedMavlinkMessageFieldType)field1.Type).ConvertedType);
-			var size2 = Utilities.GetDotNetTypeSize(((GeneratedMavlinkMessageFieldType)field2.Type).ConvertedType);
-			return size2.CompareTo(size1);
-		});
-
-		var arrayFields = fields
-			.Where(f => f.IsRequired && (f.Type is GeneratedMavlinkMessageFieldArrayType ||
-										 f.Type is GeneratedMavlinkMessageFieldArrayEnumType))
-			.ToList();
-
-		return (requiredFields, arrayFields);
-	}
 }

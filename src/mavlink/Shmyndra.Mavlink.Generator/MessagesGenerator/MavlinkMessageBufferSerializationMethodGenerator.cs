@@ -49,7 +49,7 @@ public class MavlinkMessageBufferSerializationMethodGenerator : MavlinkMessageSe
 		methodBody.AppendLine($"var buffer = new byte[{minSize}];");
 
 		int currentOffset = 0;
-		var (requiredFields, arrayFields) = GetSortedFields(fields);
+		var (requiredFields, arrayFields) = fields.GetSortedFields();
 		var sortedFields = requiredFields.Concat(arrayFields).ToList();
 
 		// Serialize each required field into the buffer.
@@ -93,7 +93,7 @@ public class MavlinkMessageBufferSerializationMethodGenerator : MavlinkMessageSe
 		methodBody.AppendLine($"var buffer = new byte[{totalSize}];");
 
 		int currentOffset = 0;
-		var (requiredFields, arrayFields) = GetSortedFields(fields);
+		var (requiredFields, arrayFields) = fields.GetSortedFields();
 		var sortedFields = requiredFields.Concat(arrayFields).ToList();
 		foreach (var field in sortedFields)
 		{
