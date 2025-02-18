@@ -19,6 +19,7 @@ public abstract class MavlinkMessageDeserializationMethodGeneratorBase
 	/// The fully-qualified name of the ImmutableArray.CreateRange method used for creating immutable arrays.
 	/// </summary>
 	protected const string CreateRangeWithNamespace = "System.Collections.Immutable.ImmutableArray.CreateRange";
+	protected const string DeserializeParameterName = "payload";
 
 	/// <summary>
 	/// Creates a deserialization method for a Mavlink message.
