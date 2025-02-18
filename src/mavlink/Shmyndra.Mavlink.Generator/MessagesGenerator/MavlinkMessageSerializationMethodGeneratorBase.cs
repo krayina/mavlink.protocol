@@ -41,16 +41,6 @@ public abstract class MavlinkMessageSerializationMethodGeneratorBase
 	internal abstract MethodDeclarationSyntax CreateSerializeWithExtensionsMethodInternal(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields);
 
 	/// <summary>
-	/// Escapes reserved C# keywords by prefixing them with '@' if necessary.
-	/// </summary>
-	/// <param name="name">The identifier name to check.</param>
-	/// <returns>The escaped identifier if it is a reserved keyword; otherwise, the original name.</returns>
-	protected string EscapeReservedKeyword(string name)
-	{
-		return SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None ? "@" + name : name;
-	}
-
-	/// <summary>
 	/// Wraps the generated method body into a temporary class in order to produce a <see cref="MethodDeclarationSyntax"/>.
 	/// </summary>
 	/// <param name="methodName">The name of the generated method.</param>

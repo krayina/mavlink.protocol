@@ -7,6 +7,16 @@ namespace Shmyndra.Mavlink.Generator;
 
 internal static class Utilities
 {
+	/// <summary>
+	/// Escapes reserved C# keywords by prefixing them with '@' if necessary.
+	/// </summary>
+	/// <param name="name">The identifier name to check.</param>
+	/// <returns>The escaped identifier if it is a reserved keyword; otherwise, the original name.</returns>
+	public static string EscapeReservedKeyword(string name)
+	{
+		return SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None ? "@" + name : name;
+	}
+
 	public static string ToCamelCase(string input)
 	{
 		if (string.IsNullOrEmpty(input))

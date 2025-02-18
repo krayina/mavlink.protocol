@@ -84,7 +84,7 @@ public class MavlinkMessageSpanSerializationMethodGenerator : MavlinkMessageSeri
 
 	private void AppendFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, int offset, bool isExtension)
 	{
-		var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
+		var fieldPropertyName = Utilities.EscapeReservedKeyword(field.GeneratedName);
 
 		if (field.Type is GeneratedMavlinkMessageFieldArrayType arrayType)
 		{
