@@ -73,4 +73,14 @@ public class TemporaryClass
 						  .OfType<MethodDeclarationSyntax>()
 						  .First(m => m.Identifier.Text == methodName);
 	}
+
+	protected string GetVariableName(string generatedName)
+	{
+		var lower = char.ToLowerInvariant(generatedName[0]) + generatedName.Substring(1);
+		if (lower == DeserializeParameterName)
+		{
+			return "_" + lower;
+		}
+		return Utilities.EscapeReservedKeyword(lower);
+	}
 }

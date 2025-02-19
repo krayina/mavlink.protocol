@@ -362,16 +362,6 @@ if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}E
 		};
 	}
 
-	private string GetVariableName(string generatedName)
-	{
-		var lower = char.ToLowerInvariant(generatedName[0]) + generatedName.Substring(1);
-		if (lower == DeserializeParameterName)
-		{
-			return "_" + lower;
-		}
-		return Utilities.EscapeReservedKeyword(lower);
-	}
-
 	private static string GetCombinedTypeForTotalBits(int totalBits)
 	{
 		if (totalBits <= 8)
