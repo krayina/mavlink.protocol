@@ -3,7 +3,7 @@ using System.Text;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shmyndra.Mavlink.Generator.Data;
 
-namespace Shmyndra.Mavlink.Generator.MessagesGenerator;
+namespace Shmyndra.Mavlink.Generator;
 
 public class MavlinkMessageSpanDeserializationMethodGenerator : MavlinkMessageDeserializationMethodGeneratorBase
 {
