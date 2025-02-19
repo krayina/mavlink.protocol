@@ -85,14 +85,18 @@ ReadOnlySpan<byte> span = local;");
 		var assignments = string.Join(",\n", fields.Select(field =>
 		{
 			var varName = GetVariableName(field.GeneratedName);
-
-			if (field.Type is GeneratedMavlinkMessageFieldEnumType)
+			if (field.Type is GeneratedMavlinkMessageFieldEnumType enumField)
 			{
-				var enumType = (GeneratedMavlinkMessageFieldEnumType)field.Type;
-				string enumTypeName = GetQualifiedEnumTypeName(enumType, currentNamespace);
-				return $"{Utilities.EscapeReservedKeyword(field.GeneratedName)} = {varName}Enum";
+				if (field.Display == MavlinkMessageFieldDisplay.Bitmask)
+				{
+					return $"{Utilities.EscapeReservedKeyword(field.GeneratedName)} = {varName}";
+				}
+				else
+				{
+					string enumTypeName = GetQualifiedEnumTypeName(enumField, currentNamespace);
+					return $"{Utilities.EscapeReservedKeyword(field.GeneratedName)} = {varName}Enum";
+				}
 			}
-
 			return $"{Utilities.EscapeReservedKeyword(field.GeneratedName)} = {varName}";
 		}));
 		sb.AppendLine($@"
@@ -170,26 +174,45 @@ return new {messageName}
 		var enumType = (GeneratedMavlinkMessageFieldEnumType)field.Type;
 		string enumTypeName = GetQualifiedEnumTypeName(enumType, currentNamespace);
 		int size = Utilities.GetDotNetTypeSize(enumType.ConvertedType);
-		string valueExpression;
 
-		if (enumType.ConvertedType == "byte" || enumType.ConvertedType == "sbyte")
+		if (field.Display == MavlinkMessageFieldDisplay.Bitmask)
 		{
-			valueExpression = $"span[{offset}]";
+			int totalBits = size * 8;
+			string combinedType = GetCombinedTypeForTotalBits(totalBits);
+
+			string valueExpression = (enumType.ConvertedType == "byte" || enumType.ConvertedType == "sbyte")
+				? $"span[{offset}]"
+				: $"BinaryPrimitives.{GetBinaryPrimitivesMethod(enumType.ConvertedType)}(span.Slice({offset}, {size}))";
+
+			sb.AppendLine($@"
+var {varName}Value = {valueExpression};
+{combinedType} combined = ({combinedType}){varName}Value;
+var temp{varName} = new List<{enumTypeName}>();
+for (int bit_{varName} = 0; bit_{varName} < {totalBits}; bit_{varName}++)
+{{
+    if ((combined & (({combinedType})1 << bit_{varName})) != 0)
+    {{
+        temp{varName}.Add(({enumTypeName})(({combinedType})1 << bit_{varName}));
+    }}
+}}
+var {varName} = ImmutableArray.CreateRange(temp{varName});
+");
+			offset += size;
 		}
 		else
 		{
-			string bpMethod = GetBinaryPrimitivesMethod(enumType.ConvertedType);
-			valueExpression = $"BinaryPrimitives.{bpMethod}(span.Slice({offset}, {size}))";
-		}
+			string valueExpression = (enumType.ConvertedType == "byte" || enumType.ConvertedType == "sbyte")
+				? $"span[{offset}]"
+				: $"BinaryPrimitives.{GetBinaryPrimitivesMethod(enumType.ConvertedType)}(span.Slice({offset}, {size}))";
 
-		sb.AppendLine($@"
+			sb.AppendLine($@"
 var {varName}Value = {valueExpression};
 if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}Enum))
 {{
     throw new InvalidDataException($""Invalid enum value {{ {varName}Value }} for {enumTypeName}"");
 }}");
-
-		offset += size;
+			offset += size;
+		}
 	}
 
 	private void AppendArrayFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageFieldArrayType arrayType, ref int offset, string varName)
