@@ -207,33 +207,42 @@ if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}E
 		var arrayEnumType = (GeneratedMavlinkMessageFieldArrayEnumType)field.Type;
 		int elementSize = Utilities.GetDotNetTypeSize(arrayEnumType.ConvertedType);
 		int arrayByteLength = arrayEnumType.ArrayLength * elementSize;
+		const int BitsPerByte = 8;
+		int shift = elementSize * BitsPerByte;
+		int totalBits = arrayEnumType.ArrayLength * elementSize * BitsPerByte;
+		string combinedType = GetCombinedTypeForTotalBits(totalBits);
 		string enumTypeName = arrayEnumType.GeneratedEnum.GeneratedName;
 
 		if (field.Display == MavlinkMessageFieldDisplay.Bitmask)
 		{
-			sb.AppendLine($"ulong combined = 0;");
+			sb.AppendLine($"{combinedType} combined = 0;");
 			sb.AppendLine($"for (int idx_{varName} = 0; idx_{varName} < {arrayEnumType.ArrayLength}; idx_{varName}++)");
 			sb.AppendLine("{");
 			sb.AppendLine($"    int elementOffset = {offset} + idx_{varName} * {elementSize};");
 			if (arrayEnumType.ConvertedType == "byte")
-				sb.AppendLine($"    combined |= ((ulong)span[elementOffset]) << (idx_{varName} * 8);");
+			{
+				sb.AppendLine($"    combined |= (({combinedType})span[elementOffset]) << (idx_{varName} * {BitsPerByte});");
+			}
 			else if (arrayEnumType.ConvertedType == "sbyte")
-				sb.AppendLine($"    combined |= ((ulong)(byte)span[elementOffset]) << (idx_{varName} * 8);");
+			{
+				sb.AppendLine($"    combined |= (({combinedType})(byte)span[elementOffset]) << (idx_{varName} * {BitsPerByte});");
+			}
 			else if (arrayEnumType.ConvertedType == "char")
-				sb.AppendLine($"    combined |= ((ulong)BinaryPrimitives.ReadUInt16LittleEndian(span.Slice(elementOffset, 2))) << (idx_{varName} * 16);");
+			{
+				sb.AppendLine($"    combined |= (({combinedType})BinaryPrimitives.ReadUInt16LittleEndian(span.Slice(elementOffset, {elementSize}))) << (idx_{varName} * {shift});");
+			}
 			else
 			{
 				string bpMethod = GetBinaryPrimitivesMethod(arrayEnumType.ConvertedType);
-				int shift = elementSize * 8;
-				sb.AppendLine($"    combined |= ((ulong)BinaryPrimitives.{bpMethod}(span.Slice(elementOffset, {elementSize}))) << (idx_{varName} * {shift});");
+				sb.AppendLine($"    combined |= (({combinedType})BinaryPrimitives.{bpMethod}(span.Slice(elementOffset, {elementSize}))) << (idx_{varName} * {shift});");
 			}
 			sb.AppendLine("}");
 			sb.AppendLine($"var temp{varName} = new List<{enumTypeName}>();");
-			sb.AppendLine($"for (int bit_{varName} = 0; bit_{varName} < {arrayEnumType.ArrayLength * elementSize * 8}; bit_{varName}++)");
+			sb.AppendLine($"for (int bit_{varName} = 0; bit_{varName} < {totalBits}; bit_{varName}++)");
 			sb.AppendLine("{");
-			sb.AppendLine($"    if ((combined & (1UL << bit_{varName})) != 0)");
+			sb.AppendLine($"    if ((combined & (({combinedType})1 << bit_{varName})) != 0)");
 			sb.AppendLine("    {");
-			sb.AppendLine($"        temp{varName}.Add(({enumTypeName})(1UL << bit_{varName}));");
+			sb.AppendLine($"        temp{varName}.Add(({enumTypeName})(({combinedType})1 << bit_{varName}));");
 			sb.AppendLine("    }");
 			sb.AppendLine("}");
 			sb.AppendLine($"var {varName} = ImmutableArray.CreateRange(temp{varName});");
@@ -338,5 +347,25 @@ if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}E
 			return "_" + lower;
 		}
 		return Utilities.EscapeReservedKeyword(lower);
+	}
+
+	private static string GetCombinedTypeForTotalBits(int totalBits)
+	{
+		if (totalBits <= 8)
+		{
+			return "byte";
+		}
+		else if (totalBits <= 16)
+		{
+			return "ushort";
+		}
+		else if (totalBits <= 32)
+		{
+			return "uint";
+		}
+		else
+		{
+			return "ulong";
+		}
 	}
 }
