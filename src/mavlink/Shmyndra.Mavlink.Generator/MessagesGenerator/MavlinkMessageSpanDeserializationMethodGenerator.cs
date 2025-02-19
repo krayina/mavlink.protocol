@@ -262,14 +262,11 @@ if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}E
 		{
 			sb.AppendLine($"        temp{varName}[i_{varName}] = (sbyte)span[elementOffset];");
 		}
-		else if (convertedType == "char")
-		{
-			sb.AppendLine($"        temp{varName}[i_{varName}] = (char)BinaryPrimitives.ReadUInt16LittleEndian(span.Slice(elementOffset, 2));");
-		}
 		else
 		{
 			string bpMethod = GetBinaryPrimitivesMethod(convertedType);
-			sb.AppendLine($"        temp{varName}[i_{varName}] = BinaryPrimitives.{bpMethod}(span.Slice(elementOffset, {Utilities.GetDotNetTypeSize(convertedType)}));");
+			string cast = convertedType == "char" ? "(char)" : "";
+			sb.AppendLine($"        temp{varName}[i_{varName}] = {cast}BinaryPrimitives.{bpMethod}(span.Slice(elementOffset, {Utilities.GetDotNetTypeSize(convertedType)}));");
 		}
 		sb.AppendLine("    }");
 		return sb.ToString();
@@ -292,14 +289,11 @@ if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}E
 		{
 			sb.AppendLine($"        var value = (sbyte)span[elementOffset];");
 		}
-		else if (convertedType == "char")
-		{
-			sb.AppendLine($"        var value = BinaryPrimitives.ReadUInt16LittleEndian(span.Slice(elementOffset, 2));");
-		}
 		else
 		{
 			string bpMethod = GetBinaryPrimitivesMethod(convertedType);
-			sb.AppendLine($"        var value = BinaryPrimitives.{bpMethod}(span.Slice(elementOffset, {size}));");
+			string cast = convertedType == "char" ? "(char)" : "";
+			sb.AppendLine($"        var value = {cast}BinaryPrimitives.{bpMethod}(span.Slice(elementOffset, {size}));");
 		}
 
 		sb.AppendLine($@"
@@ -327,6 +321,7 @@ if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}E
 			"uint" => "ReadUInt32LittleEndian",
 			"short" => "ReadInt16LittleEndian",
 			"ushort" => "ReadUInt16LittleEndian",
+			"char" => "ReadUInt16LittleEndian",
 			"long" => "ReadInt64LittleEndian",
 			"ulong" => "ReadUInt64LittleEndian",
 			"float" => "ReadSingleLittleEndian",
