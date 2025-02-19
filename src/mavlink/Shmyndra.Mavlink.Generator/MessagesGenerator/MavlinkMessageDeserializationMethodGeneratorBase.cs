@@ -83,4 +83,24 @@ public class TemporaryClass
 		}
 		return Utilities.EscapeReservedKeyword(lower);
 	}
+
+	protected string GetCombinedTypeForTotalBits(int totalBits)
+	{
+		if (totalBits <= 8)
+		{
+			return "byte";
+		}
+		else if (totalBits <= 16)
+		{
+			return "ushort";
+		}
+		else if (totalBits <= 32)
+		{
+			return "uint";
+		}
+		else
+		{
+			return "ulong";
+		}
+	}
 }

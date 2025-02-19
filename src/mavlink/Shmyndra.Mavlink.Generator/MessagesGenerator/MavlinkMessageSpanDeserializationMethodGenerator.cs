@@ -361,24 +361,4 @@ if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}E
 			_ => throw new NotSupportedException($"Unsupported type: {typeName}")
 		};
 	}
-
-	private static string GetCombinedTypeForTotalBits(int totalBits)
-	{
-		if (totalBits <= 8)
-		{
-			return "byte";
-		}
-		else if (totalBits <= 16)
-		{
-			return "ushort";
-		}
-		else if (totalBits <= 32)
-		{
-			return "uint";
-		}
-		else
-		{
-			return "ulong";
-		}
-	}
 }
