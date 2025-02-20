@@ -1,60 +1,10 @@
-﻿using System.Collections.Immutable;
-using System.Text;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using System.Text;
 
 namespace Shmyndra.Mavlink.Generator;
 
 public class MavlinkMessageSpanDeserializationMethodGenerator : MavlinkMessageDeserializationMethodGeneratorBase
 {
-	internal override MethodDeclarationSyntax CreateDeserializeWithoutExtensionsMethodInternal(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
-	{
-		var methodBody = new StringBuilder();
-		int minSize = fields.CalculateMinSize();
-		AppendMethodPrologue(methodBody, messageName, minSize);
-		int offset = 0;
-
-		var (requiredFields, arrayFields) = fields.GetSortedFields();
-
-		foreach (var field in requiredFields)
-		{
-			AppendFieldDeserialization(methodBody, field, ref offset, @namespace);
-		}
-
-		foreach (var field in arrayFields)
-		{
-			AppendFieldDeserialization(methodBody, field, ref offset, @namespace);
-		}
-
-		AppendAssignments(methodBody, messageName, fields, @namespace);
-		return WrapMethod(DeserializeWithoutExtensionsMethodName, messageName, methodBody.ToString());
-	}
-
-	internal override MethodDeclarationSyntax CreateDeserializeWithExtensionsMethodInternal(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
-	{
-		var methodBody = new StringBuilder();
-		int finalSize = fields.CalculateFinalSize();
-		AppendMethodPrologue(methodBody, messageName, finalSize);
-		int offset = 0;
-
-		var (requiredFields, arrayFields) = fields.GetSortedFields();
-
-		foreach (var field in requiredFields)
-		{
-			AppendFieldDeserialization(methodBody, field, ref offset, @namespace);
-		}
-
-		foreach (var field in arrayFields)
-		{
-			AppendFieldDeserialization(methodBody, field, ref offset, @namespace);
-		}
-
-		HandleOptionalFields(methodBody, fields, ref offset, @namespace);
-
-		AppendAssignments(methodBody, messageName, fields, @namespace);
-		return WrapMethod(DeserializeWithExtensionsMethodName, messageName, methodBody.ToString());
-	}
-
-	private void AppendMethodPrologue(StringBuilder sb, string messageName, int minSize)
+	protected override void AppendMethodPrologue(StringBuilder sb, string messageName, int minSize)
 	{
 		sb.AppendLine($@"
 if ({DeserializeParameterName}.Length == 0)

@@ -20,16 +20,8 @@ namespace Shmyndra.Mavlink.Generator;
 /// </remarks>
 public abstract class MavlinkMessageDeserializationMethodGeneratorBase
 {
-	/// <summary>
-	/// The fully-qualified name of the ImmutableArray.CreateRange method used for creating immutable arrays.
-	/// </summary>
 	protected const string CreateRangeWithNamespace = "System.Collections.Immutable.ImmutableArray.CreateRange";
-
-	/// <summary>
-	/// The name of the parameter that represents the payload for deserialization.
-	/// </summary>
 	protected const string DeserializeParameterName = "payload";
-
 	protected const string DeserializeWithExtensionsMethodName = "DeserializeWithExtensions";
 	protected const string DeserializeWithoutExtensionsMethodName = "DeserializeWithoutExtensions";
 
@@ -43,7 +35,7 @@ public abstract class MavlinkMessageDeserializationMethodGeneratorBase
 	/// A <see cref="GeneratedMavlinkMessageDeserializeMethod"/> containing the deserialization methods for both 
 	/// messages with and without optional extension fields.
 	/// </returns>
-	public virtual GeneratedMavlinkMessageDeserializeMethod CreateDeserializeMethod(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
+	public GeneratedMavlinkMessageDeserializeMethod CreateDeserializeMethod(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
 		MethodDeclarationSyntax deserializeWithoutExtensionsMethod = CreateDeserializeWithoutExtensionsMethodInternal(@namespace, messageName, fields);
 		MethodDeclarationSyntax? deserializeWithExtensionsMethod = null;
@@ -65,7 +57,18 @@ public abstract class MavlinkMessageDeserializationMethodGeneratorBase
 	/// <returns>
 	/// A <see cref="MethodDeclarationSyntax"/> representing the generated DeserializeWithoutExtensions method.
 	/// </returns>
-	internal abstract MethodDeclarationSyntax CreateDeserializeWithoutExtensionsMethodInternal(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields);
+	internal MethodDeclarationSyntax CreateDeserializeWithoutExtensionsMethodInternal(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
+	{
+		var methodBody = new StringBuilder();
+		int minSize = fields.CalculateMinSize();
+		int offset = 0;
+		var (requiredFields, arrayFields) = fields.GetSortedFields();
+
+		AppendMethodPrologue(methodBody, messageName, minSize);
+		AppendNonExtensionFields(methodBody, fields, ref offset, @namespace);
+		AppendAssignments(methodBody, messageName, fields, @namespace);
+		return WrapMethod(DeserializeWithoutExtensionsMethodName, messageName, methodBody.ToString());
+	}
 
 	/// <summary>
 	/// Generates the DeserializeWithExtensions method for messages with optional extension fields.
@@ -76,7 +79,30 @@ public abstract class MavlinkMessageDeserializationMethodGeneratorBase
 	/// <returns>
 	/// A <see cref="MethodDeclarationSyntax"/> representing the generated DeserializeWithExtensions method.
 	/// </returns>
-	internal abstract MethodDeclarationSyntax CreateDeserializeWithExtensionsMethodInternal(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields);
+	internal MethodDeclarationSyntax CreateDeserializeWithExtensionsMethodInternal(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
+	{
+		var methodBody = new StringBuilder();
+		int finalSize = fields.CalculateFinalSize();
+		int offset = 0;
+		var (requiredFields, arrayFields) = fields.GetSortedFields();
+
+		AppendMethodPrologue(methodBody, messageName, finalSize);
+		AppendNonExtensionFields(methodBody, fields, ref offset, @namespace);
+		AppendExtensionFields(methodBody, fields, ref offset, @namespace);
+		AppendAssignments(methodBody, messageName, fields, @namespace);
+		return WrapMethod(DeserializeWithExtensionsMethodName, messageName, methodBody.ToString());
+	}
+
+	/// <summary>
+	/// Appends the prologue for deserialization to the provided StringBuilder.
+	/// This prologue is responsible for checking if the payload is empty or too short,
+	/// and padding the payload if necessary.
+	/// Derived classes must implement this method to provide type-specific prologue logic.
+	/// </summary>
+	/// <param name="sb">The StringBuilder to which the prologue code is appended.</param>
+	/// <param name="messageName">The name of the generated message type (used when the payload is empty).</param>
+	/// <param name="requiredSize">The minimum required size of the payload.</param>
+	protected abstract void AppendMethodPrologue(StringBuilder sb, string messageName, int requiredSize);
 
 	/// <summary>
 	/// Appends the deserialization logic for an array field to the specified StringBuilder.
@@ -115,6 +141,33 @@ public abstract class MavlinkMessageDeserializationMethodGeneratorBase
 	/// <param name="offset">The current byte offset in the payload.</param>
 	/// <param name="varName">The variable name used for the field in the generated code.</param>
 	protected abstract void AppendSimpleFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageFieldType simpleType, ref int offset, string varName);
+
+	/// <summary>
+	/// Appends deserialization logic for non-extension fields to the specified <see cref="StringBuilder"/>.
+	/// This method processes both required and array fields by iterating through them and invoking
+	/// <see cref="AppendFieldDeserialization"/> for each field, updating the byte offset accordingly.
+	/// </summary>
+	/// <param name="sb">The <see cref="StringBuilder"/> to which the deserialization code will be appended.</param>
+	/// <param name="fields">An immutable array of <see cref="GeneratedMavlinkMessageField"/> objects representing the message fields.</param>
+	/// <param name="offset">
+	/// The current byte offset in the payload, which is updated as each field's deserialization code is appended.
+	/// </param>
+	/// <param name="currentNamespace">
+	/// The namespace of the generated message, used to qualify type names during deserialization.
+	/// </param>
+	protected void AppendNonExtensionFields(StringBuilder sb, ImmutableArray<GeneratedMavlinkMessageField> fields, ref int offset, string currentNamespace)
+	{
+		var (requiredFields, arrayFields) = fields.GetSortedFields();
+
+		foreach (var field in requiredFields)
+		{
+			AppendFieldDeserialization(sb, field, ref offset, currentNamespace);
+		}
+		foreach (var field in arrayFields)
+		{
+			AppendFieldDeserialization(sb, field, ref offset, currentNamespace);
+		}
+	}
 
 	/// <summary>
 	/// Appends the assignment of deserialized values to the properties of the generated message type.
@@ -186,7 +239,7 @@ return new {messageName}
 	/// <param name="fields">An immutable array of fields representing the Mavlink message.</param>
 	/// <param name="offset">The current byte offset in the payload.</param>
 	/// <param name="namespace">The current namespace of the generated message.</param>
-	protected void HandleOptionalFields(StringBuilder sb, ImmutableArray<GeneratedMavlinkMessageField> fields, ref int offset, string @namespace)
+	protected void AppendExtensionFields(StringBuilder sb, ImmutableArray<GeneratedMavlinkMessageField> fields, ref int offset, string @namespace)
 	{
 		foreach (var field in fields.Where(f => !f.IsRequired))
 		{
