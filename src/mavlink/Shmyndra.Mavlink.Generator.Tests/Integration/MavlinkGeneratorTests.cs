@@ -14,7 +14,10 @@ public class MavlinkGeneratorTests
 		IMavlinkParser mavlinkParser = new MavlinkXmlParser();
 		IMavlinkFilesTreeBuilder filesTreeBuilder = new MavlinkFilesTreeBuilder(mavlinkParser);
 		IMavlinkEnumGenerator enumGenerator = new MavlinkEnumGenerator();
-		IMavlinkMessageGenerator messageGenerator = new MavlinkMessageGenerator();
+		IMavlinkMessageGenerator messageGenerator = new MavlinkMessageGenerator(
+			new MavlinkMessageBufferDeserializationMethodGenerator(),
+			new MavlinkMessageSpanSerializationMethodGenerator()
+		);
 		IMavlinkSpecificationGenerator specificationGenerator = new MavlinkSpecificationGenerator();
 
 		var generator = new MavlinkGenerator(filesTreeBuilder, enumGenerator, messageGenerator, specificationGenerator);

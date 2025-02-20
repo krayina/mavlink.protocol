@@ -62,11 +62,7 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator, IDisposable
 		{
 			var (compilation, files) = input;
 
-			bool supportsSpan = IsSpanSerializationAvailable(compilation);
-
-			var messageGenerator = supportsSpan
-				? new MavlinkMessageGenerator(new MavlinkMessageSpanSerializationMethodGenerator())
-				: new MavlinkMessageGenerator(new MavlinkMessageBufferSerializationMethodGenerator());
+			var messageGenerator = GetMavlinkMessageGeneratorInstanceWithNetStandardCondition(compilation);
 
 			var generator = new MavlinkGenerator(
 				new MavlinkFilesTreeBuilder(new MavlinkXmlParser()),
@@ -86,6 +82,24 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator, IDisposable
 			var generatedMessages = messagesStorage.GetGeneratedTypes();
 			var generatedMessagesSourceCode = MavlinkMessagesGenerator.GenerateMessageExtensions(generatedMessages);
 			AddSource(spc, MavlinkGeneratorConstants.TypesNamespace, generatedMessagesSourceCode);
+		}
+
+		private MavlinkMessageGenerator GetMavlinkMessageGeneratorInstanceWithNetStandardCondition(Compilation compilation)
+		{
+			bool supportsSpan = IsSpanSerializationAvailable(compilation);
+
+			if (supportsSpan)
+			{
+				return new MavlinkMessageGenerator(
+					new MavlinkMessageSpanDeserializationMethodGenerator(),
+					new MavlinkMessageSpanSerializationMethodGenerator()
+				);
+			}
+
+			return new MavlinkMessageGenerator(
+				new MavlinkMessageBufferDeserializationMethodGenerator(),
+				new MavlinkMessageBufferSerializationMethodGenerator()
+			);
 		}
 
 		private static bool IsSpanSerializationAvailable(Compilation compilation)
