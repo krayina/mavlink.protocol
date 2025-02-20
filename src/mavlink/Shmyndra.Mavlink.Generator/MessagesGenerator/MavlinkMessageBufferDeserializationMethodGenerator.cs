@@ -40,11 +40,11 @@ if ({DeserializeParameterName}.Length < {minSize})
 
 		foreach (var field in requiredFields)
 		{
-			AppendFieldDeserialization(methodBody, field, ref offset, @namespace, isRequired: true);
+			AppendFieldDeserialization(methodBody, field, ref offset, @namespace);
 		}
 		foreach (var field in arrayFields)
 		{
-			AppendFieldDeserialization(methodBody, field, ref offset, @namespace, isRequired: true);
+			AppendFieldDeserialization(methodBody, field, ref offset, @namespace);
 		}
 		AppendAssignments(methodBody, messageName, fields, @namespace);
 		return WrapMethod("DeserializeWithoutExtensions", messageName, methodBody.ToString());
@@ -71,11 +71,11 @@ if ({DeserializeParameterName}.Length < {finalSize})
 
 		foreach (var field in requiredFields)
 		{
-			AppendFieldDeserialization(methodBody, field, ref offset, @namespace, isRequired: true);
+			AppendFieldDeserialization(methodBody, field, ref offset, @namespace);
 		}
 		foreach (var field in arrayFields)
 		{
-			AppendFieldDeserialization(methodBody, field, ref offset, @namespace, isRequired: true);
+			AppendFieldDeserialization(methodBody, field, ref offset, @namespace);
 		}
 		HandleOptionalFields(methodBody, fields, ref offset, @namespace);
 		AppendAssignments(methodBody, messageName, fields, @namespace);
@@ -115,30 +115,30 @@ return new {messageName}
 		{
 			if (ShouldDeserializeField(field))
 			{
-				AppendFieldDeserialization(sb, field, ref offset, @namespace, isRequired: false);
+				AppendFieldDeserialization(sb, field, ref offset, @namespace);
 			}
 		}
 	}
 
-	private void AppendFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string currentNamespace, bool isRequired)
+	private void AppendFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string currentNamespace)
 	{
 		string varName = GetVariableName(field.GeneratedName);
 
 		if (field.Type is GeneratedMavlinkMessageFieldArrayType arrayType)
 		{
-			AppendArrayFieldDeserialization(sb, arrayType, ref offset, varName, field.IsRequired);
+			AppendArrayFieldDeserialization(sb, arrayType, ref offset, varName);
 		}
 		else if (field.Type is GeneratedMavlinkMessageFieldEnumType)
 		{
-			AppendEnumFieldDeserialization(sb, field, ref offset, varName, currentNamespace, isRequired);
+			AppendEnumFieldDeserialization(sb, field, ref offset, varName, currentNamespace);
 		}
 		else if (field.Type is GeneratedMavlinkMessageFieldArrayEnumType)
 		{
-			AppendArrayEnumFieldDeserialization(sb, field, ref offset, varName, currentNamespace, isRequired);
+			AppendArrayEnumFieldDeserialization(sb, field, ref offset, varName, currentNamespace);
 		}
 		else if (field.Type is GeneratedMavlinkMessageFieldType simpleType)
 		{
-			AppendSimpleFieldDeserialization(sb, simpleType, ref offset, varName, isRequired);
+			AppendSimpleFieldDeserialization(sb, simpleType, ref offset, varName);
 		}
 	}
 
@@ -147,51 +147,32 @@ return new {messageName}
 		return field != null && field.GetFieldSize() > 0;
 	}
 
-	private void AppendSimpleFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageFieldType simpleType, ref int offset, string varName, bool isRequired)
+	private void AppendSimpleFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageFieldType simpleType, ref int offset, string varName)
 	{
 		int size = Utilities.GetDotNetTypeSize(simpleType.ConvertedType);
 		string typeName = simpleType.ConvertedType;
-		AppendPrimitiveFieldDeserialization(sb, varName, size, typeName, ref offset, isRequired);
+		AppendPrimitiveFieldDeserialization(sb, varName, size, typeName, ref offset);
 	}
 
-	private void AppendPrimitiveFieldDeserialization(StringBuilder sb, string varName, int size, string typeName, ref int offset, bool isRequired)
+	private void AppendPrimitiveFieldDeserialization(StringBuilder sb, string varName, int size, string typeName, ref int offset)
 	{
-		if (isRequired)
+		if (typeName == "byte")
 		{
-			if (typeName == "byte")
-			{
-				sb.AppendLine($"var {varName} = {DeserializeParameterName}[{offset}];");
-			}
-			else if (typeName == "sbyte")
-			{
-				sb.AppendLine($"var {varName} = (sbyte){DeserializeParameterName}[{offset}];");
-			}
-			else
-			{
-				string bcMethod = GetBitConverterMethod(typeName);
-				sb.AppendLine($"var {varName} = BitConverter.{bcMethod}({DeserializeParameterName}, {offset});");
-			}
+			sb.AppendLine($"var {varName} = {DeserializeParameterName}[{offset}];");
+		}
+		else if (typeName == "sbyte")
+		{
+			sb.AppendLine($"var {varName} = (sbyte){DeserializeParameterName}[{offset}];");
 		}
 		else
 		{
-			if (typeName == "byte")
-			{
-				sb.AppendLine($"var {varName} = {DeserializeParameterName}[{offset}];");
-			}
-			else if (typeName == "sbyte")
-			{
-				sb.AppendLine($"var {varName} = (sbyte){DeserializeParameterName}[{offset}];");
-			}
-			else
-			{
-				string bcMethod = GetBitConverterMethod(typeName);
-				sb.AppendLine($"var {varName} = BitConverter.{bcMethod}({DeserializeParameterName}, {offset});");
-			}
+			string bcMethod = GetBitConverterMethod(typeName);
+			sb.AppendLine($"var {varName} = BitConverter.{bcMethod}({DeserializeParameterName}, {offset});");
 		}
 		offset += size;
 	}
 
-	private void AppendEnumFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string varName, string currentNamespace, bool isRequired)
+	private void AppendEnumFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string varName, string currentNamespace)
 	{
 		var enumType = (GeneratedMavlinkMessageFieldEnumType)field.Type;
 		string enumTypeName = GetQualifiedEnumTypeName(enumType, currentNamespace);
@@ -226,51 +207,28 @@ var {varName} = System.Collections.Immutable.ImmutableArray.CreateRange(temp{var
 		}
 		else
 		{
-			if (isRequired)
+			if (enumType.ConvertedType == "byte" || enumType.ConvertedType == "sbyte")
 			{
-				if (enumType.ConvertedType == "byte" || enumType.ConvertedType == "sbyte")
-				{
-					sb.AppendLine($"var {varName}Value = {DeserializeParameterName}[{offset}];");
-					sb.AppendLine($"if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}Enum))");
-					sb.AppendLine("{");
-					sb.AppendLine($"    throw new InvalidDataException($\"Invalid enum value {{ {varName}Value }} for {enumTypeName}\");");
-					sb.AppendLine("}");
-				}
-				else
-				{
-					string bcMethod = GetBitConverterMethod(enumType.ConvertedType);
-					sb.AppendLine($"var {varName}Value = BitConverter.{bcMethod}({DeserializeParameterName}, {offset});");
-					sb.AppendLine($"if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}Enum))");
-					sb.AppendLine("{");
-					sb.AppendLine($"    throw new InvalidDataException($\"Invalid enum value {{ {varName}Value }} for {enumTypeName}\");");
-					sb.AppendLine("}");
-				}
+				sb.AppendLine($"var {varName}Value = {DeserializeParameterName}[{offset}];");
+				sb.AppendLine($"if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}Enum))");
+				sb.AppendLine("{");
+				sb.AppendLine($"    throw new InvalidDataException($\"Invalid enum value {{ {varName}Value }} for {enumTypeName}\");");
+				sb.AppendLine("}");
 			}
 			else
 			{
-				if (enumType.ConvertedType == "byte" || enumType.ConvertedType == "sbyte")
-				{
-					sb.AppendLine($"var {varName}Value = {DeserializeParameterName}[{offset}];");
-					sb.AppendLine($"if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}Enum))");
-					sb.AppendLine("{");
-					sb.AppendLine($"    throw new InvalidDataException($\"Invalid enum value {{ {varName}Value }} for {enumTypeName}\");");
-					sb.AppendLine("}");
-				}
-				else
-				{
-					string bcMethod = GetBitConverterMethod(enumType.ConvertedType);
-					sb.AppendLine($"var {varName}Value = BitConverter.{bcMethod}({DeserializeParameterName}, {offset});");
-					sb.AppendLine($"if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}Enum))");
-					sb.AppendLine("{");
-					sb.AppendLine($"    throw new InvalidDataException($\"Invalid enum value {{ {varName}Value }} for {enumTypeName}\");");
-					sb.AppendLine("}");
-				}
+				string bcMethod = GetBitConverterMethod(enumType.ConvertedType);
+				sb.AppendLine($"var {varName}Value = BitConverter.{bcMethod}({DeserializeParameterName}, {offset});");
+				sb.AppendLine($"if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}Enum))");
+				sb.AppendLine("{");
+				sb.AppendLine($"    throw new InvalidDataException($\"Invalid enum value {{ {varName}Value }} for {enumTypeName}\");");
+				sb.AppendLine("}");
 			}
 		}
 		offset += size;
 	}
 
-	private void AppendArrayFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageFieldArrayType arrayType, ref int offset, string varName, bool isRequired)
+	private void AppendArrayFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageFieldArrayType arrayType, ref int offset, string varName)
 	{
 		int elementSize = Utilities.GetDotNetTypeSize(arrayType.ConvertedType);
 		int arrayByteLength = arrayType.ArrayLength * elementSize;
@@ -282,7 +240,7 @@ var {varName} = System.Collections.Immutable.ImmutableArray.CreateRange(temp{var
 		offset += arrayByteLength;
 	}
 
-	private void AppendArrayEnumFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string varName, string currentNamespace, bool isRequired)
+	private void AppendArrayEnumFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string varName, string currentNamespace)
 	{
 		var arrayEnumType = (GeneratedMavlinkMessageFieldArrayEnumType)field.Type;
 		int elementSize = Utilities.GetDotNetTypeSize(arrayEnumType.ConvertedType);
