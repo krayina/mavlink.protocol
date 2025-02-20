@@ -1,21 +1,11 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Shmyndra.Mavlink.Generator.Data;
 
 namespace Shmyndra.Mavlink.Generator;
 
 public class MavlinkMessageSpanDeserializationMethodGenerator : MavlinkMessageDeserializationMethodGeneratorBase
 {
-	public override GeneratedMavlinkMessageDeserializeMethod CreateDeserializeMethod(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
-	{
-		var deserializeWithoutExtensionsMethod = CreateDeserializeWithoutExtensionsMethodInternal(@namespace, messageName, fields);
-		var deserializeWithExtensionsMethod = fields.Any(x => !x.IsRequired)
-			? CreateDeserializeWithExtensionsMethodInternal(@namespace, messageName, fields)
-			: null;
-		return new GeneratedMavlinkMessageDeserializeMethod(@namespace, messageName, fields, deserializeWithoutExtensionsMethod, deserializeWithExtensionsMethod);
-	}
-
 	internal override MethodDeclarationSyntax CreateDeserializeWithoutExtensionsMethodInternal(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
 		var methodBody = new StringBuilder();
@@ -36,7 +26,7 @@ public class MavlinkMessageSpanDeserializationMethodGenerator : MavlinkMessageDe
 		}
 
 		AppendAssignments(methodBody, messageName, fields, @namespace);
-		return WrapMethod("DeserializeWithoutExtensions", messageName, methodBody.ToString());
+		return WrapMethod(DeserializeWithoutExtensionsMethodName, messageName, methodBody.ToString());
 	}
 
 	internal override MethodDeclarationSyntax CreateDeserializeWithExtensionsMethodInternal(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
@@ -61,7 +51,7 @@ public class MavlinkMessageSpanDeserializationMethodGenerator : MavlinkMessageDe
 		HandleOptionalFields(methodBody, fields, ref offset, @namespace);
 
 		AppendAssignments(methodBody, messageName, fields, @namespace);
-		return WrapMethod("DeserializeWithExtensions", messageName, methodBody.ToString());
+		return WrapMethod(DeserializeWithExtensionsMethodName, messageName, methodBody.ToString());
 	}
 
 	private void AppendMethodPrologue(StringBuilder sb, string messageName, int minSize)
@@ -80,71 +70,7 @@ if ({DeserializeParameterName}.Length < {minSize})
 ReadOnlySpan<byte> span = local;");
 	}
 
-	private void AppendAssignments(StringBuilder sb, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields, string currentNamespace)
-	{
-		var assignments = string.Join(",\n", fields.Select(field =>
-		{
-			var varName = GetVariableName(field.GeneratedName);
-			if (field.Type is GeneratedMavlinkMessageFieldEnumType enumField)
-			{
-				if (field.Display == MavlinkMessageFieldDisplay.Bitmask)
-				{
-					return $"{Utilities.EscapeReservedKeyword(field.GeneratedName)} = {varName}";
-				}
-				else
-				{
-					string enumTypeName = GetQualifiedEnumTypeName(enumField, currentNamespace);
-					return $"{Utilities.EscapeReservedKeyword(field.GeneratedName)} = {varName}Enum";
-				}
-			}
-			return $"{Utilities.EscapeReservedKeyword(field.GeneratedName)} = {varName}";
-		}));
-		sb.AppendLine($@"
-return new {messageName}
-{{
-    {assignments}
-}};");
-	}
-
-	private void HandleOptionalFields(StringBuilder methodBody, ImmutableArray<GeneratedMavlinkMessageField> fields, ref int offset, string @namespace)
-	{
-		foreach (var field in fields.Where(f => !f.IsRequired))
-		{
-			if (ShouldDeserializeField(field))
-			{
-				AppendFieldDeserialization(methodBody, field, ref offset, @namespace);
-			}
-		}
-	}
-
-	private void AppendFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string currentNamespace)
-	{
-		string varName = GetVariableName(field.GeneratedName);
-
-		if (field.Type is GeneratedMavlinkMessageFieldArrayType arrayType)
-		{
-			AppendArrayFieldDeserialization(sb, arrayType, ref offset, varName);
-		}
-		else if (field.Type is GeneratedMavlinkMessageFieldEnumType)
-		{
-			AppendEnumFieldDeserialization(sb, field, ref offset, varName, currentNamespace);
-		}
-		else if (field.Type is GeneratedMavlinkMessageFieldArrayEnumType)
-		{
-			AppendArrayEnumFieldDeserialization(sb, field, ref offset, varName, currentNamespace);
-		}
-		else if (field.Type is GeneratedMavlinkMessageFieldType simpleType)
-		{
-			AppendSimpleFieldDeserialization(sb, simpleType, ref offset, varName);
-		}
-	}
-
-	private bool ShouldDeserializeField(GeneratedMavlinkMessageField field)
-	{
-		return field != null && field.GetFieldSize() > 0;
-	}
-
-	private void AppendSimpleFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageFieldType simpleType, ref int offset, string varName)
+	protected override void AppendSimpleFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageFieldType simpleType, ref int offset, string varName)
 	{
 		int size = Utilities.GetDotNetTypeSize(simpleType.ConvertedType);
 		string typeName = simpleType.ConvertedType;
@@ -169,7 +95,7 @@ return new {messageName}
 		offset += size;
 	}
 
-	private void AppendEnumFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string varName, string currentNamespace)
+	protected override void AppendEnumFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string varName, string currentNamespace)
 	{
 		var enumType = (GeneratedMavlinkMessageFieldEnumType)field.Type;
 		string enumTypeName = GetQualifiedEnumTypeName(enumType, currentNamespace);
@@ -215,7 +141,7 @@ if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}E
 		}
 	}
 
-	private void AppendArrayFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageFieldArrayType arrayType, ref int offset, string varName)
+	protected override void AppendArrayFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageFieldArrayType arrayType, ref int offset, string varName)
 	{
 		int elementSize = Utilities.GetDotNetTypeSize(arrayType.ConvertedType);
 		int arrayByteLength = arrayType.ArrayLength * elementSize;
@@ -225,7 +151,7 @@ if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}E
 		offset += arrayByteLength;
 	}
 
-	private void AppendArrayEnumFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string varName, string currentNamespace)
+	protected override void AppendArrayEnumFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string varName, string currentNamespace)
 	{
 		var arrayEnumType = (GeneratedMavlinkMessageFieldArrayEnumType)field.Type;
 		int elementSize = Utilities.GetDotNetTypeSize(arrayEnumType.ConvertedType);
@@ -336,13 +262,6 @@ if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}E
         temp{varName}[i_{varName}] = {varName}Enum;");
 		sb.AppendLine("    }");
 		return sb.ToString();
-	}
-
-	private string GetQualifiedEnumTypeName(GeneratedMavlinkMessageFieldEnumType enumType, string currentNamespace)
-	{
-		return enumType.GeneratedEnum.Namespace == currentNamespace
-			? enumType.GeneratedEnum.GeneratedName
-			: $"{enumType.GeneratedEnum.Namespace}.{enumType.GeneratedEnum.GeneratedName}";
 	}
 
 	private string GetBinaryPrimitivesMethod(string typeName)
