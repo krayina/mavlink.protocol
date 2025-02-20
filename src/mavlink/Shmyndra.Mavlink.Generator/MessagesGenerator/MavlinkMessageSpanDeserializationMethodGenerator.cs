@@ -315,23 +315,23 @@ if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}E
 
 		if (convertedType == "byte")
 		{
-			sb.AppendLine($"        var value = span[elementOffset];");
+			sb.AppendLine($"        var {varName}ElementValue = span[elementOffset];");
 		}
 		else if (convertedType == "sbyte")
 		{
-			sb.AppendLine($"        var value = (sbyte)span[elementOffset];");
+			sb.AppendLine($"        var {varName}ElementValue = (sbyte)span[elementOffset];");
 		}
 		else
 		{
 			string bpMethod = GetBinaryPrimitivesMethod(convertedType);
 			string cast = convertedType == "char" ? "(char)" : "";
-			sb.AppendLine($"        var value = {cast}BinaryPrimitives.{bpMethod}(span.Slice(elementOffset, {size}));");
+			sb.AppendLine($"        var {varName}ElementValue = {cast}BinaryPrimitives.{bpMethod}(span.Slice(elementOffset, {size}));");
 		}
 
 		sb.AppendLine($@"
-        if (!Enum.TryParse<{enumTypeName}>(value.ToString(), out var {varName}Enum))
+        if (!Enum.TryParse<{enumTypeName}>({varName}ElementValue.ToString(), out var {varName}Enum))
         {{
-            throw new InvalidDataException($""Invalid enum value {{value}} for {enumTypeName}"");
+            throw new InvalidDataException($""Invalid enum value {{{varName}ElementValue}} for {enumTypeName}"");
         }}
         temp{varName}[i_{varName}] = {varName}Enum;");
 		sb.AppendLine("    }");

@@ -341,26 +341,22 @@ var {varName} = System.Collections.Immutable.ImmutableArray.CreateRange(temp{var
 		sb.AppendLine("    {");
 		if (convertedType == "byte")
 		{
-			sb.AppendLine(
-				$"        var value = {DeserializeParameterName}[{baseOffset} + i_{varName} * {size}];");
+			sb.AppendLine($"        var {varName}ElementValue = {DeserializeParameterName}[{baseOffset} + i_{varName} * {size}];");
 		}
 		else if (convertedType == "sbyte")
 		{
-			sb.AppendLine(
-				$"        var value = (sbyte){DeserializeParameterName}[{baseOffset} + i_{varName} * {size}];");
+			sb.AppendLine($"        var {varName}ElementValue = (sbyte){DeserializeParameterName}[{baseOffset} + i_{varName} * {size}];");
 		}
 		else
 		{
 			string bcMethod = GetBitConverterMethod(convertedType);
 			string cast = convertedType == "char" ? "(char)" : "";
-			sb.AppendLine(
-				$"        var value = {cast}BitConverter.{bcMethod}({DeserializeParameterName}, " +
-				$"{baseOffset} + i_{varName} * {size});");
+			sb.AppendLine($"        var {varName}ElementValue = {cast}BitConverter.{bcMethod}({DeserializeParameterName}, {baseOffset} + i_{varName} * {size});");
 		}
 		sb.AppendLine($@"
-        if (!Enum.TryParse<{enumTypeName}>(value.ToString(), out var {varName}Enum))
+        if (!Enum.TryParse<{enumTypeName}>({varName}ElementValue.ToString(), out var {varName}Enum))
         {{
-            throw new InvalidDataException($""Invalid enum value {{value}} for {enumTypeName}"");
+            throw new InvalidDataException($""Invalid enum value {{{varName}ElementValue}} for {enumTypeName}"");
         }}
         temp{varName}[i_{varName}] = {varName}Enum;");
 		sb.AppendLine("    }");
