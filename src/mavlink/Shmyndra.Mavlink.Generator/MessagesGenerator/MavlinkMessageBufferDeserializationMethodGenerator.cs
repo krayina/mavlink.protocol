@@ -223,7 +223,6 @@ for (int bit_{varName} = 0; bit_{varName} < {totalBits}; bit_{varName}++)
 }}
 var {varName} = System.Collections.Immutable.ImmutableArray.CreateRange(temp{varName});
 ");
-			offset += size;
 		}
 		else
 		{
@@ -232,13 +231,19 @@ var {varName} = System.Collections.Immutable.ImmutableArray.CreateRange(temp{var
 				if (enumType.ConvertedType == "byte" || enumType.ConvertedType == "sbyte")
 				{
 					sb.AppendLine($"var {varName}Value = {DeserializeParameterName}[{offset}];");
-					sb.AppendLine($"var {varName}Enum = ({enumTypeName}){varName}Value;");
+					sb.AppendLine($"if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}Enum))");
+					sb.AppendLine("{");
+					sb.AppendLine($"    throw new InvalidDataException($\"Invalid enum value {{ {varName}Value }} for {enumTypeName}\");");
+					sb.AppendLine("}");
 				}
 				else
 				{
 					string bcMethod = GetBitConverterMethod(enumType.ConvertedType);
 					sb.AppendLine($"var {varName}Value = BitConverter.{bcMethod}({DeserializeParameterName}, {offset});");
-					sb.AppendLine($"var {varName}Enum = ({enumTypeName}){varName}Value;");
+					sb.AppendLine($"if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}Enum))");
+					sb.AppendLine("{");
+					sb.AppendLine($"    throw new InvalidDataException($\"Invalid enum value {{ {varName}Value }} for {enumTypeName}\");");
+					sb.AppendLine("}");
 				}
 			}
 			else
@@ -246,17 +251,23 @@ var {varName} = System.Collections.Immutable.ImmutableArray.CreateRange(temp{var
 				if (enumType.ConvertedType == "byte" || enumType.ConvertedType == "sbyte")
 				{
 					sb.AppendLine($"var {varName}Value = {DeserializeParameterName}[{offset}];");
-					sb.AppendLine($"var {varName} = ({enumTypeName}){varName}Value;");
+					sb.AppendLine($"if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}Enum))");
+					sb.AppendLine("{");
+					sb.AppendLine($"    throw new InvalidDataException($\"Invalid enum value {{ {varName}Value }} for {enumTypeName}\");");
+					sb.AppendLine("}");
 				}
 				else
 				{
 					string bcMethod = GetBitConverterMethod(enumType.ConvertedType);
 					sb.AppendLine($"var {varName}Value = BitConverter.{bcMethod}({DeserializeParameterName}, {offset});");
-					sb.AppendLine($"var {varName} = ({enumTypeName}){varName}Value;");
+					sb.AppendLine($"if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}Enum))");
+					sb.AppendLine("{");
+					sb.AppendLine($"    throw new InvalidDataException($\"Invalid enum value {{ {varName}Value }} for {enumTypeName}\");");
+					sb.AppendLine("}");
 				}
 			}
-			offset += size;
 		}
+		offset += size;
 	}
 
 	private void AppendArrayFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageFieldArrayType arrayType, ref int offset, string varName, bool isRequired)
