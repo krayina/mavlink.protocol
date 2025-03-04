@@ -1,7 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Immutable;
-using System.Text;
-using Shmyndra.Mavlink.Generator.Data;
+﻿using System.Text;
 
 namespace Shmyndra.Mavlink.Generator;
 
@@ -11,202 +8,196 @@ namespace Shmyndra.Mavlink.Generator;
 public class MavlinkMessageBufferSerializationMethodGenerator : MavlinkMessageSerializationMethodGeneratorBase
 {
 	/// <summary>
-	/// Creates a <see cref="GeneratedMavlinkMessageSerializeMethod"/> using the buffer serialization approach.
+	/// Appends the prologue for serialization, initializing the buffer with the required size.
 	/// </summary>
-	/// <param name="namespace">The namespace of the generated message type.</param>
-	/// <param name="messageName">The name of the generated message type.</param>
-	/// <param name="fields">An immutable array of fields representing the Mavlink message.</param>
-	/// <returns>
-	/// A <see cref="GeneratedMavlinkMessageSerializeMethod"/> containing both the SerializeWithoutExtensions and
-	/// SerializeWithExtensions methods for the message.
-	/// </returns>
-	public override GeneratedMavlinkMessageSerializeMethod CreateSerializeMethod(
-		string @namespace,
-		string messageName,
-		ImmutableArray<GeneratedMavlinkMessageField> fields)
+	protected override void AppendMethodPrologue(StringBuilder sb, string messageName, int requiredSize)
 	{
-		var serializeWithoutExtensionsMethod = CreateSerializeWithoutExtensionsMethodInternal(@namespace, messageName, fields);
-		var serializeWithExtensionsMethod = fields.Any(x => !x.IsRequired)
-			? CreateSerializeWithExtensionsMethodInternal(@namespace, messageName, fields)
-			: null;
-
-		return new GeneratedMavlinkMessageSerializeMethod(
-			@namespace,
-			messageName,
-			fields,
-			serializeWithoutExtensionsMethod,
-			serializeWithExtensionsMethod);
+		sb.AppendLine($"var buffer = new byte[{requiredSize}];");
 	}
 
-	internal override MethodDeclarationSyntax CreateSerializeWithoutExtensionsMethodInternal(
-		string @namespace,
-		string messageName,
-		ImmutableArray<GeneratedMavlinkMessageField> fields)
+	/// <summary>
+	/// Appends serialization logic for simple fields (e.g., byte, int, float).
+	/// </summary>
+	protected override void AppendSimpleFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldType simpleType, ref int offset, string varName, bool isRequired)
 	{
-		var methodBody = new StringBuilder();
+		string typeName = simpleType.ConvertedType;
+		int size = Utilities.GetDotNetTypeSize(typeName);
 
-		var minSize = fields.CalculateMinSize();
-		methodBody.AppendLine($"var buffer = new byte[{minSize}];");
-
-		int currentOffset = 0;
-		var (requiredFields, arrayFields) = fields.GetSortedFields();
-		var sortedFields = requiredFields.Concat(arrayFields).ToList();
-
-		// Serialize each required field into the buffer.
-		foreach (var field in sortedFields)
+		if (isRequired)
 		{
-			var fieldPropertyName = Utilities.EscapeReservedKeyword(field.GeneratedName);
-			if (field.Type is GeneratedMavlinkMessageFieldArrayType arrayType)
+			if (typeName == "byte")
 			{
-				methodBody.AppendLine(GenerateArraySerialization(fieldPropertyName, arrayType, currentOffset, true));
+				sb.AppendLine($"buffer[{offset}] = {varName};");
 			}
-			else if (field.Type is GeneratedMavlinkMessageFieldEnumType enumType)
+			else if (typeName == "sbyte")
 			{
-				methodBody.AppendLine(GenerateEnumSerialization(fieldPropertyName, enumType, currentOffset));
-			}
-			else if (field.Type is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType)
-			{
-				methodBody.AppendLine(GenerateArrayEnumSerialization(fieldPropertyName, arrayEnumType, currentOffset, true));
+				sb.AppendLine($"buffer[{offset}] = (byte){varName};");
 			}
 			else
 			{
-				var fieldType = ((GeneratedMavlinkMessageFieldType)field.Type).ConvertedType;
-				methodBody.AppendLine(GenerateSimpleTypeSerialization(fieldPropertyName, fieldType, currentOffset, true));
+				sb.AppendLine($"BitConverter.GetBytes({varName}).CopyTo(buffer, {offset});");
 			}
-			currentOffset += field.GetFieldSize();
 		}
-
-		methodBody.AppendLine("return buffer;");
-		return WrapMethod("SerializeWithoutExtensions", methodBody.ToString());
-	}
-
-	internal override MethodDeclarationSyntax CreateSerializeWithExtensionsMethodInternal(
-		string @namespace,
-		string messageName,
-		ImmutableArray<GeneratedMavlinkMessageField> fields)
-	{
-		var methodBody = new StringBuilder();
-		int baseSize = fields.CalculateMinSize();
-		var extensionFields = fields.Where(f => !f.IsRequired).ToList();
-		int extensionTotalSize = extensionFields.Sum(f => f.GetFieldSize());
-		int totalSize = baseSize + extensionTotalSize;
-		methodBody.AppendLine($"var buffer = new byte[{totalSize}];");
-
-		int currentOffset = 0;
-		var (requiredFields, arrayFields) = fields.GetSortedFields();
-		var sortedFields = requiredFields.Concat(arrayFields).ToList();
-		foreach (var field in sortedFields)
+		else
 		{
-			var fieldPropertyName = Utilities.EscapeReservedKeyword(field.GeneratedName);
-			if (field.Type is GeneratedMavlinkMessageFieldArrayType arrayType)
+			if (typeName == "byte")
 			{
-				methodBody.AppendLine(GenerateArraySerialization(fieldPropertyName, arrayType, currentOffset, true));
+				sb.AppendLine($"buffer[{offset}] = {varName}.HasValue ? {varName}.Value : (byte)0;");
 			}
-			else if (field.Type is GeneratedMavlinkMessageFieldEnumType enumType)
+			else if (typeName == "sbyte")
 			{
-				methodBody.AppendLine(GenerateEnumSerialization(fieldPropertyName, enumType, currentOffset));
-			}
-			else if (field.Type is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType)
-			{
-				methodBody.AppendLine(GenerateArrayEnumSerialization(fieldPropertyName, arrayEnumType, currentOffset, true));
+				sb.AppendLine($"buffer[{offset}] = {varName}.HasValue ? (byte){varName}.Value : (byte)0;");
 			}
 			else
 			{
-				var fieldType = ((GeneratedMavlinkMessageFieldType)field.Type).ConvertedType;
-				methodBody.AppendLine(GenerateSimpleTypeSerialization(fieldPropertyName, fieldType, currentOffset, true));
+				sb.AppendLine($"BitConverter.GetBytes({varName}.HasValue ? {varName}.Value : ({typeName})0).CopyTo(buffer, {offset});");
 			}
-			currentOffset += field.GetFieldSize();
 		}
 
-		int currentLiteralOffset = baseSize;
-		foreach (var field in extensionFields)
+		offset += size;
+	}
+
+	/// <summary>
+	/// Appends serialization logic for enum fields.
+	/// </summary>
+	protected override void AppendEnumFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldEnumType enumType, ref int offset, string varName, string currentNamespace, bool isRequired)
+	{
+		string convertedType = enumType.ConvertedType;
+		int size = Utilities.GetDotNetTypeSize(convertedType);
+
+		if (field.Display == MavlinkMessageFieldDisplay.Bitmask)
 		{
-			var fieldPropertyName = Utilities.EscapeReservedKeyword(field.GeneratedName);
-			int fieldSize = field.GetFieldSize();
-			if (field.Type is GeneratedMavlinkMessageFieldEnumType enumType)
+			int totalBits = size * 8;
+			string combinedType = GetCombinedTypeForTotalBits(totalBits);
+
+			sb.AppendLine($"{combinedType} combined_{varName} = 0;");
+			sb.AppendLine($"for (int i = 0; i < {varName}.Length; i++)");
+			sb.AppendLine("{");
+			sb.AppendLine($"    combined_{varName} |= (({combinedType}){varName}[i]) << (i * {size * 8});");
+			sb.AppendLine("}");
+			sb.AppendLine($"BitConverter.GetBytes(combined_{varName}).CopyTo(buffer, {offset});");
+		}
+		else if (isRequired)
+		{
+			if (size == 1)
 			{
-				string convertedType = enumType.ConvertedType;
-				methodBody.AppendLine($@"BitConverter.GetBytes({fieldPropertyName}.HasValue ? ({convertedType}){fieldPropertyName}.Value : ({convertedType})0)
-    .CopyTo(buffer, {currentLiteralOffset});");
+				sb.AppendLine($"buffer[{offset}] = ({convertedType}){varName};");
 			}
-			else if (field.Type is GeneratedMavlinkMessageFieldArrayType)
+			else
 			{
-				methodBody.AppendLine($@"
-if ({fieldPropertyName}.HasValue && !{fieldPropertyName}.Value.IsDefaultOrEmpty)
+				sb.AppendLine($"BitConverter.GetBytes(({convertedType}){varName}).CopyTo(buffer, {offset});");
+			}
+		}
+		else
+		{
+			if (size == 1)
+			{
+				sb.AppendLine($"buffer[{offset}] = {varName}.HasValue ? ({convertedType}){varName}.Value : ({convertedType})0;");
+			}
+			else
+			{
+				sb.AppendLine($"BitConverter.GetBytes({varName}.HasValue ? ({convertedType}){varName}.Value : ({convertedType})0).CopyTo(buffer, {offset});");
+			}
+		}
+
+		offset += size;
+	}
+
+	/// <summary>
+	/// Appends serialization logic for array fields.
+	/// </summary>
+	protected override void AppendArrayFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldArrayType arrayType, ref int offset, string varName, bool isRequired)
+	{
+		string elementType = arrayType.ConvertedType;
+		int arrayLength = arrayType.ArrayLength * Utilities.GetDotNetTypeSize(elementType);
+
+		if (isRequired)
+		{
+			sb.AppendLine($"Buffer.BlockCopy({varName}.ToArray(), 0, buffer, {offset}, {arrayLength});");
+		}
+		else
+		{
+			sb.AppendLine($@"
+if ({varName}.HasValue && !{varName}.Value.IsDefaultOrEmpty)
 {{
-    Buffer.BlockCopy({fieldPropertyName}.Value.ToArray(), 0, buffer, {currentLiteralOffset}, {fieldSize});
+    Buffer.BlockCopy({varName}.Value.ToArray(), 0, buffer, {offset}, {arrayLength});
 }}
 else
 {{
-    for (int i = {currentLiteralOffset}; i < {currentLiteralOffset} + {fieldSize}; i++)
+    for (int i = {offset}; i < {offset} + {arrayLength}; i++)
+    {{
         buffer[i] = 0;
+    }}
 }}");
-			}
-			else if (field.Type is GeneratedMavlinkMessageFieldArrayEnumType)
-			{
-				methodBody.AppendLine($@"
-if ({fieldPropertyName}.HasValue && !{fieldPropertyName}.Value.IsDefaultOrEmpty)
+		}
+
+		offset += arrayLength;
+	}
+
+	/// <summary>
+	/// Appends serialization logic for array of enum fields.
+	/// </summary>
+	protected override void AppendArrayEnumFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, ref int offset, string varName, bool isRequired)
+	{
+		string elementType = arrayEnumType.ConvertedType;
+		int elementSize = Utilities.GetDotNetTypeSize(elementType);
+		int arrayLength = arrayEnumType.ArrayLength * elementSize;
+
+		if (field.Display == MavlinkMessageFieldDisplay.Bitmask)
+		{
+			int totalBits = arrayEnumType.ArrayLength * elementSize * 8;
+			string combinedType = GetCombinedTypeForTotalBits(totalBits);
+
+			sb.AppendLine($"{combinedType} combined_{varName} = 0;");
+			sb.AppendLine($"for (int i = 0; i < {varName}.Length; i++)");
+			sb.AppendLine("{");
+			sb.AppendLine($"    combined_{varName} |= (({combinedType}){varName}[i]) << (i * {elementSize * 8});");
+			sb.AppendLine("}");
+			sb.AppendLine($"BitConverter.GetBytes(combined_{varName}).CopyTo(buffer, {offset});");
+		}
+		else if (isRequired)
+		{
+			sb.AppendLine($"Buffer.BlockCopy({varName}.ToArray(), 0, buffer, {offset}, {arrayLength});");
+		}
+		else
+		{
+			sb.AppendLine($@"
+if ({varName}.HasValue && !{varName}.Value.IsDefaultOrEmpty)
 {{
-    Buffer.BlockCopy({fieldPropertyName}.Value.ToArray(), 0, buffer, {currentLiteralOffset}, {fieldSize});
+    Buffer.BlockCopy({varName}.Value.ToArray(), 0, buffer, {offset}, {arrayLength});
 }}
 else
 {{
-    for (int i = {currentLiteralOffset}; i < {currentLiteralOffset} + {fieldSize}; i++)
+    for (int i = {offset}; i < {offset} + {arrayLength}; i++)
+    {{
         buffer[i] = 0;
+    }}
 }}");
-			}
-			else if (field.Type is GeneratedMavlinkMessageFieldType simpleField)
-			{
-				string convertedType = simpleField.ConvertedType;
-				methodBody.AppendLine(GenerateSimpleTypeSerializationWithTernaryOperator(fieldPropertyName, convertedType, currentLiteralOffset, true));
-			}
-			currentLiteralOffset += fieldSize;
 		}
 
-		methodBody.AppendLine("return buffer;");
-		return WrapMethod("SerializeWithExtensions", methodBody.ToString());
+		offset += arrayLength;
 	}
 
-	private string GenerateArraySerialization(string variableName, GeneratedMavlinkMessageFieldArrayType arrayType, int offset, bool isRequired)
+	/// <summary>
+	/// Returns the appropriate combined type based on the total number of bits required.
+	/// </summary>
+	private static string GetCombinedTypeForTotalBits(int totalBits)
 	{
-		var elementType = arrayType.ConvertedType;
-		var arrayLength = arrayType.ArrayLength * Utilities.GetDotNetTypeSize(elementType);
-		return $@"Buffer.BlockCopy({variableName}.ToArray(), 0, buffer, {offset}, {arrayLength});";
-	}
-
-	private string GenerateEnumSerialization(string variableName, GeneratedMavlinkMessageFieldEnumType enumType, int offset)
-	{
-		var size = Utilities.GetDotNetTypeSize(enumType.ConvertedType);
-		return size == 1
-			? $@"buffer[{offset}] = ({enumType.ConvertedType}){variableName};"
-			: $@"BitConverter.GetBytes(({enumType.ConvertedType}){variableName}).CopyTo(buffer, {offset});";
-	}
-
-	private string GenerateArrayEnumSerialization(string variableName, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, int offset, bool isRequired)
-	{
-		var elementType = arrayEnumType.ConvertedType;
-		var arrayLength = arrayEnumType.ArrayLength * Utilities.GetDotNetTypeSize(elementType);
-		return $@"Buffer.BlockCopy({variableName}.ToArray(), 0, buffer, {offset}, {arrayLength});";
-	}
-
-	private string GenerateSimpleTypeSerialization(string variableName, string typeName, int offset, bool isRequired)
-	{
-		return typeName switch
+		if (totalBits <= 8)
 		{
-			"byte" => $@"buffer[{offset}] = {variableName};",
-			"sbyte" => $@"buffer[{offset}] = (byte){variableName};",
-			_ => $@"BitConverter.GetBytes({variableName}).CopyTo(buffer, {offset});"
-		};
-	}
-
-	private string GenerateSimpleTypeSerializationWithTernaryOperator(string variableName, string typeName, int literalOffset, bool isRequired)
-	{
-		return typeName switch
+			return "byte";
+		}
+		else if (totalBits <= 16)
 		{
-			"byte" => $@"buffer[{literalOffset}] = {variableName}.HasValue ? {variableName}.Value : (byte)0;",
-			"sbyte" => $@"buffer[{literalOffset}] = {variableName}.HasValue ? (byte){variableName}.Value : (byte)0;",
-			_ => $@"BitConverter.GetBytes({variableName}.HasValue ? {variableName}.Value : 0)
-                   .CopyTo(buffer, {literalOffset});"
-		};
+			return "ushort";
+		}
+		else if (totalBits <= 32)
+		{
+			return "uint";
+		}
+		else
+		{
+			return "ulong";
+		}
 	}
 }
