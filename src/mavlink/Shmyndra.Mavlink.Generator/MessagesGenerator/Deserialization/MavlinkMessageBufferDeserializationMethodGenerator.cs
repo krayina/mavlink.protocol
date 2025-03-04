@@ -2,8 +2,21 @@
 
 namespace Shmyndra.Mavlink.Generator;
 
+/// <summary>
+/// A concrete implementation of <see cref="MavlinkMessageDeserializationMethodGeneratorBase"/> that generates
+/// buffer-based deserialization methods for Mavlink messages using <see cref="BitConverter"/> and <see cref="Buffer"/>.
+/// This class supports both default deserialization (without validation) and validation-based deserialization
+/// for fields with an 'invalid' attribute.
+/// </summary>
 public class MavlinkMessageBufferDeserializationMethodGenerator : MavlinkMessageDeserializationMethodGeneratorBase
 {
+	/// <summary>
+	/// Appends the prologue for buffer-based deserialization, ensuring the payload meets the required size
+	/// and padding it with zeros if necessary.
+	/// </summary>
+	/// <param name="sb">The StringBuilder to append the prologue code to.</param>
+	/// <param name="messageName">The name of the generated message type.</param>
+	/// <param name="finalSize">The minimum required size of the payload.</param>
 	protected override void AppendMethodPrologue(StringBuilder sb, string messageName, int finalSize)
 	{
 		sb.AppendLine($@"
@@ -20,32 +33,57 @@ if ({DeserializeParameterName}.Length < {finalSize})
 ");
 	}
 
-	protected override void AppendSimpleFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageFieldType simpleType, ref int offset, string varName)
+	/// <summary>
+	/// Appends default deserialization logic for a simple (primitive) field without validation using buffer-based methods.
+	/// </summary>
+	/// <param name="sb">The StringBuilder to append the code to.</param>
+	/// <param name="field">The field information containing simple type details.</param>
+	/// <param name="offset">The current byte offset in the payload, updated during deserialization.</param>
+	/// <param name="varName">The variable name used for the field in the generated code.</param>
+	protected override void AppendSimpleFieldDeserializationDefault(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string varName)
 	{
+		var simpleType = (GeneratedMavlinkMessageFieldType)field.Type;
 		int size = Utilities.GetDotNetTypeSize(simpleType.ConvertedType);
 		string typeName = simpleType.ConvertedType;
 		AppendPrimitiveFieldDeserialization(sb, varName, size, typeName, ref offset);
 	}
 
-	private void AppendPrimitiveFieldDeserialization(StringBuilder sb, string varName, int size, string typeName, ref int offset)
+	/// <summary>
+	/// Appends deserialization logic for a simple (primitive) field with validation using buffer-based methods.
+	/// </summary>
+	/// <param name="sb">The StringBuilder to append the code to.</param>
+	/// <param name="field">The field information containing simple type details.</param>
+	/// <param name="handler">The validation handler providing the condition for invalid values.</param>
+	/// <param name="offset">The current byte offset in the payload, updated during deserialization.</param>
+	/// <param name="varName">The variable name used for the field in the generated code.</param>
+	protected override void AppendSimpleFieldDeserializationWithValidation(StringBuilder sb, GeneratedMavlinkMessageField field, IInvalidFieldHandler handler, ref int offset, string varName)
 	{
-		if (typeName == "byte")
-		{
-			sb.AppendLine($"var {varName} = {DeserializeParameterName}[{offset}];");
-		}
-		else if (typeName == "sbyte")
-		{
-			sb.AppendLine($"var {varName} = (sbyte){DeserializeParameterName}[{offset}];");
-		}
-		else
-		{
-			string bcMethod = GetBitConverterMethod(typeName);
-			sb.AppendLine($"var {varName} = BitConverter.{bcMethod}({DeserializeParameterName}, {offset});");
-		}
+		var simpleType = (GeneratedMavlinkMessageFieldType)field.Type;
+		int size = Utilities.GetDotNetTypeSize(simpleType.ConvertedType);
+		string typeName = simpleType.ConvertedType;
+		string valueExpr = typeName == "byte" ? $"{DeserializeParameterName}[{offset}]" :
+						  typeName == "sbyte" ? $"(sbyte){DeserializeParameterName}[{offset}]" :
+						  $"BitConverter.{GetBitConverterMethod(typeName)}({DeserializeParameterName}, {offset})";
+
+		sb.AppendLine($"{typeName}? {varName} = null;");
+		sb.AppendLine($"var {varName}Value = {valueExpr};");
+		string condition = handler.GenerateValidationCondition($"{varName}Value");
+		sb.AppendLine($"if ({condition})");
+		sb.AppendLine("{");
+		sb.AppendLine($"    {varName} = {varName}Value;");
+		sb.AppendLine("}");
 		offset += size;
 	}
 
-	protected override void AppendEnumFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string varName, string currentNamespace)
+	/// <summary>
+	/// Appends default deserialization logic for an enum field without validation using buffer-based methods.
+	/// </summary>
+	/// <param name="sb">The StringBuilder to append the code to.</param>
+	/// <param name="field">The field information containing enum type details.</param>
+	/// <param name="offset">The current byte offset in the payload, updated during deserialization.</param>
+	/// <param name="varName">The variable name used for the field in the generated code.</param>
+	/// <param name="currentNamespace">The current namespace of the generated message.</param>
+	protected override void AppendEnumFieldDeserializationDefault(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string varName, string currentNamespace)
 	{
 		var enumType = (GeneratedMavlinkMessageFieldEnumType)field.Type;
 		string enumTypeName = GetQualifiedEnumTypeName(enumType, currentNamespace);
@@ -80,29 +118,57 @@ var {varName} = System.Collections.Immutable.ImmutableArray.CreateRange(temp{var
 		}
 		else
 		{
-			if (enumType.ConvertedType == "byte" || enumType.ConvertedType == "sbyte")
-			{
-				sb.AppendLine($"var {varName}Value = {DeserializeParameterName}[{offset}];");
-				sb.AppendLine($"if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}Enum))");
-				sb.AppendLine("{");
-				sb.AppendLine($"    throw new InvalidDataException($\"Invalid enum value {{ {varName}Value }} for {enumTypeName}\");");
-				sb.AppendLine("}");
-			}
-			else
-			{
-				string bcMethod = GetBitConverterMethod(enumType.ConvertedType);
-				sb.AppendLine($"var {varName}Value = BitConverter.{bcMethod}({DeserializeParameterName}, {offset});");
-				sb.AppendLine($"if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}Enum))");
-				sb.AppendLine("{");
-				sb.AppendLine($"    throw new InvalidDataException($\"Invalid enum value {{ {varName}Value }} for {enumTypeName}\");");
-				sb.AppendLine("}");
-			}
+			string valueExpr = enumType.ConvertedType == "byte" || enumType.ConvertedType == "sbyte" ? $"{DeserializeParameterName}[{offset}]" :
+							   $"BitConverter.{GetBitConverterMethod(enumType.ConvertedType)}({DeserializeParameterName}, {offset})";
+			sb.AppendLine($"var {varName}Value = {valueExpr};");
+			sb.AppendLine($"if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out var {varName}Enum))");
+			sb.AppendLine("{");
+			sb.AppendLine($"    throw new InvalidDataException($\"Invalid enum value {{ {varName}Value }} for {enumTypeName}\");");
+			sb.AppendLine("}");
 		}
 		offset += size;
 	}
 
-	protected override void AppendArrayFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageFieldArrayType arrayType, ref int offset, string varName)
+	/// <summary>
+	/// Appends deserialization logic for an enum field with validation using buffer-based methods.
+	/// </summary>
+	/// <param name="sb">The StringBuilder to append the code to.</param>
+	/// <param name="field">The field information containing enum type details.</param>
+	/// <param name="handler">The validation handler providing the condition for invalid values.</param>
+	/// <param name="offset">The current byte offset in the payload, updated during deserialization.</param>
+	/// <param name="varName">The variable name used for the field in the generated code.</param>
+	/// <param name="currentNamespace">The current namespace of the generated message.</param>
+	protected override void AppendEnumFieldDeserializationWithValidation(StringBuilder sb, GeneratedMavlinkMessageField field, IInvalidFieldHandler handler, ref int offset, string varName, string currentNamespace)
 	{
+		var enumType = (GeneratedMavlinkMessageFieldEnumType)field.Type;
+		string enumTypeName = GetQualifiedEnumTypeName(enumType, currentNamespace);
+		int size = Utilities.GetDotNetTypeSize(enumType.ConvertedType);
+		string valueExpr = enumType.ConvertedType == "byte" || enumType.ConvertedType == "sbyte" ? $"{DeserializeParameterName}[{offset}]" :
+						  $"BitConverter.{GetBitConverterMethod(enumType.ConvertedType)}({DeserializeParameterName}, {offset})";
+
+		sb.AppendLine($"{enumTypeName}? {varName}Enum = null;");
+		sb.AppendLine($"var {varName}Value = {valueExpr};");
+		string condition = handler.GenerateValidationCondition($"{varName}Value");
+		sb.AppendLine($"if ({condition})");
+		sb.AppendLine("{");
+		sb.AppendLine($"    if (!Enum.TryParse<{enumTypeName}>({varName}Value.ToString(), out {varName}Enum))");
+		sb.AppendLine($"    {{");
+		sb.AppendLine($"        throw new InvalidDataException($\"Invalid enum value {{ {varName}Value }} for {enumTypeName}\");");
+		sb.AppendLine($"    }}");
+		sb.AppendLine("}");
+		offset += size;
+	}
+
+	/// <summary>
+	/// Appends default deserialization logic for an array field without validation using buffer-based methods.
+	/// </summary>
+	/// <param name="sb">The StringBuilder to append the code to.</param>
+	/// <param name="field">The field information containing array type details.</param>
+	/// <param name="offset">The current byte offset in the payload, updated during deserialization.</param>
+	/// <param name="varName">The variable name used for the field in the generated code.</param>
+	protected override void AppendArrayFieldDeserializationDefault(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string varName)
+	{
+		var arrayType = (GeneratedMavlinkMessageFieldArrayType)field.Type;
 		int elementSize = Utilities.GetDotNetTypeSize(arrayType.ConvertedType);
 		int arrayByteLength = arrayType.ArrayLength * elementSize;
 		sb.AppendLine($@"
@@ -113,7 +179,45 @@ var {varName} = System.Collections.Immutable.ImmutableArray.CreateRange(temp{var
 		offset += arrayByteLength;
 	}
 
-	protected override void AppendArrayEnumFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string varName, string currentNamespace)
+	/// <summary>
+	/// Appends deserialization logic for an array field with validation using buffer-based methods.
+	/// </summary>
+	/// <param name="sb">The StringBuilder to append the code to.</param>
+	/// <param name="field">The field information containing array type details.</param>
+	/// <param name="handler">The validation handler providing the condition for invalid values.</param>
+	/// <param name="offset">The current byte offset in the payload, updated during deserialization.</param>
+	/// <param name="varName">The variable name used for the field in the generated code.</param>
+	protected override void AppendArrayFieldDeserializationWithValidation(StringBuilder sb, GeneratedMavlinkMessageField field, IInvalidFieldHandler handler, ref int offset, string varName)
+	{
+		var arrayType = (GeneratedMavlinkMessageFieldArrayType)field.Type;
+		int elementSize = Utilities.GetDotNetTypeSize(arrayType.ConvertedType);
+		int arrayByteLength = arrayType.ArrayLength * elementSize;
+
+		sb.AppendLine($"var temp{varName} = new List<{arrayType.ConvertedType}>({arrayType.ArrayLength});");
+		sb.AppendLine($"for (int i_{varName} = 0; i_{varName} < {arrayType.ArrayLength}; i_{varName}++)");
+		sb.AppendLine("{");
+		string valueExpr = arrayType.ConvertedType == "byte" ? $"{DeserializeParameterName}[{offset} + i_{varName} * {elementSize}]" :
+						  $"BitConverter.{GetBitConverterMethod(arrayType.ConvertedType)}({DeserializeParameterName}, {offset} + i_{varName} * {elementSize})";
+		sb.AppendLine($"    var value = {valueExpr};");
+		string condition = handler.GenerateValidationCondition("value");
+		sb.AppendLine($"    if ({condition})");
+		sb.AppendLine($"    {{");
+		sb.AppendLine($"        temp{varName}.Add(value);");
+		sb.AppendLine($"    }}");
+		sb.AppendLine("}");
+		sb.AppendLine($"var {varName} = System.Collections.Immutable.ImmutableArray.CreateRange(temp{varName});");
+		offset += arrayByteLength;
+	}
+
+	/// <summary>
+	/// Appends default deserialization logic for an array of enums without validation using buffer-based methods.
+	/// </summary>
+	/// <param name="sb">The StringBuilder to append the code to.</param>
+	/// <param name="field">The field information containing array enum type details.</param>
+	/// <param name="offset">The current byte offset in the payload, updated during deserialization.</param>
+	/// <param name="varName">The variable name used for the field in the generated code.</param>
+	/// <param name="currentNamespace">The current namespace of the generated message.</param>
+	protected override void AppendArrayEnumFieldDeserializationDefault(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string varName, string currentNamespace)
 	{
 		var arrayEnumType = (GeneratedMavlinkMessageFieldArrayEnumType)field.Type;
 		int elementSize = Utilities.GetDotNetTypeSize(arrayEnumType.ConvertedType);
@@ -126,27 +230,13 @@ var {varName} = System.Collections.Immutable.ImmutableArray.CreateRange(temp{var
 
 		if (field.Display == MavlinkMessageFieldDisplay.Bitmask)
 		{
-			string innerCode;
-			if (arrayEnumType.ConvertedType == "byte")
-			{
-				innerCode = $@"combined |= (({combinedType}){DeserializeParameterName}[{offset} + idx_{varName} * {elementSize}])
-        << (idx_{varName} * {BitsPerByte});";
-			}
-			else if (arrayEnumType.ConvertedType == "sbyte")
-			{
-				innerCode = $@"combined |= (({combinedType})(byte){DeserializeParameterName}[{offset} + idx_{varName} * {elementSize}])
-        << (idx_{varName} * {BitsPerByte});";
-			}
-			else if (arrayEnumType.ConvertedType == "char")
-			{
-				innerCode = $@"combined |= (({combinedType})BitConverter.ToUInt16({DeserializeParameterName}, {offset} + idx_{varName} * {elementSize}))
-        << (idx_{varName} * {elementSize * 8});";
-			}
-			else
-			{
-				innerCode = $@"combined |= (({combinedType})BitConverter.{GetBitConverterMethod(arrayEnumType.ConvertedType)}({DeserializeParameterName}, {offset} + idx_{varName} * {elementSize}))
-        << (idx_{varName} * {shift});";
-			}
+			string innerCode = arrayEnumType.ConvertedType == "byte" ?
+				$@"combined |= (({combinedType}){DeserializeParameterName}[{offset} + idx_{varName} * {elementSize}]) << (idx_{varName} * {BitsPerByte});" :
+				arrayEnumType.ConvertedType == "sbyte" ?
+				$@"combined |= (({combinedType})(byte){DeserializeParameterName}[{offset} + idx_{varName} * {elementSize}]) << (idx_{varName} * {BitsPerByte});" :
+				arrayEnumType.ConvertedType == "char" ?
+				$@"combined |= (({combinedType})BitConverter.ToUInt16({DeserializeParameterName}, {offset} + idx_{varName} * {elementSize})) << (idx_{varName} * {elementSize * 8});" :
+				$@"combined |= (({combinedType})BitConverter.{GetBitConverterMethod(arrayEnumType.ConvertedType)}({DeserializeParameterName}, {offset} + idx_{varName} * {elementSize})) << (idx_{varName} * {shift});";
 
 			sb.AppendLine($@"
 {combinedType} combined = 0;
@@ -164,45 +254,71 @@ for (int bit_{varName} = 0; bit_{varName} < {totalBits}; bit_{varName}++)
 }}
 var {varName} = System.Collections.Immutable.ImmutableArray.CreateRange(temp{varName});
 ");
-			offset += arrayByteLength;
 		}
 		else
 		{
-			sb.AppendLine(GenerateArrayDeserializationLoopEnumWithValidation(arrayEnumType.ConvertedType, arrayEnumType.ArrayLength, offset, varName, enumTypeName));
+			sb.AppendLine($"var temp{varName} = new {enumTypeName}[{arrayEnumType.ArrayLength}];");
+			sb.AppendLine($"for (int i_{varName} = 0; i_{varName} < {arrayEnumType.ArrayLength}; i_{varName}++)");
+			sb.AppendLine("{");
+			string valueExpr = arrayEnumType.ConvertedType == "byte" ? $"{DeserializeParameterName}[{offset} + i_{varName} * {elementSize}]" :
+							  $"BitConverter.{GetBitConverterMethod(arrayEnumType.ConvertedType)}({DeserializeParameterName}, {offset} + i_{varName} * {elementSize})";
+			sb.AppendLine($"    var value = {valueExpr};");
+			sb.AppendLine($"    if (!Enum.TryParse<{enumTypeName}>(value.ToString(), out var enumValue))");
+			sb.AppendLine($"    {{");
+			sb.AppendLine($"        throw new InvalidDataException($\"Invalid enum value {{value}} for {enumTypeName}\");");
+			sb.AppendLine($"    }}");
+			sb.AppendLine($"    temp{varName}[i_{varName}] = enumValue;");
+			sb.AppendLine("}");
 			sb.AppendLine($"var {varName} = System.Collections.Immutable.ImmutableArray.CreateRange(temp{varName});");
-			offset += arrayByteLength;
 		}
+		offset += arrayByteLength;
 	}
 
-	private string GenerateArrayDeserializationLoopEnumWithValidation(string convertedType, int arrayLength, int baseOffset, string varName, string enumTypeName)
+	/// <summary>
+	/// Appends deserialization logic for an array of enums with validation using buffer-based methods.
+	/// </summary>
+	/// <param name="sb">The StringBuilder to append the code to.</param>
+	/// <param name="field">The field information containing array enum type details.</param>
+	/// <param name="handler">The validation handler providing the condition for invalid values.</param>
+	/// <param name="offset">The current byte offset in the payload, updated during deserialization.</param>
+	/// <param name="varName">The variable name used for the field in the generated code.</param>
+	/// <param name="currentNamespace">The current namespace of the generated message.</param>
+	protected override void AppendArrayEnumFieldDeserializationWithValidation(StringBuilder sb, GeneratedMavlinkMessageField field, IInvalidFieldHandler handler, ref int offset, string varName, string currentNamespace)
 	{
-		int size = Utilities.GetDotNetTypeSize(convertedType);
-		var sb = new StringBuilder();
-		sb.AppendLine($"    var temp{varName} = new {convertedType}[{arrayLength}];");
-		sb.AppendLine($"    for (int i_{varName} = 0; i_{varName} < {arrayLength}; i_{varName}++)");
-		sb.AppendLine("    {");
-		if (convertedType == "byte")
-		{
-			sb.AppendLine($"        var {varName}ElementValue = {DeserializeParameterName}[{baseOffset} + i_{varName} * {size}];");
-		}
-		else if (convertedType == "sbyte")
-		{
-			sb.AppendLine($"        var {varName}ElementValue = (sbyte){DeserializeParameterName}[{baseOffset} + i_{varName} * {size}];");
-		}
+		var arrayEnumType = (GeneratedMavlinkMessageFieldArrayEnumType)field.Type;
+		int elementSize = Utilities.GetDotNetTypeSize(arrayEnumType.ConvertedType);
+		int arrayByteLength = arrayEnumType.ArrayLength * elementSize;
+		string enumTypeName = arrayEnumType.GeneratedEnum.GeneratedName;
+
+		sb.AppendLine($"var temp{varName} = new List<{enumTypeName}>({arrayEnumType.ArrayLength});");
+		sb.AppendLine($"for (int i_{varName} = 0; i_{varName} < {arrayEnumType.ArrayLength}; i_{varName}++)");
+		sb.AppendLine("{");
+		string valueExpr = arrayEnumType.ConvertedType == "byte" ? $"{DeserializeParameterName}[{offset} + i_{varName} * {elementSize}]" :
+						  $"BitConverter.{GetBitConverterMethod(arrayEnumType.ConvertedType)}({DeserializeParameterName}, {offset} + i_{varName} * {elementSize})";
+		sb.AppendLine($"    var value = {valueExpr};");
+		string condition = handler.GenerateValidationCondition("value");
+		sb.AppendLine($"    if ({condition})");
+		sb.AppendLine($"    {{");
+		sb.AppendLine($"        if (!Enum.TryParse<{enumTypeName}>(value.ToString(), out var enumValue))");
+		sb.AppendLine($"        {{");
+		sb.AppendLine($"            throw new InvalidDataException($\"Invalid enum value {{value}} for {enumTypeName}\");");
+		sb.AppendLine($"        }}");
+		sb.AppendLine($"        temp{varName}.Add(enumValue);");
+		sb.AppendLine($"    }}");
+		sb.AppendLine("}");
+		sb.AppendLine($"var {varName} = System.Collections.Immutable.ImmutableArray.CreateRange(temp{varName});");
+		offset += arrayByteLength;
+	}
+
+	private void AppendPrimitiveFieldDeserialization(StringBuilder sb, string varName, int size, string typeName, ref int offset)
+	{
+		if (typeName == "byte")
+			sb.AppendLine($"var {varName} = {DeserializeParameterName}[{offset}];");
+		else if (typeName == "sbyte")
+			sb.AppendLine($"var {varName} = (sbyte){DeserializeParameterName}[{offset}];");
 		else
-		{
-			string bcMethod = GetBitConverterMethod(convertedType);
-			string cast = convertedType == "char" ? "(char)" : "";
-			sb.AppendLine($"        var {varName}ElementValue = {cast}BitConverter.{bcMethod}({DeserializeParameterName}, {baseOffset} + i_{varName} * {size});");
-		}
-		sb.AppendLine($@"
-        if (!Enum.TryParse<{enumTypeName}>({varName}ElementValue.ToString(), out var {varName}Enum))
-        {{
-            throw new InvalidDataException($""Invalid enum value {{{varName}ElementValue}} for {enumTypeName}"");
-        }}
-        temp{varName}[i_{varName}] = {varName}Enum;");
-		sb.AppendLine("    }");
-		return sb.ToString();
+			sb.AppendLine($"var {varName} = BitConverter.{GetBitConverterMethod(typeName)}({DeserializeParameterName}, {offset});");
+		offset += size;
 	}
 
 	private string GetBitConverterMethod(string typeName)
