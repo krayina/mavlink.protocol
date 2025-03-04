@@ -253,6 +253,19 @@ internal static class Utilities
 		};
 	}
 
+	/// <summary>
+	/// Determines the combined type (byte, ushort, uint, or ulong) based on the total number of bits.
+	/// </summary>
+	/// <param name="totalBits">The total number of bits for the field.</param>
+	/// <returns>A string representing the combined type to use for bit manipulation.</returns>
+	public static string GetCombinedTypeForTotalBits(int totalBits)
+	{
+		if (totalBits <= 8) return "byte";
+		else if (totalBits <= 16) return "ushort";
+		else if (totalBits <= 32) return "uint";
+		else return "ulong";
+	}
+
 	public static string GetTypeWithoutArray(this MavlinkMessageFieldType type)
 	{
 		string typeName = type.TypeName;

@@ -92,7 +92,7 @@ if ({DeserializeParameterName}.Length < {finalSize})
 		if (field.Display == MavlinkMessageFieldDisplay.Bitmask)
 		{
 			int totalBits = size * 8;
-			string combinedType = GetCombinedTypeForTotalBits(totalBits);
+			string combinedType = Utilities.GetCombinedTypeForTotalBits(totalBits);
 			if (enumType.ConvertedType == "byte" || enumType.ConvertedType == "sbyte")
 			{
 				sb.AppendLine($"var {varName}Value = {DeserializeParameterName}[{offset}];");
@@ -225,7 +225,7 @@ var {varName} = System.Collections.Immutable.ImmutableArray.CreateRange(temp{var
 		const int BitsPerByte = 8;
 		int shift = elementSize * BitsPerByte;
 		int totalBits = arrayEnumType.ArrayLength * elementSize * BitsPerByte;
-		string combinedType = GetCombinedTypeForTotalBits(totalBits);
+		string combinedType = Utilities.GetCombinedTypeForTotalBits(totalBits);
 		string enumTypeName = arrayEnumType.GeneratedEnum.GeneratedName;
 
 		if (field.Display == MavlinkMessageFieldDisplay.Bitmask)
