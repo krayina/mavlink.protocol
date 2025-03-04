@@ -49,13 +49,13 @@ public class MavlinkMessageBufferSerializationMethodGenerator : MavlinkMessageSe
 		methodBody.AppendLine($"var buffer = new byte[{minSize}];");
 
 		int currentOffset = 0;
-		var (requiredFields, arrayFields) = GetSortedFields(fields);
+		var (requiredFields, arrayFields) = fields.GetSortedFields();
 		var sortedFields = requiredFields.Concat(arrayFields).ToList();
 
 		// Serialize each required field into the buffer.
 		foreach (var field in sortedFields)
 		{
-			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
+			var fieldPropertyName = Utilities.EscapeReservedKeyword(field.GeneratedName);
 			if (field.Type is GeneratedMavlinkMessageFieldArrayType arrayType)
 			{
 				methodBody.AppendLine(GenerateArraySerialization(fieldPropertyName, arrayType, currentOffset, true));
@@ -93,11 +93,11 @@ public class MavlinkMessageBufferSerializationMethodGenerator : MavlinkMessageSe
 		methodBody.AppendLine($"var buffer = new byte[{totalSize}];");
 
 		int currentOffset = 0;
-		var (requiredFields, arrayFields) = GetSortedFields(fields);
+		var (requiredFields, arrayFields) = fields.GetSortedFields();
 		var sortedFields = requiredFields.Concat(arrayFields).ToList();
 		foreach (var field in sortedFields)
 		{
-			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
+			var fieldPropertyName = Utilities.EscapeReservedKeyword(field.GeneratedName);
 			if (field.Type is GeneratedMavlinkMessageFieldArrayType arrayType)
 			{
 				methodBody.AppendLine(GenerateArraySerialization(fieldPropertyName, arrayType, currentOffset, true));
@@ -121,7 +121,7 @@ public class MavlinkMessageBufferSerializationMethodGenerator : MavlinkMessageSe
 		int currentLiteralOffset = baseSize;
 		foreach (var field in extensionFields)
 		{
-			var fieldPropertyName = EscapeReservedKeyword(field.GeneratedName);
+			var fieldPropertyName = Utilities.EscapeReservedKeyword(field.GeneratedName);
 			int fieldSize = field.GetFieldSize();
 			if (field.Type is GeneratedMavlinkMessageFieldEnumType enumType)
 			{

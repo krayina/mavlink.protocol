@@ -84,153 +84,16 @@ public class MavlinkMessagesGeneratorTests
 		new GeneratedMavlinkMessage("Namespace1", "EscInfo", GeneratedFields, SyntaxFactory.RecordDeclaration(SyntaxFactory.Token(SyntaxKind.RecordKeyword), "EscInfo"), MavlinkMessages[0])
 	];
 
-	[Fact]
-	public async Task CreateDeserializeMethod_ShouldMatchExpectedSnapshot()
-	{
-		// Arrange
-		var currentNamespace = "Namespace1";
-
-		// Act
-		var methodSyntax = MavlinkMessageDeserializationGenerator.CreateDeserializeMethod(currentNamespace, "ESCInfoMessage", GeneratedFields);
-
-		// Assert
-		var methodCode = methodSyntax.ToNormalizedString();
-
-		await Verify(methodCode)
-			.UseDirectory(SNAPSHOT_PATH)
-			.UseParameters("ESCInfoMessage");
-	}
-
-	[Fact]
-	public void CreateDeserializeMethod_ShouldEscapeReservedKeyword()
-	{
-		// Arrange
-		var fieldType = new GeneratedMavlinkMessageFieldType("ushort", "ushort");
-		var originalField = new MavlinkMessageField(type: fieldType, name: "fixed",
-			description: null, display: default, systemUnit: default, isRequired: true, printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null);
-
-		var generatedField = new GeneratedMavlinkMessageField(
-			generatedName: "Fixed",
-			generatedFieldType: fieldType,
-			declarationSyntax: SyntaxFactory.PropertyDeclaration(
-				SyntaxFactory.ParseTypeName("ushort"),
-				SyntaxFactory.Identifier("Fixed")
-			),
-			original: originalField
-		);
-
-		var fields = ImmutableArray.Create(generatedField);
-
-		// Act
-		var method = MavlinkMessageDeserializationGenerator.CreateDeserializeMethod(
-			@namespace: "TestNamespace",
-			messageName: "RadioMavlinkMessage",
-			fields: fields
-		);
-
-		var generatedCode = method.ToNormalizedString();
-
-		// Assert
-		Assert.Contains("var @fixed = BitConverter.ToUInt16", generatedCode);
-		Assert.Contains("Fixed = @fixed", generatedCode);
-	}
-
-	[Fact]
-	public void CreateDeserializeMethod_ShouldAvoidNameConflictsByAddingUnderscore()
-	{
-		// Arrange
-		var fieldType = new GeneratedMavlinkMessageFieldType("uint8_t", "byte");
-
-		var originalField = new MavlinkMessageField(
-			type: fieldType, name: "Payload",
-			description: null, display: default, systemUnit: default, isRequired: true, printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null
-		);
-
-		var generatedField = new GeneratedMavlinkMessageField(
-			generatedName: "Payload",
-			generatedFieldType: fieldType,
-			declarationSyntax: SyntaxFactory.PropertyDeclaration(
-				SyntaxFactory.ParseTypeName("test"),
-				SyntaxFactory.Identifier("Payload")
-			),
-			original: originalField
-		);
-
-		var fields = ImmutableArray.Create(generatedField);
-
-		// Act
-		var method = MavlinkMessageDeserializationGenerator.CreateDeserializeMethod(
-			@namespace: "TestNamespace",
-			messageName: "FileTransferProtocolMavlinkMessage",
-			fields: fields
-		);
-
-		var generatedCode = method.NormalizeWhitespace().ToFullString();
-
-		// Assert
-		Assert.Contains("var _payload =", generatedCode);
-		Assert.Contains("Payload = _payload", generatedCode);
-	}
-
-	[Fact]
-	public void CreateDeserializeMethod_ShouldGenerateNullableEnumDeserialization()
-	{
-		// Arrange
-		var enumType = new GeneratedMavlinkMessageFieldEnumType(
-			TypeName: "uint",
-			ConvertedType: "uint",
-			GeneratedEnum: new GeneratedMavlinkEnum(
-				@namespace: "TestNamespace",
-				generatedName: "MavSysStatusSensorExtended",
-				generatedEntries: ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
-				declarationSyntax: SyntaxFactory.EnumDeclaration("MavSysStatusSensorExtended"),
-				original: new MavlinkEnum(
-					name: "MavSysStatusSensorExtended",
-					description: null,
-					bitmask: null,
-					entries: ImmutableArray<MavlinkEnumEntry>.Empty,
-					deprecated: null)
-			)
-		);
-
-		var generatedField = new GeneratedMavlinkMessageField(
-			generatedName: "OnboardControlSensorsPresentExtended",
-			generatedFieldType: enumType,
-			declarationSyntax: SyntaxFactory.PropertyDeclaration(
-				SyntaxFactory.ParseTypeName("MavSysStatusSensorExtended?"),
-				SyntaxFactory.Identifier("OnboardControlSensorsPresentExtended")
-			),
-			original: new MavlinkMessageField(
-				type: enumType,
-				name: "OnboardControlSensorsPresentExtended",
-				description: null, display: default, systemUnit: default,
-				isRequired: false, // Nullable
-				printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null)
-		);
-
-		var fields = ImmutableArray.Create(generatedField);
-
-		// Act
-		var method = MavlinkMessageDeserializationGenerator.CreateDeserializeMethod(
-			@namespace: "TestNamespace",
-			messageName: "SysStatusMavlinkMessage",
-			fields: fields
-		);
-
-		var generatedCode = method.ToNormalizedString();
-
-		// Assert
-		Assert.Contains("uint? onboardControlSensorsPresentExtendedValue = null;", generatedCode);
-		Assert.Contains("if (payload.Length > 0)", generatedCode);
-		Assert.Contains("onboardControlSensorsPresentExtendedValue = BitConverter.ToUInt32(payload, 0);", generatedCode);
-		Assert.Contains("var onboardControlSensorsPresentExtended = onboardControlSensorsPresentExtendedValue.HasValue ? (MavSysStatusSensorExtended?)onboardControlSensorsPresentExtendedValue.Value : null;", generatedCode);
-	}
 
 	[Fact]
 	public async Task GenerateMessages_ShouldMatchExpectedSnapshot()
 	{
 		// Arrange
-		var generator = new MavlinkMessageGenerator();
+		var generator = new MavlinkMessageGenerator(
+			new MavlinkMessageBufferDeserializationMethodGenerator(),
+			new MavlinkMessageSpanSerializationMethodGenerator()
+		);
+
 		var @namespace = "Namespace1";
 
 		// Act
@@ -266,7 +129,6 @@ public class MavlinkMessagesGeneratorTests
 			.UseParameters("GeneratedMessagesCache");
 	}
 
-
 	[Fact]
 	public async Task GenerateMavlinkMessageWithExtensions_ShouldMatchExpectedSnapshot()
 	{
@@ -288,7 +150,10 @@ public class MavlinkMessagesGeneratorTests
 		);
 
 		var generatedEnums = ImmutableArray<GeneratedMavlinkEnum>.Empty.ToImmutableDictionary(e => e.Name, e => e);
-		var generator = new MavlinkMessageGenerator();
+		var generator = new MavlinkMessageGenerator(
+			new MavlinkMessageBufferDeserializationMethodGenerator(),
+			new MavlinkMessageSpanSerializationMethodGenerator()
+		);
 		var namespaceName = "TestNamespace";
 
 		// Act
@@ -300,23 +165,6 @@ public class MavlinkMessagesGeneratorTests
 		await Verify(normalizedMessage)
 			.UseDirectory(SNAPSHOT_PATH)
 			.UseParameters("SYS_STATUS");
-	}
-
-	[Fact]
-	public async Task CreateDeserializeMethod_NullableFields_ShouldMatchExpectedSnapshot()
-	{
-		// Arrange
-		var nonRequiredFields = GeneratedFields.Select(field => field with { IsRequired = false }).ToImmutableArray();
-
-		// Act
-		var methodSyntax = MavlinkMessageDeserializationGenerator.CreateDeserializeMethod("Namespace1", "SomeMessage", nonRequiredFields);
-
-		// Assert
-		var methodCode = methodSyntax.ToNormalizedString();
-
-		await Verify(methodCode)
-			.UseDirectory(SNAPSHOT_PATH)
-			.UseParameters("ESCInfoMessage");
 	}
 
 	[Fact]
@@ -342,7 +190,10 @@ public class MavlinkMessagesGeneratorTests
 
 		var generatedEnums = ImmutableDictionary<string, GeneratedMavlinkEnum>.Empty;
 
-		var generator = new MavlinkMessageGenerator();
+		var generator = new MavlinkMessageGenerator(
+			new MavlinkMessageBufferDeserializationMethodGenerator(),
+			new MavlinkMessageSpanSerializationMethodGenerator()
+		);
 
 		// Act
 		var generatedMessage = generator.GenerateMavlinkMessageInternal(mavlinkMessage, testNamespace, generatedEnums);
@@ -363,6 +214,673 @@ public class MavlinkMessagesGeneratorTests
 			.UseDirectory(SNAPSHOT_PATH)
 			.UseParameters("DEPRECATEDMESSAGE");
 	}
+
+
+	#region Buffer Deserialization tests
+
+	[Fact]
+	public async Task CreateBufferDeserializationMethod_ShouldMatchExpectedSnapshot()
+	{
+		// Arrange
+		var currentNamespace = "Namespace1";
+		var deserializationMethodGenerator = new MavlinkMessageBufferDeserializationMethodGenerator();
+
+		// Act
+		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithoutExtensionsMethodInternal(currentNamespace, "ESCInfoMessage", GeneratedFields);
+
+		// Assert
+		var methodCode = methodSyntax.ToNormalizedString();
+
+		await Verify(methodCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("ESCInfoMessage");
+	}
+
+	[Fact]
+	public void CreateBufferDeserializationMethod_ShouldEscapeReservedKeyword()
+	{
+		// Arrange
+		var fieldType = new GeneratedMavlinkMessageFieldType("ushort", "ushort");
+		var originalField = new MavlinkMessageField(type: fieldType, name: "fixed",
+			description: null, display: default, systemUnit: default, isRequired: true, printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null);
+
+		var generatedField = new GeneratedMavlinkMessageField(
+			generatedName: "Fixed",
+			generatedFieldType: fieldType,
+			declarationSyntax: SyntaxFactory.PropertyDeclaration(
+				SyntaxFactory.ParseTypeName("ushort"),
+				SyntaxFactory.Identifier("Fixed")
+			),
+			original: originalField
+		);
+
+		var deserializationMethodGenerator = new MavlinkMessageBufferDeserializationMethodGenerator();
+		var fields = ImmutableArray.Create(generatedField);
+
+		// Act
+		var method = deserializationMethodGenerator.CreateDeserializeWithoutExtensionsMethodInternal(
+			@namespace: "TestNamespace",
+			messageName: "RadioMavlinkMessage",
+			fields: fields
+		);
+
+		var generatedCode = method.ToNormalizedString();
+
+		// Assert
+		Assert.Contains("var @fixed =", generatedCode);
+		Assert.Contains("Fixed = @fixed", generatedCode);
+	}
+
+	[Fact]
+	public void CreateBufferDeserializationMethod_ShouldAvoidNameConflictsByAddingUnderscore()
+	{
+		// Arrange
+		var fieldType = new GeneratedMavlinkMessageFieldType("uint8_t", "byte");
+
+		var originalField = new MavlinkMessageField(
+			type: fieldType, name: "Payload",
+			description: null, display: default, systemUnit: default, isRequired: true, printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null
+		);
+
+		var generatedField = new GeneratedMavlinkMessageField(
+			generatedName: "Payload",
+			generatedFieldType: fieldType,
+			declarationSyntax: SyntaxFactory.PropertyDeclaration(
+				SyntaxFactory.ParseTypeName("test"),
+				SyntaxFactory.Identifier("Payload")
+			),
+			original: originalField
+		);
+
+		var deserializationMethodGenerator = new MavlinkMessageBufferDeserializationMethodGenerator();
+		var fields = ImmutableArray.Create(generatedField);
+
+		// Act
+		var method = deserializationMethodGenerator.CreateDeserializeWithoutExtensionsMethodInternal(
+			@namespace: "TestNamespace",
+			messageName: "FileTransferProtocolMavlinkMessage",
+			fields: fields
+		);
+
+		var generatedCode = method.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		Assert.Contains("var _payload =", generatedCode);
+		Assert.Contains("Payload = _payload", generatedCode);
+	}
+
+	[Fact]
+	public async Task CreateBufferDeserializationMethod_ShouldGenerateNullableEnumDeserialization()
+	{
+		// Arrange
+		var enumType = new GeneratedMavlinkMessageFieldEnumType(
+			TypeName: "uint",
+			ConvertedType: "uint",
+			GeneratedEnum: new GeneratedMavlinkEnum(
+				@namespace: "TestNamespace",
+				generatedName: "MavSysStatusSensorExtended",
+				generatedEntries: ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
+				declarationSyntax: SyntaxFactory.EnumDeclaration("MavSysStatusSensorExtended"),
+				original: new MavlinkEnum(
+					name: "MavSysStatusSensorExtended",
+					description: null,
+					bitmask: null,
+					entries: ImmutableArray<MavlinkEnumEntry>.Empty,
+					deprecated: null)
+			)
+		);
+
+		var generatedField = new GeneratedMavlinkMessageField(
+			generatedName: "OnboardControlSensorsPresentExtended",
+			generatedFieldType: enumType,
+			declarationSyntax: SyntaxFactory.PropertyDeclaration(
+				SyntaxFactory.ParseTypeName("MavSysStatusSensorExtended?"),
+				SyntaxFactory.Identifier("OnboardControlSensorsPresentExtended")
+			),
+			original: new MavlinkMessageField(
+				type: enumType,
+				name: "OnboardControlSensorsPresentExtended",
+				description: null, display: default, systemUnit: default,
+				isRequired: false, // Nullable
+				printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null)
+		);
+
+		var deserializationMethodGenerator = new MavlinkMessageBufferDeserializationMethodGenerator();
+		var fields = ImmutableArray.Create(generatedField);
+
+		// Act
+		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithExtensionsMethodInternal(
+			@namespace: "TestNamespace",
+			messageName: "SysStatusMavlinkMessage",
+			fields: fields
+		);
+
+		var generatedCode = methodSyntax.ToNormalizedString();
+
+		// Assert
+		await Verify(generatedCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("Test");
+	}
+
+	[Fact]
+	public async Task CreateBufferDeserializationMethod_NullableFields_ShouldMatchExpectedSnapshot()
+	{
+		// Arrange
+		var nonRequiredFields = GeneratedFields.Select(field => field with { IsRequired = false }).ToImmutableArray();
+		var deserializationMethodGenerator = new MavlinkMessageBufferDeserializationMethodGenerator();
+
+		// Act
+		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithExtensionsMethodInternal("Namespace1", "SomeMessage", nonRequiredFields);
+
+		// Assert
+		var methodCode = methodSyntax.ToNormalizedString();
+
+		await Verify(methodCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("ESCInfoMessage");
+	}
+
+	[Fact]
+	public async Task CreateBufferDeserializationMethod_WithEnumBitmask_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var enumType = new GeneratedMavlinkMessageFieldEnumType(
+			TypeName: "byte",
+			ConvertedType: "byte",
+			GeneratedEnum: new GeneratedMavlinkEnum(
+				@namespace: "TestNamespace",
+				generatedName: "LimitModule",
+				generatedEntries: ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
+				declarationSyntax: SyntaxFactory.EnumDeclaration("LimitModule"),
+				original: new MavlinkEnum(
+					name: "LimitModule",
+					description: null,
+					bitmask: null,
+					entries: ImmutableArray<MavlinkEnumEntry>.Empty,
+					deprecated: null)
+			)
+		);
+
+		var generatedField = new GeneratedMavlinkMessageField(
+			generatedName: "ModsEnabled",
+			generatedFieldType: enumType,
+			declarationSyntax: SyntaxFactory.PropertyDeclaration(
+				SyntaxFactory.ParseTypeName("enumType"),
+				SyntaxFactory.Identifier("enumType")
+			),
+			original: new MavlinkMessageField(
+				type: enumType,
+				name: "enumType",
+				description: null, display: MavlinkMessageFieldDisplay.Bitmask, systemUnit: default,
+				isRequired: false, // Nullable
+				printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null)
+		);
+
+		var deserializationMethodGenerator = new MavlinkMessageBufferDeserializationMethodGenerator();
+		var fields = ImmutableArray.Create(generatedField);
+
+		// Act
+		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithExtensionsMethodInternal(
+			@namespace: "TestNamespace",
+			messageName: "SysStatusMavlinkMessage",
+			fields: fields
+		);
+
+		var generatedCode = methodSyntax.ToNormalizedString();
+
+		// Assert
+		await Verify(generatedCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("Test");
+	}
+
+	[Fact]
+	public async Task CreateBufferDeserializationMethod_WithEnumArrayWithoutBitmask_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var enumType = new GeneratedMavlinkMessageFieldArrayEnumType(
+			TypeName: "uint16",
+			ConvertedType: "ushort",
+			GeneratedEnum: new GeneratedMavlinkEnum(
+				@namespace: "TestNamespace",
+				generatedName: "MavCmd",
+				generatedEntries: ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
+				declarationSyntax: SyntaxFactory.EnumDeclaration("MavCmd"),
+				original: new MavlinkEnum(
+					name: "MAV_CMD",
+					description: null,
+					bitmask: null,
+					entries: ImmutableArray<MavlinkEnumEntry>.Empty,
+					deprecated: null)
+			),
+			ArrayLength: 5
+		);
+
+		var generatedField = new GeneratedMavlinkMessageField(
+			generatedName: "Command",
+			generatedFieldType: enumType,
+			declarationSyntax: SyntaxFactory.PropertyDeclaration(
+				SyntaxFactory.ParseTypeName("command"),
+				SyntaxFactory.Identifier("test")
+			),
+			original: new MavlinkMessageField(
+				type: enumType,
+				name: "test",
+				description: null, display: MavlinkMessageFieldDisplay.None, systemUnit: default,
+				isRequired: true,
+				printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null)
+		);
+
+		var deserializationMethodGenerator = new MavlinkMessageBufferDeserializationMethodGenerator();
+		var fields = ImmutableArray.Create(generatedField);
+
+		// Act
+		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithExtensionsMethodInternal(
+			@namespace: "TestNamespace",
+			messageName: "SysStatusMavlinkMessage",
+			fields: fields
+		);
+
+		var generatedCode = methodSyntax.ToNormalizedString();
+
+		// Assert
+		await Verify(generatedCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("Test");
+	}
+
+	[Fact]
+	public async Task CreateBufferDeserializationMethod_WithInvalidFloat_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var floatGeneratedField = ImmutableArray.Create(new GeneratedMavlinkMessageField("SomeFloat", new GeneratedMavlinkMessageFieldType("float", "float"),
+			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "SomeFloat"), MavlinkFields[0] with { Invalid = "NaN" }));
+		var deserializationMethodGenerator = new MavlinkMessageBufferDeserializationMethodGenerator();
+
+		// Act
+		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithoutExtensionsMethodInternal(
+			@namespace: "TestNamespace",
+			messageName: "SysStatusMavlinkMessage",
+			fields: floatGeneratedField
+		);
+
+		var generatedCode = methodSyntax.ToNormalizedString();
+
+		// Assert
+		await Verify(generatedCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("Test");
+	}
+
+	[Fact]
+	public async Task CreateBufferDeserializationMethod_WithInvalidIntegers_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var floatGeneratedField = ImmutableArray.CreateRange(
+		[
+			new GeneratedMavlinkMessageField("SomeUshort", new GeneratedMavlinkMessageFieldType("uint16", "ushort"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeUshort"), MavlinkFields[0] with { Invalid = "UINT16_MAX" }),
+			new GeneratedMavlinkMessageField("SomeShort", new GeneratedMavlinkMessageFieldType("int16", "short"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("short"), "SomeShort"), MavlinkFields[0] with { Invalid = "INT16_MAX" }),
+			new GeneratedMavlinkMessageField("SomeByte", new GeneratedMavlinkMessageFieldType("uint8", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "SomeByte"), MavlinkFields[0] with { Invalid = "UINT8_MAX" }),
+			new GeneratedMavlinkMessageField("SomeSbyte", new GeneratedMavlinkMessageFieldType("int8", "sbyte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("sbyte"), "SomeSbyte"), MavlinkFields[0] with { Invalid = "INT8_MAX" }),
+		]);
+
+		var deserializationMethodGenerator = new MavlinkMessageBufferDeserializationMethodGenerator();
+
+		// Act
+		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithoutExtensionsMethodInternal(
+			@namespace: "TestNamespace",
+			messageName: "SysStatusMavlinkMessage",
+			fields: floatGeneratedField
+		);
+
+		var generatedCode = methodSyntax.ToNormalizedString();
+
+		// Assert
+		await Verify(generatedCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("Test");
+	}
+
+	#endregion
+
+	#region Span Deserialization tests
+
+	[Fact]
+	public async Task CreateSpanDeserializationMethod_ShouldMatchExpectedSnapshot()
+	{
+		// Arrange
+		var currentNamespace = "Namespace1";
+		var deserializationMethodGenerator = new MavlinkMessageSpanDeserializationMethodGenerator();
+
+		// Act
+		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithoutExtensionsMethodInternal(currentNamespace, "ESCInfoMessage", GeneratedFields);
+
+		// Assert
+		var methodCode = methodSyntax.ToNormalizedString();
+
+		await Verify(methodCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("ESCInfoMessage");
+	}
+
+	[Fact]
+	public void CreateSpanDeserializationMethod_ShouldEscapeReservedKeyword()
+	{
+		// Arrange
+		var fieldType = new GeneratedMavlinkMessageFieldType("ushort", "ushort");
+		var originalField = new MavlinkMessageField(type: fieldType, name: "fixed",
+			description: null, display: default, systemUnit: default, isRequired: true, printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null);
+
+		var generatedField = new GeneratedMavlinkMessageField(
+			generatedName: "Fixed",
+			generatedFieldType: fieldType,
+			declarationSyntax: SyntaxFactory.PropertyDeclaration(
+				SyntaxFactory.ParseTypeName("ushort"),
+				SyntaxFactory.Identifier("Fixed")
+			),
+			original: originalField
+		);
+
+		var deserializationMethodGenerator = new MavlinkMessageSpanDeserializationMethodGenerator();
+		var fields = ImmutableArray.Create(generatedField);
+
+		// Act
+		var method = deserializationMethodGenerator.CreateDeserializeWithoutExtensionsMethodInternal(
+			@namespace: "TestNamespace",
+			messageName: "RadioMavlinkMessage",
+			fields: fields
+		);
+
+		var generatedCode = method.ToNormalizedString();
+
+		// Assert
+		Assert.Contains("var @fixed =", generatedCode);
+		Assert.Contains("Fixed = @fixed", generatedCode);
+	}
+
+	[Fact]
+	public void CreateSpanDeserializationMethod_ShouldAvoidNameConflictsByAddingUnderscore()
+	{
+		// Arrange
+		var fieldType = new GeneratedMavlinkMessageFieldType("uint8_t", "byte");
+
+		var originalField = new MavlinkMessageField(
+			type: fieldType, name: "Payload",
+			description: null, display: default, systemUnit: default, isRequired: true, printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null
+		);
+
+		var generatedField = new GeneratedMavlinkMessageField(
+			generatedName: "Payload",
+			generatedFieldType: fieldType,
+			declarationSyntax: SyntaxFactory.PropertyDeclaration(
+				SyntaxFactory.ParseTypeName("test"),
+				SyntaxFactory.Identifier("Payload")
+			),
+			original: originalField
+		);
+
+		var deserializationMethodGenerator = new MavlinkMessageSpanDeserializationMethodGenerator();
+		var fields = ImmutableArray.Create(generatedField);
+
+		// Act
+		var method = deserializationMethodGenerator.CreateDeserializeWithoutExtensionsMethodInternal(
+			@namespace: "TestNamespace",
+			messageName: "FileTransferProtocolMavlinkMessage",
+			fields: fields
+		);
+
+		var generatedCode = method.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		Assert.Contains("var _payload =", generatedCode);
+		Assert.Contains("Payload = _payload", generatedCode);
+	}
+
+	[Fact]
+	public async Task CreateSpanDeserializationMethod_ShouldGenerateNullableEnumDeserialization()
+	{
+		// Arrange
+		var enumType = new GeneratedMavlinkMessageFieldEnumType(
+			TypeName: "uint",
+			ConvertedType: "uint",
+			GeneratedEnum: new GeneratedMavlinkEnum(
+				@namespace: "TestNamespace",
+				generatedName: "MavSysStatusSensorExtended",
+				generatedEntries: ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
+				declarationSyntax: SyntaxFactory.EnumDeclaration("MavSysStatusSensorExtended"),
+				original: new MavlinkEnum(
+					name: "MavSysStatusSensorExtended",
+					description: null,
+					bitmask: null,
+					entries: ImmutableArray<MavlinkEnumEntry>.Empty,
+					deprecated: null)
+			)
+		);
+
+		var generatedField = new GeneratedMavlinkMessageField(
+			generatedName: "OnboardControlSensorsPresentExtended",
+			generatedFieldType: enumType,
+			declarationSyntax: SyntaxFactory.PropertyDeclaration(
+				SyntaxFactory.ParseTypeName("MavSysStatusSensorExtended?"),
+				SyntaxFactory.Identifier("OnboardControlSensorsPresentExtended")
+			),
+			original: new MavlinkMessageField(
+				type: enumType,
+				name: "OnboardControlSensorsPresentExtended",
+				description: null, display: default, systemUnit: default,
+				isRequired: false, // Nullable
+				printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null)
+		);
+
+		var deserializationMethodGenerator = new MavlinkMessageSpanDeserializationMethodGenerator();
+		var fields = ImmutableArray.Create(generatedField);
+
+		// Act
+		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithExtensionsMethodInternal(
+			@namespace: "TestNamespace",
+			messageName: "SysStatusMavlinkMessage",
+			fields: fields
+		);
+
+		var generatedCode = methodSyntax.ToNormalizedString();
+
+		// Assert
+		await Verify(generatedCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("Test");
+	}
+
+	[Fact]
+	public async Task CreateSpanDeserializationMethod_NullableFields_ShouldMatchExpectedSnapshot()
+	{
+		// Arrange
+		var nonRequiredFields = GeneratedFields.Select(field => field with { IsRequired = false }).ToImmutableArray();
+		var deserializationMethodGenerator = new MavlinkMessageSpanDeserializationMethodGenerator();
+
+		// Act
+		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithExtensionsMethodInternal("Namespace1", "SomeMessage", nonRequiredFields);
+
+		// Assert
+		var methodCode = methodSyntax.ToNormalizedString();
+
+		await Verify(methodCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("ESCInfoMessage");
+	}
+
+	[Fact]
+	public async Task CreateSpanDeserializationMethod_WithEnumBitmask_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var enumType = new GeneratedMavlinkMessageFieldEnumType(
+			TypeName: "byte",
+			ConvertedType: "byte",
+			GeneratedEnum: new GeneratedMavlinkEnum(
+				@namespace: "TestNamespace",
+				generatedName: "LimitModule",
+				generatedEntries: ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
+				declarationSyntax: SyntaxFactory.EnumDeclaration("LimitModule"),
+				original: new MavlinkEnum(
+					name: "LimitModule",
+					description: null,
+					bitmask: null,
+					entries: ImmutableArray<MavlinkEnumEntry>.Empty,
+					deprecated: null)
+			)
+		);
+
+		var generatedField = new GeneratedMavlinkMessageField(
+			generatedName: "ModsEnabled",
+			generatedFieldType: enumType,
+			declarationSyntax: SyntaxFactory.PropertyDeclaration(
+				SyntaxFactory.ParseTypeName("enumType"),
+				SyntaxFactory.Identifier("enumType")
+			),
+			original: new MavlinkMessageField(
+				type: enumType,
+				name: "enumType",
+				description: null, display: MavlinkMessageFieldDisplay.Bitmask, systemUnit: default,
+				isRequired: false, // Nullable
+				printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null)
+		);
+
+		var deserializationMethodGenerator = new MavlinkMessageSpanDeserializationMethodGenerator();
+		var fields = ImmutableArray.Create(generatedField);
+
+		// Act
+		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithExtensionsMethodInternal(
+			@namespace: "TestNamespace",
+			messageName: "SysStatusMavlinkMessage",
+			fields: fields
+		);
+
+		var generatedCode = methodSyntax.ToNormalizedString();
+
+		// Assert
+		await Verify(generatedCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("Test");
+	}
+
+	[Fact]
+	public async Task CreateSpanDeserializationMethod_WithEnumArrayWithoutBitmask_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var enumType = new GeneratedMavlinkMessageFieldArrayEnumType(
+			TypeName: "uint16",
+			ConvertedType: "ushort",
+			GeneratedEnum: new GeneratedMavlinkEnum(
+				@namespace: "TestNamespace",
+				generatedName: "MavCmd",
+				generatedEntries: ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
+				declarationSyntax: SyntaxFactory.EnumDeclaration("MavCmd"),
+				original: new MavlinkEnum(
+					name: "MAV_CMD",
+					description: null,
+					bitmask: null,
+					entries: ImmutableArray<MavlinkEnumEntry>.Empty,
+					deprecated: null)
+			),
+			ArrayLength: 5
+		);
+
+		var generatedField = new GeneratedMavlinkMessageField(
+			generatedName: "Command",
+			generatedFieldType: enumType,
+			declarationSyntax: SyntaxFactory.PropertyDeclaration(
+				SyntaxFactory.ParseTypeName("command"),
+				SyntaxFactory.Identifier("test")
+			),
+			original: new MavlinkMessageField(
+				type: enumType,
+				name: "test",
+				description: null, display: MavlinkMessageFieldDisplay.None, systemUnit: default,
+				isRequired: true,
+				printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null)
+		);
+
+		var deserializationMethodGenerator = new MavlinkMessageSpanDeserializationMethodGenerator();
+		var fields = ImmutableArray.Create(generatedField);
+
+		// Act
+		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithExtensionsMethodInternal(
+			@namespace: "TestNamespace",
+			messageName: "SysStatusMavlinkMessage",
+			fields: fields
+		);
+
+		var generatedCode = methodSyntax.ToNormalizedString();
+
+		// Assert
+		await Verify(generatedCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("Test");
+	}
+
+
+
+	[Fact]
+	public async Task CreateSpanDeserializationMethod_WithInvalidFloat_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var floatGeneratedField = ImmutableArray.Create(new GeneratedMavlinkMessageField("SomeFloat", new GeneratedMavlinkMessageFieldType("float", "float"),
+			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "SomeFloat"), MavlinkFields[0] with { Invalid = "NaN" }));
+		var deserializationMethodGenerator = new MavlinkMessageSpanDeserializationMethodGenerator();
+
+		// Act
+		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithoutExtensionsMethodInternal(
+			@namespace: "TestNamespace",
+			messageName: "SysStatusMavlinkMessage",
+			fields: floatGeneratedField
+		);
+
+		var generatedCode = methodSyntax.ToNormalizedString();
+
+		// Assert
+		await Verify(generatedCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("Test");
+	}
+
+	[Fact]
+	public async Task CreateSpanDeserializationMethod_WithInvalidIntegers_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var floatGeneratedField = ImmutableArray.CreateRange(
+		[
+			new GeneratedMavlinkMessageField("SomeUshort", new GeneratedMavlinkMessageFieldType("uint16", "ushort"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeUshort"), MavlinkFields[0] with { Invalid = "UINT16_MAX" }),
+			new GeneratedMavlinkMessageField("SomeShort", new GeneratedMavlinkMessageFieldType("int16", "short"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("short"), "SomeShort"), MavlinkFields[0] with { Invalid = "INT16_MAX" }),
+			new GeneratedMavlinkMessageField("SomeByte", new GeneratedMavlinkMessageFieldType("uint8", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "SomeByte"), MavlinkFields[0] with { Invalid = "UINT8_MAX" }),
+			new GeneratedMavlinkMessageField("SomeSbyte", new GeneratedMavlinkMessageFieldType("int8", "sbyte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("sbyte"), "SomeSbyte"), MavlinkFields[0] with { Invalid = "INT8_MAX" }),
+		]);
+
+		var deserializationMethodGenerator = new MavlinkMessageSpanDeserializationMethodGenerator();
+
+		// Act
+		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithoutExtensionsMethodInternal(
+			@namespace: "TestNamespace",
+			messageName: "SysStatusMavlinkMessage",
+			fields: floatGeneratedField
+		);
+
+		var generatedCode = methodSyntax.ToNormalizedString();
+
+		// Assert
+		await Verify(generatedCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("Test");
+	}
+
+	#endregion
 
 	#region Buffer Serialization tests
 
@@ -503,7 +1021,155 @@ public class MavlinkMessagesGeneratorTests
 		  .UseDirectory(SNAPSHOT_PATH)
 		  .UseParameters("TestMavlinkMessage");
 	}
+
 	#endregion
+
+	#region Span Serialization tests
+
+	[Fact]
+	public async Task GenerateSerializeSpanMethodWithoutExtensions_WhenNoExtensions_ShouldMatchSnapshot()
+	{
+		// Arrange
+		var serializeMethodGenerator = new MavlinkMessageSpanSerializationMethodGenerator();
+		var testFields = GeneratedFields;
+
+		// Act
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithoutExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		await Verify(generatedCode)
+		  .UseDirectory(SNAPSHOT_PATH)
+		  .UseParameters("TestMavlinkMessage");
+	}
+
+	[Fact]
+	public async Task GenerateSerializeSpanMethodWithExtensions_WhenHasOneExtension_ShouldMatchSnapshot()
+	{
+		// Arrange
+		var serializeMethodGenerator = new MavlinkMessageSpanSerializationMethodGenerator();
+		var testFields = new List<GeneratedMavlinkMessageField>()
+		{
+			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[0]),
+			new GeneratedMavlinkMessageField("TimeUsec", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint64_t"), "TimeUsec"), MavlinkFields[1]),
+			new GeneratedMavlinkMessageField("FirstExtension", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null))
+		}.ToImmutableArray();
+
+		// Act
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		await Verify(generatedCode)
+		  .UseDirectory(SNAPSHOT_PATH)
+		  .UseParameters("TestMavlinkMessage");
+	}
+
+	[Fact]
+	public async Task GenerateSerializeSpanMethodWithExtensions_WhenHasOneSimpleExtensionAndTwoCollectionExtensions_ShouldMatchSnapshot()
+	{
+		// Arrange
+		var serializeMethodGenerator = new MavlinkMessageSpanSerializationMethodGenerator();
+		var testFields = new List<GeneratedMavlinkMessageField>()
+		{
+			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[0]),
+			new GeneratedMavlinkMessageField("TimeUsec", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint64_t"), "TimeUsec"), MavlinkFields[1]),
+			new GeneratedMavlinkMessageField("FirstExtension", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null)),
+			new GeneratedMavlinkMessageField("SecondExtension", new GeneratedMavlinkMessageFieldArrayType("uint64_t", "ulong", 4),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint64_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null)),
+			new GeneratedMavlinkMessageField("ThirdExtension", new GeneratedMavlinkMessageFieldArrayType("uint64_t", "ulong", 4),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint64_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null))
+		}.ToImmutableArray();
+
+		// Act
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		await Verify(generatedCode)
+		  .UseDirectory(SNAPSHOT_PATH)
+		  .UseParameters("TestMavlinkMessage");
+	}
+
+	[Fact]
+	public async Task GenerateSerializeSpanMethodWithExtensions_WhenHasOneSimpleExtensionAndEnumExtension_ShouldMatchSnapshot()
+	{
+		// Arrange
+		var serializeMethodGenerator = new MavlinkMessageSpanSerializationMethodGenerator();
+		var testFields = new List<GeneratedMavlinkMessageField>()
+		{
+			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[0]),
+			new GeneratedMavlinkMessageField("TimeUsec", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint64_t"), "TimeUsec"), MavlinkFields[1]),
+			new GeneratedMavlinkMessageField("FirstExtension", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null)),
+			new GeneratedMavlinkMessageField("SecondExtension", new GeneratedMavlinkMessageFieldEnumType("uint64_t", "ulong",
+				new GeneratedMavlinkEnum("TestNamespace", "TestEnum", new(), SyntaxFactory.EnumDeclaration("Test"),
+					new MavlinkEnum("Test", null, null, new(), null))),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint64_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null))
+		}.ToImmutableArray();
+
+		// Act
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		await Verify(generatedCode)
+		  .UseDirectory(SNAPSHOT_PATH)
+		  .UseParameters("TestMavlinkMessage");
+	}
+
+	[Fact]
+	public async Task GenerateSerializeSpanMethodWithExtensions_WhenHasOneSimpleExtensionAndEnumArrayExtension_ShouldMatchSnapshot()
+	{
+		// Arrange
+		var serializeMethodGenerator = new MavlinkMessageSpanSerializationMethodGenerator();
+		var testFields = new List<GeneratedMavlinkMessageField>()
+		{
+			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[0]),
+						new GeneratedMavlinkMessageField("FailureFlags", new GeneratedMavlinkMessageFieldArrayEnumType("uint16_t[4]", "ushort", GeneratedEnums[1], 4),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[6]),
+			new GeneratedMavlinkMessageField("FirstExtension", new GeneratedMavlinkMessageFieldType("uint64_t", "ulong"),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
+					new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "Bank", "",
+						MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty, /* IsRequired */ false, null, null, null, null, null, null, null)),
+
+			new GeneratedMavlinkMessageField("SecondExtension", new GeneratedMavlinkMessageFieldArrayEnumType("uint16_t[4]", "ushort", GeneratedEnums[1], 4),
+				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[6] with { IsRequired = false }),
+		}.ToImmutableArray();
+
+		// Act
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
+
+		// Assert
+		await Verify(generatedCode)
+		  .UseDirectory(SNAPSHOT_PATH)
+		  .UseParameters("TestMavlinkMessage");
+	}
+
+	#endregion
+
 
 	[Fact]
 	public async Task GenerateMavlinkTypes_GeneratedSimpleCrc_ShouldBe152()
