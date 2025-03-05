@@ -65,11 +65,45 @@ public class MavlinkBufferSerializationGeneratorStrategy : IMavlinkSerialization
 		}
 		else if (field.IsRequired)
 		{
-			AppendRequiredSimpleField(sb, variableName, typeName, offset, size);
+			if (typeName == "byte")
+			{
+				sb.AppendLine($"buffer[{offset}] = ({typeName}){variableName};");
+			}
+			else if (typeName == "sbyte")
+			{
+				sb.AppendLine($"buffer[{offset}] = (byte)({typeName}){variableName};");
+			}
+			else
+			{
+				sb.AppendLine($"BitConverter.GetBytes(({typeName}){variableName}).CopyTo(buffer, {offset});");
+			}
 		}
 		else
 		{
-			AppendOptionalSimpleField(sb, variableName, typeName, offset, size);
+			if (typeName == "byte")
+			{
+				sb.AppendLine($@"
+if ({variableName}.HasValue)
+{{
+    buffer[{offset}] = ({typeName}){variableName}.Value;
+}}");
+			}
+			else if (typeName == "sbyte")
+			{
+				sb.AppendLine($@"
+if ({variableName}.HasValue)
+{{
+    buffer[{offset}] = (byte)({typeName}){variableName}.Value;
+}}");
+			}
+			else
+			{
+				sb.AppendLine($@"
+if ({variableName}.HasValue)
+{{
+    BitConverter.GetBytes(({typeName}){variableName}.Value).CopyTo(buffer, {offset});
+}}");
+			}
 		}
 
 		offset += size;
@@ -93,20 +127,17 @@ public class MavlinkBufferSerializationGeneratorStrategy : IMavlinkSerialization
 
 	private void AppendArrayEnumFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, ref int offset, string variableName)
 	{
-		int elementSize = Utilities.GetDotNetTypeSize(arrayEnumType.ConvertedType);
+		string elementTypeName = arrayEnumType.ConvertedType;
+		int elementSize = Utilities.GetDotNetTypeSize(elementTypeName);
 		int totalSize = arrayEnumType.ArrayLength * elementSize;
 
-		if (field.Display == MavlinkMessageFieldDisplay.Bitmask)
+		if (field.IsRequired)
 		{
-			AppendBitmaskArrayEnumField(sb, variableName, arrayEnumType.ArrayLength, elementSize, offset);
-		}
-		else if (field.IsRequired)
-		{
-			AppendRequiredArrayField(sb, variableName, offset, totalSize);
+			AppendRequiredArrayEnumField(sb, variableName, elementTypeName, arrayEnumType.ArrayLength, offset, totalSize);
 		}
 		else
 		{
-			AppendOptionalArrayField(sb, variableName, offset, totalSize);
+			AppendOptionalArrayEnumField(sb, variableName, elementTypeName, arrayEnumType.ArrayLength, offset, totalSize);
 		}
 
 		offset += totalSize;
@@ -170,26 +201,53 @@ if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
 }}");
 	}
 
+	private void AppendRequiredArrayEnumField(StringBuilder sb, string variableName, string elementTypeName, int arrayLength, int offset, int totalSize)
+	{
+		sb.AppendLine($"var serialized{variableName} = new {elementTypeName}[{arrayLength}];");
+		sb.AppendLine($"for (int i = 0; i < {arrayLength}; i++)");
+		sb.AppendLine("{");
+		sb.AppendLine($"    {elementTypeName} combinedFlags = 0;");
+		sb.AppendLine($"    foreach (var flag in {variableName}[i])");
+		sb.AppendLine($"    {{");
+		sb.AppendLine($"        combinedFlags |= ({elementTypeName})flag;");
+		sb.AppendLine($"    }}");
+		sb.AppendLine($"    serialized{variableName}[i] = combinedFlags;");
+		sb.AppendLine("}");
+		sb.AppendLine($"Buffer.BlockCopy(serialized{variableName}, 0, buffer, {offset}, {totalSize});");
+	}
+
+	private void AppendOptionalArrayEnumField(StringBuilder sb, string variableName, string elementTypeName, int arrayLength, int offset, int totalSize)
+	{
+		sb.AppendLine($@"
+if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
+{{
+    var serialized{variableName} = new {elementTypeName}[{arrayLength}];
+    for (int i = 0; i < {arrayLength}; i++)
+    {{
+        {elementTypeName} combinedFlags = 0;
+        foreach (var flag in {variableName}.Value[i])
+        {{
+            combinedFlags |= ({elementTypeName})flag;
+        }}
+        serialized{variableName}[i] = combinedFlags;
+    }}
+    Buffer.BlockCopy(serialized{variableName}, 0, buffer, {offset}, {totalSize});
+}}");
+	}
+
 	private void AppendBitmaskEnumField(StringBuilder sb, string variableName, string typeName, int size, int offset)
 	{
 		string combinedType = Utilities.GetCombinedTypeForTotalBits(size * BitsPerByte);
 		AppendBitmask(sb, variableName, combinedType, size);
-		sb.AppendLine($"BitConverter.GetBytes(combined_{variableName}).CopyTo(buffer, {offset});");
-	}
-
-	private void AppendBitmaskArrayEnumField(StringBuilder sb, string variableName, int arrayLength, int elementSize, int offset)
-	{
-		string combinedType = Utilities.GetCombinedTypeForTotalBits(arrayLength * elementSize * BitsPerByte);
-		AppendBitmask(sb, variableName, combinedType, elementSize);
-		sb.AppendLine($"BitConverter.GetBytes(combined_{variableName}).CopyTo(buffer, {offset});");
+		sb.AppendLine($"BitConverter.GetBytes(combined{variableName}).CopyTo(buffer, {offset});");
 	}
 
 	private void AppendBitmask(StringBuilder sb, string variableName, string combinedType, int elementSize)
 	{
-		sb.AppendLine($"{combinedType} combined_{variableName} = 0;");
+		sb.AppendLine($"{combinedType} combined{variableName} = 0;");
 		sb.AppendLine($"for (int i = 0; i < {variableName}.Length; i++)");
 		sb.AppendLine("{");
-		sb.AppendLine($"    combined_{variableName} |= (({combinedType}){variableName}[i]) << (i * {elementSize * BitsPerByte});");
+		sb.AppendLine($"    combined{variableName} |= (({combinedType}){variableName}[i]) << (i * {elementSize * BitsPerByte});");
 		sb.AppendLine("}");
 	}
 }

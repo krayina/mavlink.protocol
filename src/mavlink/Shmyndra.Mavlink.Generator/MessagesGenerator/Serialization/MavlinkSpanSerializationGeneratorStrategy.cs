@@ -1,6 +1,7 @@
 ﻿using System.Text;
 
 namespace Shmyndra.Mavlink.Generator;
+
 public class MavlinkSpanSerializationGeneratorStrategy : IMavlinkSerializationGeneratorStrategy
 {
 	private const int BitsPerByte = 8;
@@ -65,11 +66,33 @@ public class MavlinkSpanSerializationGeneratorStrategy : IMavlinkSerializationGe
 		}
 		else if (field.IsRequired)
 		{
-			AppendRequiredSimpleField(sb, variableName, typeName, offset, size);
+			if (typeName == "byte")
+			{
+				sb.AppendLine($"finalSpan[{offset}] = ({typeName}){variableName};");
+			}
+			else
+			{
+				sb.AppendLine($"System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesWriteMethod(typeName)}(finalSpan.Slice({offset}, {size}), ({typeName}){variableName});");
+			}
 		}
 		else
 		{
-			AppendOptionalSimpleField(sb, variableName, typeName, offset, size);
+			if (typeName == "byte")
+			{
+				sb.AppendLine($@"
+if ({variableName}.HasValue)
+{{
+    finalSpan[{offset}] = ({typeName}){variableName}.Value;
+}}");
+			}
+			else
+			{
+				sb.AppendLine($@"
+if ({variableName}.HasValue)
+{{
+    System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesWriteMethod(typeName)}(finalSpan.Slice({offset}, {size}), ({typeName}){variableName}.Value);
+}}");
+			}
 		}
 
 		offset += size;
@@ -94,21 +117,17 @@ public class MavlinkSpanSerializationGeneratorStrategy : IMavlinkSerializationGe
 
 	private void AppendArrayEnumFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, ref int offset, string variableName)
 	{
-		string typeName = arrayEnumType.ConvertedType;
-		int elementSize = Utilities.GetDotNetTypeSize(typeName);
+		string elementTypeName = arrayEnumType.ConvertedType;
+		int elementSize = Utilities.GetDotNetTypeSize(elementTypeName);
 		int totalSize = arrayEnumType.ArrayLength * elementSize;
 
-		if (field.Display == MavlinkMessageFieldDisplay.Bitmask)
+		if (field.IsRequired)
 		{
-			AppendBitmaskArrayEnumField(sb, variableName, arrayEnumType.ArrayLength, elementSize, offset);
-		}
-		else if (field.IsRequired)
-		{
-			AppendRequiredArrayField(sb, variableName, typeName, arrayEnumType.ArrayLength, offset, totalSize);
+			AppendRequiredArrayEnumField(sb, variableName, elementTypeName, arrayEnumType.ArrayLength, offset, totalSize);
 		}
 		else
 		{
-			AppendOptionalArrayField(sb, variableName, typeName, arrayEnumType.ArrayLength, offset, totalSize);
+			AppendOptionalArrayEnumField(sb, variableName, elementTypeName, arrayEnumType.ArrayLength, offset, totalSize);
 		}
 
 		offset += totalSize;
@@ -208,26 +227,49 @@ if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
 }}");
 	}
 
+	private void AppendRequiredArrayEnumField(StringBuilder sb, string variableName, string elementTypeName, int arrayLength, int offset, int totalSize)
+	{
+		sb.AppendLine($"for (int i = 0; i < {arrayLength}; i++)");
+		sb.AppendLine("{");
+		sb.AppendLine($"    {elementTypeName} combinedFlags = 0;");
+		sb.AppendLine($"    foreach (var flag in {variableName}[i])");
+		sb.AppendLine($"    {{");
+		sb.AppendLine($"        combinedFlags |= ({elementTypeName})flag;");
+		sb.AppendLine($"    }}");
+		sb.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesWriteMethod(elementTypeName)}(finalSpan.Slice({offset} + i * {totalSize / arrayLength}, {totalSize / arrayLength}), combinedFlags);");
+		sb.AppendLine("}");
+	}
+
+	private void AppendOptionalArrayEnumField(StringBuilder sb, string variableName, string elementTypeName, int arrayLength, int offset, int totalSize)
+	{
+		sb.AppendLine($@"
+if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
+{{
+    for (int i = 0; i < {arrayLength}; i++)
+    {{
+        {elementTypeName} combinedFlags = 0;
+        foreach (var flag in {variableName}.Value[i])
+        {{
+            combinedFlags |= ({elementTypeName})flag;
+        }}
+        System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesWriteMethod(elementTypeName)}(finalSpan.Slice({offset} + i * {totalSize / arrayLength}, {totalSize / arrayLength}), combinedFlags);
+    }}
+}}");
+	}
+
 	private void AppendBitmaskEnumField(StringBuilder sb, string variableName, string typeName, int size, int offset)
 	{
 		string combinedType = Utilities.GetCombinedTypeForTotalBits(size * BitsPerByte);
 		AppendBitmask(sb, variableName, combinedType, size);
-		sb.AppendLine($"System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesWriteMethod(combinedType)}(finalSpan.Slice({offset}, {size}), combined_{variableName});");
-	}
-
-	private void AppendBitmaskArrayEnumField(StringBuilder sb, string variableName, int arrayLength, int elementSize, int offset)
-	{
-		string combinedType = Utilities.GetCombinedTypeForTotalBits(arrayLength * elementSize * BitsPerByte);
-		AppendBitmask(sb, variableName, combinedType, elementSize);
-		sb.AppendLine($"System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesWriteMethod(combinedType)}(finalSpan.Slice({offset}, {arrayLength * elementSize}), combined_{variableName});");
+		sb.AppendLine($"System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesWriteMethod(combinedType)}(finalSpan.Slice({offset}, {size}), combined{variableName});");
 	}
 
 	private void AppendBitmask(StringBuilder sb, string variableName, string combinedType, int elementSize)
 	{
-		sb.AppendLine($"{combinedType} combined_{variableName} = 0;");
+		sb.AppendLine($"{combinedType} combined{variableName} = 0;");
 		sb.AppendLine($"for (int i = 0; i < {variableName}.Length; i++)");
 		sb.AppendLine("{");
-		sb.AppendLine($"    combined_{variableName} |= (({combinedType}){variableName}[i]) << (i * {elementSize * BitsPerByte});");
+		sb.AppendLine($"    combined{variableName} |= (({combinedType}){variableName}[i]) << (i * {elementSize * BitsPerByte});");
 		sb.AppendLine("}");
 	}
 
@@ -248,11 +290,11 @@ if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
 		}
 		else if (typeName == "float")
 		{
-			return $"for (int i = 0; i < {arrayLength}; i++) {{ System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset} + i * {size}, {size}), BitConverter.SingleToInt32Bits({arrayName}[i])); }}";
+			return $"for (int i = 0; i < {arrayLength}; i++) {{ System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset} + i * {size}, {size}), BitConverter.SingleToInt32Bits({arrayName}[i]); }}";
 		}
 		else if (typeName == "double")
 		{
-			return $"for (int i = 0; i < {arrayLength}; i++) {{ System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offset} + i * {size}, {size}), BitConverter.DoubleToInt64Bits({arrayName}[i])); }}";
+			return $"for (int i = 0; i < {arrayLength}; i++) {{ System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offset} + i * {size}, {size}), BitConverter.DoubleToInt64Bits({arrayName}[i]); }}";
 		}
 		else
 		{
