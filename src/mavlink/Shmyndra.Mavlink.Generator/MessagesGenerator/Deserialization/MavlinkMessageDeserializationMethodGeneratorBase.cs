@@ -382,19 +382,6 @@ public class TemporaryClass
 	}
 
 	/// <summary>
-	/// Determines the combined type (byte, ushort, uint, or ulong) based on the total number of bits.
-	/// </summary>
-	/// <param name="totalBits">The total number of bits for the field.</param>
-	/// <returns>A string representing the combined type to use for bit manipulation.</returns>
-	protected static string GetCombinedTypeForTotalBits(int totalBits)
-	{
-		if (totalBits <= 8) return "byte";
-		else if (totalBits <= 16) return "ushort";
-		else if (totalBits <= 32) return "uint";
-		else return "ulong";
-	}
-
-	/// <summary>
 	/// Gets the fully qualified enum type name based on the provided enum type information and the current namespace.
 	/// </summary>
 	/// <param name="enumType">The enum field type information.</param>

@@ -92,7 +92,7 @@ ReadOnlySpan<byte> span = local;");
 		if (field.Display == MavlinkMessageFieldDisplay.Bitmask)
 		{
 			int totalBits = size * 8;
-			string combinedType = GetCombinedTypeForTotalBits(totalBits);
+			string combinedType = Utilities.GetCombinedTypeForTotalBits(totalBits);
 			string valueExpr = enumType.ConvertedType == "byte" || enumType.ConvertedType == "sbyte" ? $"span[{offset}]" :
 							  $"BinaryPrimitives.{GetBinaryPrimitivesMethod(enumType.ConvertedType)}(span.Slice({offset}, {size}))";
 
@@ -218,7 +218,7 @@ var {varName} = ImmutableArray.CreateRange(temp{varName});
 		const int BitsPerByte = 8;
 		int shift = elementSize * BitsPerByte;
 		int totalBits = arrayEnumType.ArrayLength * elementSize * BitsPerByte;
-		string combinedType = GetCombinedTypeForTotalBits(totalBits);
+		string combinedType = Utilities.GetCombinedTypeForTotalBits(totalBits);
 		string enumTypeName = arrayEnumType.GeneratedEnum.GeneratedName;
 
 		if (field.Display == MavlinkMessageFieldDisplay.Bitmask)

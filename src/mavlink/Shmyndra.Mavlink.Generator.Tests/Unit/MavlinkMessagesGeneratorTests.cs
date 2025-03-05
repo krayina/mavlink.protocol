@@ -91,7 +91,7 @@ public class MavlinkMessagesGeneratorTests
 		// Arrange
 		var generator = new MavlinkMessageGenerator(
 			new MavlinkMessageBufferDeserializationMethodGenerator(),
-			new MavlinkMessageSpanSerializationMethodGenerator()
+			new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy())
 		);
 
 		var @namespace = "Namespace1";
@@ -152,7 +152,7 @@ public class MavlinkMessagesGeneratorTests
 		var generatedEnums = ImmutableArray<GeneratedMavlinkEnum>.Empty.ToImmutableDictionary(e => e.Name, e => e);
 		var generator = new MavlinkMessageGenerator(
 			new MavlinkMessageBufferDeserializationMethodGenerator(),
-			new MavlinkMessageSpanSerializationMethodGenerator()
+			new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy())
 		);
 		var namespaceName = "TestNamespace";
 
@@ -192,7 +192,7 @@ public class MavlinkMessagesGeneratorTests
 
 		var generator = new MavlinkMessageGenerator(
 			new MavlinkMessageBufferDeserializationMethodGenerator(),
-			new MavlinkMessageSpanSerializationMethodGenerator()
+			new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy())
 		);
 
 		// Act
@@ -888,7 +888,7 @@ public class MavlinkMessagesGeneratorTests
 	public async Task GenerateSerializeBufferMethodWithoutExtensions_WhenNoExtensions_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkBufferSerializationGeneratorStrategy());
 		var testFields = GeneratedFields;
 
 		// Act
@@ -905,7 +905,7 @@ public class MavlinkMessagesGeneratorTests
 	public async Task GenerateSerializeBufferMethodWithExtensions_WhenHasOneExtension_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkBufferSerializationGeneratorStrategy());
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
@@ -932,7 +932,7 @@ public class MavlinkMessagesGeneratorTests
 	public async Task GenerateSerializeBufferMethodWithExtensions_WhenHasOneSimpleExtensionAndCollectionExtension_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkBufferSerializationGeneratorStrategy());
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
@@ -963,7 +963,7 @@ public class MavlinkMessagesGeneratorTests
 	public async Task GenerateSerializeBufferMethodWithExtensions_WhenHasOneSimpleExtensionAndEnumExtension_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkBufferSerializationGeneratorStrategy());
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
@@ -996,7 +996,7 @@ public class MavlinkMessagesGeneratorTests
 	public async Task GenerateSerializeBufferMethodWithExtensions_WhenHasOneSimpleExtensionAndEnumArrayExtension_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageBufferSerializationMethodGenerator();
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkBufferSerializationGeneratorStrategy());
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
@@ -1030,7 +1030,7 @@ public class MavlinkMessagesGeneratorTests
 	public async Task GenerateSerializeSpanMethodWithoutExtensions_WhenNoExtensions_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageSpanSerializationMethodGenerator();
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy());
 		var testFields = GeneratedFields;
 
 		// Act
@@ -1047,7 +1047,7 @@ public class MavlinkMessagesGeneratorTests
 	public async Task GenerateSerializeSpanMethodWithExtensions_WhenHasOneExtension_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageSpanSerializationMethodGenerator();
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy());
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
@@ -1074,7 +1074,7 @@ public class MavlinkMessagesGeneratorTests
 	public async Task GenerateSerializeSpanMethodWithExtensions_WhenHasOneSimpleExtensionAndTwoCollectionExtensions_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageSpanSerializationMethodGenerator();
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy());
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
@@ -1109,7 +1109,7 @@ public class MavlinkMessagesGeneratorTests
 	public async Task GenerateSerializeSpanMethodWithExtensions_WhenHasOneSimpleExtensionAndEnumExtension_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageSpanSerializationMethodGenerator();
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy());
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
@@ -1142,7 +1142,7 @@ public class MavlinkMessagesGeneratorTests
 	public async Task GenerateSerializeSpanMethodWithExtensions_WhenHasOneSimpleExtensionAndEnumArrayExtension_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageSpanSerializationMethodGenerator();
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy());
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldType("uint8_t", "byte"),
