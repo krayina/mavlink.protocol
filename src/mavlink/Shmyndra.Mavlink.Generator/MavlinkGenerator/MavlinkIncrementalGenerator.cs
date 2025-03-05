@@ -90,15 +90,23 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator, IDisposable
 
 			if (supportsSpan)
 			{
-				return new MavlinkMessageGenerator(
+				return new MavlinkMessageGenerator
+				(
 					new MavlinkMessageSpanDeserializationMethodGenerator(),
-					new MavlinkMessageSpanSerializationMethodGenerator()
+					new MavlinkMessageSerializationMethodGenerator
+					(
+						new MavlinkSpanSerializationGeneratorStrategy()
+					)
 				);
 			}
 
-			return new MavlinkMessageGenerator(
+			return new MavlinkMessageGenerator
+			(
 				new MavlinkMessageBufferDeserializationMethodGenerator(),
-				new MavlinkMessageBufferSerializationMethodGenerator()
+				new MavlinkMessageSerializationMethodGenerator
+				(
+					new MavlinkBufferSerializationGeneratorStrategy()
+				)
 			);
 		}
 
