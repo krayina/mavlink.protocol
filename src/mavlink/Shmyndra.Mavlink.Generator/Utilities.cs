@@ -54,6 +54,26 @@ internal static class Utilities
 		return SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None ? "@" + name : name;
 	}
 
+	public static string GetSafeVariableName(string name, params string[] methodParameters)
+	{
+		if (SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None)
+		{
+			return "@" + name;
+		}
+
+		if (methodParameters.Any(p => p.Equals(name, StringComparison.OrdinalIgnoreCase)))
+		{
+			return name + "Local";
+		}
+
+		return name;
+	}
+
+	public static string ToLowerCamelCase(string name)
+	{
+		return char.ToLowerInvariant(name[0]) + name.Substring(1);
+	}
+
 	public static string ToCamelCase(string input)
 	{
 		if (string.IsNullOrEmpty(input))
@@ -277,6 +297,20 @@ internal static class Utilities
 			typeName = typeName.Substring(0, arrayStartIndex);
 		}
 		return typeName;
+	}
+
+	public static string GetQualifiedEnumTypeName(this GeneratedMavlinkMessageFieldEnumType enumType, string currentNamespace)
+	{
+		return enumType.GeneratedEnum.Namespace == currentNamespace
+			? enumType.GeneratedEnum.GeneratedName
+			: $"{enumType.GeneratedEnum.Namespace}.{enumType.GeneratedEnum.GeneratedName}";
+	}
+
+	public static string GetQualifiedEnumTypeName(this GeneratedMavlinkMessageFieldArrayEnumType enumType, string currentNamespace)
+	{
+		return enumType.GeneratedEnum.Namespace == currentNamespace
+			? enumType.GeneratedEnum.GeneratedName
+			: $"{enumType.GeneratedEnum.Namespace}.{enumType.GeneratedEnum.GeneratedName}";
 	}
 
 	public static byte CalculateCrcExtra(this IEnumerable<GeneratedMavlinkMessageField> fields, string messageName)

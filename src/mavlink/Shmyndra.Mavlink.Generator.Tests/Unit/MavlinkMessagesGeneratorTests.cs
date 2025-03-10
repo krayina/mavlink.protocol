@@ -312,8 +312,8 @@ public class MavlinkMessagesGeneratorTests
 		var generatedCode = method.NormalizeWhitespace().ToFullString();
 
 		// Assert
-		Assert.Contains("var _payload =", generatedCode);
-		Assert.Contains("Payload = _payload", generatedCode);
+		Assert.Contains("var payloadLocal =", generatedCode);
+		Assert.Contains("Payload = payloadLocal", generatedCode);
 	}
 
 	[Fact]
@@ -672,8 +672,8 @@ public class MavlinkMessagesGeneratorTests
 		var generatedCode = method.NormalizeWhitespace().ToFullString();
 
 		// Assert
-		Assert.Contains("var _payload =", generatedCode);
-		Assert.Contains("Payload = _payload", generatedCode);
+		Assert.Contains("var payloadLocal =", generatedCode);
+		Assert.Contains("Payload = payloadLocal", generatedCode);
 	}
 
 	[Fact]
@@ -1118,7 +1118,7 @@ public class MavlinkMessagesGeneratorTests
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"),
 				MavlinkFields[0]),
 			new GeneratedMavlinkMessageField("FailureFlags",
-				new GeneratedMavlinkMessageFieldArrayEnumType("ushort[]", GeneratedEnums[1], 4, new MavlinkMessageFieldEnumType("uint16_t[4]", "ESC_FAILURE_FLAGS")),
+				new GeneratedMavlinkMessageFieldArrayEnumType("ushort", GeneratedEnums[1], 4, new MavlinkMessageFieldEnumType("uint16_t[4]", "ESC_FAILURE_FLAGS")),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"),
 				MavlinkFields[6]),
 			new GeneratedMavlinkMessageField("FirstExtension",
@@ -1131,7 +1131,7 @@ public class MavlinkMessagesGeneratorTests
 					MavlinkSystemUnit.Empty,
 					false, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("SecondExtension",
-				new GeneratedMavlinkMessageFieldArrayEnumType("ushort[]", GeneratedEnums[1], 4, new MavlinkMessageFieldEnumType("uint16_t[4]", "ESC_FAILURE_FLAGS")),
+				new GeneratedMavlinkMessageFieldArrayEnumType("ushort", GeneratedEnums[1], 4, new MavlinkMessageFieldEnumType("uint16_t[4]", "ESC_FAILURE_FLAGS")),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"),
 				MavlinkFields[6] with { IsRequired = false })
 		}.ToImmutableArray();
@@ -1317,7 +1317,7 @@ public class MavlinkMessagesGeneratorTests
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"),
 				MavlinkFields[0]),
 			new GeneratedMavlinkMessageField("FailureFlags",
-				new GeneratedMavlinkMessageFieldArrayEnumType("ushort[]", GeneratedEnums[1], 4, new MavlinkMessageFieldEnumType("uint16_t[4]", "ESC_FAILURE_FLAGS")),
+				new GeneratedMavlinkMessageFieldArrayEnumType("ushort", GeneratedEnums[1], 4, new MavlinkMessageFieldEnumType("uint16_t[4]", "ESC_FAILURE_FLAGS")),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort[]"), "Index"),
 				MavlinkFields[6]),
 			new GeneratedMavlinkMessageField("FirstExtension",
@@ -1329,7 +1329,7 @@ public class MavlinkMessagesGeneratorTests
 					MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty,
 					false, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("SecondExtension",
-				new GeneratedMavlinkMessageFieldArrayEnumType("ushort[]", GeneratedEnums[1], 4, new MavlinkMessageFieldEnumType("uint16_t[4]", "ESC_FAILURE_FLAGS")),
+				new GeneratedMavlinkMessageFieldArrayEnumType("ushort", GeneratedEnums[1], 4, new MavlinkMessageFieldEnumType("uint16_t[4]", "ESC_FAILURE_FLAGS")),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort[]"), "Index"),
 				MavlinkFields[6] with { IsRequired = false })
 		}.ToImmutableArray();

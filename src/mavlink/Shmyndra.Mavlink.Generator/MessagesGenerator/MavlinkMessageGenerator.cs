@@ -45,11 +45,11 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 
 	private readonly Dictionary<(string Namespace, string MavlinkMessageName), GeneratedMavlinkMessage> _generatedMessages = new();
 
-	private readonly MavlinkMessageDeserializationMethodGeneratorBase _messageDeserializationMethodGenerator;
+	private readonly MavlinkMessageDeserializationMethodGenerator _messageDeserializationMethodGenerator;
 	private readonly MavlinkMessageSerializationMethodGenerator _messageSerializationMethodGenerator;
 
 	public MavlinkMessageGenerator(
-		MavlinkMessageDeserializationMethodGeneratorBase messageDeserializationMethodGenerator,
+		MavlinkMessageDeserializationMethodGenerator messageDeserializationMethodGenerator,
 		MavlinkMessageSerializationMethodGenerator messageSerializationMethodGenerator)
 	{
 		_messageDeserializationMethodGenerator = messageDeserializationMethodGenerator;

@@ -15,7 +15,7 @@ public class MavlinkGeneratorTests
 		IMavlinkFilesTreeBuilder filesTreeBuilder = new MavlinkFilesTreeBuilder(mavlinkParser);
 		IMavlinkEnumGenerator enumGenerator = new MavlinkEnumGenerator();
 		IMavlinkMessageGenerator messageGenerator = new MavlinkMessageGenerator(
-			new MavlinkMessageSpanDeserializationMethodGenerator(),
+			new MavlinkMessageDeserializationMethodGenerator(new MavlinkSpanDeserializationGeneratorStrategy()),
 			new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy())
 		);
 		IMavlinkSpecificationGenerator specificationGenerator = new MavlinkSpecificationGenerator();

@@ -9,26 +9,26 @@ public static class InvalidFieldHandlerFactory
 
 	public static IInvalidFieldHandler? Create(GeneratedMavlinkMessageField field)
 	{
-		if (string.IsNullOrWhiteSpace(field.Invalid))
+		if (string.IsNullOrWhiteSpace(field.Original.Invalid))
 		{
 			return null;
 		}
 
-		string invalid = field.Invalid!;
+		string invalid = field.Original.Invalid!;
 
-		return field.Type switch
+		return field.GeneratedType switch
 		{
 			GeneratedMavlinkMessageFieldArrayType arrayType when invalid.StartsWith("[") =>
 				_cache.GetOrAdd(invalid, _ => new ArrayInvalidFieldHandler(invalid, arrayType.ArrayLength)),
 			GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType when invalid.StartsWith("[") =>
 				_cache.GetOrAdd(invalid, _ => new ArrayInvalidFieldHandler(invalid, arrayEnumType.ArrayLength)),
 			GeneratedMavlinkMessageFieldEnumType enumType => CreateForEnumType(enumType, invalid),
-			GeneratedMavlinkMessageFieldType simple => CreateForSimpleType(simple, invalid),
-			_ => throw new NotSupportedException($"Invalid condition '{invalid}' is not supported for type {field.Type}")
+			GeneratedMavlinkMessageFieldPrimitiveType simple => CreateForSimpleType(simple, invalid),
+			_ => throw new NotSupportedException($"Invalid condition '{invalid}' is not supported for type {field.GeneratedType}")
 		};
 	}
 
-	private static IInvalidFieldHandler CreateForSimpleType(GeneratedMavlinkMessageFieldType simple, string invalid)
+	private static IInvalidFieldHandler CreateForSimpleType(GeneratedMavlinkMessageFieldPrimitiveType simple, string invalid)
 	{
 		if (string.Equals(invalid, "NaN", StringComparison.OrdinalIgnoreCase))
 		{
