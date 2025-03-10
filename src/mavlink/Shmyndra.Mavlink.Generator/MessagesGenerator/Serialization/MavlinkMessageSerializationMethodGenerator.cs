@@ -2,7 +2,6 @@
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Shmyndra.Mavlink.Generator.Data;
 
 namespace Shmyndra.Mavlink.Generator;
 
@@ -38,7 +37,7 @@ public class MavlinkMessageSerializationMethodGenerator
 		MethodDeclarationSyntax serializeWithoutExtensionsMethod = CreateSerializeWithoutExtensionsMethodInternal(@namespace, messageName, fields);
 		MethodDeclarationSyntax? serializeWithExtensionsMethod = null;
 
-		if (fields.Any(x => !x.IsRequired))
+		if (fields.Any(x => !x.Original.IsRequired))
 		{
 			serializeWithExtensionsMethod = CreateSerializeWithExtensionsMethodInternal(@namespace, messageName, fields);
 		}
@@ -86,7 +85,7 @@ public class MavlinkMessageSerializationMethodGenerator
 
 	private void AppendExtensionFields(StringBuilder sb, ImmutableArray<GeneratedMavlinkMessageField> fields, ref int offset, string currentNamespace)
 	{
-		foreach (var field in fields.Where(f => !f.IsRequired))
+		foreach (var field in fields.Where(f => !f.Original.IsRequired))
 		{
 			AppendFieldSerialization(sb, field, ref offset, currentNamespace, false);
 		}

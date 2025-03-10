@@ -13,7 +13,7 @@ public class MavlinkBufferSerializationGeneratorStrategy : IMavlinkSerialization
 
 	public void AppendFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string variableName, string currentNamespace)
 	{
-		switch (field.Type)
+		switch (field.GeneratedType)
 		{
 			case GeneratedMavlinkMessageFieldEnumType enumType:
 				AppendEnumFieldSerialization(sb, field, enumType, ref offset, variableName);
@@ -24,11 +24,11 @@ public class MavlinkBufferSerializationGeneratorStrategy : IMavlinkSerialization
 			case GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType:
 				AppendArrayEnumFieldSerialization(sb, field, arrayEnumType, ref offset, variableName);
 				break;
-			case GeneratedMavlinkMessageFieldType simpleType:
+			case GeneratedMavlinkMessageFieldPrimitiveType simpleType:
 				AppendSimpleFieldSerialization(sb, field, simpleType, ref offset, variableName);
 				break;
 			default:
-				throw new NotSupportedException($"Field type '{field.Type.GetType().Name}' is not supported.");
+				throw new NotSupportedException($"Field type '{field.GeneratedType.GetType().Name}' is not supported.");
 		}
 	}
 
@@ -37,12 +37,12 @@ public class MavlinkBufferSerializationGeneratorStrategy : IMavlinkSerialization
 		sb.AppendLine("return buffer;");
 	}
 
-	private void AppendSimpleFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldType simpleType, ref int offset, string variableName)
+	private void AppendSimpleFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldTypeBase simpleType, ref int offset, string variableName)
 	{
 		string typeName = simpleType.ConvertedType;
 		int size = Utilities.GetDotNetTypeSize(typeName);
 
-		if (field.IsRequired)
+		if (field.Original.IsRequired)
 		{
 			AppendRequiredSimpleField(sb, variableName, typeName, offset, size);
 		}
@@ -59,11 +59,11 @@ public class MavlinkBufferSerializationGeneratorStrategy : IMavlinkSerialization
 		string typeName = enumType.ConvertedType;
 		int size = Utilities.GetDotNetTypeSize(typeName);
 
-		if (field.Display == MavlinkMessageFieldDisplay.Bitmask)
+		if (field.Original.Display == MavlinkMessageFieldDisplay.Bitmask)
 		{
 			AppendBitmaskEnumField(sb, variableName, typeName, size, offset);
 		}
-		else if (field.IsRequired)
+		else if (field.Original.IsRequired)
 		{
 			if (typeName == "byte")
 			{
@@ -113,7 +113,7 @@ if ({variableName}.HasValue)
 	{
 		int totalSize = arrayType.ArrayLength * Utilities.GetDotNetTypeSize(arrayType.ConvertedType);
 
-		if (field.IsRequired)
+		if (field.Original.IsRequired)
 		{
 			AppendRequiredArrayField(sb, variableName, offset, totalSize);
 		}
@@ -131,7 +131,7 @@ if ({variableName}.HasValue)
 		int elementSize = Utilities.GetDotNetTypeSize(elementTypeName);
 		int totalSize = arrayEnumType.ArrayLength * elementSize;
 
-		if (field.IsRequired)
+		if (field.Original.IsRequired)
 		{
 			AppendRequiredArrayEnumField(sb, variableName, elementTypeName, arrayEnumType.ArrayLength, offset, totalSize);
 		}

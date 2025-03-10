@@ -155,13 +155,14 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 		string normalizedFieldName = Utilities.ToCamelCase(field.Name);
 		bool isArray = field.Type.TypeName.Contains("[");
 
-		GeneratedMavlinkMessageFieldType fieldType;
+		GeneratedMavlinkMessageFieldTypeBase fieldType;
 		PropertyDeclarationSyntax propertySyntax;
 
 		if (isArray)
 		{
 			var baseTypeName = field.Type.TypeName.Split('[')[0];
 			var arrayLength = int.Parse(field.Type.TypeName.Split('[', ']')[1]);
+			var convertedType = _typeMap[baseTypeName].TypeName;
 
 			if (field.Type is MavlinkMessageFieldEnumType enumType)
 			{
@@ -172,20 +173,20 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 				var fullEnumTypeName = enumNamespace != messageNamespace ? $"{enumNamespace}.{enumTypeName}" : enumTypeName;
 
 				fieldType = new GeneratedMavlinkMessageFieldArrayEnumType(
-					field.Type.TypeName,
-					_typeMap[baseTypeName].TypeName,
+					convertedType,
 					generatedEnumForArray,
-					arrayLength);
+					arrayLength,
+					enumType);
 				propertySyntax = CreatePropertyDeclaration($"{MavlinkGeneratorConstants.ImmutableArrayNamespace}<{fullEnumTypeName}>", normalizedFieldName, field.IsRequired)
 								 .AddArrayLengthAttribute(arrayLength);
 			}
 			else
 			{
-				var convertedType = _typeMap[baseTypeName].TypeName;
 				fieldType = new GeneratedMavlinkMessageFieldArrayType(
-					field.Type.TypeName,
 					convertedType,
-					arrayLength);
+					arrayLength,
+					field.Type);
+
 				propertySyntax = CreatePropertyDeclaration($"{MavlinkGeneratorConstants.ImmutableArrayNamespace}<{convertedType}>", normalizedFieldName, field.IsRequired)
 								 .AddArrayLengthAttribute(arrayLength);
 			}
@@ -198,13 +199,21 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 
 			var fullEnumTypeName = enumNamespace != messageNamespace ? $"{enumNamespace}.{enumTypeName}" : enumTypeName;
 
-			fieldType = new GeneratedMavlinkMessageFieldEnumType(enumType.TypeName, _typeMap[enumType.TypeName].TypeName, generatedEnum);
+			fieldType = new GeneratedMavlinkMessageFieldEnumType(
+				_typeMap[enumType.TypeName].TypeName,
+				generatedEnum,
+				enumType);
+
 			propertySyntax = CreatePropertyDeclaration(fullEnumTypeName, normalizedFieldName, field.IsRequired);
 		}
 		else
 		{
 			var convertedType = _typeMap[field.Type.TypeName].TypeName;
-			fieldType = new GeneratedMavlinkMessageFieldType(field.Type.TypeName, convertedType);
+
+			fieldType = new GeneratedMavlinkMessageFieldPrimitiveType(
+				convertedType,
+				field.Type);
+
 			propertySyntax = CreatePropertyDeclaration(convertedType, normalizedFieldName, field.IsRequired);
 		}
 

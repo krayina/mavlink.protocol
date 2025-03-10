@@ -9,20 +9,20 @@ internal static class MavlinkMessagesGenerator
 		foreach (var message in messages)
 		{
 			var sizeInfo = CalculateMinAndMaxSize(message);
-			byte crcExtra = message.GeneratedFields.CalculateCrcExtra(message.Name);
+			byte crcExtra = message.GeneratedFields.CalculateCrcExtra(message.Original.Name);
 			messageValues[message] = (sizeInfo.MinSize, sizeInfo.MaxSize, crcExtra);
 		}
 
 		var dictionaryEntriesByType = string.Join(",\n", messages.Select(message =>
 		{
 			var sizeInfo = messageValues[message];
-			return $"\t\t\t{{ typeof({message.GeneratedNamespace}.{message.GeneratedName}), ({message.Id}U, \"{message.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, {sizeInfo.CrcExtra}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.Deserialize(payload)) }}";
+			return $"\t\t\t{{ typeof({message.GeneratedNamespace}.{message.GeneratedName}), ({message.Original.Id}U, \"{message.Original.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, {sizeInfo.CrcExtra}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.Deserialize(payload)) }}";
 		}));
 
 		var dictionaryEntriesById = string.Join(",\n", messages.Select(message =>
 		{
 			var sizeInfo = messageValues[message];
-			return $"\t\t\t{{ {message.Id}U, (typeof({message.GeneratedNamespace}.{message.GeneratedName}), \"{message.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, {sizeInfo.CrcExtra}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.Deserialize(payload)) }}";
+			return $"\t\t\t{{ {message.Original.Id}U, (typeof({message.GeneratedNamespace}.{message.GeneratedName}), \"{message.Original.Name}\", {sizeInfo.MinSize}, {sizeInfo.MaxSize}, {sizeInfo.CrcExtra}, payload => {message.GeneratedNamespace}.{message.GeneratedName}.Deserialize(payload)) }}";
 		}));
 
 		return GetStringCode(dictionaryEntriesByType, dictionaryEntriesById);
@@ -38,7 +38,7 @@ internal static class MavlinkMessagesGenerator
 			int fieldSize = field.GetFieldSize();
 			maxSize += fieldSize;
 
-			if (field.IsRequired)
+			if (field.Original.IsRequired)
 			{
 				minSize += fieldSize;
 			}
