@@ -66,7 +66,8 @@ public class MavlinkNonBitmaskFieldBufferDeserializationStrategy : IMavlinkField
 		else if (typeName == "sbyte")
 			sb.AppendLine($"var {safeFieldName} = (sbyte){payloadParameterName}[{offset}];");
 		else
-			sb.AppendLine($"var {safeFieldName} = BitConverter.{GetBitConverterMethod(typeName)}({payloadParameterName}, {offset});");
+			sb.AppendLine($"var {safeFieldName} = BitConverter.{MavlinkBufferDeserializationExtensions
+				.GetBitConverterMethod(typeName)}({payloadParameterName}, {offset});");
 
 		offset += size;
 		return safeFieldName;
@@ -79,7 +80,8 @@ public class MavlinkNonBitmaskFieldBufferDeserializationStrategy : IMavlinkField
 		string safeValueName = Utilities.GetSafeVariableName($"{fieldName}Value", payloadParameterName);
 		string valueExpr = typeName == "byte" ? $"{payloadParameterName}[{offset}]" :
 						  typeName == "sbyte" ? $"(sbyte){payloadParameterName}[{offset}]" :
-						  $"BitConverter.{GetBitConverterMethod(typeName)}({payloadParameterName}, {offset})";
+						  $"BitConverter.{MavlinkBufferDeserializationExtensions
+						  .GetBitConverterMethod(typeName)}({payloadParameterName}, {offset})";
 
 		sb.AppendLine($@"
 {typeName}? {safeFieldName} = null;
@@ -99,7 +101,8 @@ if ({handler.GenerateValidationCondition($"{safeValueName}")})
 		int size = Utilities.GetDotNetTypeSize(typeName);
 		string fieldName = Utilities.ToLowerCamelCase(originalFieldName);
 		string valueExpr = typeName == "byte" || typeName == "sbyte" ? $"{payloadParameterName}[{offset}]" :
-						  $"BitConverter.{GetBitConverterMethod(typeName)}({payloadParameterName}, {offset})";
+						  $"BitConverter.{MavlinkBufferDeserializationExtensions
+						  .GetBitConverterMethod(typeName)}({payloadParameterName}, {offset})";
 		string enumFieldName = Utilities.ToLowerCamelCase($"{originalFieldName}Enum");
 
 		sb.AppendLine($@"
@@ -124,7 +127,8 @@ if (!Enum.IsDefined(typeof({enumTypeName}), {enumFieldName}))
 		string typeName = enumType.ConvertedType;
 		int size = Utilities.GetDotNetTypeSize(typeName);
 		string valueExpr = typeName == "byte" || typeName == "sbyte" ? $"{payloadParameterName}[{offset}]" :
-						  $"BitConverter.{GetBitConverterMethod(typeName)}({payloadParameterName}, {offset})";
+						  $"BitConverter.{MavlinkBufferDeserializationExtensions
+						  .GetBitConverterMethod(typeName)}({payloadParameterName}, {offset})";
 
 		sb.AppendLine($@"
 {enumTypeName}? {fieldName}Enum = null;
@@ -170,7 +174,8 @@ var {arrayFieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({
 		string indexVarName = $"idx{originalFieldName}";
 		string valueExpr = typeName == "byte" ? $"{payloadParameterName}[{offset} + {indexVarName}]" :
 						  typeName == "sbyte" ? $"(sbyte){payloadParameterName}[{offset} + {indexVarName}]" :
-						  $"BitConverter.{GetBitConverterMethod(typeName)}({payloadParameterName}, {offset} + {indexVarName} * {elementSize})";
+						  $"BitConverter.{MavlinkBufferDeserializationExtensions
+						  .GetBitConverterMethod(typeName)}({payloadParameterName}, {offset} + {indexVarName} * {elementSize})";
 
 		sb.AppendLine($@"
 var {fieldName} = new {typeName}?[{arrayType.ArrayLength}];
@@ -194,7 +199,8 @@ var {fieldName}Array = System.Collections.Immutable.ImmutableArray.CreateRange({
 		string arrayFieldName = Utilities.ToLowerCamelCase($"{originalFieldName}Array");
 		string indexVarName = $"idx{originalFieldName}";
 		string valueExpr = elementTypeName == "byte" ? $"{payloadParameterName}[{offset} + {indexVarName}]" :
-						  $"BitConverter.{GetBitConverterMethod(elementTypeName)}({payloadParameterName}, {offset} + {indexVarName} * {elementSize})";
+						  $"BitConverter.{MavlinkBufferDeserializationExtensions
+						  .GetBitConverterMethod(elementTypeName)}({payloadParameterName}, {offset} + {indexVarName} * {elementSize})";
 
 		sb.AppendLine($@"
 var {tempFieldName} = new {enumTypeName}[{arrayEnumType.ArrayLength}];
@@ -227,7 +233,8 @@ var {arrayFieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({
 		int totalSize = arrayEnumType.ArrayLength * elementSize;
 		string indexVarName = $"idx{originalFieldName}";
 		string valueExpr = elementTypeName == "byte" ? $"{payloadParameterName}[{offset} + {indexVarName}]" :
-						  $"BitConverter.{GetBitConverterMethod(elementTypeName)}({payloadParameterName}, {offset} + {indexVarName} * {elementSize})";
+						  $"BitConverter.{MavlinkBufferDeserializationExtensions
+						  .GetBitConverterMethod(elementTypeName)}({payloadParameterName}, {offset} + {indexVarName} * {elementSize})";
 
 		sb.AppendLine($@"
 var temp{fieldName} = new List<{enumTypeName}>({arrayEnumType.ArrayLength});
@@ -253,20 +260,4 @@ var {fieldName}Array = System.Collections.Immutable.ImmutableArray.CreateRange(t
 ");
 		offset += totalSize;
 	}
-
-	private static string GetBitConverterMethod(string typeName) => typeName switch
-	{
-		"int" => "ToInt32",
-		"uint" => "ToUInt32",
-		"short" => "ToInt16",
-		"ushort" => "ToUInt16",
-		"long" => "ToInt64",
-		"ulong" => "ToUInt64",
-		"float" => "ToSingle",
-		"double" => "ToDouble",
-		"byte" => "ToByte",
-		"sbyte" => "ToSByte",
-		"char" => "ToChar",
-		_ => throw new NotSupportedException($"Unsupported type: {typeName}")
-	};
 }
