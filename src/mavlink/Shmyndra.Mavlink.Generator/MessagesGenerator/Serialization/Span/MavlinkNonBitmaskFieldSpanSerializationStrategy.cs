@@ -2,40 +2,27 @@
 
 namespace Shmyndra.Mavlink.Generator;
 
-public class MavlinkSpanSerializationGeneratorStrategy : IMavlinkSerializationGeneratorStrategy
+public class NonBitmaskFieldSpanSerializationStrategy : IMavlinkFieldSerializationStrategy
 {
-	private const int BitsPerByte = 8;
-
-	public void AppendBufferInitialization(StringBuilder sb, int requiredSize)
-	{
-		sb.AppendLine($"var buffer = new byte[{requiredSize}];");
-		sb.AppendLine("Span<byte> finalSpan = buffer.AsSpan();");
-	}
-
-	public void AppendFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string variableName, string currentNamespace)
+	public void SerializeField(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string variableName, string currentNamespace)
 	{
 		switch (field.GeneratedType)
 		{
-			case GeneratedMavlinkMessageFieldEnumType enumType:
+			case GeneratedMavlinkMessageFieldEnumType enumType when field.Original.Display != MavlinkMessageFieldDisplay.Bitmask:
 				AppendEnumFieldSerialization(sb, field, enumType, ref offset, variableName);
 				break;
 			case GeneratedMavlinkMessageFieldArrayType arrayType:
 				AppendArrayFieldSerialization(sb, field, arrayType, ref offset, variableName);
 				break;
-			case GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType:
+			case GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType when field.Original.Display != MavlinkMessageFieldDisplay.Bitmask:
 				AppendArrayEnumFieldSerialization(sb, field, arrayEnumType, ref offset, variableName);
 				break;
 			case GeneratedMavlinkMessageFieldPrimitiveType simpleType:
 				AppendSimpleFieldSerialization(sb, field, simpleType, ref offset, variableName);
 				break;
 			default:
-				throw new NotSupportedException($"Field type '{field.GeneratedType.GetType().Name}' is not supported.");
+				throw new NotSupportedException($"Field type '{field.GeneratedType.GetType().Name}' is not supported in Non-Bitmask strategy.");
 		}
-	}
-
-	public void AppendReturnStatement(StringBuilder sb)
-	{
-		sb.AppendLine("return buffer;");
 	}
 
 	private void AppendSimpleFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldPrimitiveType simpleType, ref int offset, string variableName)
@@ -60,11 +47,7 @@ public class MavlinkSpanSerializationGeneratorStrategy : IMavlinkSerializationGe
 		string typeName = enumType.ConvertedType;
 		int size = Utilities.GetDotNetTypeSize(typeName);
 
-		if (field.Original.Display == MavlinkMessageFieldDisplay.Bitmask)
-		{
-			AppendBitmaskEnumField(sb, variableName, typeName, size, offset);
-		}
-		else if (field.Original.IsRequired)
+		if (field.Original.IsRequired)
 		{
 			if (typeName == "byte")
 			{
@@ -72,7 +55,8 @@ public class MavlinkSpanSerializationGeneratorStrategy : IMavlinkSerializationGe
 			}
 			else
 			{
-				sb.AppendLine($"System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesWriteMethod(typeName)}(finalSpan.Slice({offset}, {size}), ({typeName}){variableName});");
+				sb.AppendLine($"System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanSerializationExtensions
+					.GetBinaryPrimitivesWriteMethod(typeName)}(finalSpan.Slice({offset}, {size}), ({typeName}){variableName});");
 			}
 		}
 		else
@@ -90,7 +74,8 @@ if ({variableName}.HasValue)
 				sb.AppendLine($@"
 if ({variableName}.HasValue)
 {{
-    System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesWriteMethod(typeName)}(finalSpan.Slice({offset}, {size}), ({typeName}){variableName}.Value);
+    System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanSerializationExtensions
+		.GetBinaryPrimitivesWriteMethod(typeName)}(finalSpan.Slice({offset}, {size}), ({typeName}){variableName}.Value);
 }}");
 			}
 		}
@@ -157,7 +142,8 @@ if ({variableName}.HasValue)
 		}
 		else
 		{
-			sb.AppendLine($"System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesWriteMethod(typeName)}(finalSpan.Slice({offset}, {size}), {variableName});");
+			sb.AppendLine($"System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanSerializationExtensions
+				.GetBinaryPrimitivesWriteMethod(typeName)}(finalSpan.Slice({offset}, {size}), {variableName});");
 		}
 	}
 
@@ -208,7 +194,8 @@ if ({variableName}.HasValue)
 			sb.AppendLine($@"
 if ({variableName}.HasValue)
 {{
-    System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesWriteMethod(typeName)}(finalSpan.Slice({offset}, {size}), {variableName}.Value);
+    System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanSerializationExtensions
+		.GetBinaryPrimitivesWriteMethod(typeName)}(finalSpan.Slice({offset}, {size}), {variableName}.Value);
 }}");
 		}
 	}
@@ -236,7 +223,8 @@ if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
 		sb.AppendLine($"    {{");
 		sb.AppendLine($"        combinedFlags |= ({elementTypeName})flag;");
 		sb.AppendLine($"    }}");
-		sb.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesWriteMethod(elementTypeName)}(finalSpan.Slice({offset} + i * {totalSize / arrayLength}, {totalSize / arrayLength}), combinedFlags);");
+		sb.AppendLine($"    System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanSerializationExtensions
+			.GetBinaryPrimitivesWriteMethod(elementTypeName)}(finalSpan.Slice({offset} + i * {totalSize / arrayLength}, {totalSize / arrayLength}), combinedFlags);");
 		sb.AppendLine("}");
 	}
 
@@ -252,25 +240,10 @@ if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
         {{
             combinedFlags |= ({elementTypeName})flag;
         }}
-        System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesWriteMethod(elementTypeName)}(finalSpan.Slice({offset} + i * {totalSize / arrayLength}, {totalSize / arrayLength}), combinedFlags);
+        System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanSerializationExtensions
+			.GetBinaryPrimitivesWriteMethod(elementTypeName)}(finalSpan.Slice({offset} + i * {totalSize / arrayLength}, {totalSize / arrayLength}), combinedFlags);
     }}
 }}");
-	}
-
-	private void AppendBitmaskEnumField(StringBuilder sb, string variableName, string typeName, int size, int offset)
-	{
-		string combinedType = Utilities.GetCombinedTypeForTotalBits(size * BitsPerByte);
-		AppendBitmask(sb, variableName, combinedType, size);
-		sb.AppendLine($"System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesWriteMethod(combinedType)}(finalSpan.Slice({offset}, {size}), combined{variableName});");
-	}
-
-	private void AppendBitmask(StringBuilder sb, string variableName, string combinedType, int elementSize)
-	{
-		sb.AppendLine($"{combinedType} combined{variableName} = 0;");
-		sb.AppendLine($"for (int i = 0; i < {variableName}.Length; i++)");
-		sb.AppendLine("{");
-		sb.AppendLine($"    combined{variableName} |= (({combinedType}){variableName}[i]) << (i * {elementSize * BitsPerByte});");
-		sb.AppendLine("}");
 	}
 
 	private string GenerateArraySerialization(string arrayName, string typeName, int arrayLength, int offset)
@@ -290,47 +263,16 @@ if ({variableName}.HasValue && !{variableName}.Value.IsDefaultOrEmpty)
 		}
 		else if (typeName == "float")
 		{
-			return $"for (int i = 0; i < {arrayLength}; i++) {{ System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset} + i * {size}, {size}), BitConverter.SingleToInt32Bits({arrayName}[i]); }}";
+			return $"for (int i = 0; i < {arrayLength}; i++) {{ System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset} + i * {size}, {size}), BitConverter.SingleToInt32Bits({arrayName}[i])); }}";
 		}
 		else if (typeName == "double")
 		{
-			return $"for (int i = 0; i < {arrayLength}; i++) {{ System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offset} + i * {size}, {size}), BitConverter.DoubleToInt64Bits({arrayName}[i]); }}";
+			return $"for (int i = 0; i < {arrayLength}; i++) {{ System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offset} + i * {size}, {size}), BitConverter.DoubleToInt64Bits({arrayName}[i])); }}";
 		}
 		else
 		{
-			return $"for (int i = 0; i < {arrayLength}; i++) {{ System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesWriteMethod(typeName)}(finalSpan.Slice({offset} + i * {size}, {size}), {arrayName}[i]); }}";
-		}
-	}
-
-	private static string GetBinaryPrimitivesWriteMethod(string typeName)
-	{
-		if (typeName == "short")
-		{
-			return "WriteInt16LittleEndian";
-		}
-		else if (typeName == "ushort")
-		{
-			return "WriteUInt16LittleEndian";
-		}
-		else if (typeName == "int")
-		{
-			return "WriteInt32LittleEndian";
-		}
-		else if (typeName == "uint")
-		{
-			return "WriteUInt32LittleEndian";
-		}
-		else if (typeName == "long")
-		{
-			return "WriteInt64LittleEndian";
-		}
-		else if (typeName == "ulong")
-		{
-			return "WriteUInt64LittleEndian";
-		}
-		else
-		{
-			throw new NotSupportedException($"Type '{typeName}' is not supported for BinaryPrimitives serialization.");
+			return $"for (int i = 0; i < {arrayLength}; i++) {{ System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanSerializationExtensions
+				.GetBinaryPrimitivesWriteMethod(typeName)}(finalSpan.Slice({offset} + i * {size}, {size}), {arrayName}[i]); }}";
 		}
 	}
 }
