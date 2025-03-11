@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
+using System.Text;
 
 namespace Shmyndra.Mavlink.Generator.Tests.Unit;
 
@@ -561,6 +562,204 @@ public class MavlinkMessagesGeneratorTests
 			.UseParameters("Test");
 	}
 
+	[Fact]
+	public async Task CreateBufferBitmaskFieldDeserialization_WithByteBitmask_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var sb = new StringBuilder();
+		var bitmaskField = new GeneratedMavlinkMessageField("SomeByte",
+			new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
+			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "SomeByte"),
+			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+		int offset = 0;
+
+		var deserializationFieldGenerator = new MavlinkObjectiveBitmaskFieldBufferDeserializationStrategy();
+
+		// Act
+		var fieldName = deserializationFieldGenerator.DeserializeField(
+			sb, bitmaskField, ref offset, "TestNamespace", "payload");
+
+		var code = sb.ToString();
+
+		// Assert
+		Assert.Contains("someByte", fieldName);
+		Assert.Contains("var someByteValue = payload[0];", code);
+		Assert.Contains("var someByte = new ByteBitmask((byte)someByteValue);", code);
+	}
+
+	[Fact]
+	public async Task CreateBufferBitmaskFieldDeserialization_WithUIntBitmask_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var sb = new StringBuilder();
+		var bitmaskField = new GeneratedMavlinkMessageField("SomeUInt",
+			new GeneratedMavlinkMessageFieldPrimitiveType("uint", new MavlinkMessageFieldType("uint32_t")),
+			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint"), "SomeUInt"),
+			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+		int offset = 0;
+
+		var deserializationFieldGenerator = new MavlinkObjectiveBitmaskFieldBufferDeserializationStrategy();
+
+		// Act
+		var fieldName = deserializationFieldGenerator.DeserializeField(
+			sb, bitmaskField, ref offset, "TestNamespace", "payload");
+
+		var code = sb.ToString();
+
+		// Assert
+		Assert.Contains("someUInt", fieldName);
+		Assert.Contains("var someUIntValue = BitConverter.ToUInt32(payload, 0);", code);
+		Assert.Contains("var someUInt = new UIntBitmask((uint)someUIntValue);", code);
+	}
+
+	[Fact]
+	public async Task CreateBufferBitmaskFieldDeserialization_WithULongBitmask_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var sb = new StringBuilder();
+		var bitmaskField = new GeneratedMavlinkMessageField("SomeULong",
+			new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
+			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ulong"), "SomeULong"),
+			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+		int offset = 0;
+
+		var deserializationFieldGenerator = new MavlinkObjectiveBitmaskFieldBufferDeserializationStrategy();
+
+		// Act
+		var fieldName = deserializationFieldGenerator.DeserializeField(
+			sb, bitmaskField, ref offset, "TestNamespace", "payload");
+
+		var code = sb.ToString();
+
+		// Assert
+		Assert.Contains("someULong", fieldName);
+		Assert.Contains("var someULongValue = BitConverter.ToUInt64(payload, 0);", code);
+		Assert.Contains("var someULong = new ULongBitmask((ulong)someULongValue);", code);
+	}
+
+	[Fact]
+	public async Task CreateBufferBitmaskFieldDeserialization_WithUShortBitmask_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var sb = new StringBuilder();
+		var bitmaskField = new GeneratedMavlinkMessageField("SomeUShort",
+			new GeneratedMavlinkMessageFieldPrimitiveType("ushort", new MavlinkMessageFieldType("uint16_t")),
+			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeUShort"),
+			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+		int offset = 0;
+
+		var deserializationFieldGenerator = new MavlinkObjectiveBitmaskFieldBufferDeserializationStrategy();
+
+		// Act
+		var fieldName = deserializationFieldGenerator.DeserializeField(
+			sb, bitmaskField, ref offset, "TestNamespace", "payload");
+
+		var code = sb.ToString();
+
+		// Assert
+		Assert.Contains("someUShort", fieldName);
+		Assert.Contains("var someUShortValue = BitConverter.ToUInt16(payload, 0);", code);
+		Assert.Contains("var someUShort = new UShortBitmask((ushort)someUShortValue);", code);
+	}
+
+	[Fact]
+	public async Task CreateBufferBitmaskFieldDeserialization_WithUShortBitmaskArray_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var sb = new StringBuilder();
+		var bitmaskField = new GeneratedMavlinkMessageField("SomeUShort",
+			new GeneratedMavlinkMessageFieldArrayType("ushort", 4, new MavlinkMessageFieldType("uint16_t[4]")),
+			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeUShort"),
+			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+		int offset = 0;
+
+		var deserializationFieldGenerator = new MavlinkObjectiveBitmaskFieldBufferDeserializationStrategy();
+
+		// Act
+		var fieldName = deserializationFieldGenerator.DeserializeField(
+			sb, bitmaskField, ref offset, "TestNamespace", "payload");
+
+		var code = sb.ToString();
+
+		// Assert
+		Assert.Contains("someUShortArray", fieldName);
+		Assert.Contains(@"
+var tempSomeUShort = new UShortBitmask[4];
+for (int idxSomeUShort = 0; idxSomeUShort < 4; idxSomeUShort++)
+{
+    int elementOffset = 0 + idxSomeUShort * 2;
+    var value = BitConverter.ToUInt16(payload, elementOffset);
+    tempSomeUShort[idxSomeUShort] = new UShortBitmask((ushort)value);
+}
+var someUShortArray = System.Collections.Immutable.ImmutableArray.CreateRange(tempSomeUShort);", code);
+	}
+
+	[Fact]
+	public async Task CreateBufferBitmaskFieldDeserialization_WithEnumBitmask_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var sb = new StringBuilder();
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var bitmaskField = new GeneratedMavlinkMessageField("SomeEnum",
+			new GeneratedMavlinkMessageFieldEnumType("ushort",
+				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", [], null, null),
+				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
+			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
+			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+		int offset = 0;
+
+		var deserializationFieldGenerator = new MavlinkObjectiveBitmaskFieldBufferDeserializationStrategy();
+
+		// Act
+		var fieldName = deserializationFieldGenerator.DeserializeField(
+			sb, bitmaskField, ref offset, "TestNamespace", "payload");
+
+		var code = sb.ToString();
+
+		// Assert
+		Assert.Contains("someEnum", fieldName);
+		Assert.Contains("var someEnumValue = BitConverter.ToUInt16(payload, 0);", code);
+		Assert.Contains("var someEnum = new SomeEnumFlagsBitmask((ushort)someEnumValue);", code);
+	}
+
+	[Fact]
+	public async Task CreateBufferBitmaskFieldDeserialization_WithEnumBitmaskArray_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var sb = new StringBuilder();
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var bitmaskField = new GeneratedMavlinkMessageField("SomeEnumArray",
+			new GeneratedMavlinkMessageFieldArrayEnumType("ushort",
+				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", [], null, null),
+				4,
+				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
+			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
+			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+		int offset = 0;
+
+		var deserializationFieldGenerator = new MavlinkObjectiveBitmaskFieldBufferDeserializationStrategy();
+
+		// Act
+		var fieldName = deserializationFieldGenerator.DeserializeField(
+			sb, bitmaskField, ref offset, "TestNamespace", "payload");
+
+		var code = sb.ToString();
+
+		// Assert
+		Assert.Contains("someEnumArrayArray", fieldName);
+		Assert.Contains(@"
+var tempSomeEnumArray = new SomeEnumFlagsBitmask[4];
+for (int idxSomeEnumArray = 0; idxSomeEnumArray < 4; idxSomeEnumArray++)
+{
+    int elementOffset = 0 + idxSomeEnumArray * 2;
+    var value = BitConverter.ToUInt16(payload, elementOffset);
+    tempSomeEnumArray[idxSomeEnumArray] = new SomeEnumFlagsBitmask((ushort)value);
+}
+var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange(tempSomeEnumArray);", code);
+	}
+
 	#endregion
 
 	#region Span Deserialization tests
@@ -878,8 +1077,6 @@ public class MavlinkMessagesGeneratorTests
 			.UseParameters("Test");
 	}
 
-
-
 	[Fact]
 	public async Task CreateSpanDeserializationMethod_WithInvalidFloat_ShouldGenerateDeserialization()
 	{
@@ -942,6 +1139,199 @@ public class MavlinkMessagesGeneratorTests
 		await Verify(generatedCode)
 			.UseDirectory(SNAPSHOT_PATH)
 			.UseParameters("Test");
+	}
+
+	[Fact]
+	public async Task CreateSpanBitmaskFieldDeserialization_WithByteBitmask_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var sb = new StringBuilder();
+		var bitmaskField = new GeneratedMavlinkMessageField("SomeByte",
+			new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
+			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "SomeByte"),
+			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+		int offset = 0;
+
+		var deserializationFieldGenerator = new MavlinkObjectiveBitmaskFieldSpanDeserializationStrategy();
+
+		// Act
+		var fieldName = deserializationFieldGenerator.DeserializeField(
+			sb, bitmaskField, ref offset, "TestNamespace", "payload");
+
+		var code = sb.ToString();
+
+		// Assert
+		Assert.Contains("someByte", fieldName);
+		Assert.Contains("var someByte = new ByteBitmask((byte)payload[0]);\r\n", code);
+	}
+
+	[Fact]
+	public async Task CreateSpanBitmaskFieldDeserialization_WithUIntBitmask_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var sb = new StringBuilder();
+		var bitmaskField = new GeneratedMavlinkMessageField("SomeUInt",
+			new GeneratedMavlinkMessageFieldPrimitiveType("uint", new MavlinkMessageFieldType("uint32_t")),
+			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint"), "SomeUInt"),
+			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+		int offset = 0;
+
+		var deserializationFieldGenerator = new MavlinkObjectiveBitmaskFieldSpanDeserializationStrategy();
+
+		// Act
+		var fieldName = deserializationFieldGenerator.DeserializeField(
+			sb, bitmaskField, ref offset, "TestNamespace", "payload");
+
+		var code = sb.ToString();
+
+		// Assert
+		Assert.Contains("someUInt", fieldName);
+		Assert.Contains("var someUInt = new UIntBitmask((uint)System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(payload.Slice(0, 4)));", code);
+	}
+
+	[Fact]
+	public async Task CreateSpanBitmaskFieldDeserialization_WithULongBitmask_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var sb = new StringBuilder();
+		var bitmaskField = new GeneratedMavlinkMessageField("SomeULong",
+			new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
+			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ulong"), "SomeULong"),
+			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+		int offset = 0;
+
+		var deserializationFieldGenerator = new MavlinkObjectiveBitmaskFieldSpanDeserializationStrategy();
+
+		// Act
+		var fieldName = deserializationFieldGenerator.DeserializeField(
+			sb, bitmaskField, ref offset, "TestNamespace", "payload");
+
+		var code = sb.ToString();
+
+		// Assert
+		Assert.Contains("someULong", fieldName);
+		Assert.Contains("var someULong = new ULongBitmask((ulong)System.Buffers.Binary.BinaryPrimitives.ReadUInt64LittleEndian(payload.Slice(0, 8)));", code);
+	}
+
+	[Fact]
+	public async Task CreateSpanBitmaskFieldDeserialization_WithUShortBitmask_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var sb = new StringBuilder();
+		var bitmaskField = new GeneratedMavlinkMessageField("SomeUShort",
+			new GeneratedMavlinkMessageFieldPrimitiveType("ushort", new MavlinkMessageFieldType("uint16_t")),
+			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeUShort"),
+			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+		int offset = 0;
+
+		var deserializationFieldGenerator = new MavlinkObjectiveBitmaskFieldSpanDeserializationStrategy();
+
+		// Act
+		var fieldName = deserializationFieldGenerator.DeserializeField(
+			sb, bitmaskField, ref offset, "TestNamespace", "payload");
+
+		var code = sb.ToString();
+
+		// Assert
+		Assert.Contains("someUShort", fieldName);
+		Assert.Contains("var someUShort = new UShortBitmask((ushort)System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(payload.Slice(0, 2)));", code);
+	}
+
+	[Fact]
+	public async Task CreateSpanBitmaskFieldDeserialization_WithUShortBitmaskArray_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var sb = new StringBuilder();
+		var bitmaskField = new GeneratedMavlinkMessageField("SomeUShort",
+			new GeneratedMavlinkMessageFieldArrayType("ushort", 4, new MavlinkMessageFieldType("uint16_t[4]")),
+			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeUShort"),
+			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+		int offset = 0;
+
+		var deserializationFieldGenerator = new MavlinkObjectiveBitmaskFieldSpanDeserializationStrategy();
+
+		// Act
+		var fieldName = deserializationFieldGenerator.DeserializeField(
+			sb, bitmaskField, ref offset, "TestNamespace", "payload");
+
+		var code = sb.ToString();
+
+		// Assert
+		Assert.Contains("someUShortArray", fieldName);
+		Assert.Contains(@"
+var tempSomeUShort = new UShortBitmask[4];
+for (int idxSomeUShort = 0; idxSomeUShort < 4; idxSomeUShort++)
+{
+    int elementOffset = 0 + idxSomeUShort * 2;
+    var value = System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(payload.Slice(elementOffset, 2));
+    tempSomeUShort[idxSomeUShort] = new UShortBitmask((ushort)value);
+}
+var someUShortArray = System.Collections.Immutable.ImmutableArray.CreateRange(tempSomeUShort);", code);
+	}
+
+	[Fact]
+	public async Task CreateSpanBitmaskFieldDeserialization_WithEnumBitmask_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var sb = new StringBuilder();
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var bitmaskField = new GeneratedMavlinkMessageField("SomeEnum",
+			new GeneratedMavlinkMessageFieldEnumType("ushort",
+				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", [], null, null),
+				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
+			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
+			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+		int offset = 0;
+
+		var deserializationFieldGenerator = new MavlinkObjectiveBitmaskFieldSpanDeserializationStrategy();
+
+		// Act
+		var fieldName = deserializationFieldGenerator.DeserializeField(
+			sb, bitmaskField, ref offset, "TestNamespace", "payload");
+
+		var code = sb.ToString();
+
+		// Assert
+		Assert.Contains("someEnum", fieldName);
+		Assert.Contains("var someEnum = new SomeEnumFlagsBitmask((ushort)System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(payload.Slice(0, 2)));", code);
+	}
+
+	[Fact]
+	public async Task CreateSpanBitmaskFieldDeserialization_WithEnumBitmaskArray_ShouldGenerateDeserialization()
+	{
+		// Arrange
+		var sb = new StringBuilder();
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var bitmaskField = new GeneratedMavlinkMessageField("SomeEnumArray",
+			new GeneratedMavlinkMessageFieldArrayEnumType("ushort",
+				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", [], null, null),
+				4,
+				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
+			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
+			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+		int offset = 0;
+
+		var deserializationFieldGenerator = new MavlinkObjectiveBitmaskFieldSpanDeserializationStrategy();
+
+		// Act
+		var fieldName = deserializationFieldGenerator.DeserializeField(
+			sb, bitmaskField, ref offset, "TestNamespace", "payload");
+
+		var code = sb.ToString();
+
+		// Assert
+		Assert.Contains("someEnumArrayArray", fieldName);
+		Assert.Contains(@"
+var tempSomeEnumArray = new SomeEnumFlagsBitmask[4];
+for (int idxSomeEnumArray = 0; idxSomeEnumArray < 4; idxSomeEnumArray++)
+{
+    int elementOffset = 0 + idxSomeEnumArray * 2;
+    var value = System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(payload.Slice(elementOffset, 2));
+    tempSomeEnumArray[idxSomeEnumArray] = new SomeEnumFlagsBitmask((ushort)value);
+}
+var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange(tempSomeEnumArray);", code);
 	}
 
 	#endregion

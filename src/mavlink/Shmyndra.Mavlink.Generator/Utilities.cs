@@ -288,6 +288,18 @@ internal static class Utilities
 		else return "ulong";
 	}
 
+	public static string GetPrimitiveBitmaskType(string typeName)
+	{
+		return typeName switch
+		{
+			"byte" => "ByteBitmask",
+			"ushort" => "UShortBitmask",
+			"uint" => "UIntBitmask",
+			"ulong" => "ULongBitmask",
+			_ => throw new NotSupportedException($"Unsupported primitive bitmask type: {typeName}")
+		};
+	}
+
 	public static string GetTypeWithoutArray(this MavlinkMessageFieldType type)
 	{
 		string typeName = type.TypeName;
