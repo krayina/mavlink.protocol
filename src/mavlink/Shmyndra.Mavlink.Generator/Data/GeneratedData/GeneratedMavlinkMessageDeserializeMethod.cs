@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Shmyndra.Mavlink.Generator.Data;
+namespace Shmyndra.Mavlink.Generator;
 
 /// <summary>
 /// Represents the generated deserialization methods for a Mavlink message.

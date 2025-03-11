@@ -163,7 +163,7 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 		var newEntries = GenerateEnumMembersInternal(newEnumData.Entries, newEnumData.Name, existingNamespace).ToList();
 
 		var existingValues = existingEnum.GeneratedEntries
-			.Select(entry => entry.Value)
+			.Select(entry => entry.Original.Value)
 			.ToList();
 
 		if (newEnumData.Entries.Any())
@@ -252,10 +252,5 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 		}
 
 		return enumDeclaration;
-	}
-
-	private static string GetBaseType(EnumDeclarationSyntax enumDeclaration)
-	{
-		return enumDeclaration.BaseList?.Types.FirstOrDefault()?.ToString() ?? "int";
 	}
 }

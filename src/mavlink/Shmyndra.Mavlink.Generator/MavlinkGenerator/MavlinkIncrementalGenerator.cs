@@ -92,7 +92,11 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator, IDisposable
 			{
 				return new MavlinkMessageGenerator
 				(
-					new MavlinkMessageSpanDeserializationMethodGenerator(),
+
+					new MavlinkMessageDeserializationMethodGenerator
+					(
+						new MavlinkSpanDeserializationGeneratorStrategy()
+					),
 					new MavlinkMessageSerializationMethodGenerator
 					(
 						new MavlinkSpanSerializationGeneratorStrategy()
@@ -102,7 +106,10 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator, IDisposable
 
 			return new MavlinkMessageGenerator
 			(
-				new MavlinkMessageBufferDeserializationMethodGenerator(),
+				new MavlinkMessageDeserializationMethodGenerator
+				(
+					new MavlinkBufferDeserializationGeneratorStrategy()
+				),
 				new MavlinkMessageSerializationMethodGenerator
 				(
 					new MavlinkBufferSerializationGeneratorStrategy()
