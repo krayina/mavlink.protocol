@@ -61,7 +61,8 @@ public class MavlinkNonBitmaskFieldSpanDeserializationStrategy : IMavlinkFieldDe
 		else if (typeName == "sbyte")
 			sb.AppendLine($"var {safeFieldName} = (sbyte)span[{offset}];");
 		else
-			sb.AppendLine($"var {safeFieldName} = System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesMethod(typeName)}(span.Slice({offset}, {size}));");
+			sb.AppendLine($"var {safeFieldName} = System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanDeserializationExtensions.
+				GetBinaryPrimitivesMethod(typeName)}(span.Slice({offset}, {size}));");
 
 		offset += size;
 		return safeFieldName;
@@ -73,7 +74,8 @@ public class MavlinkNonBitmaskFieldSpanDeserializationStrategy : IMavlinkFieldDe
 		string fieldName = Utilities.ToLowerCamelCase(originalFieldName);
 		string valueExpr = typeName == "byte" ? $"span[{offset}]" :
 						  typeName == "sbyte" ? $"(sbyte)span[{offset}]" :
-						  $"System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesMethod(typeName)}(span.Slice({offset}, {size}))";
+						  $"System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanDeserializationExtensions.
+						  GetBinaryPrimitivesMethod(typeName)}(span.Slice({offset}, {size}))";
 
 		sb.AppendLine($@"
 {typeName}? {fieldName} = null;
@@ -94,7 +96,8 @@ if ({handler.GenerateValidationCondition($"{fieldName}Value")})
 		int size = Utilities.GetDotNetTypeSize(typeName);
 		string fieldName = Utilities.ToLowerCamelCase(originalFieldName);
 		string valueExpr = typeName == "byte" || typeName == "sbyte" ? $"span[{offset}]" :
-						  $"System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesMethod(typeName)}(span.Slice({offset}, {size}))";
+						  $"System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanDeserializationExtensions.
+						  GetBinaryPrimitivesMethod(typeName)}(span.Slice({offset}, {size}))";
 		string enumFieldName = Utilities.ToLowerCamelCase($"{originalFieldName}Enum");
 
 		sb.AppendLine($@"
@@ -121,7 +124,8 @@ if (!Enum.IsDefined(typeof({enumTypeName}), {enumFieldName}))
 		string fieldName = Utilities.ToLowerCamelCase(originalFieldName);
 		string enumFieldName = Utilities.ToLowerCamelCase($"{originalFieldName}Enum");
 		string valueExpr = typeName == "byte" || typeName == "sbyte" ? $"span[{offset}]" :
-						  $"System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesMethod(typeName)}(span.Slice({offset}, {size}))";
+						  $"System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanDeserializationExtensions
+						  .GetBinaryPrimitivesMethod(typeName)}(span.Slice({offset}, {size}))";
 
 		sb.AppendLine($@"
 {enumTypeName}? {enumFieldName} = null;
@@ -159,7 +163,8 @@ for (int {indexVarName} = 0; {indexVarName} < {arrayType.ArrayLength}; {indexVar
 {{
     {tempFieldName}[{indexVarName}] = {(typeName == "byte" ? $"span[{offset} + {indexVarName}]" :
 									   typeName == "sbyte" ? $"(sbyte)span[{offset} + {indexVarName}]" :
-									   $"System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesMethod(typeName)}(span.Slice({offset} + {indexVarName} * {elementSize}, {elementSize}))")};
+									   $"System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanDeserializationExtensions
+									   .GetBinaryPrimitivesMethod(typeName)}(span.Slice({offset} + {indexVarName} * {elementSize}, {elementSize}))")};
 }}
 var {arrayFieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({tempFieldName});
 ");
@@ -177,7 +182,7 @@ var {arrayFieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({
 		string indexVarName = $"idx{originalFieldName}";
 		string valueExpr = typeName == "byte" ? $"span[{offset} + {indexVarName}]" :
 						  typeName == "sbyte" ? $"(sbyte)span[{offset} + {indexVarName}]" :
-						  $"System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesMethod(typeName)}(span.Slice({offset} + {indexVarName} * {elementSize}, {elementSize}))";
+						  $"System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanDeserializationExtensions.GetBinaryPrimitivesMethod(typeName)}(span.Slice({offset} + {indexVarName} * {elementSize}, {elementSize}))";
 
 		sb.AppendLine($@"
 var {fieldName} = new {typeName}?[{arrayType.ArrayLength}];
@@ -202,7 +207,8 @@ var {arrayFieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({
 		string arrayFieldName = Utilities.ToLowerCamelCase($"{originalFieldName}Array");
 		string indexVarName = $"idx{originalFieldName}";
 		string valueExpr = elementTypeName == "byte" ? $"span[{offset} + {indexVarName}]" :
-						  $"System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesMethod(elementTypeName)}(span.Slice({offset} + {indexVarName} * {elementSize}, {elementSize}))";
+						  $"System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanDeserializationExtensions
+						  .GetBinaryPrimitivesMethod(elementTypeName)}(span.Slice({offset} + {indexVarName} * {elementSize}, {elementSize}))";
 
 		sb.AppendLine($@"
 var {tempFieldName} = new {enumTypeName}[{arrayEnumType.ArrayLength}];
@@ -237,7 +243,8 @@ var {arrayFieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({
 		string arrayFieldName = Utilities.ToLowerCamelCase($"{originalFieldName}Array");
 		string indexVarName = $"idx{originalFieldName}";
 		string valueExpr = elementTypeName == "byte" ? $"span[{offset} + {indexVarName}]" :
-						  $"System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesMethod(elementTypeName)}(span.Slice({offset} + {indexVarName} * {elementSize}, {elementSize}))";
+						  $"System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanDeserializationExtensions
+						  .GetBinaryPrimitivesMethod(elementTypeName)}(span.Slice({offset} + {indexVarName} * {elementSize}, {elementSize}))";
 
 		sb.AppendLine($@"
 var {tempFieldName} = new List<{enumTypeName}>({arrayEnumType.ArrayLength});
@@ -264,18 +271,4 @@ var {arrayFieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({
 		offset += totalSize;
 		return arrayFieldName;
 	}
-
-	private static string GetBinaryPrimitivesMethod(string typeName) => typeName switch
-	{
-		"int" => "ReadInt32LittleEndian",
-		"uint" => "ReadUInt32LittleEndian",
-		"short" => "ReadInt16LittleEndian",
-		"ushort" => "ReadUInt16LittleEndian",
-		"char" => "ReadUInt16LittleEndian",
-		"long" => "ReadInt64LittleEndian",
-		"ulong" => "ReadUInt64LittleEndian",
-		"float" => "ReadSingleLittleEndian",
-		"double" => "ReadDoubleLittleEndian",
-		_ => throw new NotSupportedException($"Unsupported type: {typeName}")
-	};
 }
