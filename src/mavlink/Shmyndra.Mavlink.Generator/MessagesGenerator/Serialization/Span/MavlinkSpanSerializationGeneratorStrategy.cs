@@ -23,16 +23,17 @@ public class MavlinkSpanSerializationGeneratorStrategy : IMavlinkSerializationGe
 		sb.AppendLine("Span<byte> finalSpan = buffer.AsSpan();");
 	}
 
-	public void AppendFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string variableName, string currentNamespace)
+	public void AppendFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset)
 	{
-		if (field.Original.Display == MavlinkMessageFieldDisplay.Bitmask &&
-			(field.GeneratedType is GeneratedMavlinkMessageFieldEnumType || field.GeneratedType is GeneratedMavlinkMessageFieldArrayEnumType))
+		if (field.Original.Display == MavlinkMessageFieldDisplay.Bitmask
+			&& (field.GeneratedType is GeneratedMavlinkMessageFieldEnumType
+				|| field.GeneratedType is GeneratedMavlinkMessageFieldArrayEnumType))
 		{
-			_bitmaskStrategy.SerializeField(sb, field, ref offset, variableName, currentNamespace);
+			_bitmaskStrategy.SerializeField(sb, field, ref offset);
 		}
 		else
 		{
-			_nonBitmaskStrategy.SerializeField(sb, field, ref offset, variableName, currentNamespace);
+			_nonBitmaskStrategy.SerializeField(sb, field, ref offset);
 		}
 	}
 

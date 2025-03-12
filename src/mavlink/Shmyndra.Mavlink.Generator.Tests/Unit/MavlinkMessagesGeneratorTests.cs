@@ -1346,7 +1346,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var testFields = GeneratedFields;
 
 		// Act
-		var methodSyntax = serializeMethodGenerator.CreateSerializeWithoutExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithoutExtensionsMethodInternal(testFields);
 		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
 
 		// Assert
@@ -1391,7 +1391,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		}.ToImmutableArray();
 
 		// Act
-		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal(testFields);
 		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
 
 		// Assert
@@ -1436,7 +1436,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		}.ToImmutableArray();
 
 		// Act
-		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal(testFields);
 		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
 
 		// Assert
@@ -1487,7 +1487,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		}.ToImmutableArray();
 
 		// Act
-		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal(testFields);
 		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
 
 		// Assert
@@ -1527,7 +1527,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		}.ToImmutableArray();
 
 		// Act
-		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal(testFields);
 		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
 
 		// Assert
@@ -1550,7 +1550,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var serializationFieldGenerator = new MavlinkObjectiveBitmaskFieldBufferSerializationStrategy();
 
 		// Act
-		serializationFieldGenerator.SerializeField(sb, bitmaskField, ref offset, "SomeByte", "TestNamespace");
+		serializationFieldGenerator.SerializeField(sb, bitmaskField, ref offset);
 
 		var code = sb.ToString();
 
@@ -1572,7 +1572,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var serializationFieldGenerator = new MavlinkObjectiveBitmaskFieldBufferSerializationStrategy();
 
 		// Act
-		serializationFieldGenerator.SerializeField(sb, bitmaskField, ref offset, "SomeUInt", "TestNamespace");
+		serializationFieldGenerator.SerializeField(sb, bitmaskField, ref offset);
 
 		var code = sb.ToString();
 
@@ -1594,7 +1594,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var serializationFieldGenerator = new MavlinkObjectiveBitmaskFieldBufferSerializationStrategy();
 
 		// Act
-		serializationFieldGenerator.SerializeField(sb, bitmaskField, ref offset, "SomeULong", "TestNamespace");
+		serializationFieldGenerator.SerializeField(sb, bitmaskField, ref offset);
 
 		var code = sb.ToString();
 
@@ -1616,7 +1616,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var serializationFieldGenerator = new MavlinkObjectiveBitmaskFieldBufferSerializationStrategy();
 
 		// Act
-		serializationFieldGenerator.SerializeField(sb, bitmaskField, ref offset, "SomeUShort", "TestNamespace");
+		serializationFieldGenerator.SerializeField(sb, bitmaskField, ref offset);
 
 		var code = sb.ToString();
 
@@ -1638,7 +1638,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var serializationFieldGenerator = new MavlinkObjectiveBitmaskFieldBufferSerializationStrategy();
 
 		// Act
-		serializationFieldGenerator.SerializeField(sb, bitmaskField, ref offset, "SomeUShort", "TestNamespace");
+		serializationFieldGenerator.SerializeField(sb, bitmaskField, ref offset);
 
 		var code = sb.ToString();
 
@@ -1669,7 +1669,7 @@ Buffer.BlockCopy(serializedSomeUShort, 0, buffer, 0, 8);", code);
 		var serializationFieldGenerator = new MavlinkObjectiveBitmaskFieldBufferSerializationStrategy();
 
 		// Act
-		serializationFieldGenerator.SerializeField(sb, bitmaskField, ref offset, "SomeEnum", "TestNamespace");
+		serializationFieldGenerator.SerializeField(sb, bitmaskField, ref offset);
 
 		var code = sb.ToString();
 
@@ -1696,7 +1696,7 @@ Buffer.BlockCopy(serializedSomeUShort, 0, buffer, 0, 8);", code);
 		var serializationFieldGenerator = new MavlinkObjectiveBitmaskFieldBufferSerializationStrategy();
 
 		// Act
-		serializationFieldGenerator.SerializeField(sb, bitmaskField, ref offset, "SomeEnumArray", "TestNamespace");
+		serializationFieldGenerator.SerializeField(sb, bitmaskField, ref offset);
 
 		var code = sb.ToString();
 
@@ -1721,7 +1721,7 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		var testFields = GeneratedFields;
 
 		// Act
-		var methodSyntax = serializeMethodGenerator.CreateSerializeWithoutExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithoutExtensionsMethodInternal(testFields);
 		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
 
 		// Assert
@@ -1759,7 +1759,7 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		}.ToImmutableArray();
 
 		// Act
-		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal(testFields);
 		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
 
 		// Assert
@@ -1810,7 +1810,7 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		}.ToImmutableArray();
 
 		// Act
-		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal(testFields);
 		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
 
 		// Assert
@@ -1859,7 +1859,7 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		}.ToImmutableArray();
 
 		// Act
-		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal(testFields);
 		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
 
 		// Assert
@@ -1898,7 +1898,7 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		}.ToImmutableArray();
 
 		// Act
-		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal("TestNamespace", "TestMavlinkMessage", testFields);
+		var methodSyntax = serializeMethodGenerator.CreateSerializeWithExtensionsMethodInternal(testFields);
 		var generatedCode = methodSyntax.NormalizeWhitespace().ToFullString();
 
 		// Assert

@@ -4,5 +4,5 @@ namespace Shmyndra.Mavlink.Generator;
 
 public interface IMavlinkFieldSerializationStrategy
 {
-	void SerializeField(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string variableName, string currentNamespace);
+	void SerializeField(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset);
 }

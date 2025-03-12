@@ -115,7 +115,7 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 			.CreateDeserializeMethod(@namespace, normalizedName, generatedFields);
 
 		var serializeMethods = _messageSerializationMethodGenerator
-			.CreateSerializeMethod(@namespace, normalizedName, generatedFields);
+			.CreateSerializeMethod(generatedFields);
 
 		var recordDeclaration = CreateRecordStructDeclaration(id, normalizedName, propertyDeclarations, message.Description, message.Name)
 			.AddMembers(deserializeMethod.DeserializeWithoutExtensionsMethod)

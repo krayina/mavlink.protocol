@@ -32,69 +32,63 @@ public class MavlinkMessageSerializationMethodGenerator
 	/// <param name="messageName">The name of the generated message type.</param>
 	/// <param name="fields">An immutable array of fields representing the Mavlink message.</param>
 	/// <returns>A <see cref="GeneratedMavlinkMessageSerializeMethod"/> containing the serialization methods.</returns>
-	public GeneratedMavlinkMessageSerializeMethod CreateSerializeMethod(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
+	public GeneratedMavlinkMessageSerializeMethod CreateSerializeMethod(ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
-		MethodDeclarationSyntax serializeWithoutExtensionsMethod = CreateSerializeWithoutExtensionsMethodInternal(@namespace, messageName, fields);
+		MethodDeclarationSyntax serializeWithoutExtensionsMethod = CreateSerializeWithoutExtensionsMethodInternal(fields);
 		MethodDeclarationSyntax? serializeWithExtensionsMethod = null;
 
 		if (fields.Any(x => !x.Original.IsRequired))
 		{
-			serializeWithExtensionsMethod = CreateSerializeWithExtensionsMethodInternal(@namespace, messageName, fields);
+			serializeWithExtensionsMethod = CreateSerializeWithExtensionsMethodInternal(fields);
 		}
 
-		return new GeneratedMavlinkMessageSerializeMethod(@namespace, messageName, fields, serializeWithoutExtensionsMethod, serializeWithExtensionsMethod);
+		return new GeneratedMavlinkMessageSerializeMethod(fields, serializeWithoutExtensionsMethod, serializeWithExtensionsMethod);
 	}
 
-	internal MethodDeclarationSyntax CreateSerializeWithoutExtensionsMethodInternal(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
+	internal MethodDeclarationSyntax CreateSerializeWithoutExtensionsMethodInternal(ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
 		var methodBody = new StringBuilder();
 		int offset = 0;
 
 		_serializationStrategy.AppendBufferInitialization(methodBody, fields.CalculateMinSize());
-		AppendNonExtensionFields(methodBody, fields, ref offset, @namespace);
+		AppendNonExtensionFields(methodBody, fields, ref offset);
 		_serializationStrategy.AppendReturnStatement(methodBody);
 
 		return WrapMethod(SerializeWithoutExtensionsMethodName, methodBody.ToString());
 	}
 
-	internal MethodDeclarationSyntax CreateSerializeWithExtensionsMethodInternal(string @namespace, string messageName, ImmutableArray<GeneratedMavlinkMessageField> fields)
+	internal MethodDeclarationSyntax CreateSerializeWithExtensionsMethodInternal(ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
 		var methodBody = new StringBuilder();
 		int offset = 0;
 
 		_serializationStrategy.AppendBufferInitialization(methodBody, fields.CalculateFinalSize());
-		AppendNonExtensionFields(methodBody, fields, ref offset, @namespace);
-		AppendExtensionFields(methodBody, fields, ref offset, @namespace);
+		AppendNonExtensionFields(methodBody, fields, ref offset);
+		AppendExtensionFields(methodBody, fields, ref offset);
 		_serializationStrategy.AppendReturnStatement(methodBody);
 
 		return WrapMethod(SerializeWithExtensionsMethodName, methodBody.ToString());
 	}
 
-	private void AppendNonExtensionFields(StringBuilder sb, ImmutableArray<GeneratedMavlinkMessageField> fields, ref int offset, string currentNamespace)
+	private void AppendNonExtensionFields(StringBuilder sb, ImmutableArray<GeneratedMavlinkMessageField> fields, ref int offset)
 	{
 		var (requiredFields, arrayFields) = fields.GetSortedFields();
 		foreach (var field in requiredFields)
 		{
-			AppendFieldSerialization(sb, field, ref offset, currentNamespace, true);
+			_serializationStrategy.AppendFieldSerialization(sb, field, ref offset);
 		}
 		foreach (var field in arrayFields)
 		{
-			AppendFieldSerialization(sb, field, ref offset, currentNamespace, true);
+			_serializationStrategy.AppendFieldSerialization(sb, field, ref offset);
 		}
 	}
 
-	private void AppendExtensionFields(StringBuilder sb, ImmutableArray<GeneratedMavlinkMessageField> fields, ref int offset, string currentNamespace)
+	private void AppendExtensionFields(StringBuilder sb, ImmutableArray<GeneratedMavlinkMessageField> fields, ref int offset)
 	{
 		foreach (var field in fields.Where(f => !f.Original.IsRequired))
 		{
-			AppendFieldSerialization(sb, field, ref offset, currentNamespace, false);
+			_serializationStrategy.AppendFieldSerialization(sb, field, ref offset);
 		}
-	}
-
-	private void AppendFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string currentNamespace, bool isRequired)
-	{
-		string varName = Utilities.EscapeReservedKeyword(field.GeneratedName);
-		_serializationStrategy.AppendFieldSerialization(sb, field, ref offset, varName, currentNamespace);
 	}
 
 	private MethodDeclarationSyntax WrapMethod(string methodName, string methodBody)

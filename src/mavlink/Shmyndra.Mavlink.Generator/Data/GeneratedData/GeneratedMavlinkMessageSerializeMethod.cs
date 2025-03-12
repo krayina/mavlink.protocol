@@ -9,16 +9,6 @@ namespace Shmyndra.Mavlink.Generator;
 public record GeneratedMavlinkMessageSerializeMethod
 {
 	/// <summary>
-	/// Gets the namespace of the generated message.
-	/// </summary>
-	public string Namespace { get; init; }
-
-	/// <summary>
-	/// Gets the name of the generated message.
-	/// </summary>
-	public string MessageName { get; init; }
-
-	/// <summary>
 	/// Gets the immutable array of fields representing the Mavlink message.
 	/// </summary>
 	public ImmutableArray<GeneratedMavlinkMessageField> Fields { get; init; }
@@ -42,14 +32,10 @@ public record GeneratedMavlinkMessageSerializeMethod
 	/// <param name="serializeWithoutExtensionsMethod">The generated SerializeWithoutExtensions method.</param>
 	/// <param name="serializeWithExtensionsMethod">The generated SerializeWithExtensions method.</param>
 	internal GeneratedMavlinkMessageSerializeMethod(
-		string @namespace,
-		string messageName,
 		ImmutableArray<GeneratedMavlinkMessageField> fields,
 		MethodDeclarationSyntax serializeWithoutExtensionsMethod,
 		MethodDeclarationSyntax? serializeWithExtensionsMethod)
 	{
-		Namespace = @namespace;
-		MessageName = messageName;
 		Fields = fields;
 		SerializeWithoutExtensionsMethod = serializeWithoutExtensionsMethod;
 		SerializeWithExtensionsMethod = serializeWithExtensionsMethod;

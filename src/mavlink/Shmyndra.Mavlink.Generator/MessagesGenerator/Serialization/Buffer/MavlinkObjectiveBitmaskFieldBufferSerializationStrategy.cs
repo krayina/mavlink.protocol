@@ -4,7 +4,7 @@ namespace Shmyndra.Mavlink.Generator;
 
 public class MavlinkObjectiveBitmaskFieldBufferSerializationStrategy : IMavlinkFieldSerializationStrategy
 {
-	public void SerializeField(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string variableName, string currentNamespace)
+	public void SerializeField(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset)
 	{
 		if (field.Original.Display != MavlinkMessageFieldDisplay.Bitmask)
 		{
@@ -14,124 +14,126 @@ public class MavlinkObjectiveBitmaskFieldBufferSerializationStrategy : IMavlinkF
 		switch (field.GeneratedType)
 		{
 			case GeneratedMavlinkMessageFieldPrimitiveType primitiveType:
-				AppendPrimitiveBitmaskField(sb, field, primitiveType, ref offset, variableName);
+				AppendPrimitiveBitmaskField(sb, field, primitiveType, ref offset);
 				break;
 			case GeneratedMavlinkMessageFieldEnumType enumType:
-				AppendEnumBitmaskField(sb, field, enumType, ref offset, variableName, currentNamespace);
+				AppendEnumBitmaskField(sb, field, enumType, ref offset);
 				break;
 			case GeneratedMavlinkMessageFieldArrayType arrayType:
-				AppendArrayBitmaskField(sb, field, arrayType, ref offset, variableName);
+				AppendArrayBitmaskField(sb, field, arrayType, ref offset);
 				break;
 			case GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType:
-				AppendArrayEnumBitmaskField(sb, field, arrayEnumType, ref offset, variableName, currentNamespace);
+				AppendArrayEnumBitmaskField(sb, field, arrayEnumType, ref offset);
 				break;
 			default:
 				throw new NotSupportedException($"Field type '{field.GeneratedType.GetType().Name}' is not supported in Objective Bitmask strategy.");
 		}
 	}
 
-	private void AppendPrimitiveBitmaskField(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldPrimitiveType primitiveType, ref int offset, string variableName)
+	private void AppendPrimitiveBitmaskField(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldPrimitiveType primitiveType, ref int offset)
 	{
 		int size = field.GetFieldSize();
-		string safeVarName = Utilities.GetSafeVariableName(variableName);
+		string propertyName = field.GeneratedName;
 
 		if (field.Original.IsRequired)
 		{
-			sb.AppendLine($"BitConverter.GetBytes({safeVarName}.Bitmask).CopyTo(buffer, {offset});");
+			sb.AppendLine($"BitConverter.GetBytes({propertyName}.Bitmask).CopyTo(buffer, {offset});");
 		}
 		else
 		{
 			sb.AppendLine($@"
-if ({safeVarName}.HasValue)
+if ({propertyName}.HasValue)
 {{
-    BitConverter.GetBytes({safeVarName}.Value.Bitmask).CopyTo(buffer, {offset});
+    BitConverter.GetBytes({propertyName}.Value.Bitmask).CopyTo(buffer, {offset});
 }}");
 		}
 
 		offset += size;
 	}
 
-	private void AppendEnumBitmaskField(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldEnumType enumType, ref int offset, string variableName, string currentNamespace)
+	private void AppendEnumBitmaskField(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldEnumType enumType, ref int offset)
 	{
 		int size = field.GetFieldSize();
-		string safeVarName = Utilities.GetSafeVariableName(variableName);
+		string propertyName = field.GeneratedName;
 
 		if (field.Original.IsRequired)
 		{
-			sb.AppendLine($"BitConverter.GetBytes({safeVarName}.Bitmask).CopyTo(buffer, {offset});");
+			sb.AppendLine($"BitConverter.GetBytes({propertyName}.Bitmask).CopyTo(buffer, {offset});");
 		}
 		else
 		{
 			sb.AppendLine($@"
-if ({safeVarName}.HasValue)
+if ({propertyName}.HasValue)
 {{
-    BitConverter.GetBytes({safeVarName}.Value.Bitmask).CopyTo(buffer, {offset});
+    BitConverter.GetBytes({propertyName}.Value.Bitmask).CopyTo(buffer, {offset});
 }}");
 		}
 
 		offset += size;
 	}
 
-	private void AppendArrayBitmaskField(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldArrayType arrayType, ref int offset, string variableName)
+	private void AppendArrayBitmaskField(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldArrayType arrayType, ref int offset)
 	{
 		int totalSize = field.GetFieldSize();
-		string safeVarName = Utilities.GetSafeVariableName(variableName);
+		string propertyName = field.GeneratedName;
+		string serializedVarName = $"serialized{field.GeneratedName}";
 		string arrayLength = arrayType.ArrayLength.ToString();
 		string elementType = arrayType.ConvertedType;
 
 		if (field.Original.IsRequired)
 		{
-			sb.AppendLine($"var serialized{safeVarName} = new {elementType}[{arrayLength}];");
+			sb.AppendLine($"var {serializedVarName} = new {elementType}[{arrayLength}];");
 			sb.AppendLine($"for (int i = 0; i < {arrayLength}; i++)");
 			sb.AppendLine("{");
-			sb.AppendLine($"    serialized{safeVarName}[i] = {safeVarName}[i].Bitmask;");
+			sb.AppendLine($"    {serializedVarName}[i] = {propertyName}[i].Bitmask;");
 			sb.AppendLine("}");
-			sb.AppendLine($"Buffer.BlockCopy(serialized{safeVarName}, 0, buffer, {offset}, {totalSize});");
+			sb.AppendLine($"Buffer.BlockCopy({serializedVarName}, 0, buffer, {offset}, {totalSize});");
 		}
 		else
 		{
 			sb.AppendLine($@"
-if ({safeVarName}.HasValue && !{safeVarName}.Value.IsDefaultOrEmpty)
+if ({propertyName}.HasValue && !{propertyName}.Value.IsDefaultOrEmpty)
 {{
-    var serialized{safeVarName} = new {elementType}[{arrayLength}];
+    var {serializedVarName} = new {elementType}[{arrayLength}];
     for (int i = 0; i < {arrayLength}; i++)
     {{
-        serialized{safeVarName}[i] = {safeVarName}.Value[i].Bitmask;
+        {serializedVarName}[i] = {propertyName}.Value[i].Bitmask;
     }}
-    Buffer.BlockCopy(serialized{safeVarName}, 0, buffer, {offset}, {totalSize});
+    Buffer.BlockCopy({serializedVarName}, 0, buffer, {offset}, {totalSize});
 }}");
 		}
 
 		offset += totalSize;
 	}
 
-	private void AppendArrayEnumBitmaskField(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, ref int offset, string variableName, string currentNamespace)
+	private void AppendArrayEnumBitmaskField(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, ref int offset)
 	{
 		int totalSize = field.GetFieldSize();
-		string safeVarName = Utilities.GetSafeVariableName(variableName);
+		string propertyName = field.GeneratedName;
+		string serializedVarName = $"serialized{field.GeneratedName}";
 		string arrayLength = arrayEnumType.ArrayLength.ToString();
 		string elementType = arrayEnumType.ConvertedType;
 
 		if (field.Original.IsRequired)
 		{
-			sb.AppendLine($"var serialized{safeVarName} = new {elementType}[{arrayLength}];");
+			sb.AppendLine($"var {serializedVarName} = new {elementType}[{arrayLength}];");
 			sb.AppendLine($"for (int i = 0; i < {arrayLength}; i++)");
 			sb.AppendLine("{");
-			sb.AppendLine($"    serialized{safeVarName}[i] = {safeVarName}[i].Bitmask;");
+			sb.AppendLine($"    {serializedVarName}[i] = {propertyName}[i].Bitmask;");
 			sb.AppendLine("}");
-			sb.AppendLine($"Buffer.BlockCopy(serialized{safeVarName}, 0, buffer, {offset}, {totalSize});");
+			sb.AppendLine($"Buffer.BlockCopy({serializedVarName}, 0, buffer, {offset}, {totalSize});");
 		}
 		else
 		{
 			sb.AppendLine($@"
-if ({safeVarName}.HasValue && !{safeVarName}.Value.IsDefaultOrEmpty)
+if ({propertyName}.HasValue && !{propertyName}.Value.IsDefaultOrEmpty)
 {{
-    var serialized{safeVarName} = new {elementType}[{arrayLength}];
+    var {serializedVarName} = new {elementType}[{arrayLength}];
     for (int i = 0; i < {arrayLength}; i++)
     {{
-        serialized{safeVarName}[i] = {safeVarName}.Value[i].Bitmask;
+        {serializedVarName}[i] = {propertyName}.Value[i].Bitmask;
     }}
-    Buffer.BlockCopy(serialized{safeVarName}, 0, buffer, {offset}, {totalSize});
+    Buffer.BlockCopy({serializedVarName}, 0, buffer, {offset}, {totalSize});
 }}");
 		}
 
