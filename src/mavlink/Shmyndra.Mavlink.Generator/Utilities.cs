@@ -311,6 +311,16 @@ internal static class Utilities
 		return typeName;
 	}
 
+	public static string GetQualifiedBitmaskTypeName(this GeneratedMavlinkMessageFieldEnumType enumType, string currentNamespace)
+	{
+		return $"{enumType.GetQualifiedEnumTypeName(currentNamespace)}Bitmask";
+	}
+
+	public static string GetQualifiedBitmaskTypeName(this GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, string currentNamespace)
+	{
+		return $"{arrayEnumType.GetQualifiedEnumTypeName(currentNamespace)}Bitmask";
+	}
+
 	public static string GetQualifiedEnumTypeName(this GeneratedMavlinkMessageFieldEnumType enumType, string currentNamespace)
 	{
 		return enumType.GeneratedEnum.Namespace == currentNamespace
