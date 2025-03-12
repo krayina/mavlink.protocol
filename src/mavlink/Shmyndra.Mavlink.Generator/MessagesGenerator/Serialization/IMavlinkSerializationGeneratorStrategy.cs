@@ -10,6 +10,6 @@ namespace Shmyndra.Mavlink.Generator;
 public interface IMavlinkSerializationGeneratorStrategy
 {
 	void AppendBufferInitialization(StringBuilder sb, int requiredSize);
-	void AppendFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string variableName, string currentNamespace);
+	void AppendFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset);
 	void AppendReturnStatement(StringBuilder sb);
 }
