@@ -1,4 +1,6 @@
 ﻿using System.Collections.Immutable;
+using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -137,15 +139,6 @@ internal static class Utilities
 		return node.WithLeadingTrivia(existingTrivia.AddRange(remarksTrivia));
 	}
 
-	public static string DetermineEnumBaseType(IEnumerable<uint> values)
-	{
-		var maxValue = values.Max();
-		if (maxValue <= byte.MaxValue) return "byte";
-		if (maxValue <= ushort.MaxValue) return "ushort";
-		if (maxValue <= uint.MaxValue) return "uint";
-		throw new InvalidOperationException("The enum base type value cannot be greater than uint.");
-	}
-
 	public static PropertyDeclarationSyntax AddArrayLengthAttribute(this PropertyDeclarationSyntax property, int length)
 	{
 		return property.AddAttributeLists(
@@ -212,9 +205,110 @@ internal static class Utilities
 			);
 	}
 
+	public static string DetermineEnumBaseType(IEnumerable<uint> values)
+	{
+		var maxValue = values.Max();
+		if (maxValue <= byte.MaxValue) return "byte";
+		if (maxValue <= ushort.MaxValue) return "ushort";
+		if (maxValue <= uint.MaxValue) return "uint";
+		throw new InvalidOperationException("The enum base type value cannot be greater than uint.");
+	}
+
 	public static string ToNormalizedString(this SyntaxNode syntax)
 	{
-		return syntax.NormalizeWhitespace().ToFullString().Replace("? )", "?)");
+		var code = syntax.ToFullString();
+		code = Regex.Replace(code, @"#if(\w+)", "#if $1");
+		code = Regex.Replace(code, @"#else(\w+)", "#else $1");
+		code = Regex.Replace(code, @"#endif(\w+)", "#endif $1");
+		code = code.Replace("? )", "?)");
+		return IndentCodeWithNesting(code);
+	}
+
+	private static string IndentCodeWithNesting(string code)
+	{
+		var lines = code.Split(new[] { "\n", "\r\n" }, StringSplitOptions.None);
+		var result = new StringBuilder();
+		int indentLevel = 0;
+		int? ifIndentLevel = null;
+
+		foreach (var line in lines)
+		{
+			var trimmedLine = line.Trim();
+			if (string.IsNullOrWhiteSpace(trimmedLine))
+			{
+				result.AppendLine();
+				continue;
+			}
+
+			if (trimmedLine.StartsWith("}"))
+			{
+				indentLevel = Math.Max(0, indentLevel - 1);
+			}
+
+			if (trimmedLine.StartsWith("#if"))
+			{
+				ifIndentLevel = indentLevel;
+			}
+			else if (trimmedLine.StartsWith("#else"))
+			{
+				if (ifIndentLevel.HasValue)
+				{
+					indentLevel = ifIndentLevel.Value;
+				}
+			}
+			else if (trimmedLine.StartsWith("#endif"))
+			{
+				if (ifIndentLevel.HasValue)
+				{
+					indentLevel = ifIndentLevel.Value;
+					ifIndentLevel = null;
+				}
+			}
+
+			string indent = new string(' ', indentLevel * 4);
+			result.AppendLine($"{indent}{trimmedLine}");
+
+			if (trimmedLine.EndsWith("{"))
+			{
+				indentLevel++;
+			}
+		}
+
+		return result.ToString().TrimEnd();
+	}
+
+	public static string IndentCode(string code, int indentLevel)
+	{
+		string indent = new string(' ', indentLevel * 4);
+		var sb = new StringBuilder();
+		foreach (var line in code.Split(new[] { "\n", "\r\n" }, StringSplitOptions.None))
+		{
+			if (!string.IsNullOrWhiteSpace(line))
+			{
+				sb.AppendLine($"{indent}{line.TrimEnd()}");
+			}
+			else
+			{
+				sb.AppendLine();
+			}
+		}
+		return sb.ToString().TrimEnd();
+	}
+
+	public static void AppendWithIndent(StringBuilder sb, string content, int indentLevel)
+	{
+		string indent = new string(' ', indentLevel * 4);
+		foreach (var line in content.Split(new[] { "\n", "\r\n" }, StringSplitOptions.None))
+		{
+			if (!string.IsNullOrWhiteSpace(line))
+			{
+				sb.AppendLine($"{indent}{line.TrimEnd()}");
+			}
+			else
+			{
+				sb.AppendLine();
+			}
+		}
 	}
 
 	public static int CalculateMinSize(this ImmutableArray<GeneratedMavlinkMessageField> fields)
