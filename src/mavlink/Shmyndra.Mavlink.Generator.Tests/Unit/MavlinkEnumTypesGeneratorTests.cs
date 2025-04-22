@@ -260,6 +260,7 @@ public class MavlinkEnumTypesGeneratorTests
 		var existingEnum = new GeneratedMavlinkEnum(
 			"Namespace1",
 			"TestEnum",
+			null,
 			ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
 			SyntaxFactory.EnumDeclaration("TestEnum"),
 			new MavlinkEnum("TestEnum", "Test enum", false, ImmutableArray<MavlinkEnumEntry>.Empty, null)
