@@ -14,11 +14,18 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+    <PackageReference Include="Scriban.Signed" />
     <PackageReference Include="System.ComponentModel.Annotations" PrivateAssets="all" />
   </ItemGroup>
   
   <ItemGroup>
     <InternalsVisibleTo Include="Shmyndra.Mavlink.Generator.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="**\*.scriban.cs">
+      <DependentUpon>$([System.IO.Path]::GetFileNameWithoutExtension('%(Filename)')).cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
