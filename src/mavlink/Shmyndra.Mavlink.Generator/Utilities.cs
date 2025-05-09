@@ -214,6 +214,21 @@ internal static class Utilities
 		throw new InvalidOperationException("The enum base type value cannot be greater than uint.");
 	}
 
+	public static string DetermineBitmask(GeneratedMavlinkEnum generatedEnum)
+	{
+		var baseType = DetermineEnumBaseType(
+			generatedEnum.GeneratedEntries.Select(e => e.Original.Value));
+
+		return baseType switch
+		{
+			"byte" => "0xFF",
+			"ushort" => "0xFFFF",
+			"uint" => "0xFFFFFFFF",
+			"ulong" => "0xFFFFFFFFFFFFFFFF",
+			_ => throw new InvalidOperationException($"Unsupported enum base type: {baseType}")
+		};
+	}
+
 	public static string ToNormalizedString(this SyntaxNode syntax)
 	{
 		var code = syntax.ToFullString();
