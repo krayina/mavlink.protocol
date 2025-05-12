@@ -365,6 +365,29 @@ internal static class Utilities
 		};
 	}
 
+	/// <summary>
+	/// Determines the bitmask for excess bits in underlyingType that are outside the range of enumBaseType.
+	/// </summary>
+	/// <param name="underlyingType">The type of the bitmask (e.g., ushort, uint).</param>
+	/// <param name="enumBaseType">The base type of the enum (e.g., byte, ushort).</param>
+	/// <returns>A hexadecimal string representing the mask for excess bits, or "0x0" if no excess bits exist.</returns>
+	public static string DetermineExcessBitsMask(string underlyingType, string enumBaseType)
+	{
+		int underlyingTypeBits = GetDotNetTypeSize(underlyingType) * 8;
+		int enumBaseTypeBits = GetDotNetTypeSize(enumBaseType) * 8;
+
+		if (underlyingTypeBits <= enumBaseTypeBits)
+		{
+			return "0x0";
+		}
+
+		long fullMask = (1L << underlyingTypeBits) - 1;
+		long enumMask = (1L << enumBaseTypeBits) - 1;
+		long excessMask = fullMask & ~enumMask;
+
+		return $"0x{excessMask:X}";
+	}
+
 	public static int GetDotNetTypeSize(string convertedType)
 	{
 		return convertedType switch
