@@ -5,6 +5,15 @@ public partial class MavlinkGenericEnumBitmaskGenerator
 	internal static class Templates
 	{
 		internal const string BitmaskTemplate = @"
+/// <summary>
+/// Generic bitmask for {{ enum_name }}.
+/// </summary>
+/// <remarks>
+/// <see cref=""{{ underlying_type }}""/> must be an unsigned integer type (byte, ushort, uint, ulong).
+/// </remarks>
+/// <example>
+/// var bitmask = new {{ enum_name }}Bitmask<ushort>(0x0003);
+/// </example>
 #if NET8_0_OR_GREATER
 public readonly struct {{ enum_name }}Bitmask<{{ underlying_type }}> : IEnumBitmask<{{ enum_name }}, {{ underlying_type }}>
   where {{ underlying_type }} : struct, System.Numerics.IBinaryInteger<{{ underlying_type }}>
@@ -18,6 +27,10 @@ public readonly struct {{ enum_name }}Bitmask<{{ underlying_type }}> : IEnumBitm
 
     public {{ enum_name }}Bitmask({{ underlying_type }} bitmask)
     {
+        if ((bitmask & ~{{ underlying_type }}.CreateTruncating({{ mask }})) != {{ underlying_type }}.Zero)
+        {
+            throw new System.ArgumentOutOfRangeException(nameof(bitmask), ""Bitmask contains bits outside the range of {{ enum_name }} ({{ enum_base_type }})."");
+        }
         _bitmask = bitmask & {{ underlying_type }}.CreateTruncating({{ mask }});
         _activeFlags = default;
     }
@@ -31,14 +44,7 @@ public readonly struct {{ enum_name }}Bitmask<{{ underlying_type }}> : IEnumBitm
 #if NET8_0_OR_GREATER
             return ({{ enum_name }}){{ underlying_type }}.CreateTruncating(_bitmask);
 #else
-            return _bitmask switch
-            {
-                byte b => ({{ enum_name }})({{ enum_base_type }})b,
-                ushort us => ({{ enum_name }})({{ enum_base_type }})us,
-                uint ui => ({{ enum_name }})({{ enum_base_type }})ui,
-                ulong ul => ({{ enum_name }})({{ enum_base_type }})ul,
-                _ => throw new InvalidOperationException(""Unsupported underlying type"")
-            };
+            return ({{ enum_name }})({{ enum_base_type }})_bitmask;
 #endif
         }
     }
@@ -56,38 +62,26 @@ public readonly struct {{ enum_name }}Bitmask<{{ underlying_type }}> : IEnumBitm
             return System.Collections.Immutable.ImmutableArray<{{ enum_name }}>.Empty;
         }
 
-#if NET10_0_OR_GREATER
-        BitField<{{ enum_name }}> bitField = new BitField<{{ enum_name }}>(_bitmask);
-        return bitField.GetActiveFlags().ToImmutableArray();
-#elif NET9_0_OR_GREATER
+#if NET9_0_OR_GREATER
         var builder = System.Collections.Immutable.ImmutableArray.CreateBuilder<{{ enum_name }}>(System.Numerics.BitOperations.PopCount(_bitmask));
         {{ underlying_type }} mask = _bitmask;
         while (mask != {{ underlying_type }}.Zero)
         {
             int bitIndex = System.Numerics.BitOperations.TrailingZeroCount(mask);
             {{ underlying_type }} bitValue = {{ underlying_type }}.One << bitIndex;
-            if (System.Enum.IsDefined(typeof({{ enum_name }}), bitValue))
+            if (System.Enum.IsDefined(typeof({{ enum_name }}), ({{ enum_base_type }})bitValue))
             {
-                builder.Add(({{ enum_name }})bitValue);
+                builder.Add(({{ enum_name }})({{ enum_base_type }})bitValue);
             }
             mask &= ~bitValue;
         }
-#elif NET8_0_OR_GREATER
-        int count = int.CreateTruncating({{ underlying_type }}.PopCount(_bitmask));
-        var builder = System.Collections.Immutable.ImmutableArray.CreateBuilder<{{ enum_name }}>(count);
-{{ for item in entries }}
-		if ((_bitmask & {{ underlying_type }}.CreateTruncating(({{ enum_base_type }}){{ enum_name }}.{{ item.GeneratedName }})) != {{ underlying_type }}.Zero)
-		{
-			builder.Add({{ enum_name }}.{{ item.GeneratedName }});
-		}
-{{ end }}
 #else
         var builder = System.Collections.Immutable.ImmutableArray.CreateBuilder<{{ enum_name }}>({{ max_flags }});
 {{ for item in entries }}
-		if ((_bitmask & ({{ underlying_type }})({{ enum_base_type }}){{ enum_name }}.{{ item.GeneratedName }}) != 0)
-		{
-			builder.Add({{ enum_name }}.{{ item.GeneratedName }});
-		}
+        if ((_bitmask & ({{ underlying_type }})({{ enum_base_type }}){{ enum_name }}.{{ item.GeneratedName }}) != 0)
+        {
+            builder.Add({{ enum_name }}.{{ item.GeneratedName }});
+        }
 {{ end }}
 #endif
         return builder.MoveToImmutable();

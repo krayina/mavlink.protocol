@@ -216,7 +216,7 @@ internal static class Utilities
 
 	public static string DetermineBitmask(GeneratedMavlinkEnum generatedEnum)
 	{
-		var baseType = DetermineEnumBaseType(
+		var baseType = generatedEnum.GeneratedBaseType ?? DetermineEnumBaseType(
 			generatedEnum.GeneratedEntries.Select(e => e.Original.Value));
 
 		return baseType switch

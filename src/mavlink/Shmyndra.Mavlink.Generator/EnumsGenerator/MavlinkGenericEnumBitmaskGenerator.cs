@@ -22,12 +22,14 @@ public partial class MavlinkGenericEnumBitmaskGenerator
 			throw new InvalidOperationException($"Entries count ({entries.Length}) exceeds LoopLimit ({context.LoopLimit})");
 		}
 
+		string enumBaseType = generatedEnum.GeneratedBaseType ?? Utilities.DetermineEnumBaseType(
+			generatedEnum.GeneratedEntries.Select(e => e.Original.Value));
+
 		var model = new ScriptObject
 		{
 			["enum_name"] = generatedEnum.GeneratedName,
 			["underlying_type"] = "TUnderlying",
-			["enum_base_type"] = Utilities.DetermineEnumBaseType(
-				generatedEnum.GeneratedEntries.Select(e => e.Original.Value)),
+			["enum_base_type"] = enumBaseType,
 			["max_flags"] = entries.Length,
 			["entries"] = new ScriptArray(entries),
 			["mask"] = Utilities.DetermineBitmask(generatedEnum)
