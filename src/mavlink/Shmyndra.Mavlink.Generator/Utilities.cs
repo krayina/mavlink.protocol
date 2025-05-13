@@ -217,7 +217,7 @@ internal static class Utilities
 	public static string DetermineBitmask(GeneratedMavlinkEnum generatedEnum)
 	{
 		var baseType = generatedEnum.GeneratedBaseType ?? DetermineEnumBaseType(
-			generatedEnum.GeneratedEntries.Select(e => e.Original.Value));
+				generatedEnum.GeneratedEntries.Select(e => e.Original.Value));
 
 		return baseType switch
 		{
@@ -263,6 +263,7 @@ internal static class Utilities
 			if (trimmedLine.StartsWith("#if"))
 			{
 				ifIndentLevel = indentLevel;
+				result.AppendLine(trimmedLine);
 			}
 			else if (trimmedLine.StartsWith("#else"))
 			{
@@ -270,6 +271,7 @@ internal static class Utilities
 				{
 					indentLevel = ifIndentLevel.Value;
 				}
+				result.AppendLine(trimmedLine);
 			}
 			else if (trimmedLine.StartsWith("#endif"))
 			{
@@ -278,10 +280,13 @@ internal static class Utilities
 					indentLevel = ifIndentLevel.Value;
 					ifIndentLevel = null;
 				}
+				result.AppendLine(trimmedLine);
 			}
-
-			string indent = new string(' ', indentLevel * 4);
-			result.AppendLine($"{indent}{trimmedLine}");
+			else
+			{
+				string indent = new string(' ', indentLevel * 4);
+				result.AppendLine($"{indent}{trimmedLine}");
+			}
 
 			if (trimmedLine.EndsWith("{"))
 			{
