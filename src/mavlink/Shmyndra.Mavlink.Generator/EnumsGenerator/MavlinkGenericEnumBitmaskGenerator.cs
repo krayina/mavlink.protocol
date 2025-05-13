@@ -27,8 +27,8 @@ public partial class MavlinkGenericEnumBitmaskGenerator
 
 		var model = new ScriptObject
 		{
+			["namespace"] = generatedEnum.Namespace,
 			["enum_name"] = generatedEnum.GeneratedName,
-			["underlying_type"] = "TUnderlying",
 			["enum_base_type"] = enumBaseType,
 			["max_flags"] = entries.Length,
 			["entries"] = new ScriptArray(entries),
