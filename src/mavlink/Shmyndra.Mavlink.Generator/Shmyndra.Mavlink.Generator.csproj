@@ -14,10 +14,30 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
-    <PackageReference Include="Scriban.Signed" />
-    <PackageReference Include="System.ComponentModel.Annotations" PrivateAssets="all" />
+    <PackageReference Include="Scriban.Signed" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="System.ComponentModel.Annotations" GeneratePathProperty="true" PrivateAssets="all" />
   </ItemGroup>
-  
+
+  <ItemGroup>
+    <None Include="$(PkgScriban_Signed)\lib\netstandard2.0\Scriban.Signed.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(PkgSystem_ComponentModel_Annotations)\lib\netstandard2.0\System.ComponentModel.Annotations.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+  </PropertyGroup>
+
+  <Target Name="GetDependencyTargetPaths">
+    <ItemGroup>
+      <TargetPathWithTargetPlatformMoniker Include="$(PkgScriban_Signed)\lib\netstandard2.0\Scriban.Signed.dll" IncludeRuntimeDependency="false" />
+      <TargetPathWithTargetPlatformMoniker Include="$(PkgSystem_ComponentModel_Annotations)\lib\netstandard2.0\System.ComponentModel.Annotations.dll" IncludeRuntimeDependency="false" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Shmyndra.Mavlink.Generator.Tests" />
+  </ItemGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Shmyndra.Mavlink.Generator.Tests" />
   </ItemGroup>
