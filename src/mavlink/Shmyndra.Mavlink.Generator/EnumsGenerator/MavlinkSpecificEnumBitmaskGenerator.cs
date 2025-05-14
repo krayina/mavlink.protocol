@@ -17,17 +17,41 @@ public partial class MavlinkSpecificEnumBitmaskGenerator
 			throw new InvalidOperationException($"Unsupported underlying type '{underlyingType}' for enum '{generatedEnum.GeneratedName}'.");
 		}
 
+		long validMask = 0;
+		foreach (var entry in generatedEnum.GeneratedEntries)
+		{
+			validMask |= entry.Original.Value;
+		}
+
+		bool isValidType = underlyingType switch
+		{
+			"byte" => validMask >= 0 && validMask <= byte.MaxValue,
+			"sbyte" => validMask >= sbyte.MinValue && validMask <= sbyte.MaxValue,
+			"short" => validMask >= short.MinValue && validMask <= short.MaxValue,
+			"ushort" => validMask >= 0 && validMask <= ushort.MaxValue,
+			"int" => validMask >= int.MinValue && validMask <= int.MaxValue,
+			"uint" => validMask >= 0 && validMask <= uint.MaxValue,
+			"long" => validMask >= long.MinValue && validMask <= long.MaxValue,
+			"ulong" => validMask >= 0,
+			_ => false
+		};
+
+		if (!isValidType)
+		{
+			throw new InvalidOperationException($"Underlying type '{underlyingType}' cannot hold all values of enum '{generatedEnum.GeneratedName}'. ValidMask: 0x{validMask:X}");
+		}
+
 		string enumName = generatedEnum.GeneratedName;
 		string enumBaseType = Utilities.DetermineEnumBaseType(generatedEnum.GeneratedEntries.Select(e => e.Original.Value));
 		string structName = $"{enumName}{Utilities.ToCamelCase(underlyingType)}Bitmask";
-		string mask = Utilities.DetermineExcessBitsMask(underlyingType, enumBaseType);
 
 		var entries = generatedEnum.GeneratedEntries
 			.Where(e => e.Original.Value != 0)
 			.Select(e => new ScriptObject { ["GeneratedName"] = e.GeneratedName ?? throw new InvalidOperationException("GeneratedName is null") })
 			.ToArray();
 
-		int maxFlags = entries.Length;
+		string validMaskHex = $"0x{validMask:X}";
+		int enumValuesCount = generatedEnum.GeneratedEntries.Length;
 
 		var template = Template.Parse(Templates.SpecificBitmaskTemplate);
 		var context = CSharpScribanTemplateContext.Create();
@@ -39,13 +63,14 @@ public partial class MavlinkSpecificEnumBitmaskGenerator
 
 		var model = new ScriptObject
 		{
+			["namespace"] = generatedEnum.Namespace,
 			["struct_name"] = structName,
 			["enum_name"] = enumName,
 			["underlying_type"] = underlyingType,
 			["enum_base_type"] = enumBaseType,
 			["entries"] = new ScriptArray(entries),
-			["max_flags"] = maxFlags,
-			["mask"] = mask
+			["valid_mask"] = validMaskHex,
+			["enum_values_count"] = enumValuesCount
 		};
 
 		context.PushGlobal(model);
