@@ -130,7 +130,7 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 		string? enumBaseType = allValues.Any() ? Utilities.DetermineEnumBaseType(allValues) : null;
 
 		var enumDeclaration = CreateEnumDeclaration(@enum, normalizedEnumName, namespaceName, generatedEntries, enumBaseType);
-		return new GeneratedMavlinkEnum(namespaceName, normalizedEnumName, generatedEntries, enumDeclaration, @enum);
+		return new GeneratedMavlinkEnum(namespaceName, normalizedEnumName, enumBaseType, generatedEntries, enumDeclaration, @enum);
 	}
 
 	/// <summary>
@@ -175,7 +175,7 @@ public class MavlinkEnumGenerator : IMavlinkEnumGenerator
 		var mergedEntries = updatedExistingEntries.Concat(newEntries).ToImmutableArray();
 
 		var enumDeclaration = CreateEnumDeclaration(newEnumData, existingEnum.GeneratedName, existingNamespace, mergedEntries, newBaseType);
-		return new GeneratedMavlinkEnum(existingEnum.Namespace, existingEnum.GeneratedName, mergedEntries, enumDeclaration, newEnumData);
+		return new GeneratedMavlinkEnum(existingEnum.Namespace, existingEnum.GeneratedName, newBaseType, mergedEntries, enumDeclaration, newEnumData);
 	}
 
 	internal ImmutableArray<GeneratedMavlinkEnumEntry> GenerateEnumMembersInternal(

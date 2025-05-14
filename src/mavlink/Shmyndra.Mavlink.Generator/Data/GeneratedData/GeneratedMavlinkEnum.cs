@@ -16,6 +16,12 @@ public record GeneratedMavlinkEnum
 	public string GeneratedName { get; init; }
 
 	/// <summary>
+	/// Specifies the base type for the generated enum, such as <see cref="byte"/>, <see cref="int"/>, or other valid integral types.
+	/// This property is nullable; it may be <c>null</c> if the enum is empty and no base type is specified.
+	/// </summary>
+	public string? GeneratedBaseType { get; init; }
+
+	/// <summary>
 	/// The array of generated entries in the Mavlink enum.
 	/// </summary>
 	public ImmutableArray<GeneratedMavlinkEnumEntry> GeneratedEntries { get; init; }
@@ -31,6 +37,7 @@ public record GeneratedMavlinkEnum
 	internal GeneratedMavlinkEnum(
 		string @namespace,
 		string generatedName,
+		string? generatedBaseType,
 		ImmutableArray<GeneratedMavlinkEnumEntry> generatedEntries,
 		EnumDeclarationSyntax declarationSyntax,
 		MavlinkEnum original)
@@ -38,6 +45,7 @@ public record GeneratedMavlinkEnum
 		Namespace = @namespace;
 		GeneratedName = generatedName;
 		GeneratedEntries = generatedEntries;
+		GeneratedBaseType = generatedBaseType;
 		DeclarationSyntax = declarationSyntax;
 		Original = original;
 	}

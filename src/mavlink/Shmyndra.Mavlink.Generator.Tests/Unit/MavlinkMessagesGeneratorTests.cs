@@ -36,8 +36,8 @@ public class MavlinkMessagesGeneratorTests
 
 	private static readonly ImmutableArray<GeneratedMavlinkEnum> GeneratedEnums =
 	[
-		new GeneratedMavlinkEnum("Namespace1", "EscConnectionType", ImmutableArray<GeneratedMavlinkEnumEntry>.Empty, SyntaxFactory.EnumDeclaration("EscConnectionType"), MavlinkEnums[0]),
-		new GeneratedMavlinkEnum("Namespace1", "EscFailureFlags", ImmutableArray<GeneratedMavlinkEnumEntry>.Empty, SyntaxFactory.EnumDeclaration("EscFailureFlags"), MavlinkEnums[1])
+		new GeneratedMavlinkEnum("Namespace1", "EscConnectionType", null, ImmutableArray<GeneratedMavlinkEnumEntry>.Empty, SyntaxFactory.EnumDeclaration("EscConnectionType"), MavlinkEnums[0]),
+		new GeneratedMavlinkEnum("Namespace1", "EscFailureFlags", null, ImmutableArray<GeneratedMavlinkEnumEntry>.Empty, SyntaxFactory.EnumDeclaration("EscFailureFlags"), MavlinkEnums[1])
 	];
 
 	private static readonly ImmutableArray<MavlinkMessageField> MavlinkFields =
@@ -326,6 +326,7 @@ public class MavlinkMessagesGeneratorTests
 			GeneratedEnum: new GeneratedMavlinkEnum(
 				@namespace: "TestNamespace",
 				generatedName: "MavSysStatusSensorExtended",
+				null,
 				generatedEntries: ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
 				declarationSyntax: SyntaxFactory.EnumDeclaration("MavSysStatusSensorExtended"),
 				original: new MavlinkEnum(
@@ -398,6 +399,7 @@ public class MavlinkMessagesGeneratorTests
 			GeneratedEnum: new GeneratedMavlinkEnum(
 				@namespace: "TestNamespace",
 				generatedName: "LimitModule",
+				null,
 				generatedEntries: ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
 				declarationSyntax: SyntaxFactory.EnumDeclaration("LimitModule"),
 				original: new MavlinkEnum(
@@ -452,6 +454,7 @@ public class MavlinkMessagesGeneratorTests
 			GeneratedEnum: new GeneratedMavlinkEnum(
 				@namespace: "TestNamespace",
 				generatedName: "MavCmd",
+				null,
 				generatedEntries: ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
 				declarationSyntax: SyntaxFactory.EnumDeclaration("MavCmd"),
 				original: new MavlinkEnum(
@@ -702,7 +705,7 @@ var someUShortArray = System.Collections.Immutable.ImmutableArray.CreateRange(te
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeEnum",
 			new GeneratedMavlinkMessageFieldEnumType("ushort",
-				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", [], null, null),
+				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
 				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
 			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
@@ -731,7 +734,7 @@ var someUShortArray = System.Collections.Immutable.ImmutableArray.CreateRange(te
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeEnumArray",
 			new GeneratedMavlinkMessageFieldArrayEnumType("ushort",
-				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", [], null, null),
+				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
 				4,
 				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
@@ -884,6 +887,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 			new GeneratedMavlinkEnum(
 				@namespace: "TestNamespace",
 				generatedName: "MavSysStatusSensorExtended",
+				null,
 				generatedEntries: ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
 				declarationSyntax: SyntaxFactory.EnumDeclaration("MavSysStatusSensorExtended"),
 				original: new MavlinkEnum(
@@ -964,6 +968,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 			new GeneratedMavlinkEnum(
 				@namespace: "TestNamespace",
 				generatedName: "LimitModule",
+				null,
 				generatedEntries: ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
 				declarationSyntax: SyntaxFactory.EnumDeclaration("LimitModule"),
 				original: new MavlinkEnum(
@@ -1027,6 +1032,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 			new GeneratedMavlinkEnum(
 				@namespace: "TestNamespace",
 				generatedName: "MavCmd",
+				null,
 				generatedEntries: ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
 				declarationSyntax: SyntaxFactory.EnumDeclaration("MavCmd"),
 				original: new MavlinkEnum("MAV_CMD", null, null, ImmutableArray<MavlinkEnumEntry>.Empty, null)
@@ -1277,7 +1283,7 @@ var someUShortArray = System.Collections.Immutable.ImmutableArray.CreateRange(te
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeEnum",
 			new GeneratedMavlinkMessageFieldEnumType("ushort",
-				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", [], null, null),
+				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
 				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
 			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
@@ -1305,7 +1311,7 @@ var someUShortArray = System.Collections.Immutable.ImmutableArray.CreateRange(te
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeEnumArray",
 			new GeneratedMavlinkMessageFieldArrayEnumType("ushort",
-				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", [], null, null),
+				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
 				4,
 				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
@@ -1472,7 +1478,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 			new GeneratedMavlinkMessageField("SecondExtension",
 				new GeneratedMavlinkMessageFieldEnumType("ulong",
 					new GeneratedMavlinkEnum(
-						"TestNamespace", "TestEnum",
+						"TestNamespace", "TestEnum", null,
 						ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
 						SyntaxFactory.EnumDeclaration("Test"),
 						new MavlinkEnum("Test", null, null, ImmutableArray<MavlinkEnumEntry>.Empty, null)),
@@ -1659,7 +1665,7 @@ Buffer.BlockCopy(serializedSomeUShort, 0, buffer, 0, 8);", code);
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeEnum",
 			new GeneratedMavlinkMessageFieldEnumType("ushort",
-				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", [], null, null),
+				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
 				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
 			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
@@ -1685,7 +1691,7 @@ Buffer.BlockCopy(serializedSomeUShort, 0, buffer, 0, 8);", code);
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeEnumArray",
 			new GeneratedMavlinkMessageFieldArrayEnumType("ushort",
-				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", [], null, null),
+				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
 				4,
 				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
@@ -1845,7 +1851,7 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 			new GeneratedMavlinkMessageField("SecondExtension",
 				new GeneratedMavlinkMessageFieldEnumType("ulong",
 					new GeneratedMavlinkEnum(
-						"TestNamespace", "TestEnum",
+						"TestNamespace", "TestEnum", null,
 						ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
 						SyntaxFactory.EnumDeclaration("Test"),
 						new MavlinkEnum("Test", null, null, ImmutableArray<MavlinkEnumEntry>.Empty, null)),
@@ -2029,7 +2035,7 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeEnum",
 			new GeneratedMavlinkMessageFieldEnumType("ushort",
-				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", [], null, null),
+				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
 				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
 			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
@@ -2055,7 +2061,7 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeEnumArray",
 			new GeneratedMavlinkMessageFieldArrayEnumType("ushort",
-				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", [], null, null),
+				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
 				4,
 				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),

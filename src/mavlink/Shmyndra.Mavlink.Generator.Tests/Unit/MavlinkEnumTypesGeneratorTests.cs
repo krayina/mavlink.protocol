@@ -260,6 +260,7 @@ public class MavlinkEnumTypesGeneratorTests
 		var existingEnum = new GeneratedMavlinkEnum(
 			"Namespace1",
 			"TestEnum",
+			null,
 			ImmutableArray<GeneratedMavlinkEnumEntry>.Empty,
 			SyntaxFactory.EnumDeclaration("TestEnum"),
 			new MavlinkEnum("TestEnum", "Test enum", false, ImmutableArray<MavlinkEnumEntry>.Empty, null)
@@ -363,5 +364,131 @@ public class MavlinkEnumTypesGeneratorTests
 		{
 			Assert.Contains(entry, actualEntries);
 		}
+	}
+
+	[Fact]
+	public async Task GenerateMavlinkEnumSpecificBitmask_WithUShortUnderlying__ShouldGenerateEnumBitmaskStruct()
+	{
+		// Arrange
+		var enumBitmaskGenerator = new MavlinkSpecificEnumBitmaskGenerator();
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var enum1 = new GeneratedMavlinkEnum(
+			"Namespace1",
+			"TestEnum",
+			null,
+			new List<GeneratedMavlinkEnumEntry>()
+			{
+				new GeneratedMavlinkEnumEntry("Namespace1", "ValueA", null, new MavlinkEnumEntry("Value_A", 1, "First value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)),
+				new GeneratedMavlinkEnumEntry("Namespace1", "ValueB", null, new MavlinkEnumEntry("Value_B", 2, "Second value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null))
+			}.ToImmutableArray(),
+			null,
+			new MavlinkEnum(
+				name: "Test_Enum",
+				entries:
+				[
+					new MavlinkEnumEntry("Value_A", 1, "First value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+					new MavlinkEnumEntry("Value_B", 2, "Second value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+				],
+				bitmask: true,
+				description: "First enum",
+				deprecated: null
+			)
+		);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		// Act:
+		var generatedEnumBitmaskType = enumBitmaskGenerator.Generate(enum1, "ushort").ToNormalizedString();
+
+		// Assert:
+		await Verify(generatedEnumBitmaskType)
+			.UseDirectory(SNAPSHOT_PATH);
+	}
+
+	[Fact]
+	public async Task GenerateMavlinkEnumGenericBitmask_WithByteUnderlying__ShouldGenerateEnumBitmaskStruct()
+	{
+		// Arrange
+		var enumBitmaskGenerator = new MavlinkGenericEnumBitmaskGenerator();
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var enum1 = new GeneratedMavlinkEnum(
+			"Namespace1",
+			"TestEnum",
+			null,
+			new List<GeneratedMavlinkEnumEntry>()
+			{
+				new GeneratedMavlinkEnumEntry("Namespace1", "ValueA", null, new MavlinkEnumEntry("Value_A", 1, "First value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)),
+				new GeneratedMavlinkEnumEntry("Namespace1", "ValueB", null, new MavlinkEnumEntry("Value_B", 2, "Second value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null))
+			}.ToImmutableArray(),
+			null,
+			new MavlinkEnum(
+				name: "Test_Enum",
+				entries:
+				[
+					new MavlinkEnumEntry("Value_A", 1, "First value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+					new MavlinkEnumEntry("Value_B", 2, "Second value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+				],
+				bitmask: true,
+				description: "First enum",
+				deprecated: null
+			)
+		);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		// Act:
+		var generatedEnumBitmaskType = enumBitmaskGenerator.Generate(enum1);
+
+		// Assert:
+		await Verify(generatedEnumBitmaskType)
+			.UseDirectory(SNAPSHOT_PATH);
+	}
+
+	[Fact]
+	public async Task GenerateMavlinkEscFailureFlagsBitmask_WithByteBaseType__ShouldGenerateEscFailureFlagsEnumBitmask()
+	{
+		// Arrange:
+		var enumBitmaskGenerator = new MavlinkGenericEnumBitmaskGenerator();
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var enum1 = new GeneratedMavlinkEnum(
+			"Namespace1",
+			"EscFailureFlags",
+			"byte",
+			new List<GeneratedMavlinkEnumEntry>
+			{
+					new GeneratedMavlinkEnumEntry("Namespace1", "None", null, new MavlinkEnumEntry("None", 0, "No failure", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)),
+					new GeneratedMavlinkEnumEntry("Namespace1", "OverCurrent", null, new MavlinkEnumEntry("OverCurrent", 1, "Over current", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)),
+					new GeneratedMavlinkEnumEntry("Namespace1", "OverVoltage", null, new MavlinkEnumEntry("OverVoltage", 2, "Over voltage", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)),
+					new GeneratedMavlinkEnumEntry("Namespace1", "OverTemperature", null, new MavlinkEnumEntry("OverTemperature", 4, "Over temperature", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)),
+					new GeneratedMavlinkEnumEntry("Namespace1", "OverRpm", null, new MavlinkEnumEntry("OverRpm", 8, "Over RPM", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)),
+					new GeneratedMavlinkEnumEntry("Namespace1", "InconsistentCmd", null, new MavlinkEnumEntry("InconsistentCmd", 16, "Inconsistent command", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)),
+					new GeneratedMavlinkEnumEntry("Namespace1", "MotorStuck", null, new MavlinkEnumEntry("MotorStuck", 32, "Motor stuck", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)),
+					new GeneratedMavlinkEnumEntry("Namespace1", "Generic", null, new MavlinkEnumEntry("Generic", 64, "Generic failure", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null))
+			}.ToImmutableArray(),
+			null,
+			new MavlinkEnum(
+				name: "EscFailureFlags",
+				entries:
+				[
+						new MavlinkEnumEntry("None", 0, "No failure", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+						new MavlinkEnumEntry("OverCurrent", 1, "Over current", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+						new MavlinkEnumEntry("OverVoltage", 2, "Over voltage", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+						new MavlinkEnumEntry("OverTemperature", 4, "Over temperature", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+						new MavlinkEnumEntry("OverRpm", 8, "Over RPM", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+						new MavlinkEnumEntry("InconsistentCmd", 16, "Inconsistent command", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+						new MavlinkEnumEntry("MotorStuck", 32, "Motor stuck", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+						new MavlinkEnumEntry("Generic", 64, "Generic failure", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)
+				],
+				bitmask: true,
+				description: "ESC failure flags",
+				deprecated: null
+			)
+		);
+#pragma warning restore IDE0305 // Simplify collection initialization
+
+		// Act:
+		var generatedEnumBitmaskType = enumBitmaskGenerator.Generate(enum1);
+
+		// Assert:
+		await Verify(generatedEnumBitmaskType)
+			.UseDirectory(SNAPSHOT_PATH);
 	}
 }
