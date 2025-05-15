@@ -168,10 +168,11 @@ public class MavlinkEnumTypesGeneratorTests
 	}
 
 	[Fact]
-	public async Task GenerateEnumMembers_ShouldHaveObsoleteAttributeForDeprecatedEntry()
+	public async Task GenerateEnum_ShouldHaveObsoleteAttributeForDeprecatedEntry()
 	{
 		// Arrange
-		ImmutableArray<MavlinkEnumEntry> deprecatedEntries = [ new MavlinkEnumEntry(
+		ImmutableArray<MavlinkEnumEntry> deprecatedEntries = [
+			new MavlinkEnumEntry(
 			name: "MAV_FRAME_GLOBAL_INT",
 			value: 5,
 			description: null,
@@ -185,18 +186,27 @@ public class MavlinkEnumTypesGeneratorTests
 			hasLocation: null,
 			isDestination: null,
 			missionOnly: null
-		)];
+		)
+		];
+
+		var mavlinkEnum = new MavlinkEnum(
+			name: "MavFrameGlobalInt",
+			description: null,
+			bitmask: null,
+			entries: deprecatedEntries,
+			deprecated: null
+		);
 
 		var generator = new MavlinkEnumGenerator();
 
 		// Act
-		var generatedEntries = generator.GenerateEnumMembersInternal(deprecatedEntries, "MavFrameGlobalInt", "TestNamespace");
-
+		var generatedEnum = generator.GenerateMavlinkEnumInternal(mavlinkEnum, "TestNamespace");
+		var generatedEntry = generatedEnum.GeneratedEntries.First();
+		var a = generatedEntry.DeclarationSyntax.ToNormalizedString();
 		// Assert
-		var generatedEntry = generatedEntries.First();
 		var obsoleteAttribute = generatedEntry.DeclarationSyntax.AttributeLists
 			.SelectMany(al => al.Attributes)
-			.FirstOrDefault(attr => attr.Name.ToString() == "System.Obsolete");
+			.FirstOrDefault(attr => attr.Name.ToString() == "Obsolete");
 
 		Assert.NotNull(obsoleteAttribute);
 		Assert.Contains("2024-03", obsoleteAttribute.ToFullString());
@@ -204,7 +214,7 @@ public class MavlinkEnumTypesGeneratorTests
 		Assert.Contains("Use MAV_FRAME_GLOBAL in COMMAND_INT (and elsewhere) as a synonymous replacement.", obsoleteAttribute.ToFullString());
 
 		// Verify
-		var generatedCode = generatedEntry.DeclarationSyntax.ToNormalizedString();
+		var generatedCode = generatedEnum.DeclarationSyntax.ToNormalizedString();
 		await Verify(generatedCode)
 			.UseDirectory(SNAPSHOT_PATH)
 			.UseParameters("DeprecatedEntry");
@@ -300,6 +310,76 @@ public class MavlinkEnumTypesGeneratorTests
 
 		await Verify(enumCode)
 			.UseDirectory(SNAPSHOT_PATH);
+	}
+
+	[Fact]
+	public async Task GenerateEnum_ShouldIncludeDocumentationForEnumAndMembers()
+	{
+		// Arrange
+		ImmutableArray<MavlinkEnumEntry> entries = [
+			new MavlinkEnumEntry(
+			name: "MAV_FRAME_GLOBAL_INT",
+			value: 5,
+			description: "Global integer frame description",
+			details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
+			deprecated: null,
+			hasLocation: null,
+			isDestination: null,
+			missionOnly: null
+		)
+		];
+
+		var mavlinkEnum = new MavlinkEnum(
+			name: "MavFrameGlobalInt",
+			description: "Mavlink frame enumeration",
+			bitmask: false,
+			entries: entries,
+			deprecated: null
+		);
+
+		var generator = new MavlinkEnumGenerator();
+
+		// Act
+		var generatedEnum = generator.GenerateMavlinkEnumInternal(mavlinkEnum, "TestNamespace");
+		var generatedEntry = generatedEnum.GeneratedEntries.First();
+
+		// Assert
+		var generatedCode = generatedEnum.DeclarationSyntax.ToFullString();
+		Assert.Contains("/// <summary>", generatedCode);
+		Assert.Contains("/// Mavlink frame enumeration", generatedCode);
+		Assert.Contains("/// <remarks>", generatedCode);
+		Assert.Contains("/// Original name: MavFrameGlobalInt", generatedCode);
+
+		Assert.Contains("/// <summary>", generatedEntry.DeclarationSyntax.ToFullString());
+		Assert.Contains("/// Global integer frame description", generatedCode);
+		Assert.Contains("/// <remarks>", generatedCode);
+		Assert.Contains("/// Original name: MAV_FRAME_GLOBAL_INT", generatedCode);
+
+		var enumSummary = generatedEnum.DeclarationSyntax.GetLeadingTrivia()
+			.Select(t => t.ToString())
+			.FirstOrDefault(s => s.Contains("<summary>"));
+		var enumRemarks = generatedEnum.DeclarationSyntax.GetLeadingTrivia()
+			.Select(t => t.ToString())
+			.FirstOrDefault(s => s.Contains("<remarks>"));
+		Assert.NotNull(enumSummary);
+		Assert.Contains("Mavlink frame enumeration", enumSummary);
+		Assert.NotNull(enumRemarks);
+		Assert.Contains("Original name: MavFrameGlobalInt", enumRemarks);
+
+		var entrySummary = generatedEntry.DeclarationSyntax.GetLeadingTrivia()
+			.Select(t => t.ToString())
+			.FirstOrDefault(s => s.Contains("<summary>"));
+		var entryRemarks = generatedEntry.DeclarationSyntax.GetLeadingTrivia()
+			.Select(t => t.ToString())
+			.FirstOrDefault(s => s.Contains("<remarks>"));
+		Assert.NotNull(entrySummary);
+		Assert.NotNull(entryRemarks);
+
+		// Verify
+		var normalizedCode = generatedEnum.DeclarationSyntax.ToNormalizedString();
+		await Verify(normalizedCode)
+			.UseDirectory(SNAPSHOT_PATH)
+			.UseParameters("Documentation");
 	}
 
 	[Fact]
