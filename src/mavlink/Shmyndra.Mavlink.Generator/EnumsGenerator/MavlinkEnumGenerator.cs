@@ -10,32 +10,27 @@ namespace Shmyndra.Mavlink.Generator;
 public interface IMavlinkEnumGenerator : IGeneratedStorage<GeneratedMavlinkEnum>
 {
 	/// <summary>
-	/// Generates Mavlink enum and maps their names to namespaces and type names.
+	/// Generates a MAVLink enum or merges it with existing enums from included namespaces.
 	/// </summary>
-	/// <param name="enum">The Mavlink enum to be generated.</param>
-	/// <param name="namespace">The namespace in which the generated enum will be placed.</param>
-	/// <param name="includes">A list of included files that may contain existing enums to merge with.</param>
-	/// <param name="filePath">The file path where the generated enum will be saved.</param>
-	/// <returns>The generated Mavlink enum.</returns>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="namespace"/> or <paramref name="includes"/> is <c>null</c>.</exception>
+	/// <param name="enum">The MAVLink enum data to generate or merge.</param>
+	/// <param name="namespace">The target namespace where the generated enum will be placed.</param>
+	/// <param name="includedNamespaces">An immutable array of namespaces containing existing enums to merge with.</param>
+	/// <returns>The generated or merged MAVLink enum as a <see cref="GeneratedMavlinkEnum"/> instance.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="enum"/>, <paramref name="namespace"/>, or <paramref name="includedNamespaces"/> is null.</exception>
+	/// <exception cref="InvalidOperationException">Thrown when an enum with the same name already exists in the specified namespace.</exception>
 	/// <remarks>
-	/// This method generates enums based on the provided data, merges with existing enums if necessary,
-	/// and maps the generated enum names to their respective namespaces and type names.
-	/// The resulting enums are represented as <see cref="GeneratedMavlinkEnum"/> instances.
-	/// This method also initializes instances of <see cref="GeneratedMavlinkEnumEntry"/> within <see cref="GeneratedMavlinkEnum"/>.
+	/// This method generates a MAVLink enum based on the provided data, merging it with existing enums of the same name found in the specified included namespaces, if any.
+	/// The resulting enum includes generated entries as <see cref="GeneratedMavlinkEnumEntry"/> instances and is cached for future reference.
 	/// </remarks>
 	GeneratedMavlinkEnum GenerateMavlinkEnum(
 		MavlinkEnum @enum,
 		string @namespace,
-		ImmutableArray<string> includes,
-		string filePath);
+		ImmutableArray<string> includedNamespaces);
 }
 
 public partial class MavlinkEnumGenerator : IMavlinkEnumGenerator
 {
 	private readonly Dictionary<(string Namespace, string Name), GeneratedMavlinkEnum> _generatedEnums = new();
-	private readonly Dictionary<string, HashSet<string>> _namespaceIncludesMap = new();
-	private readonly Dictionary<string, string> _fileNameToPathMap = new();
 
 	ImmutableArray<GeneratedMavlinkEnum> IGeneratedStorage<GeneratedMavlinkEnum>.GetGeneratedTypes()
 	{
@@ -50,135 +45,169 @@ public partial class MavlinkEnumGenerator : IMavlinkEnumGenerator
 			.ToImmutableArray();
 	}
 
+	/// <summary>
+	/// Generates a new MAVLink enum or merges it with existing enums from specified included namespaces.
+	/// </summary>
+	/// <param name="enum">The MAVLink enum data to generate or merge.</param>
+	/// <param name="namespace">The target namespace where the enum will be generated.</param>
+	/// <param name="includedNamespaces">An immutable array of namespaces to check for existing enums to merge with.</param>
+	/// <returns>The newly generated or merged MAVLink enum.</returns>
+	/// <exception cref="ArgumentNullException">Thrown if <paramref name="enum"/>, <paramref name="namespace"/>, or <paramref name="includedNamespaces"/> is null.</exception>
+	/// <exception cref="InvalidOperationException">Thrown if an enum with the same name already exists in the specified namespace, or if the number of enum entries exceeds the Scriban loop limit, or if the generated enum syntax cannot be parsed.</exception>
 	public GeneratedMavlinkEnum GenerateMavlinkEnum(
 		MavlinkEnum @enum,
 		string @namespace,
-		ImmutableArray<string> includes,
-		string filePath)
+		ImmutableArray<string> includedNamespaces)
 	{
-		_fileNameToPathMap[Path.GetFileName(filePath)] = @namespace;
+		ValidateInput(@enum, @namespace, includedNamespaces);
 
-		var key = (Namespace: @namespace, @enum.Name);
+		var key = (@namespace, @enum.Name);
 		if (_generatedEnums.ContainsKey(key))
 		{
 			throw new InvalidOperationException($"Enum '{@enum.Name}' already exists in namespace '{@namespace}'.");
 		}
 
-		GeneratedMavlinkEnum? existingGeneratedEnum = null;
+		var existingEnums = FindExistingEnums(@enum.Name, includedNamespaces);
+		GeneratedMavlinkEnum result;
 
-		foreach (var include in includes)
+		if (existingEnums.Any())
 		{
-			if (_fileNameToPathMap.TryGetValue(include, out var includeNamespace))
-			{
-				var includeKey = (Namespace: includeNamespace, @enum.Name);
-				if (_generatedEnums.TryGetValue(includeKey, out var includeGeneratedEnum))
-				{
-					if (existingGeneratedEnum is null)
-					{
-						existingGeneratedEnum = includeGeneratedEnum;
-					}
-					else
-					{
-						existingGeneratedEnum = GenerateAndMergeMavlinkEnumInternal(existingGeneratedEnum, @enum, includeNamespace);
-					}
-				}
-			}
-		}
-
-		GeneratedMavlinkEnum generatedEnum;
-		if (existingGeneratedEnum is null)
-		{
-			generatedEnum = GenerateMavlinkEnumInternal(@enum, @namespace);
+			var mergedEnum = existingEnums.Aggregate((acc, next) => MergeEnums(acc, next));
+			result = GenerateAndMergeMavlinkEnumInternal(mergedEnum, @enum, @namespace);
 		}
 		else
 		{
-			generatedEnum = GenerateAndMergeMavlinkEnumInternal(existingGeneratedEnum, @enum, @namespace);
+			result = GenerateMavlinkEnumInternal(@enum, @namespace);
 		}
 
-		_generatedEnums[key] = generatedEnum;
-
-		if (!_namespaceIncludesMap.ContainsKey(@enum.Name))
-		{
-			_namespaceIncludesMap[@enum.Name] = new HashSet<string>();
-		}
-		foreach (var include in includes)
-		{
-			_namespaceIncludesMap[@enum.Name].Add(include);
-		}
-		return generatedEnum;
+		_generatedEnums[key] = result;
+		return result;
 	}
 
 	/// <summary>
-	/// Generates a Mavlink enum and its associated C# declaration syntax without caching.
+	/// Generates a new MAVLink enum without merging or caching.
 	/// </summary>
-	/// <param name="enum">The Mavlink enum data to generate.</param>
+	/// <param name="enum">The MAVLink enum data to generate.</param>
 	/// <param name="namespaceName">The namespace in which the generated enum will reside.</param>
-	/// <returns>A <see cref="GeneratedMavlinkEnum"/> containing the generated entries and declaration syntax.</returns>
-	/// <remarks>
-	/// This method creates the necessary syntax for the Mavlink enum based on the provided data.
-	/// The resulting <see cref="GeneratedMavlinkEnum"/> includes the generated entries and their declaration syntax,
-	/// but this method does not add the generated enum to the cache.
-	/// </remarks>
+	/// <returns>A generated MAVLink enum containing the entries and declaration syntax.</returns>
+	/// <exception cref="InvalidOperationException">Thrown if the number of enum entries exceeds the Scriban loop limit, or if the generated enum syntax cannot be parsed.</exception>
 	internal GeneratedMavlinkEnum GenerateMavlinkEnumInternal(
 		MavlinkEnum @enum,
 		string namespaceName)
 	{
-		var normalizedEnumName = Utilities.ToCamelCase(@enum.Name);
-		var entries = @enum.Entries
-			.OrderBy(entry => entry.Value)
-			.Select(entry =>
-			{
-				var normalizedEntryName = Utilities.ToCamelCase(entry.Name);
-				var entryName = normalizedEntryName == normalizedEnumName ? "_" + normalizedEntryName : normalizedEntryName;
+		var normalizedName = Utilities.ToCamelCase(@enum.Name);
+		var entries = BuildEnumEntries(@enum, normalizedName);
+		var baseType = GetBaseType(@enum.Entries.Select(e => e.Value).ToArray());
+		var model = BuildScribanModel(@enum, normalizedName, baseType, entries);
+		var syntax = RenderSyntax(model, normalizedName);
+		var generatedEntries = BuildGeneratedEntries(namespaceName, entries);
 
-				var entrySyntax = SyntaxFactory.EnumMemberDeclaration(entryName)
-					.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())))
-					.AddSummaryTriviaIfNotNull(entry.Description) // Додаємо summary
-					.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {entry.Name}"); // Додаємо remarks
+		return new GeneratedMavlinkEnum(namespaceName, normalizedName, baseType, generatedEntries, syntax, @enum);
+	}
 
-				if (entry.Deprecated != null)
-				{
-					var obsoleteMessage = entry.Deprecated.ToString();
-					var attribute = SyntaxFactory.Attribute(
-						SyntaxFactory.ParseName("Obsolete"),
-						SyntaxFactory.AttributeArgumentList(
-							SyntaxFactory.SeparatedList(new[]
-							{
-							SyntaxFactory.AttributeArgument(
-								SyntaxFactory.LiteralExpression(
-									SyntaxKind.StringLiteralExpression,
-									SyntaxFactory.Literal(obsoleteMessage)))
-							})));
-
-					entrySyntax = entrySyntax.AddAttributeLists(
-						SyntaxFactory.AttributeList(SyntaxFactory.SeparatedList(new[] { attribute })));
-				}
-
-				return new
-				{
-					name = entryName,
-					value_expression = entry.Value.ToString(),
-					summary = entry.Description,
-					remarks = $"Original name: {entry.Name}",
-					is_deprecated = entry.Deprecated != null,
-					deprecated_reason = entry.Deprecated?.ToString(),
-					syntax = entrySyntax,
-					original = entry
-				};
-			})
+	/// <summary>
+	/// Generates and merges a new MAVLink enum with an existing generated enum.
+	/// </summary>
+	/// <param name="existingEnum">The existing generated MAVLink enum to merge with.</param>
+	/// <param name="newEnumData">The new MAVLink enum data to merge.</param>
+	/// <param name="existingNamespace">The namespace of the existing generated enum.</param>
+	/// <returns>A new generated MAVLink enum containing merged entries.</returns>
+	/// <exception cref="InvalidOperationException">Thrown if the number of merged enum entries exceeds the Scriban loop limit, or if the generated enum syntax cannot be parsed.</exception>
+	internal GeneratedMavlinkEnum GenerateAndMergeMavlinkEnumInternal(
+		GeneratedMavlinkEnum existingEnum,
+		MavlinkEnum newEnumData,
+		string existingNamespace)
+	{
+		var existingEntries = BuildExistingEntries(existingEnum);
+		var newEntries = BuildEnumEntries(newEnumData, existingEnum.GeneratedName);
+		var mergedEntries = existingEntries.Concat(newEntries).ToArray();
+		var allValues = existingEnum.GeneratedEntries.Select(e => e.Original.Value)
+			.Concat(newEnumData.Entries.Select(e => e.Value))
 			.ToArray();
+		var baseType = GetBaseType(allValues);
+		var model = BuildScribanModel(newEnumData, existingEnum.GeneratedName, baseType, mergedEntries);
+		var syntax = RenderSyntax(model, existingEnum.GeneratedName);
+		var generatedEntries = BuildGeneratedEntries(existingNamespace, mergedEntries);
 
-		var context = CSharpScribanTemplateContext.Create();
-		if (entries.Length > context.LoopLimit)
+		return new GeneratedMavlinkEnum(existingNamespace, existingEnum.GeneratedName, baseType, generatedEntries, syntax, newEnumData);
+	}
+
+	private void ValidateInput(MavlinkEnum @enum, string @namespace, ImmutableArray<string> includedNamespaces)
+	{
+		if (@enum == null) throw new ArgumentNullException(nameof(@enum));
+		if (@namespace == null) throw new ArgumentNullException(nameof(@namespace));
+		if (includedNamespaces == null) throw new ArgumentNullException(nameof(includedNamespaces));
+	}
+
+	private List<GeneratedMavlinkEnum> FindExistingEnums(string enumName, ImmutableArray<string> includedNamespaces)
+	{
+		var result = new List<GeneratedMavlinkEnum>();
+		foreach (var ns in includedNamespaces)
 		{
-			throw new InvalidOperationException($"Entries count ({entries.Length}) exceeds LoopLimit ({context.LoopLimit})");
+			if (_generatedEnums.TryGetValue((ns, enumName), out var enumValue))
+			{
+				result.Add(enumValue);
+			}
+		}
+		return result;
+	}
+
+	private object[] BuildEnumEntries(MavlinkEnum @enum, string enumName)
+	{
+		return @enum.Entries
+			.OrderBy(e => e.Value)
+			.Select(e => CreateEnumEntry(e, enumName))
+			.ToArray();
+	}
+
+	private object CreateEnumEntry(MavlinkEnumEntry entry, string enumName)
+	{
+		var normalizedName = Utilities.ToCamelCase(entry.Name);
+		var entryName = normalizedName == enumName ? "_" + normalizedName : normalizedName;
+		var syntax = SyntaxFactory.EnumMemberDeclaration(entryName)
+			.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())))
+			.AddSummaryTriviaIfNotNull(entry.Description)
+			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {entry.Name}");
+
+		if (entry.Deprecated != null)
+		{
+			syntax = syntax.AddAttributeLists(
+				SyntaxFactory.AttributeList(
+					SyntaxFactory.SeparatedList(
+					[
+						SyntaxFactory.Attribute(SyntaxFactory.ParseName("Obsolete"))
+							.WithArgumentList(SyntaxFactory.AttributeArgumentList(
+								SyntaxFactory.SeparatedList(
+								[
+									SyntaxFactory.AttributeArgument(
+										SyntaxFactory.LiteralExpression(
+											SyntaxKind.StringLiteralExpression,
+											SyntaxFactory.Literal(entry.Deprecated.ToString())))
+								])))
+					])));
 		}
 
-		var allValues = @enum.Entries.Select(e => e.Value).ToArray();
-		string? baseType = allValues.Any() ? Utilities.DetermineEnumBaseType(allValues) : null;
-		bool hasBaseType = baseType != null && baseType != "int";
+		return new
+		{
+			name = entryName,
+			value_expression = entry.Value.ToString(),
+			summary = entry.Description,
+			remarks = $"Original name: {entry.Name}",
+			is_deprecated = entry.Deprecated != null,
+			deprecated_reason = entry.Deprecated?.ToString(),
+			syntax,
+			original = entry
+		};
+	}
 
-		var model = new ScriptObject
+	private string GetBaseType(uint[] values)
+	{
+		return values.Any() ? Utilities.DetermineEnumBaseType(values) : "int";
+	}
+
+	private ScriptObject BuildScribanModel(MavlinkEnum @enum, string name, string baseType, object[] entries)
+	{
+		return new ScriptObject
 		{
 			["summary"] = @enum.Description,
 			["remarks"] = $"Original name: {@enum.Name}",
@@ -186,29 +215,29 @@ public partial class MavlinkEnumGenerator : IMavlinkEnumGenerator
 			["original_name"] = @enum.Name,
 			["is_deprecated"] = @enum.Deprecated != null,
 			["deprecated_reason"] = @enum.Deprecated?.ToString(),
-			["enum_name"] = normalizedEnumName,
-			["has_base_type"] = hasBaseType,
+			["enum_name"] = name,
+			["has_base_type"] = baseType != "int",
 			["base_type_name"] = baseType,
 			["entries"] = new ScriptArray(entries)
 		};
+	}
+
+	private EnumDeclarationSyntax RenderSyntax(ScriptObject model, string enumName)
+	{
+		var context = CSharpScribanTemplateContext.Create();
+		var entriesArray = (ScriptArray)model["entries"];
+		if (entriesArray.Count > context.LoopLimit)
+		{
+			throw new InvalidOperationException($"Entries count ({entriesArray.Count}) exceeds LoopLimit ({context.LoopLimit})");
+		}
 
 		var template = Template.Parse(Templates.EnumTemplate);
 		context.PushGlobal(model);
 		try
 		{
-			string rendered = template.Render(context).Trim();
-			var syntax = SyntaxFactory.ParseMemberDeclaration(rendered) as EnumDeclarationSyntax;
-			if (syntax == null)
-			{
-				throw new InvalidOperationException($"Failed to parse the generated enum '{normalizedEnumName}'. Generated code:\n{rendered}");
-			}
-			var generatedEntries = entries.Select(e => new GeneratedMavlinkEnumEntry(
-				namespaceName,
-				e.name,
-				e.syntax,
-				e.original
-			)).ToImmutableArray();
-			return new GeneratedMavlinkEnum(namespaceName, normalizedEnumName, baseType, generatedEntries, syntax, @enum);
+			var rendered = template.Render(context).Trim();
+			return SyntaxFactory.ParseMemberDeclaration(rendered) as EnumDeclarationSyntax
+				?? throw new InvalidOperationException($"Failed to parse the generated enum '{enumName}'. Generated code:\n{rendered}");
 		}
 		finally
 		{
@@ -216,114 +245,45 @@ public partial class MavlinkEnumGenerator : IMavlinkEnumGenerator
 		}
 	}
 
-	/// <summary>
-	/// Generates and merges a new Mavlink enum with an existing generated enum.
-	/// </summary>
-	/// <param name="existingEnum">The existing generated Mavlink enum to merge with.</param>
-	/// <param name="newEnumData">The new Mavlink enum data to merge.</param>
-	/// <param name="existingNamespace">The namespace of the existing generated enum.</param>
-	/// <returns>The merged generated Mavlink enum.</returns>
-	/// <remarks>
-	/// This method combines the entries from an existing generated enum and a new Mavlink enum, creating a new merged enum.
-	/// It updates existing entries to reference their full namespace, creates new entries from the new enum data, and determines
-	/// the appropriate base type for the merged enum. If the enum is a bitmask, it also adds the Flags attribute.
-	/// </remarks>
-	internal GeneratedMavlinkEnum GenerateAndMergeMavlinkEnumInternal(
-		GeneratedMavlinkEnum existingEnum,
-		MavlinkEnum newEnumData,
-		string existingNamespace)
+	private ImmutableArray<GeneratedMavlinkEnumEntry> BuildGeneratedEntries(string @namespace, object[] entries)
 	{
-		var existingEntries = existingEnum.GeneratedEntries
-			.Select(entry =>
+		return entries.Select(e => new GeneratedMavlinkEnumEntry(
+			@namespace,
+			e.GetType().GetProperty("name").GetValue(e).ToString(),
+			(EnumMemberDeclarationSyntax)e.GetType().GetProperty("syntax").GetValue(e),
+			(MavlinkEnumEntry)e.GetType().GetProperty("original").GetValue(e)
+		)).ToImmutableArray();
+	}
+
+	private object[] BuildExistingEntries(GeneratedMavlinkEnum existing)
+	{
+		return existing.GeneratedEntries
+			.Select(e => new
 			{
-				var entryName = entry.GeneratedName;
-				var valueExpression = $"{existingEnum.Namespace}.{existingEnum.GeneratedName}.{entryName}";
-				var entrySyntax = SyntaxFactory.EnumMemberDeclaration(entryName)
-					.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(valueExpression)));
-				return new
-				{
-					name = entryName,
-					value_expression = valueExpression,
-					summary = entry.Original.Description,
-					remarks = $"Original name: {entry.Original.Name}",
-					is_deprecated = entry.Original.Deprecated != null,
-					deprecated_reason = entry.Original.Deprecated?.ToString(),
-					syntax = entrySyntax,
-					original = entry.Original
-				};
+				name = e.GeneratedName,
+				value_expression = $"{existing.Namespace}.{existing.GeneratedName}.{e.GeneratedName}",
+				summary = e.Original.Description,
+				remarks = $"Original name: {e.Original.Name}",
+				is_deprecated = e.Original.Deprecated != null,
+				deprecated_reason = e.Original.Deprecated?.ToString(),
+				syntax = SyntaxFactory.EnumMemberDeclaration(e.GeneratedName)
+					.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression($"{existing.Namespace}.{existing.GeneratedName}.{e.GeneratedName}"))),
+				original = e.Original
 			})
-			.ToList();
-
-		var newEntries = newEnumData.Entries
-			.Select(entry =>
-			{
-				var normalizedEntryName = Utilities.ToCamelCase(entry.Name);
-				var entryName = normalizedEntryName == existingEnum.GeneratedName ? "_" + normalizedEntryName : normalizedEntryName;
-				var entrySyntax = SyntaxFactory.EnumMemberDeclaration(entryName)
-					.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())));
-				return new
-				{
-					name = entryName,
-					value_expression = entry.Value.ToString(),
-					summary = entry.Description,
-					remarks = $"Original name: {entry.Name}",
-					is_deprecated = entry.Deprecated != null,
-					deprecated_reason = entry.Deprecated?.ToString(),
-					syntax = entrySyntax,
-					original = entry
-				};
-			})
-			.ToList();
-
-		var mergedEntries = existingEntries.Concat(newEntries).ToArray();
-
-		var context = CSharpScribanTemplateContext.Create();
-		if (mergedEntries.Length > context.LoopLimit)
-		{
-			throw new InvalidOperationException($"Entries count ({mergedEntries.Length}) exceeds LoopLimit ({context.LoopLimit})");
-		}
-
-		var allValues = existingEnum.GeneratedEntries.Select(e => e.Original.Value)
-			.Concat(newEnumData.Entries.Select(e => e.Value))
 			.ToArray();
-		string newBaseType = allValues.Any() ? Utilities.DetermineEnumBaseType(allValues) : "int";
-		bool hasBaseType = newBaseType != "int";
+	}
 
-		var model = new ScriptObject
-		{
-			["summary"] = newEnumData.Description,
-			["remarks"] = $"Original name: {newEnumData.Name}",
-			["is_bitmask"] = newEnumData.Bitmask == true,
-			["original_name"] = newEnumData.Name,
-			["is_deprecated"] = newEnumData.Deprecated != null,
-			["deprecated_reason"] = newEnumData.Deprecated?.ToString(),
-			["enum_name"] = existingEnum.GeneratedName,
-			["has_base_type"] = hasBaseType,
-			["base_type_name"] = newBaseType,
-			["entries"] = new ScriptArray(mergedEntries)
-		};
+	private GeneratedMavlinkEnum MergeEnums(GeneratedMavlinkEnum enum1, GeneratedMavlinkEnum enum2)
+	{
+		var mergedEntries = enum1.GeneratedEntries.Concat(enum2.GeneratedEntries)
+			.GroupBy(e => e.GeneratedName)
+			.Select(g => g.First())
+			.ToImmutableArray();
 
-		var template = Template.Parse(Templates.EnumTemplate);
-		context.PushGlobal(model);
-		try
-		{
-			string rendered = template.Render(context).Trim();
-			var syntax = SyntaxFactory.ParseMemberDeclaration(rendered) as EnumDeclarationSyntax;
-			if (syntax == null)
-			{
-				throw new InvalidOperationException($"Failed to parse the generated enum '{existingEnum.GeneratedName}'. Generated code:\n{rendered}");
-			}
-			var generatedEntries = mergedEntries.Select(e => new GeneratedMavlinkEnumEntry(
-				existingNamespace,
-				e.name,
-				e.syntax,
-				e.original
-			)).ToImmutableArray();
-			return new GeneratedMavlinkEnum(existingNamespace, existingEnum.GeneratedName, newBaseType, generatedEntries, syntax, newEnumData);
-		}
-		finally
-		{
-			context.PopGlobal();
-		}
+		var baseType = GetBaseType(mergedEntries.Select(e => e.Original.Value).ToArray());
+		var syntax = enum1.DeclarationSyntax.WithMembers(
+			SyntaxFactory.SeparatedList(mergedEntries.Select(e => e.DeclarationSyntax)));
+
+		return new GeneratedMavlinkEnum(enum1.Namespace, enum1.GeneratedName, baseType, mergedEntries, syntax, enum1.Original);
 	}
 }

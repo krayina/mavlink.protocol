@@ -68,9 +68,14 @@ public class MavlinkGenerator : IMavlinkGenerator
 
 	private void GenerateEnums(MavlinkFileNode node, string namespaceName, List<MemberDeclarationSyntax> members)
 	{
+		var includedNamespaces = node.Includes
+			.Select(includedNode => GenerateNamespaceName(includedNode.FilePath))
+			.ToImmutableArray();
+
 		foreach (var @enum in node.Data.Enums)
 		{
-			var enumDeclarationSyntax = _enumGenerator.GenerateMavlinkEnum(@enum, namespaceName, node.Data.Includes, node.FilePath).DeclarationSyntax;
+			var enumDeclarationSyntax = _enumGenerator.GenerateMavlinkEnum(@enum, namespaceName, includedNamespaces)
+				.DeclarationSyntax;
 			members.Add(enumDeclarationSyntax);
 		}
 	}
