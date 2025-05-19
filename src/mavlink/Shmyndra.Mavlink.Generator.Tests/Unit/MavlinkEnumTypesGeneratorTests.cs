@@ -11,7 +11,7 @@ public class MavlinkEnumTypesGeneratorTests
 	[Fact]
 	public async Task GenerateEnums_ShouldMatchSnapshot()
 	{
-		// Arrange
+		// Arrange:
 		var enums = ImmutableArray.Create(
 			new MavlinkEnum(
 				name: "ESC_CONNECTION_TYPE",
@@ -20,15 +20,15 @@ public class MavlinkEnumTypesGeneratorTests
 				entries:
 				[
 					new MavlinkEnumEntry(
-									name: "ESC_TYPE1",
-									value: 0,
-									description: "Type 1",
-									details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
-									deprecated: null,
-									hasLocation: null,
-									isDestination: null,
-									missionOnly: null
-								),
+						name: "ESC_TYPE1",
+						value: 0,
+						description: "Type 1",
+						details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
+						deprecated: null,
+						hasLocation: null,
+						isDestination: null,
+						missionOnly: null
+					),
 					new MavlinkEnumEntry(
 						name: "ESC_TYPE2",
 						value: 1,
@@ -49,15 +49,15 @@ public class MavlinkEnumTypesGeneratorTests
 				entries:
 				[
 					new MavlinkEnumEntry(
-									name: "FAILURE_FLAG1",
-									value: 1,
-									description: "Failure Flag 1",
-									details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
-									deprecated: null,
-									hasLocation: null,
-									isDestination: null,
-									missionOnly: null
-								),
+						name: "FAILURE_FLAG1",
+						value: 1,
+						description: "Failure Flag 1",
+						details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
+						deprecated: null,
+						hasLocation: null,
+						isDestination: null,
+						missionOnly: null
+					),
 					new MavlinkEnumEntry(
 						name: "FAILURE_FLAG2",
 						value: 2,
@@ -73,98 +73,78 @@ public class MavlinkEnumTypesGeneratorTests
 			)
 		);
 		var includes = ImmutableArray<string>.Empty;
-		var filePath = "TestFile.xml";
 		var namespaceName = "TestNamespace";
 
 		var generator = new MavlinkEnumGenerator();
 
-		// Act
-		var generatedEnums = enums.Select(e => generator.GenerateMavlinkEnumInternal(e, namespaceName)).ToList();
+		// Act:
+		var generatedEnums = enums.Select(e => generator.GenerateMavlinkEnum(e, namespaceName)).ToList();
 		var normalizedEnums = generatedEnums.Select(e => e.DeclarationSyntax.ToNormalizedString()).ToList();
 
-		// Assert
+		// Assert:
 		await Verify(normalizedEnums)
 			.UseDirectory(SNAPSHOT_PATH)
-			.UseParameters(namespaceName, filePath);
+			.UseParameters(namespaceName);
 	}
 
 	[Fact]
-	public async Task GenerateEnums_ShouldMergeEnumsFromIncludedFiles()
+	public async Task GenerateEnums_ShouldMergeEnumsFromIncludedNamespaces()
 	{
-		// Arrange
-		var enumsFile1 = ImmutableArray.Create(
-			new MavlinkEnum(
-				name: "ESC_CONNECTION_TYPE",
-				description: "Enum for ESC connection types",
-				bitmask: false,
-				entries: [new MavlinkEnumEntry(
-						name: "ESC_TYPE1",
-						value: 0,
-						description: "Type 1",
-						details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
-						deprecated: null,
-						hasLocation: null,
-						isDestination: null,
-						missionOnly: null
-					)],
-				deprecated: null
-			)
+		// Arrange:
+		var enum1 = new MavlinkEnum(
+			name: "ESC_CONNECTION_TYPE",
+			description: "Enum for ESC connection types",
+			bitmask: false,
+			entries: [new MavlinkEnumEntry("ESC_TYPE1", 0, "Type 1", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)],
+			deprecated: null
 		);
 
-		var enumsFile2 = ImmutableArray.Create(
-			new MavlinkEnum(
-				name: "ESC_CONNECTION_TYPE",
-				description: "Additional types",
-				bitmask: false,
-				entries:
-				[
-					new MavlinkEnumEntry(
-						name: "ESC_TYPE2",
-						value: 1,
-						description: "Type 2",
-						details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
-						deprecated: null,
-						hasLocation: null,
-						isDestination: null,
-						missionOnly: null
-					),
-					new MavlinkEnumEntry(
-						name: "ESC_TYPE3",
-						value: 2,
-						description: "Type 3",
-						details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
-						deprecated: null,
-						hasLocation: null,
-						isDestination: null,
-						missionOnly: null
-					)
-				],
-				deprecated: null
-			)
+		var enum2 = new MavlinkEnum(
+			name: "ESC_CONNECTION_TYPE",
+			description: "Additional types",
+			bitmask: false,
+			entries: [
+				new MavlinkEnumEntry("ESC_TYPE2", 1, "Type 2", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+				new MavlinkEnumEntry("ESC_TYPE3", 2, "Type 3", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)
+			],
+			deprecated: null
 		);
 
-		var filePath1 = "File1.xml";
-		var filePath2 = "File2.xml";
-		var namespaceName1 = "Namespace1";
-		var namespaceName2 = "Namespace2";
+		var node1 = new MavlinkNode(
+			"Namespace1",
+			new MavlinkData(
+				enums: [enum1],
+				messages: ImmutableArray<MavlinkMessage>.Empty,
+				includes: ImmutableArray<string>.Empty,
+				version: null,
+				dialect: null
+			),
+			new List<MavlinkNode>()
+		);
+		var node2 = new MavlinkNode(
+			"Namespace2",
+			new MavlinkData(
+				enums: [enum2],
+				messages: ImmutableArray<MavlinkMessage>.Empty,
+				includes: ["Namespace1"],
+				version: null,
+				dialect: null
+			),
+			new List<MavlinkNode> { node1 }
+		);
 
-		var includes = ImmutableArray.Create(filePath1); // File2 includes File1
+		var enumGenerator = new MavlinkEnumGenerator();
+		var enumTreeGenerator = new MavlinkEnumTreeGenerator(enumGenerator);
 
-		var generator = new MavlinkEnumGenerator();
+		// Act:
+		var generatedEnum1 = enumGenerator.GenerateMavlinkEnum(enum1, "Namespace1");
+		var generatedEnum2 = enumTreeGenerator.GenerateEnums(node2, "Namespace2");
 
-		// Act
-		var generatedEnumFile1 = generator.GenerateMavlinkEnumInternal(enumsFile1[0], namespaceName1);
-		var generatedEnumFile2 = generator.GenerateAndMergeMavlinkEnumInternal(generatedEnumFile1, enumsFile2[0], namespaceName2);
-
-		var allGeneratedEnums = new List<GeneratedMavlinkEnum> { generatedEnumFile1, generatedEnumFile2 };
-
-		// Convert to normalized string representations
-		var normalizedEnums = allGeneratedEnums.Select(enumDecl => enumDecl.DeclarationSyntax.ToNormalizedString()).ToList();
-
-		// Assert with Verify
+		// Assert:
+		var normalizedEnums = generatedEnum2.Insert(0, generatedEnum1).Select(e => e.DeclarationSyntax.ToNormalizedString()).ToList();
 		await Verify(normalizedEnums)
 			.UseDirectory(SNAPSHOT_PATH)
-			.UseParameters(namespaceName1, namespaceName2, filePath1, filePath2);
+			.UseParameters("Namespace1", "Namespace2");
 	}
 
 	[Fact]
@@ -173,7 +153,7 @@ public class MavlinkEnumTypesGeneratorTests
 		// Arrange
 		ImmutableArray<MavlinkEnumEntry> deprecatedEntries = [
 			new MavlinkEnumEntry(
-			name: "MAV_FRAME_GLOBAL_INT",
+			name: "MAV_FRAME_GLOBAL_INT_Property",
 			value: 5,
 			description: null,
 			details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
@@ -200,7 +180,7 @@ public class MavlinkEnumTypesGeneratorTests
 		var generator = new MavlinkEnumGenerator();
 
 		// Act
-		var generatedEnum = generator.GenerateMavlinkEnumInternal(mavlinkEnum, "TestNamespace");
+		var generatedEnum = generator.GenerateMavlinkEnum(mavlinkEnum, "TestNamespace");
 		var generatedEntry = generatedEnum.GeneratedEntries.First();
 		var a = generatedEntry.DeclarationSyntax.ToNormalizedString();
 		// Assert
@@ -221,7 +201,7 @@ public class MavlinkEnumTypesGeneratorTests
 	}
 
 	[Fact]
-	public async Task GenerateMavlinkEnumInternal_ShouldAddObsoleteAttribute()
+	public async Task GenerateMavlinkEnum_ShouldAddObsoleteAttribute()
 	{
 		// Arrange
 		var deprecatedInfo = new MavlinkDeprecatedInfo(
@@ -242,7 +222,7 @@ public class MavlinkEnumTypesGeneratorTests
 		var generator = new MavlinkEnumGenerator();
 
 		// Act
-		var generatedEnum = generator.GenerateMavlinkEnumInternal(mavlinkEnum, "TestNamespace");
+		var generatedEnum = generator.GenerateMavlinkEnum(mavlinkEnum, "TestNamespace");
 
 		// Assert
 		var enumDeclaration = generatedEnum.DeclarationSyntax;
@@ -264,7 +244,7 @@ public class MavlinkEnumTypesGeneratorTests
 	}
 
 	[Fact]
-	public async Task GenerateAndMergeMavlinkEnumInternal_ShouldAddObsoleteAttribute_WhenEnumIsDeprecated()
+	public async Task GenerateAndMergeMavlinkEnum_ShouldAddObsoleteAttribute_WhenEnumIsDeprecated()
 	{
 		// Arrange
 		var existingEnum = new GeneratedMavlinkEnum(
@@ -277,17 +257,21 @@ public class MavlinkEnumTypesGeneratorTests
 		);
 
 		var newEnumData = new MavlinkEnum(
-			"TestEnum",
-			"Test enum with deprecation",
-			false,
-			ImmutableArray<MavlinkEnumEntry>.Empty,
-			new MavlinkDeprecatedInfo("This enum is deprecated", "2024-03", "NewTestEnum", null)
+			name: "TestEnum",
+			description: "Test enum with deprecation",
+			bitmask: false,
+			entries: ImmutableArray<MavlinkEnumEntry>.Empty,
+			deprecated: new MavlinkDeprecatedInfo("This enum is deprecated", "2024-03", "NewTestEnum", null)
 		);
 
 		var generator = new MavlinkEnumGenerator();
 
 		// Act
-		var mergedEnum = generator.GenerateAndMergeMavlinkEnumInternal(existingEnum, newEnumData, "Namespace1");
+		var mergedEnum = generator.GenerateAndMergeMavlinkEnum(
+			newEnumData,
+			"Namespace1",
+			[existingEnum]
+		);
 
 		// Assert
 		var obsoleteAttribute = mergedEnum.DeclarationSyntax.AttributeLists
@@ -318,7 +302,7 @@ public class MavlinkEnumTypesGeneratorTests
 		// Arrange
 		ImmutableArray<MavlinkEnumEntry> entries = [
 			new MavlinkEnumEntry(
-			name: "MAV_FRAME_GLOBAL_INT",
+			name: "MAV_FRAME_GLOBAL_INT_Property",
 			value: 5,
 			description: "Global integer frame description",
 			details: ImmutableArray<MavlinkEnumEntryDetail>.Empty,
@@ -340,7 +324,7 @@ public class MavlinkEnumTypesGeneratorTests
 		var generator = new MavlinkEnumGenerator();
 
 		// Act
-		var generatedEnum = generator.GenerateMavlinkEnumInternal(mavlinkEnum, "TestNamespace");
+		var generatedEnum = generator.GenerateMavlinkEnum(mavlinkEnum, "TestNamespace");
 		var generatedEntry = generatedEnum.GeneratedEntries.First();
 
 		// Assert
@@ -383,17 +367,16 @@ public class MavlinkEnumTypesGeneratorTests
 	}
 
 	[Fact]
-	public void GenerateAndMergeMavlinkEnumInternal_ShouldMergeThreeEnumsCorrectly()
+	public async Task GenerateAndMergeMavlinkEnum_ShouldMergeThreeEnumsCorrectly()
 	{
 		// Arrange
 		var generator = new MavlinkEnumGenerator();
 
 		var enum1 = new MavlinkEnum(
 			name: "Test_Enum",
-			entries:
-			[
+			entries: [
 				new MavlinkEnumEntry("Value_A", 1, "First value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
-				new MavlinkEnumEntry("Value_B", 2, "Second value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+				new MavlinkEnumEntry("Value_B", 2, "Second value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)
 			],
 			bitmask: false,
 			description: "First enum",
@@ -402,10 +385,9 @@ public class MavlinkEnumTypesGeneratorTests
 
 		var enum2 = new MavlinkEnum(
 			name: "Test_Enum",
-			entries:
-			[
+			entries: [
 				new MavlinkEnumEntry("Value_C", 3, "Third value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
-				new MavlinkEnumEntry("Value_D", 4, "Fourth value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+				new MavlinkEnumEntry("Value_D", 4, "Fourth value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)
 			],
 			bitmask: false,
 			description: "Second enum",
@@ -414,36 +396,36 @@ public class MavlinkEnumTypesGeneratorTests
 
 		var enum3 = new MavlinkEnum(
 			name: "Test_Enum",
-			entries:
-			[
+			entries: [
 				new MavlinkEnumEntry("Value_E", 5, "Fifth value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
-				new MavlinkEnumEntry("Value_F", 6, "Sixth value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null),
+				new MavlinkEnumEntry("Value_F", 6, "Sixth value", ImmutableArray<MavlinkEnumEntryDetail>.Empty, null, null, null, null)
 			],
 			bitmask: false,
 			description: "Third enum",
 			deprecated: null
 		);
 
-		// Generate the initial enum from enum1
-		var generatedEnum1 = generator.GenerateMavlinkEnum(enum1, "Namespace1", ImmutableArray<string>.Empty, "enum1.xml");
+		// Act
+		var generatedEnum1 = generator.GenerateMavlinkEnum(enum1, "Namespace1");
+		var mergedEnum1 = generator.GenerateAndMergeMavlinkEnum(enum2, "Namespace2", [generatedEnum1]);
+		var mergedEnum2 = generator.GenerateAndMergeMavlinkEnum(enum3, "Namespace3", [mergedEnum1]);
+		var result = mergedEnum2.DeclarationSyntax.ToNormalizedString();
 
-		// Act: Merge enum2 and enum3 with generatedEnum1
-		var mergedEnum = generator.GenerateAndMergeMavlinkEnumInternal(generatedEnum1, enum2, "Namespace1");
-		mergedEnum = generator.GenerateAndMergeMavlinkEnumInternal(mergedEnum, enum3, "Namespace1");
-
-		// Assert: Check that the merged enum contains all entries from the three enums
-		Assert.NotNull(mergedEnum);
-		Assert.Equal("TestEnum", mergedEnum.GeneratedName);
-		Assert.Equal("Namespace1", mergedEnum.Namespace);
+		// Assert
+		Assert.Equal("TestEnum", mergedEnum2.GeneratedName);
+		Assert.Equal("Namespace3", mergedEnum2.Namespace);
 
 		var expectedEntries = new List<string> { "ValueA", "ValueB", "ValueC", "ValueD", "ValueE", "ValueF" };
-		var actualEntries = mergedEnum.GeneratedEntries.Select(e => e.GeneratedName).ToList();
+		var actualEntries = mergedEnum2.GeneratedEntries.Select(e => e.GeneratedName).ToList();
 
 		Assert.Equal(expectedEntries.Count, actualEntries.Count);
 		foreach (var entry in expectedEntries)
 		{
 			Assert.Contains(entry, actualEntries);
 		}
+
+		await Verify(result)
+			.UseDirectory(SNAPSHOT_PATH);
 	}
 
 	[Fact]

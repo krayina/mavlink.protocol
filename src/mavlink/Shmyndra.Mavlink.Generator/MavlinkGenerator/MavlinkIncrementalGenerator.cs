@@ -54,11 +54,15 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 		{
 			var (compilation, files) = input;
 
+			var enumGenerator = new MavlinkEnumGenerator();
 			var messageGenerator = GetMavlinkMessageGeneratorInstanceWithNetStandardCondition(compilation);
+
+			var enumTreeGenerator = new MavlinkEnumTreeGenerator(enumGenerator);
 
 			var generator = new MavlinkGenerator(
 				new MavlinkTreeBuilder(new MavlinkXmlParser()),
 				enumGenerator,
+				enumTreeGenerator,
 				messageGenerator,
 				new MavlinkSpecificationGenerator());
 
@@ -71,9 +75,46 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 			}
 
 			var messagesStorage = (IGeneratedStorage<GeneratedMavlinkMessage>)messageGenerator;
+			var enumsStorage = (IGeneratedStorage<GeneratedMavlinkEnum>)enumGenerator;
+
 			var generatedMessages = messagesStorage.GetGeneratedTypes();
+			var generatedEnums = enumsStorage.GetGeneratedTypes();
+
 			var generatedMessagesSourceCode = MavlinkMessagesGenerator.GenerateMessageExtensions(generatedMessages);
+
+			// TODO: Should be resolver
+			var enumBitmaskNamespaceBuilder = new CompilationUnitBuilder(MavlinkGeneratorConstants.TypesNamespace);
+			var mavlinkGenericEnumBitmaskGenerator = new MavlinkGenericEnumBitmaskGenerator();
+			var mavlinkSpecificEnumBitmaskGenerator = new MavlinkSpecificEnumBitmaskGenerator();
+			foreach (var generatedEnum in generatedEnums)
+			{
+				if (generatedEnum.Original.Bitmask == true)
+				{
+					var generatedGenericEnumBitmask = mavlinkGenericEnumBitmaskGenerator.Generate(generatedEnum);
+					enumBitmaskNamespaceBuilder.AddMember(generatedGenericEnumBitmask);
+				}
+			}
+
+			(GeneratedMavlinkEnum GeneratedEnum, string UnderlyingType)[] underlyingEnumDependencies = generatedMessages
+				.SelectMany(x => x.GeneratedFields)
+				.Where(x => x.Original.Display == MavlinkMessageFieldDisplay.Bitmask &&
+							x.GeneratedType is GeneratedMavlinkMessageFieldEnumType or GeneratedMavlinkMessageFieldArrayEnumType)
+				.Select(x => x.GeneratedType switch
+				{
+					GeneratedMavlinkMessageFieldEnumType enumType => (enumType.GeneratedEnum, enumType.ConvertedType),
+					GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType => (arrayEnumType.GeneratedEnum, arrayEnumType.ConvertedType),
+					_ => throw new NotImplementedException($"The type of {x.GeneratedType} is not recognized.")
+				})
+				.ToArray();
+
+			foreach (var item in underlyingEnumDependencies)
+			{
+				var generatedSpecificEnumBitmaskType = mavlinkSpecificEnumBitmaskGenerator.Generate(item.GeneratedEnum, item.UnderlyingType);
+				enumBitmaskNamespaceBuilder.AddMember(generatedSpecificEnumBitmaskType);
+			}
+
 			AddSource(spc, MavlinkGeneratorConstants.TypesNamespace, generatedMessagesSourceCode);
+			AddSource(spc, "EnumBitmaskTypes", enumBitmaskNamespaceBuilder.Build());
 		}
 
 		private MavlinkMessageGenerator GetMavlinkMessageGeneratorInstanceWithNetStandardCondition(Compilation compilation)

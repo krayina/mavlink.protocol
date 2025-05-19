@@ -19,8 +19,8 @@ public class MavlinkGeneratorTests
 			new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy())
 		);
 		IMavlinkSpecificationGenerator specificationGenerator = new MavlinkSpecificationGenerator();
-
-		var generator = new MavlinkGenerator(filesTreeBuilder, enumGenerator, messageGenerator, specificationGenerator);
+		IMavlinkEnumTreeGenerator enumTreeGenerator = new MavlinkEnumTreeGenerator(enumGenerator);
+		var generator = new MavlinkGenerator(filesTreeBuilder, enumGenerator, enumTreeGenerator, messageGenerator, specificationGenerator);
 
 		var additional = TestsHelper.GetAdditionalTextList([
 			"Stubs\\test-mavlink-common.xml",

@@ -22,17 +22,21 @@ public class MavlinkGenerator : IMavlinkGenerator
 {
 	private readonly IMavlinkTreeBuilder _filesTreeBuilder;
 	private readonly IMavlinkEnumGenerator _enumGenerator;
+	private readonly IMavlinkEnumTreeGenerator _enumTreeGenerator;
 	private readonly IMavlinkMessageGenerator _messageGenerator;
 	private readonly IMavlinkSpecificationGenerator _specificationGenerator;
 
 	public MavlinkGenerator(
 		IMavlinkTreeBuilder filesTreeBuilder,
+		// TODO : Temporary object. Should be removed with new messages architecture
 		IMavlinkEnumGenerator enumGenerator,
+		IMavlinkEnumTreeGenerator enumTreeGenerator,
 		IMavlinkMessageGenerator messageGenerator,
 		IMavlinkSpecificationGenerator specificationGenerator)
 	{
 		_filesTreeBuilder = filesTreeBuilder;
 		_enumGenerator = enumGenerator;
+		_enumTreeGenerator = enumTreeGenerator;
 		_messageGenerator = messageGenerator;
 		_specificationGenerator = specificationGenerator;
 	}
@@ -48,7 +52,8 @@ public class MavlinkGenerator : IMavlinkGenerator
 			var members = new List<MemberDeclarationSyntax>();
 			var namespaceName = GenerateNamespaceName(node.Namespace);
 
-			GenerateEnums(node, namespaceName, members);
+			var generatedEnums = _enumTreeGenerator.GenerateEnums(node, namespaceName);
+			members.AddRange(generatedEnums.Select(e => e.DeclarationSyntax));
 
 			GenerateMessages(node, fileTreeNods, namespaceName, members);
 
@@ -64,32 +69,6 @@ public class MavlinkGenerator : IMavlinkGenerator
 	private string GenerateNamespaceName(string filePath)
 	{
 		return $"{MavlinkGeneratorConstants.TypesNamespace}.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(filePath))}";
-	}
-
-	private void GenerateEnums(MavlinkNode node, string namespaceName, List<MemberDeclarationSyntax> members)
-	{
-		var includedNamespaces = node.Includes
-			.Select(includedNode => GenerateNamespaceName(includedNode.Namespace))
-			.ToImmutableArray();
-
-		foreach (var @enum in node.Data.Enums)
-		{
-			var existingEnums = _enumGenerator.GetGeneratedTypes()
-				.Where(e => e.GeneratedName == @enum.Name && includedNamespaces.Contains(e.Namespace))
-				.ToImmutableArray();
-
-			GeneratedMavlinkEnum generatedEnum;
-			if (existingEnums.IsEmpty)
-			{
-				generatedEnum = _enumGenerator.GenerateMavlinkEnum(@enum, namespaceName);
-			}
-			else
-			{
-				generatedEnum = _enumGenerator.GenerateAndMergeMavlinkEnum(@enum, namespaceName, existingEnums);
-			}
-
-			members.Add(generatedEnum.DeclarationSyntax);
-		}
 	}
 
 	private void GenerateMessages(MavlinkNode node, ReadOnlyMavlinkTree fileTreeNods, string namespaceName, List<MemberDeclarationSyntax> members)
