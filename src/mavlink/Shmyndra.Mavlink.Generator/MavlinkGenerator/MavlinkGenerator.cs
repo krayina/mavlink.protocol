@@ -68,7 +68,7 @@ public class MavlinkGenerator : IMavlinkGenerator
 
 	private string GenerateNamespaceName(string filePath)
 	{
-		return $"{MavlinkGeneratorConstants.TypesNamespace}.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(filePath))}";
+		return $"{MavlinkGeneratorConstants.TypesNamespace}.{Utilities.ToUpperCamelCase(Path.GetFileNameWithoutExtension(filePath))}";
 	}
 
 	private void GenerateMessages(MavlinkNode node, ReadOnlyMavlinkTree fileTreeNods, string namespaceName, List<MemberDeclarationSyntax> members)
@@ -94,7 +94,7 @@ public class MavlinkGenerator : IMavlinkGenerator
 
 				if (nodeWithDependedEnum is not null)
 				{
-					var enumNamespace = $"{MavlinkGeneratorConstants.TypesNamespace}.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(nodeWithDependedEnum.Namespace))}";
+					var enumNamespace = $"{MavlinkGeneratorConstants.TypesNamespace}.{Utilities.ToUpperCamelCase(Path.GetFileNameWithoutExtension(nodeWithDependedEnum.Namespace))}";
 					GeneratedMavlinkEnum generatedDependedEnum = _enumGenerator.GetGeneratedTypes(@enum => @enum.Namespace == enumNamespace && @enum.Name == enumType.EnumName).First();
 					dependedEnums.Add(enumType.EnumName, generatedDependedEnum);
 				}

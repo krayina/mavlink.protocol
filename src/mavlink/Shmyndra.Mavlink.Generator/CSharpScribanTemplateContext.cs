@@ -30,8 +30,8 @@ public static class CSharpScribanTemplateContext
 		};
 
 		var globals = new ScriptObject();
-		globals.Import("to_lower_camel", new Func<string, string>(Utilities.ToLowerCamelCase));
-		globals.Import("to_camel_case", new Func<string, string>(Utilities.ToCamelCase));
+		globals.Import("to_lower_camel_case", new Func<string, string>(Utilities.ToLowerCamelCase));
+		globals.Import("to_upper_camel_case", new Func<string, string>(Utilities.ToUpperCamelCase));
 		globals.Import("escape_keyword", new Func<string, string>(Utilities.EscapeReservedKeyword));
 		globals.Import("safe_var", new Func<string, string[], string>(Utilities.GetSafeVariableName));
 

@@ -100,7 +100,7 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 		string @namespace,
 		IImmutableDictionary<string, GeneratedMavlinkEnum> generatedEnums)
 	{
-		var normalizedName = Utilities.ToCamelCase(message.Name) + MavlinkGeneratorConstants.MessagesPostfix;
+		var normalizedName = Utilities.ToUpperCamelCase(message.Name) + MavlinkGeneratorConstants.MessagesPostfix;
 		var id = message.Id;
 
 		var generatedFields = message.Fields
@@ -152,7 +152,7 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 		string messageNamespace,
 		string messageName)
 	{
-		string normalizedFieldName = Utilities.ToCamelCase(field.Name);
+		string normalizedFieldName = Utilities.ToUpperCamelCase(field.Name);
 		bool isArray = field.Type.TypeName.Contains("[");
 
 		GeneratedMavlinkMessageFieldTypeBase fieldType;

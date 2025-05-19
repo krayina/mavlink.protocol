@@ -76,20 +76,58 @@ internal static class Utilities
 		return char.ToLowerInvariant(name[0]) + name.Substring(1);
 	}
 
-	public static string ToCamelCase(string input)
+	public static string ToUpperCamelCase(string input)
 	{
 		if (string.IsNullOrEmpty(input))
 		{
 			return input;
 		}
 
-		// Split the input string by hyphens, underscores, or spaces
-		var words = input.Split(new[] { '-', '_', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+		if (IsUpperCamelCase(input))
+		{
+			return input;
+		}
 
-		// Capitalize the first letter of each word and concatenate them
+		var words = SplitIntoWords(input);
+
 		var result = string.Concat(words.Select(word => char.ToUpper(word[0]) + word.Substring(1).ToLower()));
 
 		return result;
+	}
+
+	private static bool IsUpperCamelCase(string input)
+	{
+		if (input.Any(c => c == '-' || c == '_' || c == ' '))
+		{
+			return false;
+		}
+
+		var words = SplitIntoWords(input);
+
+		return words.All(word => char.IsUpper(word[0]));
+	}
+
+	private static List<string> SplitIntoWords(string input)
+	{
+		var words = new List<string>();
+
+		if (input.Any(c => c == '-' || c == '_' || c == ' '))
+		{
+			return input.Split(['-', '_', ' '], StringSplitOptions.RemoveEmptyEntries).ToList();
+		}
+
+		int start = 0;
+		for (int i = 1; i < input.Length; i++)
+		{
+			if (char.IsUpper(input[i]))
+			{
+				words.Add(input.Substring(start, i - start));
+				start = i;
+			}
+		}
+		words.Add(input.Substring(start));
+
+		return words;
 	}
 
 	public static SyntaxTriviaList CreateSummaryTrivia(string description)

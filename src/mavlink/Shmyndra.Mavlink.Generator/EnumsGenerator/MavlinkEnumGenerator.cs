@@ -89,7 +89,7 @@ public partial class MavlinkEnumGenerator : IMavlinkEnumGenerator
 		string @namespace,
 		ImmutableArray<GeneratedMavlinkEnum> existingEnums)
 	{
-		var normalizedName = Utilities.ToCamelCase(@enum.Name);
+		var normalizedName = Utilities.ToUpperCamelCase(@enum.Name);
 		var newEntries = BuildEnumEntries(@enum, normalizedName);
 
 		object[] mergedEntries;
@@ -142,7 +142,7 @@ public partial class MavlinkEnumGenerator : IMavlinkEnumGenerator
 
 	private object CreateEnumEntry(MavlinkEnumEntry entry, string enumName)
 	{
-		var normalizedName = Utilities.ToCamelCase(entry.Name);
+		var normalizedName = Utilities.ToUpperCamelCase(entry.Name);
 		var entryName = normalizedName == enumName ? "_" + normalizedName : normalizedName;
 		var syntax = SyntaxFactory.EnumMemberDeclaration(entryName)
 			.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())))
