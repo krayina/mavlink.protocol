@@ -35,7 +35,7 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 
 	class Generator
 	{
-		private static readonly IMavlinkFilesTreeBuilder _treeBuilder = new MavlinkFilesTreeBuilder(new MavlinkXmlParser());
+		private static readonly IMavlinkTreeBuilder _treeBuilder = new MavlinkTreeBuilder(new MavlinkXmlParser());
 
 		internal void Generate(IncrementalGeneratorInitializationContext context)
 		{
@@ -57,8 +57,8 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 			var messageGenerator = GetMavlinkMessageGeneratorInstanceWithNetStandardCondition(compilation);
 
 			var generator = new MavlinkGenerator(
-				new MavlinkFilesTreeBuilder(new MavlinkXmlParser()),
-				new MavlinkEnumGenerator(),
+				new MavlinkTreeBuilder(new MavlinkXmlParser()),
+				enumGenerator,
 				messageGenerator,
 				new MavlinkSpecificationGenerator());
 

@@ -12,7 +12,7 @@ public class MavlinkGeneratorTests
 	{
 		// Arrange
 		IMavlinkParser mavlinkParser = new MavlinkXmlParser();
-		IMavlinkFilesTreeBuilder filesTreeBuilder = new MavlinkFilesTreeBuilder(mavlinkParser);
+		IMavlinkTreeBuilder filesTreeBuilder = new MavlinkTreeBuilder(mavlinkParser);
 		IMavlinkEnumGenerator enumGenerator = new MavlinkEnumGenerator();
 		IMavlinkMessageGenerator messageGenerator = new MavlinkMessageGenerator(
 			new MavlinkMessageDeserializationMethodGenerator(new MavlinkSpanDeserializationGeneratorStrategy()),

@@ -3,24 +3,24 @@ using System.Collections.Immutable;
 
 namespace Shmyndra.Mavlink.Generator;
 
-public class ReadOnlyMavlinkTree : IReadOnlyCollection<MavlinkFileNode>
+public class ReadOnlyMavlinkTree : IReadOnlyCollection<MavlinkNode>
 {
-	private readonly ImmutableHashSet<MavlinkFileNode> _nodes;
+	private readonly ImmutableHashSet<MavlinkNode> _nodes;
 
-	public ReadOnlyMavlinkTree(IEnumerable<MavlinkFileNode> nodes)
+	public ReadOnlyMavlinkTree(IEnumerable<MavlinkNode> nodes)
 	{
 		_nodes = nodes.ToImmutableHashSet();
 	}
 
 	public int Count => _nodes.Count;
 
-	public IEnumerator<MavlinkFileNode> GetEnumerator() => _nodes.GetEnumerator();
+	public IEnumerator<MavlinkNode> GetEnumerator() => _nodes.GetEnumerator();
 
 	IEnumerator IEnumerable.GetEnumerator() => _nodes.GetEnumerator();
 
-	public void ForEachTree(Action<MavlinkFileNode> action)
+	public void ForEachTree(Action<MavlinkNode> action)
 	{
-		var visited = new HashSet<MavlinkFileNode>();
+		var visited = new HashSet<MavlinkNode>();
 
 		foreach (var node in _nodes)
 		{
@@ -28,7 +28,7 @@ public class ReadOnlyMavlinkTree : IReadOnlyCollection<MavlinkFileNode>
 		}
 	}
 
-	private void Visit(MavlinkFileNode node, HashSet<MavlinkFileNode> visited, Action<MavlinkFileNode> action)
+	private void Visit(MavlinkNode node, HashSet<MavlinkNode> visited, Action<MavlinkNode> action)
 	{
 		if (!visited.Contains(node))
 		{

@@ -205,24 +205,24 @@ public class MavlinkXmlParserTests
 		var fileContents = additional.ToDictionary(file => file.Path, file => file.GetText()!.ToString());
 
 		var parser = new MavlinkXmlParser();
-		var builder = new MavlinkFilesTreeBuilder(parser);
+		var builder = new MavlinkTreeBuilder(parser);
 
 		// Act
 		var result = builder.Build(fileContents);
 
 		// Assert
 		Assert.Equal(2, result.Count); // Two root nodes
-		var firstNode = result.SingleOrDefault(node => node.FilePath == "ThisFileShouldBeFirst.xml");
-		var fourthNode = result.SingleOrDefault(node => node.FilePath == "ThisFileShouldBeFourth.xml");
+		var firstNode = result.SingleOrDefault(node => node.Namespace == "ThisFileShouldBeFirst.xml");
+		var fourthNode = result.SingleOrDefault(node => node.Namespace == "ThisFileShouldBeFourth.xml");
 
 		Assert.NotNull(firstNode);
 		Assert.NotNull(fourthNode);
 		Assert.Empty(firstNode.Includes);
 
-		var thirdNode = fourthNode.Includes.SingleOrDefault(node => node.FilePath == "ThisFileShouldBeThird.xml");
+		var thirdNode = fourthNode.Includes.SingleOrDefault(node => node.Namespace == "ThisFileShouldBeThird.xml");
 		Assert.NotNull(thirdNode);
 
-		var secondNode = thirdNode.Includes.SingleOrDefault(node => node.FilePath == "ThisFileShouldBeSecond.xml");
+		var secondNode = thirdNode.Includes.SingleOrDefault(node => node.Namespace == "ThisFileShouldBeSecond.xml");
 		Assert.NotNull(secondNode);
 		Assert.Empty(secondNode.Includes);
 	}
@@ -258,16 +258,16 @@ public class MavlinkXmlParserTests
 		mockParser.Setup(p => p.Parse(It.IsAny<string>()))
 			.Returns((string content) => mavlinkDataByContent[content]);
 
-		var builder = new MavlinkFilesTreeBuilder(mockParser.Object);
+		var builder = new MavlinkTreeBuilder(mockParser.Object);
 
 		// Act
 		var mavlinkTree = builder.Build(fileContents);
 		var rootNode = mavlinkTree.First();
-		var foundNode = rootNode.FindNode(n => n.FilePath == "include3.xml");
+		var foundNode = rootNode.FindNode(n => n.Namespace == "include3.xml");
 
 		// Assert
 		Assert.NotNull(foundNode);
-		Assert.Equal("include3.xml", foundNode.FilePath);
+		Assert.Equal("include3.xml", foundNode.Namespace);
 	}
 
 	[Fact]
@@ -299,12 +299,12 @@ public class MavlinkXmlParserTests
 		mockParser.Setup(p => p.Parse(It.IsAny<string>()))
 			.Returns((string content) => mavlinkDataByContent[content]);
 
-		var builder = new MavlinkFilesTreeBuilder(mockParser.Object);
+		var builder = new MavlinkTreeBuilder(mockParser.Object);
 
 		// Act
 		var mavlinkTree = builder.Build(fileContents);
 		var rootNode = mavlinkTree.First();
-		var foundNode = rootNode.FindNode(n => n.FilePath == "nonexistent.xml");
+		var foundNode = rootNode.FindNode(n => n.Namespace == "nonexistent.xml");
 
 		// Assert
 		Assert.Null(foundNode);
