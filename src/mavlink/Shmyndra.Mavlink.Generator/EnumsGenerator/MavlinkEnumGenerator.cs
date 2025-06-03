@@ -9,6 +9,15 @@ namespace Shmyndra.Mavlink.Generator;
 
 public partial class MavlinkEnumGenerator : IMavlinkEnumGenerator
 {
+	internal readonly struct ScribanEntryMetadata
+	{
+		public string ValueExpression { get; init; }
+		public string? Summary { get; init; }
+		public string Remarks { get; init; }
+		public bool IsDeprecated { get; init; }
+		public string? DeprecatedReason { get; init; }
+	}
+
 	private readonly Dictionary<(string Namespace, string Name), GeneratedMavlinkEnum> _generatedEnums = new();
 
 	ImmutableArray<GeneratedMavlinkEnum> IGeneratedStorage<GeneratedMavlinkEnum>.GetGeneratedTypes()
@@ -90,21 +99,42 @@ public partial class MavlinkEnumGenerator : IMavlinkEnumGenerator
 		ImmutableArray<GeneratedMavlinkEnum> existingEnums)
 	{
 		var normalizedName = Utilities.ToUpperCamelCase(@enum.Name);
-		var newEntries = BuildEnumEntries(@enum, normalizedName);
+		var (newEntries, newMetadata) = BuildEnumEntries(@enum, normalizedName, @namespace);
 
-		object[] mergedEntries;
+		GeneratedMavlinkEnumEntry[] mergedEntries;
+		Dictionary<GeneratedMavlinkEnumEntry, ScribanEntryMetadata> mergedMetadata;
 		uint[] allValues;
 		if (existingEnums.IsEmpty)
 		{
 			mergedEntries = newEntries;
+			mergedMetadata = newMetadata;
 			allValues = @enum.Entries.Select(e => e.Value).ToArray();
 		}
 		else
 		{
-			var existingEntries = existingEnums
-				.SelectMany(BuildExistingEntries)
+			var existingResults = existingEnums
+				.Select(BuildExistingEntries)
 				.ToArray();
+			var existingEntries = existingResults
+				.SelectMany(r => r.Item1)
+				.ToArray();
+			var existingMetadata = existingResults
+				.Aggregate(new Dictionary<GeneratedMavlinkEnumEntry, ScribanEntryMetadata>(),
+					(acc, r) =>
+					{
+						foreach (var kvp in r.Item2)
+						{
+							acc[kvp.Key] = kvp.Value;
+						}
+						return acc;
+					});
+
 			mergedEntries = existingEntries.Concat(newEntries).ToArray();
+			mergedMetadata = existingMetadata;
+			foreach (var kvp in newMetadata)
+			{
+				mergedMetadata[kvp.Key] = kvp.Value;
+			}
 			allValues = existingEnums
 				.SelectMany(e => e.GeneratedEntries.Select(ge => ge.Original.Value))
 				.Concat(@enum.Entries.Select(e => e.Value))
@@ -112,9 +142,9 @@ public partial class MavlinkEnumGenerator : IMavlinkEnumGenerator
 		}
 
 		var baseType = GetBaseType(allValues);
-		var model = BuildScribanModel(@enum, normalizedName, baseType, mergedEntries);
+		var model = BuildScribanModel(@enum, normalizedName, baseType, mergedEntries, mergedMetadata);
 		var syntax = RenderSyntax(model, normalizedName);
-		var generatedEntries = BuildGeneratedEntries(@namespace, mergedEntries);
+		var generatedEntries = mergedEntries.ToImmutableArray();
 
 		return new GeneratedMavlinkEnum(@namespace, normalizedName, baseType, generatedEntries, syntax, @enum);
 	}
@@ -132,52 +162,95 @@ public partial class MavlinkEnumGenerator : IMavlinkEnumGenerator
 		if (existingEnums == null) throw new ArgumentNullException(nameof(existingEnums));
 	}
 
-	private object[] BuildEnumEntries(MavlinkEnum @enum, string enumName)
+	private (GeneratedMavlinkEnumEntry[], Dictionary<GeneratedMavlinkEnumEntry, ScribanEntryMetadata>) BuildEnumEntries(
+		MavlinkEnum @enum, string enumName, string @namespace)
 	{
-		return @enum.Entries
-			.OrderBy(e => e.Value)
-			.Select(e => CreateEnumEntry(e, enumName))
-			.ToArray();
-	}
+		var entries = new List<GeneratedMavlinkEnumEntry>();
+		var metadata = new Dictionary<GeneratedMavlinkEnumEntry, ScribanEntryMetadata>();
 
-	private object CreateEnumEntry(MavlinkEnumEntry entry, string enumName)
-	{
-		var normalizedName = Utilities.ToUpperCamelCase(entry.Name);
-		var entryName = normalizedName == enumName ? "_" + normalizedName : normalizedName;
-		var syntax = SyntaxFactory.EnumMemberDeclaration(entryName)
-			.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())))
-			.AddSummaryTriviaIfNotNull(entry.Description)
-			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {entry.Name}");
-
-		if (entry.Deprecated != null)
+		foreach (var entry in @enum.Entries.OrderBy(e => e.Value))
 		{
-			syntax = syntax.AddAttributeLists(
-				SyntaxFactory.AttributeList(
-					SyntaxFactory.SeparatedList(
-					[
-						SyntaxFactory.Attribute(SyntaxFactory.ParseName("Obsolete"))
-							.WithArgumentList(SyntaxFactory.AttributeArgumentList(
-								SyntaxFactory.SeparatedList(
-								[
-									SyntaxFactory.AttributeArgument(
-										SyntaxFactory.LiteralExpression(
-											SyntaxKind.StringLiteralExpression,
-											SyntaxFactory.Literal(entry.Deprecated.ToString())))
-								])))
-					])));
+			var normalizedName = Utilities.ToUpperCamelCase(entry.Name);
+			var entryName = normalizedName == enumName ? "_" + normalizedName : normalizedName;
+			var syntax = SyntaxFactory.EnumMemberDeclaration(entryName)
+				.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(entry.Value.ToString())))
+				.AddSummaryTriviaIfNotNull(entry.Description)
+				.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {entry.Name}");
+
+			if (entry.Deprecated != null)
+			{
+				syntax = syntax.AddAttributeLists(
+					SyntaxFactory.AttributeList(
+						SyntaxFactory.SeparatedList(
+						[
+							SyntaxFactory.Attribute(SyntaxFactory.ParseName("Obsolete"))
+								.WithArgumentList(SyntaxFactory.AttributeArgumentList(
+									SyntaxFactory.SeparatedList(
+									[
+										SyntaxFactory.AttributeArgument(
+											SyntaxFactory.LiteralExpression(
+												SyntaxKind.StringLiteralExpression,
+												SyntaxFactory.Literal(entry.Deprecated.ToString())))
+									])))
+						])));
+			}
+
+			var generatedEntry = new GeneratedMavlinkEnumEntry(
+				@namespace,
+				entryName,
+				syntax,
+				entry
+			);
+
+			var scribanMetadata = new ScribanEntryMetadata
+			{
+				ValueExpression = entry.Value.ToString(),
+				Summary = entry.Description,
+				Remarks = $"Original name: {entry.Name}",
+				IsDeprecated = entry.Deprecated != null,
+				DeprecatedReason = entry.Deprecated?.ToString()
+			};
+
+			entries.Add(generatedEntry);
+			metadata[generatedEntry] = scribanMetadata;
 		}
 
-		return new
+		return (entries.ToArray(), metadata);
+	}
+
+	private (GeneratedMavlinkEnumEntry[], Dictionary<GeneratedMavlinkEnumEntry, ScribanEntryMetadata>) BuildExistingEntries(
+		GeneratedMavlinkEnum existing)
+	{
+		var entries = new List<GeneratedMavlinkEnumEntry>();
+		var metadata = new Dictionary<GeneratedMavlinkEnumEntry, ScribanEntryMetadata>();
+
+		foreach (var e in existing.GeneratedEntries)
 		{
-			name = entryName,
-			value_expression = entry.Value.ToString(),
-			summary = entry.Description,
-			remarks = $"Original name: {entry.Name}",
-			is_deprecated = entry.Deprecated != null,
-			deprecated_reason = entry.Deprecated?.ToString(),
-			syntax,
-			original = entry
-		};
+			var syntax = SyntaxFactory.EnumMemberDeclaration(e.GeneratedName)
+				.WithEqualsValue(SyntaxFactory.EqualsValueClause(
+					SyntaxFactory.ParseExpression($"{existing.Namespace}.{existing.GeneratedName}.{e.GeneratedName}")));
+
+			var generatedEntry = new GeneratedMavlinkEnumEntry(
+				existing.Namespace,
+				e.GeneratedName,
+				syntax,
+				e.Original
+			);
+
+			var scribanMetadata = new ScribanEntryMetadata
+			{
+				ValueExpression = $"{existing.Namespace}.{existing.GeneratedName}.{e.GeneratedName}",
+				Summary = e.Original.Description,
+				Remarks = $"Original name: {e.Original.Name}",
+				IsDeprecated = e.Original.Deprecated != null,
+				DeprecatedReason = e.Original.Deprecated?.ToString()
+			};
+
+			entries.Add(generatedEntry);
+			metadata[generatedEntry] = scribanMetadata;
+		}
+
+		return (entries.ToArray(), metadata);
 	}
 
 	private string GetBaseType(uint[] values)
@@ -185,8 +258,23 @@ public partial class MavlinkEnumGenerator : IMavlinkEnumGenerator
 		return values.Any() ? Utilities.DetermineEnumBaseType(values) : "int";
 	}
 
-	private ScriptObject BuildScribanModel(MavlinkEnum @enum, string name, string baseType, object[] entries)
+	private ScriptObject BuildScribanModel(
+		MavlinkEnum @enum,
+		string name,
+		string baseType,
+		GeneratedMavlinkEnumEntry[] entries,
+		Dictionary<GeneratedMavlinkEnumEntry, ScribanEntryMetadata> metadata)
 	{
+		var scribanEntries = entries.Select(e => new
+		{
+			name = e.GeneratedName,
+			value_expression = metadata[e].ValueExpression,
+			summary = metadata[e].Summary,
+			remarks = metadata[e].Remarks,
+			is_deprecated = metadata[e].IsDeprecated,
+			deprecated_reason = metadata[e].DeprecatedReason
+		}).ToArray();
+
 		return new ScriptObject
 		{
 			["summary"] = @enum.Description,
@@ -198,7 +286,7 @@ public partial class MavlinkEnumGenerator : IMavlinkEnumGenerator
 			["enum_name"] = name,
 			["has_base_type"] = baseType != "int",
 			["base_type_name"] = baseType,
-			["entries"] = new ScriptArray(entries)
+			["entries"] = new ScriptArray(scribanEntries)
 		};
 	}
 
@@ -223,33 +311,5 @@ public partial class MavlinkEnumGenerator : IMavlinkEnumGenerator
 		{
 			context.PopGlobal();
 		}
-	}
-
-	private ImmutableArray<GeneratedMavlinkEnumEntry> BuildGeneratedEntries(string @namespace, object[] entries)
-	{
-		return entries.Select(e => new GeneratedMavlinkEnumEntry(
-			@namespace,
-			e.GetType().GetProperty("name").GetValue(e).ToString(),
-			(EnumMemberDeclarationSyntax)e.GetType().GetProperty("syntax").GetValue(e),
-			(MavlinkEnumEntry)e.GetType().GetProperty("original").GetValue(e)
-		)).ToImmutableArray();
-	}
-
-	private object[] BuildExistingEntries(GeneratedMavlinkEnum existing)
-	{
-		return existing.GeneratedEntries
-			.Select(e => new
-			{
-				name = e.GeneratedName,
-				value_expression = $"{existing.Namespace}.{existing.GeneratedName}.{e.GeneratedName}",
-				summary = e.Original.Description,
-				remarks = $"Original name: {e.Original.Name}",
-				is_deprecated = e.Original.Deprecated != null,
-				deprecated_reason = e.Original.Deprecated?.ToString(),
-				syntax = SyntaxFactory.EnumMemberDeclaration(e.GeneratedName)
-					.WithEqualsValue(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression($"{existing.Namespace}.{existing.GeneratedName}.{e.GeneratedName}"))),
-				original = e.Original
-			})
-			.ToArray();
 	}
 }
