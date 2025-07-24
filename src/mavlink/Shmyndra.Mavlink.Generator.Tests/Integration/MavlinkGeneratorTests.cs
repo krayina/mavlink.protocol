@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using static Shmyndra.Mavlink.Generator.Tests.Unit.MavlinkMessagesGeneratorTests;
 
 namespace Shmyndra.Mavlink.Generator.Tests.Integration;
 
@@ -14,10 +15,7 @@ public class MavlinkGeneratorTests
 		IMavlinkParser mavlinkParser = new MavlinkXmlParser();
 		IMavlinkTreeBuilder filesTreeBuilder = new MavlinkTreeBuilder(mavlinkParser);
 		IMavlinkEnumGenerator enumGenerator = new MavlinkEnumGenerator();
-		IMavlinkMessageGenerator messageGenerator = new MavlinkMessageGenerator(
-			new MavlinkMessageDeserializationMethodGenerator(new MavlinkSpanDeserializationGeneratorStrategy()),
-			new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy())
-		);
+		IMavlinkMessageGenerator messageGenerator = TestMavlinkGeneratorFactory.CreateStandardGenerator(SerializationType.Span);
 		IMavlinkSpecificationGenerator specificationGenerator = new MavlinkSpecificationGenerator();
 		IMavlinkEnumTreeGenerator enumTreeGenerator = new MavlinkEnumTreeGenerator(enumGenerator);
 		var generator = new MavlinkGenerator(filesTreeBuilder, enumGenerator, enumTreeGenerator, messageGenerator, specificationGenerator);

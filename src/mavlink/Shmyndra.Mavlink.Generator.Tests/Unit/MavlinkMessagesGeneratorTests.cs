@@ -87,23 +87,127 @@ public class MavlinkMessagesGeneratorTests
 		new GeneratedMavlinkMessage("Namespace1", "EscInfo", GeneratedFields, SyntaxFactory.RecordDeclaration(SyntaxFactory.Token(SyntaxKind.RecordKeyword), "EscInfo"), MavlinkMessages[0])
 	];
 
+	internal enum SerializationType
+	{
+		Span,
+		Buffer
+	}
+
+	internal static class TestMavlinkGeneratorFactory
+	{
+		public static MavlinkMessageGenerator CreateStandardGenerator(SerializationType type = SerializationType.Buffer)
+		{
+			return CreateGenerator(useObjectiveBitmask: false, type);
+		}
+
+		public static MavlinkMessageGenerator CreateObjectiveBitmaskGenerator(SerializationType type = SerializationType.Span)
+		{
+			return CreateGenerator(useObjectiveBitmask: true, type);
+		}
+
+
+		private static MavlinkMessageGenerator CreateGenerator(bool useObjectiveBitmask, SerializationType type)
+		{
+			var typeNameResolver = CreateTypeNameResolver(useObjectiveBitmask);
+			var deserializationStrategy = CreateDeserializationStrategy(useObjectiveBitmask, type);
+			var serializationStrategy = CreateSerializationStrategy(useObjectiveBitmask, type);
+
+			return new MavlinkMessageGenerator(
+				typeNameResolver,
+				new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy),
+				new MavlinkMessageSerializationMethodGenerator(serializationStrategy)
+			);
+		}
+
+		public static IMavlinkMessageFieldTypeNameResolutionStrategy CreateTypeNameResolver(bool useObjectiveBitmask)
+		{
+			IMavlinkMessageFieldTypeNameResolutionStrategy bitmaskStrategy = useObjectiveBitmask
+				? new MavlinkObjectiveBitmaskFieldTypeNameResolutionStrategy()
+				: new MavlinkBitmaskFieldTypeNameResolutionStrategy();
+
+			return new MavlinkFieldTypeNameResolverFacade(
+				bitmaskStrategy,
+				new MavlinkNonBitmaskFieldTypeNameResolutionStrategy());
+		}
+
+		public static IMavlinkDeserializationGeneratorStrategy CreateDeserializationStrategy(bool useObjectiveBitmask, SerializationType type)
+		{
+			return type switch
+			{
+				SerializationType.Span => CreateSpanDeserializationStrategy(useObjectiveBitmask),
+				SerializationType.Buffer => CreateBufferDeserializationStrategy(useObjectiveBitmask),
+				_ => throw new ArgumentOutOfRangeException(nameof(type), $"Unsupported serialization type: {type}")
+			};
+		}
+
+		public static IMavlinkSerializationGeneratorStrategy CreateSerializationStrategy(bool useObjectiveBitmask, SerializationType type)
+		{
+			return type switch
+			{
+				SerializationType.Span => CreateSpanSerializationStrategy(useObjectiveBitmask),
+				SerializationType.Buffer => CreateBufferSerializationStrategy(useObjectiveBitmask),
+				_ => throw new ArgumentOutOfRangeException(nameof(type), $"Unsupported serialization type: {type}")
+			};
+		}
+
+		private static IMavlinkDeserializationGeneratorStrategy CreateSpanDeserializationStrategy(bool useObjectiveBitmask)
+		{
+			IMavlinkFieldDeserializationStrategy bitmaskStrategy = useObjectiveBitmask
+				? new MavlinkObjectiveBitmaskFieldSpanDeserializationStrategy()
+				: new MavlinkBitmaskFieldSpanDeserializationStrategy();
+
+			return new MavlinkSpanDeserializationGeneratorStrategy(
+				bitmaskStrategy,
+				new MavlinkNonBitmaskFieldSpanDeserializationStrategy());
+		}
+
+		private static IMavlinkSerializationGeneratorStrategy CreateSpanSerializationStrategy(bool useObjectiveBitmask)
+		{
+			IMavlinkFieldSerializationStrategy bitmaskStrategy = useObjectiveBitmask
+				? new MavlinkObjectiveBitmaskFieldSpanSerializationStrategy()
+				: new BitmaskFieldSpanSerializationStrategy();
+
+			return new MavlinkSpanSerializationGeneratorStrategy(
+				bitmaskStrategy,
+				new NonBitmaskFieldSpanSerializationStrategy());
+		}
+
+		private static IMavlinkDeserializationGeneratorStrategy CreateBufferDeserializationStrategy(bool useObjectiveBitmask)
+		{
+			IMavlinkFieldDeserializationStrategy bitmaskStrategy = useObjectiveBitmask
+				? new MavlinkObjectiveBitmaskFieldBufferDeserializationStrategy()
+				: new MavlinkBitmaskFieldBufferDeserializationStrategy();
+
+			return new MavlinkBufferDeserializationGeneratorStrategy(
+				bitmaskStrategy,
+				new MavlinkNonBitmaskFieldBufferDeserializationStrategy());
+		}
+
+		private static IMavlinkSerializationGeneratorStrategy CreateBufferSerializationStrategy(bool useObjectiveBitmask)
+		{
+			IMavlinkFieldSerializationStrategy bitmaskStrategy = useObjectiveBitmask
+				? new MavlinkObjectiveBitmaskFieldBufferSerializationStrategy()
+				: new MavlinkBitmaskFieldBufferSerializationStrategy();
+
+			return new MavlinkBufferSerializationGeneratorStrategy(
+				bitmaskStrategy,
+				new MavlinkNonBitmaskFieldBufferSerializationStrategy());
+		}
+	}
 
 	[Fact]
 	public async Task GenerateMessages_ShouldMatchExpectedSnapshot()
 	{
 		// Arrange
-		var generator = new MavlinkMessageGenerator(
-			new MavlinkMessageDeserializationMethodGenerator(new MavlinkSpanDeserializationGeneratorStrategy()),
-			new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy())
-		);
+		var generator = TestMavlinkGeneratorFactory.CreateStandardGenerator();
 
 		var @namespace = "Namespace1";
 
 		// Act
 		var generatedMessages = MavlinkMessages
-			.Select(message => generator.GenerateMavlinkMessageInternal(
+			.Select(message => generator.GenerateMavlinkMessage(
 				message, @namespace,
-				GeneratedEnums.ToImmutableDictionary(e => e.Original.Name, e => e)))
+				GeneratedEnums))
 			.ToImmutableArray();
 
 		// Normalize the generated code for each message
@@ -152,15 +256,13 @@ public class MavlinkMessagesGeneratorTests
 			deprecated: null
 		);
 
-		var generatedEnums = ImmutableArray<GeneratedMavlinkEnum>.Empty.ToImmutableDictionary(e => e.Original.Name, e => e);
-		var generator = new MavlinkMessageGenerator(
-			new MavlinkMessageDeserializationMethodGenerator(new MavlinkBufferDeserializationGeneratorStrategy()),
-			new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy())
-		);
+		var generatedEnums = ImmutableArray<GeneratedMavlinkEnum>.Empty;
+		var generator = TestMavlinkGeneratorFactory.CreateStandardGenerator();
+
 		var namespaceName = "TestNamespace";
 
 		// Act
-		var generatedMessage = generator.GenerateMavlinkMessageInternal(message, namespaceName, generatedEnums);
+		var generatedMessage = generator.GenerateMavlinkMessage(message, namespaceName, generatedEnums);
 
 		var normalizedMessage = generatedMessage.DeclarationSyntax.ToNormalizedString();
 
@@ -171,7 +273,7 @@ public class MavlinkMessagesGeneratorTests
 	}
 
 	[Fact]
-	public async Task GenerateMavlinkMessageInternal_ShouldAddObsoleteAttribute()
+	public async Task GenerateMavlinkMessage_ShouldAddObsoleteAttribute()
 	{
 		// Arrange
 		const string testNamespace = "TestNamespace";
@@ -191,15 +293,12 @@ public class MavlinkMessagesGeneratorTests
 			deprecated: deprecatedInfo
 		);
 
-		var generatedEnums = ImmutableDictionary<string, GeneratedMavlinkEnum>.Empty;
+		var generatedEnums = ImmutableArray<GeneratedMavlinkEnum>.Empty;
 
-		var generator = new MavlinkMessageGenerator(
-			new MavlinkMessageDeserializationMethodGenerator(new MavlinkBufferDeserializationGeneratorStrategy()),
-			new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy())
-		);
+		var generator = TestMavlinkGeneratorFactory.CreateStandardGenerator();
 
 		// Act
-		var generatedMessage = generator.GenerateMavlinkMessageInternal(mavlinkMessage, testNamespace, generatedEnums);
+		var generatedMessage = generator.GenerateMavlinkMessage(mavlinkMessage, testNamespace, generatedEnums);
 
 		// Assert
 		var obsoleteAttribute = generatedMessage.DeclarationSyntax.AttributeLists
@@ -226,10 +325,11 @@ public class MavlinkMessagesGeneratorTests
 	{
 		// Arrange
 		var currentNamespace = "Namespace1";
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkBufferDeserializationGeneratorStrategy());
+		var deserializationMethodGenerator = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(false, SerializationType.Buffer);
 
 		// Act
-		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithoutExtensionsMethodInternal(currentNamespace, "ESCInfoMessage", GeneratedFields);
+		var methodSyntax = ((MavlinkMessageDeserializationMethodGenerator)deserializationMethodGenerator)
+			.CreateDeserializeWithoutExtensionsMethodInternal(currentNamespace, "ESCInfoMessage", GeneratedFields);
 
 		// Assert
 		var methodCode = methodSyntax.ToNormalizedString();
@@ -260,7 +360,11 @@ public class MavlinkMessagesGeneratorTests
 			original: originalField
 		);
 
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkBufferDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(
+			useObjectiveBitmask: false,
+			type: SerializationType.Buffer
+		);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
@@ -300,7 +404,8 @@ public class MavlinkMessagesGeneratorTests
 			original: originalField
 		);
 
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkBufferDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Buffer);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
@@ -354,7 +459,8 @@ public class MavlinkMessagesGeneratorTests
 				printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null)
 		);
 
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkBufferDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Buffer);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
@@ -377,7 +483,8 @@ public class MavlinkMessagesGeneratorTests
 	{
 		// Arrange
 		var nonRequiredFields = GeneratedFields.Select(field => field with { Original = field.Original with { IsRequired = false } }).ToImmutableArray();
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkBufferDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Buffer);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 
 		// Act
 		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithExtensionsMethodInternal("Namespace1", "SomeMessage", nonRequiredFields);
@@ -427,7 +534,8 @@ public class MavlinkMessagesGeneratorTests
 				printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null)
 		);
 
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkBufferDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Buffer);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
@@ -483,7 +591,8 @@ public class MavlinkMessagesGeneratorTests
 				printFormat: null, increment: null, minValue: null, maxValue: null, instance: null, @default: null, invalid: null)
 		);
 
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkBufferDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Buffer);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
@@ -507,7 +616,8 @@ public class MavlinkMessagesGeneratorTests
 		// Arrange
 		var floatGeneratedField = ImmutableArray.Create(new GeneratedMavlinkMessageField("SomeFloat", new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "SomeFloat"), MavlinkFields[0] with { Invalid = "NaN" }));
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkBufferDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Buffer);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 
 		// Act
 		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithoutExtensionsMethodInternal(
@@ -548,7 +658,8 @@ public class MavlinkMessagesGeneratorTests
 				MavlinkFields[0] with { Invalid = "INT8_MAX" })
 		});
 
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkBufferDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Buffer);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 
 		// Act
 		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithoutExtensionsMethodInternal(
@@ -772,7 +883,8 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 	{
 		// Arrange
 		var currentNamespace = "Namespace1";
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkSpanDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 
 		// Act
 		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithoutExtensionsMethodInternal(currentNamespace, "ESCInfoMessage", GeneratedFields);
@@ -812,7 +924,8 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 				SyntaxFactory.Identifier("Fixed")),
 			original: originalField);
 
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkSpanDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
@@ -861,7 +974,8 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 			original: originalField
 		);
 
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkSpanDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
@@ -923,7 +1037,8 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 				invalid: null)
 		);
 
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkSpanDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
@@ -946,7 +1061,8 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 	{
 		// Arrange
 		var nonRequiredFields = GeneratedFields.Select(field => field with { Original = field.Original with { IsRequired = false } }).ToImmutableArray();
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkSpanDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 
 		// Act
 		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithExtensionsMethodInternal("Namespace1", "SomeMessage", nonRequiredFields);
@@ -1005,7 +1121,8 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 			)
 		);
 
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkSpanDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
@@ -1065,7 +1182,8 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 			)
 		);
 
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkSpanDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 		var fields = ImmutableArray.Create(generatedField);
 
 		// Act
@@ -1089,7 +1207,8 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		// Arrange
 		var floatGeneratedField = ImmutableArray.Create(new GeneratedMavlinkMessageField("SomeFloat", new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "SomeFloat"), MavlinkFields[0] with { Invalid = "NaN" }));
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkSpanDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 
 		// Act
 		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithoutExtensionsMethodInternal(
@@ -1130,7 +1249,8 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 				MavlinkFields[0] with { Invalid = "INT8_MAX" })
 		]);
 
-		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(new MavlinkSpanDeserializationGeneratorStrategy());
+		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
+		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
 
 		// Act
 		var methodSyntax = deserializationMethodGenerator.CreateDeserializeWithoutExtensionsMethodInternal(
@@ -1348,7 +1468,8 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 	public async Task GenerateSerializeBufferMethodWithoutExtensions_WhenNoExtensions_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkBufferSerializationGeneratorStrategy());
+		var serializationStrategy = TestMavlinkGeneratorFactory.CreateSerializationStrategy(useObjectiveBitmask: false, SerializationType.Buffer);
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(serializationStrategy);
 		var testFields = GeneratedFields;
 
 		// Act
@@ -1365,7 +1486,8 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 	public async Task GenerateSerializeBufferMethodWithExtensions_WhenHasOneExtension_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkBufferSerializationGeneratorStrategy());
+		var serializationStrategy = TestMavlinkGeneratorFactory.CreateSerializationStrategy(useObjectiveBitmask: false, SerializationType.Buffer);
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(serializationStrategy);
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index",
@@ -1410,7 +1532,8 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 	public async Task GenerateSerializeBufferMethodWithExtensions_WhenHasOneSimpleExtensionAndCollectionExtension_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkBufferSerializationGeneratorStrategy());
+		var serializationStrategy = TestMavlinkGeneratorFactory.CreateSerializationStrategy(useObjectiveBitmask: false, SerializationType.Buffer);
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(serializationStrategy);
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index",
@@ -1455,7 +1578,8 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 	public async Task GenerateSerializeBufferMethodWithExtensions_WhenHasOneSimpleExtensionAndEnumExtension_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkBufferSerializationGeneratorStrategy());
+		var serializationStrategy = TestMavlinkGeneratorFactory.CreateSerializationStrategy(useObjectiveBitmask: false, SerializationType.Buffer);
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(serializationStrategy);
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index",
@@ -1506,7 +1630,8 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 	public async Task GenerateSerializeBufferMethodWithExtensions_WhenHasOneSimpleExtensionAndEnumArrayExtension_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkBufferSerializationGeneratorStrategy());
+		var serializationStrategy = TestMavlinkGeneratorFactory.CreateSerializationStrategy(useObjectiveBitmask: false, SerializationType.Buffer);
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(serializationStrategy);
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index",
@@ -1723,7 +1848,8 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 	public async Task GenerateSerializeSpanMethodWithoutExtensions_WhenNoExtensions_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy());
+		var serializationStrategy = TestMavlinkGeneratorFactory.CreateSerializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(serializationStrategy);
 		var testFields = GeneratedFields;
 
 		// Act
@@ -1740,7 +1866,8 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 	public async Task GenerateSerializeSpanMethodWithExtensions_WhenHasOneExtension_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy());
+		var serializationStrategy = TestMavlinkGeneratorFactory.CreateSerializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(serializationStrategy);
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index",
@@ -1778,7 +1905,8 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 	public async Task GenerateSerializeSpanMethodWithExtensions_WhenHasOneSimpleExtensionAndTwoCollectionExtensions_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy());
+		var serializationStrategy = TestMavlinkGeneratorFactory.CreateSerializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(serializationStrategy);
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index",
@@ -1829,7 +1957,8 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 	public async Task GenerateSerializeSpanMethodWithExtensions_WhenHasOneSimpleExtensionAndEnumExtension_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy());
+		var serializationStrategy = TestMavlinkGeneratorFactory.CreateSerializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(serializationStrategy);
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index",
@@ -1878,7 +2007,8 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 	public async Task GenerateSerializeSpanMethodWithExtensions_WhenHasOneSimpleExtensionAndEnumArrayExtension_ShouldMatchSnapshot()
 	{
 		// Arrange
-		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(new MavlinkSpanSerializationGeneratorStrategy());
+		var serializationStrategy = TestMavlinkGeneratorFactory.CreateSerializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
+		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(serializationStrategy);
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index",
