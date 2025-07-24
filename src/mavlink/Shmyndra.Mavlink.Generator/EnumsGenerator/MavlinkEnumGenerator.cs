@@ -20,18 +20,24 @@ public partial class MavlinkEnumGenerator : IMavlinkEnumGenerator
 
 	private readonly Dictionary<(string Namespace, string Name), GeneratedMavlinkEnum> _generatedEnums = new();
 
+	#region Explicit IGeneratedStorage Implementation
+
 	ImmutableArray<GeneratedMavlinkEnum> IGeneratedStorage<GeneratedMavlinkEnum>.GetGeneratedTypes()
 	{
 		return _generatedEnums.Values.ToImmutableArray();
 	}
 
-	ImmutableArray<GeneratedMavlinkEnum> IGeneratedStorage<GeneratedMavlinkEnum>.GetGeneratedTypes(Func<(string Namespace, string Name), bool> predicate)
+	ImmutableArray<GeneratedMavlinkEnum> IGeneratedStorage<GeneratedMavlinkEnum>.GetGeneratedTypes(Func<GeneratedMavlinkEnum, bool>? predicate)
 	{
-		return _generatedEnums
-			.Where(keyValuePair => predicate(keyValuePair.Key))
-			.Select(keyValuePair => keyValuePair.Value)
-			.ToImmutableArray();
+		if (predicate == null)
+		{
+			return ((IGeneratedStorage<GeneratedMavlinkEnum>)this).GetGeneratedTypes();
+		}
+
+		return _generatedEnums.Values.Where(predicate).ToImmutableArray();
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Generates and caches a new MAVLink enum based on the provided data.

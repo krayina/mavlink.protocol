@@ -1,231 +1,193 @@
 ﻿using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Scriban;
 
 namespace Shmyndra.Mavlink.Generator;
 
-public interface IMavlinkMessageGenerator : IGeneratedStorage<GeneratedMavlinkMessage>
+public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 {
-	/// <summary>
-	/// Generates a C# record declaration for a Mavlink message.
-	/// </summary>
-	/// <param name="message">The Mavlink message to be processed.</param>
-	/// <param name="namespace">The namespace in which the generated message type will reside.</param>
-	/// <param name="generatedEnums">A dictionary of generated Mavlink enums used in the message fields or parameters.</param>
-	/// <returns>The generated Mavlink message, including its declaration syntax and metadata.</returns>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="namespace"/>, <paramref name="generatedEnums"/>, or <paramref name="message"/> is <c>null</c>.</exception>
-	/// <exception cref="InvalidOperationException">Thrown when a message with the same name in the specified namespace has already been generated.</exception>
-	/// <remarks>
-	/// This method ensures that all enums referenced in the message are resolved using the <paramref name="generatedEnums"/> dictionary.
-	/// It also caches the generated messages to avoid duplicate generation. If a message with the same name in the specified namespace has already been generated, an <see cref="InvalidOperationException"/> will be thrown.
-	/// </remarks>
-	public GeneratedMavlinkMessage GenerateMavlinkMessage(
-		MavlinkMessage message,
-		string @namespace,
-		IImmutableDictionary<string, GeneratedMavlinkEnum> generatedEnums);
-}
+	private static readonly Template _messageTemplate;
 
-public class MavlinkMessageGenerator : IMavlinkMessageGenerator
-{
-	private static readonly Dictionary<string, (string TypeName, int Size)> _typeMap = new()
-	{
-		{ "char", ("char", 1) },
-		{ "uint8_t", ("byte", 1) },
-		{ "int8_t", ("sbyte", 1) },
-		{ "uint16_t", ("ushort", 2) },
-		{ "int16_t", ("short", 2) },
-		{ "uint32_t", ("uint", 4) },
-		{ "int32_t", ("int", 4) },
-		{ "uint64_t", ("ulong", 8) },
-		{ "int64_t", ("long", 8) },
-		{ "float", ("float", 4) },
-		{ "double", ("double", 8) },
-		{ "uint8_t_mavlink_version", ("byte", 1) }
-	};
+	private readonly IMavlinkMessageFieldTypeNameResolutionStrategy _typeNameResolver;
+	private readonly MavlinkMessageDeserializationMethodGenerator _deserializerGenerator;
+	private readonly MavlinkMessageSerializationMethodGenerator _serializerGenerator;
 
 	private readonly Dictionary<(string Namespace, string MavlinkMessageName), GeneratedMavlinkMessage> _generatedMessages = new();
 
-	private readonly MavlinkMessageDeserializationMethodGenerator _messageDeserializationMethodGenerator;
-	private readonly MavlinkMessageSerializationMethodGenerator _messageSerializationMethodGenerator;
+	static MavlinkMessageGenerator()
+	{
+		_messageTemplate = Template.Parse(Templates.MessageTemplate);
+		if (_messageTemplate.HasErrors)
+		{
+			var errors = string.Join("\n", _messageTemplate.Messages.Select(m => m.Message));
+			throw new InvalidOperationException($"Failed to parse Scriban template: \n{errors}");
+		}
+	}
 
 	public MavlinkMessageGenerator(
-		MavlinkMessageDeserializationMethodGenerator messageDeserializationMethodGenerator,
-		MavlinkMessageSerializationMethodGenerator messageSerializationMethodGenerator)
+		IMavlinkMessageFieldTypeNameResolutionStrategy typeNameResolver,
+		MavlinkMessageDeserializationMethodGenerator deserializerGenerator,
+		MavlinkMessageSerializationMethodGenerator serializerGenerator)
 	{
-		_messageDeserializationMethodGenerator = messageDeserializationMethodGenerator;
-		_messageSerializationMethodGenerator = messageSerializationMethodGenerator;
+		_typeNameResolver = typeNameResolver;
+		_deserializerGenerator = deserializerGenerator;
+		_serializerGenerator = serializerGenerator;
 	}
+
+	#region Explicit IGeneratedStorage Implementation
 
 	ImmutableArray<GeneratedMavlinkMessage> IGeneratedStorage<GeneratedMavlinkMessage>.GetGeneratedTypes()
 	{
 		return _generatedMessages.Values.ToImmutableArray();
 	}
 
-	ImmutableArray<GeneratedMavlinkMessage> IGeneratedStorage<GeneratedMavlinkMessage>.GetGeneratedTypes(Func<(string Namespace, string Name), bool> predicate)
+	ImmutableArray<GeneratedMavlinkMessage> IGeneratedStorage<GeneratedMavlinkMessage>.GetGeneratedTypes(Func<GeneratedMavlinkMessage, bool>? predicate)
 	{
-		return _generatedMessages
-			.Where(keyValuePair => predicate(keyValuePair.Key))
-			.Select(keyValuePair => keyValuePair.Value)
-			.ToImmutableArray();
+		if (predicate == null)
+		{
+			return ((IGeneratedStorage<GeneratedMavlinkMessage>)this).GetGeneratedTypes();
+		}
+
+		return _generatedMessages.Values.Where(predicate).ToImmutableArray();
 	}
+
+	#endregion
 
 	public GeneratedMavlinkMessage GenerateMavlinkMessage(
 		MavlinkMessage message,
 		string @namespace,
-		IImmutableDictionary<string, GeneratedMavlinkEnum> generatedEnums)
+		ImmutableArray<GeneratedMavlinkEnum>? generatedEnums)
 	{
-		if (_generatedMessages.ContainsKey((@namespace, message.Name)))
+		if (message == null)
 		{
-			throw new InvalidOperationException($"The message '{message.Name}' in namespace '{@namespace}' has already been generated.");
+			throw new ArgumentNullException(nameof(message));
 		}
 
-		var generatedMessage = GenerateMavlinkMessageInternal(message, @namespace, generatedEnums);
+		if (@namespace == null)
+		{
+			throw new ArgumentNullException(nameof(@namespace));
+		}
+
+		var enumsMap = generatedEnums.HasValue
+			? generatedEnums.Value.ToImmutableDictionary(e => e.Original.Name, e => e)
+			: ImmutableDictionary<string, GeneratedMavlinkEnum>.Empty;
+
+		if (_generatedMessages.ContainsKey((@namespace, message.Name)))
+		{
+			throw new InvalidOperationException($"The message '{@namespace}.{message.Name}' has already been generated.");
+		}
+
+		string normalizedName = Utilities.ToUpperCamelCase(message.Name) + MavlinkGeneratorConstants.MessagesPostfix;
+
+		var generatedFields = message.Fields
+			.Select(field => CreateGeneratedField(field, @namespace, enumsMap))
+			.ToImmutableArray();
+
+		var deserializeMethods = _deserializerGenerator.CreateDeserializeMethod(@namespace, normalizedName, generatedFields);
+		var serializeMethods = _serializerGenerator.CreateSerializeMethod(generatedFields);
+
+		var model = CreateScribanModel(message, normalizedName, generatedFields, deserializeMethods, serializeMethods);
+
+		string code = RenderTemplate(model);
+
+		var recordDeclaration = (RecordDeclarationSyntax)CSharpSyntaxTree
+			.ParseText(code)
+			.GetRoot()
+			.DescendantNodes()
+			.First(s => s.IsKind(SyntaxKind.RecordStructDeclaration));
+
+		var generatedMessage = new GeneratedMavlinkMessage(
+			@namespace,
+			normalizedName,
+			generatedFields,
+			recordDeclaration,
+			message
+		);
+
 		_generatedMessages.Add((@namespace, message.Name), generatedMessage);
 		return generatedMessage;
 	}
 
-	/// <summary>
-	/// Generates a <see cref="GeneratedMavlinkMessage"/> instance based on the provided Mavlink message.
-	/// </summary>
-	/// <param name="message">The Mavlink message to be processed.</param>
-	/// <param name="namespace">The namespace in which the generated message type will reside.</param>
-	/// <param name="generatedEnums">A dictionary of generated Mavlink enums used in the message fields or parameters.</param>
-	/// <returns>The generated Mavlink message, including its declaration syntax and metadata.</returns>
-	/// <remarks>
-	/// This method creates a new <see cref="GeneratedMavlinkMessage"/> instance but does not add it to the cache.
-	/// It is used internally by the <see cref="GenerateMavlinkMessage"/> method to perform the actual message generation logic.
-	/// </remarks>
-	internal GeneratedMavlinkMessage GenerateMavlinkMessageInternal(
-		MavlinkMessage message,
-		string @namespace,
-		IImmutableDictionary<string, GeneratedMavlinkEnum> generatedEnums)
-	{
-		var normalizedName = Utilities.ToUpperCamelCase(message.Name) + MavlinkGeneratorConstants.MessagesPostfix;
-		var id = message.Id;
-
-		var generatedFields = message.Fields
-			.Select(field => GenerateMavlinkMessageFieldInternal(field, generatedEnums, @namespace, normalizedName))
-			.ToImmutableArray();
-
-		var propertyDeclarations = generatedFields
-			.Select(generatedField => generatedField.DeclarationSyntax)
-			.ToArray();
-
-		var deserializeMethod = _messageDeserializationMethodGenerator
-			.CreateDeserializeMethod(@namespace, normalizedName, generatedFields);
-
-		var serializeMethods = _messageSerializationMethodGenerator
-			.CreateSerializeMethod(generatedFields);
-
-		var recordDeclaration = CreateRecordStructDeclaration(id, normalizedName, propertyDeclarations, message.Description, message.Name)
-			.AddMembers(deserializeMethod.DeserializeWithoutExtensionsMethod)
-			.AddMembers(serializeMethods.SerializeWithoutExtensionsMethod);
-
-		if (deserializeMethod.DeserializeWithExtensionsMethod is not null)
-		{
-			recordDeclaration = recordDeclaration.AddMembers(deserializeMethod.DeserializeWithExtensionsMethod);
-		}
-
-		if (serializeMethods.SerializeWithExtensionsMethod is not null)
-		{
-			recordDeclaration = recordDeclaration.AddMembers(serializeMethods.SerializeWithExtensionsMethod);
-		}
-
-		recordDeclaration = recordDeclaration.AddBaseListTypes(
-			SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName("IMavlinkMessageSerializerWithoutExtensions"))
-		);
-		if (serializeMethods.SerializeWithExtensionsMethod is not null)
-		{
-			recordDeclaration = recordDeclaration.AddBaseListTypes(
-				SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName("IMavlinkMessageSerializerWithExtensions"))
-			);
-		}
-
-		recordDeclaration = recordDeclaration.AddObsoleteAttribute(message.Deprecated?.ToString());
-
-		return new GeneratedMavlinkMessage(@namespace, normalizedName, generatedFields, recordDeclaration, message);
-	}
-
-	internal GeneratedMavlinkMessageField GenerateMavlinkMessageFieldInternal(
+	private GeneratedMavlinkMessageField CreateGeneratedField(
 		MavlinkMessageField field,
-		IImmutableDictionary<string, GeneratedMavlinkEnum> generatedEnums,
-		string messageNamespace,
-		string messageName)
+		string currentNamespace,
+		IReadOnlyDictionary<string, GeneratedMavlinkEnum> enumsMap)
 	{
 		string normalizedFieldName = Utilities.ToUpperCamelCase(field.Name);
-		bool isArray = field.Type.TypeName.Contains("[");
 
-		GeneratedMavlinkMessageFieldTypeBase fieldType;
-		PropertyDeclarationSyntax propertySyntax;
+		string innerTypeName;
+		GeneratedMavlinkMessageFieldTypeBase generatedTypeInfo;
 
-		if (isArray)
+		if (field.Type is MavlinkMessageFieldEnumType enumType)
 		{
-			var baseTypeName = field.Type.TypeName.Split('[')[0];
-			var arrayLength = int.Parse(field.Type.TypeName.Split('[', ']')[1]);
-			var convertedType = _typeMap[baseTypeName].TypeName;
-
-			if (field.Type is MavlinkMessageFieldEnumType enumType)
+			if (!enumsMap.TryGetValue(enumType.EnumName, out var generatedEnum))
 			{
-				var generatedEnumForArray = generatedEnums[enumType.EnumName];
-				var enumNamespace = generatedEnumForArray.Namespace;
-				var enumTypeName = generatedEnumForArray.GeneratedName;
-
-				var fullEnumTypeName = enumNamespace != messageNamespace ? $"{enumNamespace}.{enumTypeName}" : enumTypeName;
-
-				fieldType = new GeneratedMavlinkMessageFieldArrayEnumType(
-					convertedType,
-					generatedEnumForArray,
-					arrayLength,
-					enumType);
-				propertySyntax = CreatePropertyDeclaration($"{MavlinkGeneratorConstants.ImmutableArrayNamespace}<{fullEnumTypeName}>", normalizedFieldName, field.IsRequired)
-								 .AddArrayLengthAttribute(arrayLength);
+				throw new ArgumentException($"Required enum '{enumType.EnumName}' was not found for field '{field.Name}'.");
 			}
-			else
-			{
-				fieldType = new GeneratedMavlinkMessageFieldArrayType(
-					convertedType,
-					arrayLength,
-					field.Type);
 
-				propertySyntax = CreatePropertyDeclaration($"{MavlinkGeneratorConstants.ImmutableArrayNamespace}<{convertedType}>", normalizedFieldName, field.IsRequired)
-								 .AddArrayLengthAttribute(arrayLength);
-			}
-		}
-		else if (field.Type is MavlinkMessageFieldEnumType enumType)
-		{
-			var generatedEnum = generatedEnums[enumType.EnumName];
-			var enumNamespace = generatedEnum.Namespace;
-			var enumTypeName = generatedEnum.GeneratedName;
-
-			var fullEnumTypeName = enumNamespace != messageNamespace ? $"{enumNamespace}.{enumTypeName}" : enumTypeName;
-
-			fieldType = new GeneratedMavlinkMessageFieldEnumType(
-				_typeMap[enumType.TypeName].TypeName,
-				generatedEnum,
-				enumType);
-
-			propertySyntax = CreatePropertyDeclaration(fullEnumTypeName, normalizedFieldName, field.IsRequired);
+			innerTypeName = _typeNameResolver.ResolveEnum(field, generatedEnum, currentNamespace);
+			generatedTypeInfo = CreateGeneratedEnumTypeInfo(field, generatedEnum);
 		}
 		else
 		{
-			var convertedType = _typeMap[field.Type.TypeName].TypeName;
+			innerTypeName = _typeNameResolver.ResolvePrimitive(field);
+			generatedTypeInfo = CreateGeneratedPrimitiveTypeInfo(field);
+		}
 
-			fieldType = new GeneratedMavlinkMessageFieldPrimitiveType(
-				convertedType,
-				field.Type);
+		bool isArray = field.Type.TypeName.Contains("[");
+		string propertyTypeName = isArray
+			? $"System.Collections.Immutable.ImmutableArray<{innerTypeName}>"
+			: innerTypeName;
 
-			propertySyntax = CreatePropertyDeclaration(convertedType, normalizedFieldName, field.IsRequired);
+		var propertySyntax = CreatePropertyDeclaration(propertyTypeName, normalizedFieldName, field.IsRequired);
+
+		if (isArray)
+		{
+			var arrayLength = int.Parse(field.Type.TypeName.Split('[', ']')[1]);
+			propertySyntax = propertySyntax.AddArrayLengthAttribute(arrayLength);
 		}
 
 		propertySyntax = propertySyntax
 			.AddSummaryTriviaIfNotNull(field.Description)
-			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {field.Name.ToUpper()}");
+			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {field.Name}");
 
 		return new GeneratedMavlinkMessageField(
-			normalizedFieldName,
-			fieldType,
-			propertySyntax,
-			field);
+			generatedName: normalizedFieldName,
+			generatedFieldType: generatedTypeInfo,
+			declarationSyntax: propertySyntax,
+			original: field
+		);
+	}
+
+	private static GeneratedMavlinkMessageFieldTypeBase CreateGeneratedPrimitiveTypeInfo(MavlinkMessageField field)
+	{
+		bool isArray = field.Type.TypeName.Contains("[");
+		var mavlinkBaseTypeName = field.Type.GetTypeWithoutArray();
+		var csharpTypeName = Utilities.MavlinkTypeMap[mavlinkBaseTypeName].TypeName;
+
+		if (isArray)
+		{
+			var arrayLength = int.Parse(field.Type.TypeName.Split('[', ']')[1]);
+			return new GeneratedMavlinkMessageFieldArrayType(csharpTypeName, arrayLength, field.Type);
+		}
+		return new GeneratedMavlinkMessageFieldPrimitiveType(csharpTypeName, field.Type);
+	}
+
+	private static GeneratedMavlinkMessageFieldTypeBase CreateGeneratedEnumTypeInfo(MavlinkMessageField field, GeneratedMavlinkEnum generatedEnum)
+	{
+		var enumType = (MavlinkMessageFieldEnumType)field.Type;
+		bool isArray = enumType.TypeName.Contains("[");
+		var mavlinkBaseTypeName = enumType.GetTypeWithoutArray();
+		var csharpTypeName = Utilities.MavlinkTypeMap[mavlinkBaseTypeName].TypeName;
+
+		if (isArray)
+		{
+			var arrayLength = int.Parse(enumType.TypeName.Split('[', ']')[1]);
+			return new GeneratedMavlinkMessageFieldArrayEnumType(csharpTypeName, generatedEnum, arrayLength, enumType);
+		}
+		return new GeneratedMavlinkMessageFieldEnumType(csharpTypeName, generatedEnum, enumType);
 	}
 
 	private static PropertyDeclarationSyntax CreatePropertyDeclaration(string propertyType, string fieldName, bool isRequired)
@@ -234,50 +196,78 @@ public class MavlinkMessageGenerator : IMavlinkMessageGenerator
 			? SyntaxFactory.ParseTypeName(propertyType)
 			: SyntaxFactory.NullableType(SyntaxFactory.ParseTypeName(propertyType));
 
-		return SyntaxFactory.PropertyDeclaration(typeSyntax, fieldName)
+		return SyntaxFactory.PropertyDeclaration(typeSyntax, SyntaxFactory.Identifier(fieldName))
 			.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
 			.AddAccessorListAccessors(
 				SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
-				SyntaxFactory.AccessorDeclaration(SyntaxKind.InitAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
+				SyntaxFactory.AccessorDeclaration(SyntaxKind.InitAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
+			);
 	}
 
-	private RecordDeclarationSyntax CreateRecordStructDeclaration(uint id, string normalizedName, PropertyDeclarationSyntax[] properties, string? description, string originalName)
+	private MavlinkScribanModel CreateScribanModel(
+		MavlinkMessage message,
+		string normalizedName,
+		ImmutableArray<GeneratedMavlinkMessageField> generatedFields,
+		GeneratedMavlinkMessageDeserializeMethod deserializeMethods,
+		GeneratedMavlinkMessageSerializeMethod serializeMethods)
 	{
-		return SyntaxFactory.RecordDeclaration(
-				kind: SyntaxKind.RecordStructDeclaration,
-				attributeLists: default,
-				modifiers: default,
-				keyword: SyntaxFactory.Token(SyntaxKind.RecordKeyword),
-				classOrStructKeyword: SyntaxFactory.Token(SyntaxKind.StructKeyword),
-				identifier: SyntaxFactory.Identifier(normalizedName),
-				typeParameterList: null,
-				parameterList: null,
-				baseList: SyntaxFactory.BaseList(SyntaxFactory.SingletonSeparatedList<BaseTypeSyntax>(
-					SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName("MavlinkMessage"))
-				)),
-				constraintClauses: default,
-				openBraceToken: SyntaxFactory.Token(SyntaxKind.OpenBraceToken),
-				members: SyntaxFactory.List<MemberDeclarationSyntax>(properties),
-				closeBraceToken: SyntaxFactory.Token(SyntaxKind.CloseBraceToken),
-				semicolonToken: default)
-			.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.ReadOnlyKeyword))
-			.AddAttributeLists(
-				SyntaxFactory.AttributeList(
-					SyntaxFactory.SingletonSeparatedList(
-						SyntaxFactory.Attribute(SyntaxFactory.ParseName(nameof(MavlinkTypes.MavlinkIdentifiedTypeAttribute).GetAttributeNameWithoutPostfix()))
-						.WithArgumentList(
-							SyntaxFactory.AttributeArgumentList(
-								SyntaxFactory.SeparatedList(
-								[
-									SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(id))),
-									SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(originalName)))
-								])
-							)
-						)
-					)
-				)
-			)
-			.AddSummaryTriviaIfNotNull(description)
-			.AddRemarksTriviaIfNotNullOrEmpty($"Original name: {originalName.ToUpper()}");
+		var properties = generatedFields.Select(f =>
+		{
+			var declarationString = f.DeclarationSyntax
+									 .WithoutTrivia()
+									 .NormalizeWhitespace()
+									 .ToFullString();
+
+			var summaryText = f.Original.Description;
+			var remarksText = $"Original name: {f.Original.Name}";
+
+			return new PropertyModel(
+				declaration: declarationString,
+				summary: summaryText,
+				remarks: remarksText
+			);
+		}).ToList();
+
+		var methods = new List<string>
+		{
+			deserializeMethods.DeserializeWithoutExtensionsMethod.ToFullString().Trim(),
+			serializeMethods.SerializeWithoutExtensionsMethod.ToFullString().Trim()
+		};
+
+		if (deserializeMethods.DeserializeWithExtensionsMethod != null)
+		{
+			methods.Add(deserializeMethods.DeserializeWithExtensionsMethod.ToFullString().Trim());
+		}
+		if (serializeMethods.SerializeWithExtensionsMethod != null)
+		{
+			methods.Add(serializeMethods.SerializeWithExtensionsMethod.ToFullString().Trim());
+		}
+
+		var model = new MavlinkScribanModel(
+			name: normalizedName,
+			originalName: message.Name,
+			id: message.Id,
+			hasExtensions: serializeMethods.SerializeWithExtensionsMethod != null,
+			properties: properties,
+			methods: methods
+		)
+		{
+			Summary = message.Description,
+			IsObsolete = message.Deprecated != null,
+			ObsoleteMessage = message.Deprecated?.ToString()
+		};
+
+		return model;
+	}
+
+	private string RenderTemplate(MavlinkScribanModel model)
+	{
+		var context = CSharpScribanTemplateContext.Create();
+		var generatedCode = _messageTemplate.Render(model);
+		return CSharpSyntaxTree
+			.ParseText(generatedCode, options: new CSharpParseOptions(LanguageVersion.Latest))
+			.GetRoot()
+			.NormalizeWhitespace()
+			.ToFullString();
 	}
 }

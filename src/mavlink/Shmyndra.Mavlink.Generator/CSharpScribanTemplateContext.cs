@@ -8,7 +8,6 @@ namespace Shmyndra.Mavlink.Generator;
 /// </summary>
 public static class CSharpScribanTemplateContext
 {
-	private static readonly MemberRenamerDelegate PassthroughRenamer = memberInfo => memberInfo.Name;
 	private static readonly MemberFilterDelegate AllowAllMembers = memberInfo => true;
 
 	/// <summary>
@@ -19,7 +18,7 @@ public static class CSharpScribanTemplateContext
 	{
 		var context = new TemplateContext
 		{
-			MemberRenamer = PassthroughRenamer,
+			MemberRenamer = member => Utilities.PascalCaseToSnakeCase(member.Name),
 			MemberFilter = AllowAllMembers,
 			StrictVariables = true,
 			EnableRelaxedMemberAccess = false,

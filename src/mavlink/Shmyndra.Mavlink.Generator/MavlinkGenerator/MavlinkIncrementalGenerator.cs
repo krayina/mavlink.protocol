@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
@@ -120,34 +121,67 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 		private MavlinkMessageGenerator GetMavlinkMessageGeneratorInstanceWithNetStandardCondition(Compilation compilation)
 		{
 			bool supportsSpan = IsSpanSerializationAvailable(compilation);
+			bool useObjectiveBitmask = IsObjectiveBitmaskEnabled(compilation);
+
+			IMavlinkMessageFieldTypeNameResolutionStrategy bitmaskTypeNameStrategy = useObjectiveBitmask
+				? new MavlinkObjectiveBitmaskFieldTypeNameResolutionStrategy()
+				: new MavlinkBitmaskFieldTypeNameResolutionStrategy();
+
+			var typeNameResolver = new MavlinkFieldTypeNameResolverFacade(
+				bitmaskTypeNameStrategy,
+				new MavlinkNonBitmaskFieldTypeNameResolutionStrategy());
+
+			IMavlinkSerializationGeneratorStrategy serializationStrategy;
+			IMavlinkDeserializationGeneratorStrategy deserializationStrategy;
 
 			if (supportsSpan)
 			{
-				return new MavlinkMessageGenerator
-				(
+				IMavlinkFieldSerializationStrategy bitmaskSerializationStrategy = useObjectiveBitmask
+					? new MavlinkObjectiveBitmaskFieldSpanSerializationStrategy()
+					: new BitmaskFieldSpanSerializationStrategy();
 
-					new MavlinkMessageDeserializationMethodGenerator
-					(
-						new MavlinkSpanDeserializationGeneratorStrategy()
-					),
-					new MavlinkMessageSerializationMethodGenerator
-					(
-						new MavlinkSpanSerializationGeneratorStrategy()
-					)
-				);
+				IMavlinkFieldDeserializationStrategy bitmaskDeserializationStrategy = useObjectiveBitmask
+					? new MavlinkObjectiveBitmaskFieldSpanDeserializationStrategy()
+					: new MavlinkBitmaskFieldSpanDeserializationStrategy();
+
+				serializationStrategy = new MavlinkSpanSerializationGeneratorStrategy(
+					bitmaskSerializationStrategy,
+					new NonBitmaskFieldSpanSerializationStrategy());
+
+				deserializationStrategy = new MavlinkSpanDeserializationGeneratorStrategy(
+					bitmaskDeserializationStrategy,
+					new MavlinkNonBitmaskFieldSpanDeserializationStrategy());
+			}
+			else
+			{
+				IMavlinkFieldSerializationStrategy bitmaskSerializationStrategy = useObjectiveBitmask
+					? new MavlinkObjectiveBitmaskFieldBufferSerializationStrategy()
+					: new MavlinkBitmaskFieldBufferSerializationStrategy();
+
+				IMavlinkFieldDeserializationStrategy bitmaskDeserializationStrategy = useObjectiveBitmask
+					? new MavlinkObjectiveBitmaskFieldBufferDeserializationStrategy()
+					: new MavlinkBitmaskFieldBufferDeserializationStrategy();
+
+				serializationStrategy = new MavlinkBufferSerializationGeneratorStrategy(
+					bitmaskSerializationStrategy,
+					new MavlinkNonBitmaskFieldBufferSerializationStrategy());
+
+				deserializationStrategy = new MavlinkBufferDeserializationGeneratorStrategy(
+					bitmaskDeserializationStrategy,
+					new MavlinkNonBitmaskFieldBufferDeserializationStrategy());
 			}
 
-			return new MavlinkMessageGenerator
-			(
-				new MavlinkMessageDeserializationMethodGenerator
-				(
-					new MavlinkBufferDeserializationGeneratorStrategy()
-				),
-				new MavlinkMessageSerializationMethodGenerator
-				(
-					new MavlinkBufferSerializationGeneratorStrategy()
-				)
+			return new MavlinkMessageGenerator(
+				typeNameResolver,
+				new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy),
+				new MavlinkMessageSerializationMethodGenerator(serializationStrategy)
 			);
+		}
+
+		private static bool IsObjectiveBitmaskEnabled(Compilation compilation)
+		{
+			return compilation.SyntaxTrees.FirstOrDefault()?.Options is CSharpParseOptions options &&
+				   options.PreprocessorSymbolNames.Contains("USE_OBJECTIVE_BITMASK_SERIALIZATION_AND_DESERIALIZATION");
 		}
 
 		private static bool IsSpanSerializationAvailable(Compilation compilation)
