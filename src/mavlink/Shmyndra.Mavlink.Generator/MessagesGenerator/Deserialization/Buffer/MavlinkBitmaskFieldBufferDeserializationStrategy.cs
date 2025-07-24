@@ -57,33 +57,22 @@ var {fieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({tempF
 		string elementTypeName = arrayEnumType.ConvertedType;
 		int elementSize = Utilities.GetDotNetTypeSize(elementTypeName);
 		int totalSize = arrayEnumType.ArrayLength * elementSize;
+
 		string arrayFieldName = Utilities.ToLowerCamelCase($"{originalFieldName}Array");
 		string tempFieldName = Utilities.ToLowerCamelCase($"temp{originalFieldName}");
 		string indexVarName = $"idx{originalFieldName}";
-		int bitsPerElement = elementSize * BitsPerByte;
-		string combinedType = Utilities.GetCombinedTypeForTotalBits(bitsPerElement);
-		string tempFlagsName = Utilities.ToLowerCamelCase($"tempFlags{originalFieldName}");
 
 		sb.AppendLine($@"
 var {tempFieldName} = new {enumTypeName}[{arrayEnumType.ArrayLength}];
 for (int {indexVarName} = 0; {indexVarName} < {arrayEnumType.ArrayLength}; {indexVarName}++)
 {{
     int elementOffset = {offset} + {indexVarName} * {elementSize};
-    {combinedType} combined = {(elementTypeName == "byte" ? $"{payloadParameterName}[elementOffset]" :
-							   $"BitConverter.{MavlinkBufferDeserializationExtensions
-							   .GetBitConverterMethod(elementTypeName)}({payloadParameterName}, elementOffset)")};
-    var {tempFlagsName} = new List<{enumTypeName}>();
-    for (int bit{originalFieldName} = 0; bit{originalFieldName} < {bitsPerElement}; bit{originalFieldName}++)
-    {{
-        if ((combined & (({combinedType})1 << bit{originalFieldName})) != 0)
-        {{
-            {tempFlagsName}.Add(({enumTypeName})(({combinedType})1 << bit{originalFieldName}));
-        }}
-    }}
-    {tempFieldName}[{indexVarName}] = System.Collections.Immutable.ImmutableArray.CreateRange({tempFlagsName});
+    var value = BitConverter.{MavlinkBufferDeserializationExtensions.GetBitConverterMethod(elementTypeName)}({payloadParameterName}, elementOffset);
+    {tempFieldName}[{indexVarName}] = ({enumTypeName})value;
 }}
 var {arrayFieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({tempFieldName});
 ");
+
 		offset += totalSize;
 		return arrayFieldName;
 	}
