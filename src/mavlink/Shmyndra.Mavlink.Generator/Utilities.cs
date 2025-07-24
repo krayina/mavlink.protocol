@@ -9,6 +9,25 @@ namespace Shmyndra.Mavlink.Generator;
 
 internal static class Utilities
 {
+	public static ImmutableDictionary<string, (string TypeName, int Size)> MavlinkTypeMap { get; } = new Dictionary<string, (string, int)>
+	{
+		// MAVLink Type Name  => (C# Type Name, Size in bytes)
+		{ "char",                   ("char", 1) },
+		{ "uint8_t",                ("byte", 1) },
+		{ "int8_t",                 ("sbyte", 1) },
+		{ "uint16_t",               ("ushort", 2) },
+		{ "int16_t",                ("short", 2) },
+		{ "uint32_t",               ("uint", 4) },
+		{ "int32_t",                ("int", 4) },
+		{ "uint64_t",               ("ulong", 8) },
+		{ "int64_t",                ("long", 8) },
+		{ "float",                  ("float", 4) },
+		{ "double",                 ("double", 8) },
+    
+		// The same as uint8_t
+		{ "uint8_t_mavlink_version",("byte", 1) }
+	}.ToImmutableDictionary();
+
 	/// <summary>
 	/// Gets the sorted required fields and array fields (only required ones) from the provided collection.
 	/// </summary>
@@ -69,6 +88,20 @@ internal static class Utilities
 		}
 
 		return name;
+	}
+
+	public static string PascalCaseToSnakeCase(string text)
+	{
+		if (string.IsNullOrEmpty(text))
+		{
+			return text;
+		}
+
+		return Regex.Replace(
+			text,
+			@"(?<!^)(?=[A-Z])",
+			"_"
+		).ToLowerInvariant();
 	}
 
 	public static string ToLowerCamelCase(string name)
@@ -484,6 +517,28 @@ internal static class Utilities
 			typeName = typeName.Substring(0, arrayStartIndex);
 		}
 		return typeName;
+	}
+
+	/// <summary>
+	/// Gets the fully qualified name of the generated enum, including its namespace,
+	/// unless it resides in the same namespace as the referencing type.
+	/// </summary>
+	/// <param name="generatedEnum">The generated enum for which to get the name.</param>
+	/// <param name="referencingNamespace">The namespace of the code that will be referencing this enum (e.g., the message's namespace).</param>
+	/// <returns>
+	/// The simple name of the enum if it's in the same namespace, 
+	/// or the fully qualified name (e.g., "MyProject.Enums.MyEnum") otherwise.
+	/// </returns>
+	public static string GetQualifiedName(this GeneratedMavlinkEnum generatedEnum, string referencingNamespace)
+	{
+		if (string.IsNullOrEmpty(referencingNamespace) || generatedEnum.Namespace == referencingNamespace)
+		{
+			return generatedEnum.GeneratedName;
+		}
+		else
+		{
+			return $"{generatedEnum.Namespace}.{generatedEnum.GeneratedName}";
+		}
 	}
 
 	public static string GetQualifiedBitmaskTypeName(this GeneratedMavlinkMessageFieldEnumType enumType, string currentNamespace)
