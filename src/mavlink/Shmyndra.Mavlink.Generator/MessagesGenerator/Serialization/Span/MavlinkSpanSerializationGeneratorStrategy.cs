@@ -7,14 +7,12 @@ public class MavlinkSpanSerializationGeneratorStrategy : IMavlinkSerializationGe
 	private readonly IMavlinkFieldSerializationStrategy _bitmaskStrategy;
 	private readonly IMavlinkFieldSerializationStrategy _nonBitmaskStrategy;
 
-	public MavlinkSpanSerializationGeneratorStrategy()
+	public MavlinkSpanSerializationGeneratorStrategy(
+		IMavlinkFieldSerializationStrategy bitmaskStrategy,
+		IMavlinkFieldSerializationStrategy nonBitmaskStrategy)
 	{
-#if USE_OBJECTIVE_BITMASK_SERIALIZATION_AND_DESERIALIZATION
-        _bitmaskStrategy = new MavlinkObjectiveBitmaskFieldSpanSerializationStrategy();
-#else
-		_bitmaskStrategy = new BitmaskFieldSpanSerializationStrategy();
-#endif
-		_nonBitmaskStrategy = new NonBitmaskFieldSpanSerializationStrategy();
+		_bitmaskStrategy = bitmaskStrategy;
+		_nonBitmaskStrategy = nonBitmaskStrategy;
 	}
 
 	public void AppendBufferInitialization(StringBuilder sb, int requiredSize)

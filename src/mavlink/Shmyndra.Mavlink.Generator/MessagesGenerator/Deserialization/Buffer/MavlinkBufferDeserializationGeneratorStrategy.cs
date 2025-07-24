@@ -10,14 +10,12 @@ public class MavlinkBufferDeserializationGeneratorStrategy : IMavlinkDeserializa
 	private readonly IMavlinkFieldDeserializationStrategy _bitmaskStrategy;
 	private readonly IMavlinkFieldDeserializationStrategy _nonBitmaskStrategy;
 
-	public MavlinkBufferDeserializationGeneratorStrategy()
+	public MavlinkBufferDeserializationGeneratorStrategy(
+		IMavlinkFieldDeserializationStrategy bitmaskStrategy,
+		IMavlinkFieldDeserializationStrategy nonBitmaskStrategy)
 	{
-#if USE_OBJECTIVE_BITMASK_SERIALIZATION_AND_DESERIALIZATION
-        _bitmaskStrategy = new MavlinkObjectiveBitmaskFieldBufferDeserializationStrategy();
-#else
-		_bitmaskStrategy = new MavlinkBitmaskFieldBufferDeserializationStrategy();
-#endif
-		_nonBitmaskStrategy = new MavlinkNonBitmaskFieldBufferDeserializationStrategy();
+		_bitmaskStrategy = bitmaskStrategy;
+		_nonBitmaskStrategy = nonBitmaskStrategy;
 	}
 
 	public void AppendBufferInitialization(StringBuilder sb, string messageName, int requiredSize, string payloadParameterName)
