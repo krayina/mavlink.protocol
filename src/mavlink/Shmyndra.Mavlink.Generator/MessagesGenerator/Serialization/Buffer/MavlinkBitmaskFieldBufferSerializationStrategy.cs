@@ -51,20 +51,14 @@ if ({propertyName}.HasValue && !{propertyName}.Value.IsDefaultOrEmpty)
 		string propertyName = field.GeneratedName;
 		string serializedVarName = $"serialized{field.GeneratedName}";
 		string elementTypeName = arrayEnumType.ConvertedType;
-		int elementSize = Utilities.GetDotNetTypeSize(elementTypeName);
-		int totalSize = arrayEnumType.ArrayLength * elementSize;
+		int totalSize = arrayEnumType.ArrayLength * Utilities.GetDotNetTypeSize(elementTypeName);
 
 		if (field.Original.IsRequired)
 		{
 			sb.AppendLine($"var {serializedVarName} = new {elementTypeName}[{arrayEnumType.ArrayLength}];");
 			sb.AppendLine($"for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)");
 			sb.AppendLine("{");
-			sb.AppendLine($"    {elementTypeName} combinedFlags = 0;");
-			sb.AppendLine($"    foreach (var flag in {propertyName}[i])");
-			sb.AppendLine($"    {{");
-			sb.AppendLine($"        combinedFlags |= ({elementTypeName})flag;");
-			sb.AppendLine($"    }}");
-			sb.AppendLine($"    {serializedVarName}[i] = combinedFlags;");
+			sb.AppendLine($"    {serializedVarName}[i] = ({elementTypeName}){propertyName}[i];");
 			sb.AppendLine("}");
 			sb.AppendLine($"Buffer.BlockCopy({serializedVarName}, 0, buffer, {offset}, {totalSize});");
 		}
@@ -76,12 +70,7 @@ if ({propertyName}.HasValue && !{propertyName}.Value.IsDefaultOrEmpty)
     var {serializedVarName} = new {elementTypeName}[{arrayEnumType.ArrayLength}];
     for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)
     {{
-        {elementTypeName} combinedFlags = 0;
-        foreach (var flag in {propertyName}.Value[i])
-        {{
-            combinedFlags |= ({elementTypeName})flag;
-        }}
-        {serializedVarName}[i] = combinedFlags;
+        {serializedVarName}[i] = ({elementTypeName}){propertyName}.Value[i];
     }}
     Buffer.BlockCopy({serializedVarName}, 0, buffer, {offset}, {totalSize});
 }}");
