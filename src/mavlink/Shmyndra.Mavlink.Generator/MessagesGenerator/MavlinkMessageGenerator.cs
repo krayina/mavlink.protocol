@@ -220,7 +220,7 @@ public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 			);
 	}
 
-	private MavlinkScribanModel CreateScribanModel(
+	private MavlinkMessageScribanMetadata CreateScribanModel(
 		MavlinkMessage message,
 		string normalizedName,
 		ImmutableArray<GeneratedMavlinkMessageField> generatedFields,
@@ -237,7 +237,7 @@ public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 			var summaryText = f.Original.Description;
 			var remarksText = $"Original name: {f.Original.Name}";
 
-			return new PropertyModel(
+			return new MavlinkMessagePropertyScribanMetadata(
 				declaration: declarationString,
 				summary: summaryText,
 				remarks: remarksText
@@ -259,7 +259,7 @@ public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 			methods.Add(serializeMethods.SerializeWithExtensionsMethod.ToFullString().Trim());
 		}
 
-		var model = new MavlinkScribanModel(
+		var model = new MavlinkMessageScribanMetadata(
 			name: normalizedName,
 			originalName: message.Name,
 			id: message.Id,
@@ -276,7 +276,7 @@ public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 		return model;
 	}
 
-	private string RenderTemplate(MavlinkScribanModel model)
+	private string RenderTemplate(MavlinkMessageScribanMetadata model)
 	{
 		var context = CSharpScribanTemplateContext.Create();
 		var generatedCode = _messageTemplate.Render(model);

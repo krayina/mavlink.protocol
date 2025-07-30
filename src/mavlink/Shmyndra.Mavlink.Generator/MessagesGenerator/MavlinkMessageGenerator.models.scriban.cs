@@ -2,20 +2,20 @@
 
 public partial class MavlinkMessageGenerator
 {
-	internal class MavlinkScribanModel
+	internal class MavlinkMessageScribanMetadata
 	{
 		public string Name { get; init; }
 		public string OriginalName { get; init; }
 		public uint Id { get; init; }
 		public bool HasExtensions { get; init; }
-		public List<PropertyModel> Properties { get; init; }
+		public List<MavlinkMessagePropertyScribanMetadata> Properties { get; init; }
 		public List<string> Methods { get; init; }
 
 		public string? Summary { get; set; }
 		public bool IsObsolete { get; set; }
 		public string? ObsoleteMessage { get; set; }
 
-		public MavlinkScribanModel(string name, string originalName, uint id, bool hasExtensions, List<PropertyModel> properties, List<string> methods)
+		public MavlinkMessageScribanMetadata(string name, string originalName, uint id, bool hasExtensions, List<MavlinkMessagePropertyScribanMetadata> properties, List<string> methods)
 		{
 			Name = name;
 			OriginalName = originalName;
@@ -26,7 +26,7 @@ public partial class MavlinkMessageGenerator
 		}
 	}
 
-	internal class PropertyModel
+	internal class MavlinkMessagePropertyScribanMetadata
 	{
 		public string Declaration { get; }
 
@@ -34,7 +34,7 @@ public partial class MavlinkMessageGenerator
 
 		public string Remarks { get; }
 
-		public PropertyModel(string declaration, string? summary, string remarks)
+		public MavlinkMessagePropertyScribanMetadata(string declaration, string? summary, string remarks)
 		{
 			Declaration = declaration;
 			Summary = summary;
