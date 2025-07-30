@@ -15,20 +15,32 @@ public class EnumInvalidFieldHandler : IInvalidFieldHandler
 
 	public string GenerateValidationCondition(string valueExpression)
 	{
+		return $"{valueExpression} != ({_underlyingType}){GetInvalidValueExpression()}";
+	}
+
+	public string GetInvalidValueExpression()
+	{
+		if (int.TryParse(_invalidValue, out _))
+		{
+			return _invalidValue;
+		}
+
+		if (_invalidValue.StartsWith(_enumTypeName))
+		{
+			return $"{_enumTypeName}.{_invalidValue.Split('.').Last()}";
+		}
+
 		if (_invalidValue.Contains("MAX"))
 		{
 			return _invalidValue switch
 			{
-				"UINT8_MAX" => $"{valueExpression} != byte.MaxValue",
-				"UINT16_MAX" => $"{valueExpression} != ushort.MaxValue",
-				"UINT32_MAX" => $"{valueExpression} != uint.MaxValue",
+				"UINT8_MAX" => "byte.MaxValue",
+				"UINT16_MAX" => "ushort.MaxValue",
+				"UINT32_MAX" => "uint.MaxValue",
 				_ => throw new NotSupportedException($"Unsupported max value for enum: {_invalidValue}")
 			};
 		}
-		else if (_invalidValue.StartsWith(_enumTypeName))
-		{
-			return $"{valueExpression} != ({_underlyingType}){_enumTypeName}.{_invalidValue.Split('.').Last()}";
-		}
-		return $"{valueExpression} != {_invalidValue}";
+
+		throw new NotSupportedException($"Cannot determine invalid value expression for enum from '{_invalidValue}'");
 	}
 }

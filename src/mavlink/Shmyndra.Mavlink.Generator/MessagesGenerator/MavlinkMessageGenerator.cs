@@ -126,7 +126,6 @@ public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 			{
 				throw new ArgumentException($"Required enum '{enumType.EnumName}' was not found for field '{field.Name}'.");
 			}
-
 			innerTypeName = _typeNameResolver.ResolveEnum(field, generatedEnum, currentNamespace);
 			generatedTypeInfo = CreateGeneratedEnumTypeInfo(field, generatedEnum);
 		}
@@ -136,14 +135,11 @@ public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 			generatedTypeInfo = CreateGeneratedPrimitiveTypeInfo(field);
 		}
 
-		bool isArray = field.Type.TypeName.Contains("[");
-		string propertyTypeName = isArray
-			? $"System.Collections.Immutable.ImmutableArray<{innerTypeName}>"
-			: innerTypeName;
+		string propertyTypeName = DeterminePropertyTypeName(field, innerTypeName);
 
-		var propertySyntax = CreatePropertyDeclaration(propertyTypeName, normalizedFieldName, field.IsRequired);
+		var propertySyntax = CreatePropertyDeclaration(propertyTypeName, normalizedFieldName);
 
-		if (isArray)
+		if (field.Type.TypeName.Contains("["))
 		{
 			var arrayLength = int.Parse(field.Type.TypeName.Split('[', ']')[1]);
 			propertySyntax = propertySyntax.AddArrayLengthAttribute(arrayLength);
@@ -159,6 +155,28 @@ public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 			declarationSyntax: propertySyntax,
 			original: field
 		);
+	}
+
+	private string DeterminePropertyTypeName(MavlinkMessageField field, string innerTypeName)
+	{
+		bool isArray = field.Type.TypeName.Contains("[");
+
+		if (isArray)
+		{
+			bool areElementsNullable = field.Invalid != null;
+			string elementTypeName = areElementsNullable ? $"{innerTypeName}?" : innerTypeName;
+			string arrayTypeName = $"System.Collections.Immutable.ImmutableArray<{elementTypeName}>";
+
+			bool isArrayNullable = !field.IsRequired;
+
+			return isArrayNullable ? $"{arrayTypeName}?" : arrayTypeName;
+		}
+		else
+		{
+			bool isScalarNullable = !field.IsRequired || field.Invalid != null;
+
+			return isScalarNullable ? $"{innerTypeName}?" : innerTypeName;
+		}
 	}
 
 	private static GeneratedMavlinkMessageFieldTypeBase CreateGeneratedPrimitiveTypeInfo(MavlinkMessageField field)
@@ -190,11 +208,9 @@ public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 		return new GeneratedMavlinkMessageFieldEnumType(csharpTypeName, generatedEnum, enumType);
 	}
 
-	private static PropertyDeclarationSyntax CreatePropertyDeclaration(string propertyType, string fieldName, bool isRequired)
+	private static PropertyDeclarationSyntax CreatePropertyDeclaration(string propertyType, string fieldName)
 	{
-		var typeSyntax = isRequired
-			? SyntaxFactory.ParseTypeName(propertyType)
-			: SyntaxFactory.NullableType(SyntaxFactory.ParseTypeName(propertyType));
+		var typeSyntax = SyntaxFactory.ParseTypeName(propertyType);
 
 		return SyntaxFactory.PropertyDeclaration(typeSyntax, SyntaxFactory.Identifier(fieldName))
 			.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))

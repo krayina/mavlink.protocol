@@ -73,7 +73,7 @@ public class MavlinkNonBitmaskFieldBufferDeserializationStrategy : IMavlinkField
 		return safeFieldName;
 	}
 
-	private void AppendSimpleFieldValidated(StringBuilder sb, string typeName, IInvalidFieldHandler handler, ref int offset, string fieldName, string payloadParameterName)
+	private void AppendSimpleFieldValidated(StringBuilder sb, string typeName, IValidationConditionProvider handler, ref int offset, string fieldName, string payloadParameterName)
 	{
 		int size = Utilities.GetDotNetTypeSize(typeName);
 		string safeFieldName = Utilities.GetSafeVariableName(fieldName, payloadParameterName);
@@ -121,7 +121,7 @@ if (!Enum.IsDefined(typeof({enumTypeName}), {enumFieldName}))
 		return enumFieldName;
 	}
 
-	private void AppendEnumFieldValidated(StringBuilder sb, GeneratedMavlinkMessageFieldEnumType enumType, IInvalidFieldHandler handler, ref int offset, string fieldName, string currentNamespace, string payloadParameterName)
+	private void AppendEnumFieldValidated(StringBuilder sb, GeneratedMavlinkMessageFieldEnumType enumType, IValidationConditionProvider handler, ref int offset, string fieldName, string currentNamespace, string payloadParameterName)
 	{
 		string enumTypeName = enumType.GetQualifiedEnumTypeName(currentNamespace);
 		string typeName = enumType.ConvertedType;
@@ -166,7 +166,7 @@ var {arrayFieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({
 		return arrayFieldName;
 	}
 
-	private void AppendArrayFieldValidated(StringBuilder sb, GeneratedMavlinkMessageFieldArrayType arrayType, IInvalidFieldHandler handler, ref int offset, string fieldName, string originalFieldName, string payloadParameterName)
+	private void AppendArrayFieldValidated(StringBuilder sb, GeneratedMavlinkMessageFieldArrayType arrayType, IValidationConditionProvider handler, ref int offset, string fieldName, string originalFieldName, string payloadParameterName)
 	{
 		string typeName = arrayType.ConvertedType;
 		int elementSize = Utilities.GetDotNetTypeSize(typeName);
@@ -225,7 +225,7 @@ var {arrayFieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({
 		return arrayFieldName;
 	}
 
-	private void AppendArrayEnumFieldValidated(StringBuilder sb, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, IInvalidFieldHandler handler, ref int offset, string fieldName, string originalFieldName, string currentNamespace, string payloadParameterName)
+	private void AppendArrayEnumFieldValidated(StringBuilder sb, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, IValidationConditionProvider handler, ref int offset, string fieldName, string originalFieldName, string currentNamespace, string payloadParameterName)
 	{
 		string enumTypeName = arrayEnumType.GetQualifiedEnumTypeName(currentNamespace);
 		string elementTypeName = arrayEnumType.ConvertedType;
@@ -233,11 +233,10 @@ var {arrayFieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({
 		int totalSize = arrayEnumType.ArrayLength * elementSize;
 		string indexVarName = $"idx{originalFieldName}";
 		string valueExpr = elementTypeName == "byte" ? $"{payloadParameterName}[{offset} + {indexVarName}]" :
-						  $"BitConverter.{MavlinkBufferDeserializationExtensions
-						  .GetBitConverterMethod(elementTypeName)}({payloadParameterName}, {offset} + {indexVarName} * {elementSize})";
+						  $"BitConverter.{MavlinkBufferDeserializationExtensions.GetBitConverterMethod(elementTypeName)}({payloadParameterName}, {offset} + {indexVarName} * {elementSize})";
 
 		sb.AppendLine($@"
-var temp{fieldName} = new List<{enumTypeName}>({arrayEnumType.ArrayLength});
+var {fieldName} = new {enumTypeName}?[{arrayEnumType.ArrayLength}];
 for (int {indexVarName} = 0; {indexVarName} < {arrayEnumType.ArrayLength}; {indexVarName}++)
 {{
     var value = {valueExpr};
@@ -253,11 +252,16 @@ for (int {indexVarName} = 0; {indexVarName} < {arrayEnumType.ArrayLength}; {inde
         }}");
 		}
 		sb.AppendLine($@"
-        temp{fieldName}.Add(enumValue);
+        {fieldName}[{indexVarName}] = enumValue;
+    }}
+    else
+    {{
+        {fieldName}[{indexVarName}] = null;
     }}
 }}
-var {fieldName}Array = System.Collections.Immutable.ImmutableArray.CreateRange(temp{fieldName});
+var {fieldName}Array = System.Collections.Immutable.ImmutableArray.CreateRange({fieldName});
 ");
+
 		offset += totalSize;
 	}
 }

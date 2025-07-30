@@ -4,10 +4,10 @@ namespace Shmyndra.Mavlink.Generator;
 
 public static class InvalidFieldHandlerFactory
 {
-	private static readonly ConcurrentDictionary<string, IInvalidFieldHandler> _cache =
-		new ConcurrentDictionary<string, IInvalidFieldHandler>(StringComparer.OrdinalIgnoreCase);
+	private static readonly ConcurrentDictionary<string, IValidationConditionProvider> _cache =
+		new ConcurrentDictionary<string, IValidationConditionProvider>(StringComparer.OrdinalIgnoreCase);
 
-	public static IInvalidFieldHandler? Create(GeneratedMavlinkMessageField field)
+	public static IValidationConditionProvider? Create(GeneratedMavlinkMessageField field)
 	{
 		if (string.IsNullOrWhiteSpace(field.Original.Invalid))
 		{
@@ -16,19 +16,46 @@ public static class InvalidFieldHandlerFactory
 
 		string invalid = field.Original.Invalid!;
 
-		return field.GeneratedType switch
+		switch (field.GeneratedType)
 		{
-			GeneratedMavlinkMessageFieldArrayType arrayType when invalid.StartsWith("[") =>
-				_cache.GetOrAdd(invalid, _ => new ArrayInvalidFieldHandler(invalid, arrayType.ArrayLength)),
-			GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType when invalid.StartsWith("[") =>
-				_cache.GetOrAdd(invalid, _ => new ArrayInvalidFieldHandler(invalid, arrayEnumType.ArrayLength)),
-			GeneratedMavlinkMessageFieldEnumType enumType => CreateForEnumType(enumType, invalid),
-			GeneratedMavlinkMessageFieldPrimitiveType simple => CreateForSimpleType(simple, invalid),
-			_ => throw new NotSupportedException($"Invalid condition '{invalid}' is not supported for type {field.GeneratedType}")
-		};
+			case GeneratedMavlinkMessageFieldArrayType arrayType when invalid.StartsWith("["):
+				{
+					string trimmedInvalid = invalid.Trim('[', ']');
+					if (trimmedInvalid.Contains(',') || trimmedInvalid.Contains(':'))
+					{
+						return _cache.GetOrAdd(invalid, _ => new ArrayInvalidFieldHandler(invalid, arrayType.ArrayLength));
+					}
+					else
+					{
+						var elementType = new GeneratedMavlinkMessageFieldPrimitiveType(arrayType.ConvertedType, arrayType.Original);
+						return CreateForSimpleType(elementType, trimmedInvalid);
+					}
+				}
+			case GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType when invalid.StartsWith("["):
+				{
+					string trimmedInvalid = invalid.Trim('[', ']');
+					if (trimmedInvalid.Contains(',') || trimmedInvalid.Contains(':'))
+					{
+						return _cache.GetOrAdd(invalid, _ => new ArrayInvalidFieldHandler(invalid, arrayEnumType.ArrayLength));
+					}
+					else
+					{
+						var elementType = new GeneratedMavlinkMessageFieldEnumType(arrayEnumType.ConvertedType, arrayEnumType.GeneratedEnum, arrayEnumType.Original);
+						return CreateForEnumType(elementType, trimmedInvalid);
+					}
+				}
+			case GeneratedMavlinkMessageFieldEnumType enumType:
+				return CreateForEnumType(enumType, invalid);
+
+			case GeneratedMavlinkMessageFieldPrimitiveType simpleType:
+				return CreateForSimpleType(simpleType, invalid);
+
+			default:
+				throw new NotSupportedException($"Invalid condition '{invalid}' is not supported for type {field.GeneratedType}");
+		}
 	}
 
-	private static IInvalidFieldHandler CreateForSimpleType(GeneratedMavlinkMessageFieldPrimitiveType simple, string invalid)
+	private static IValidationConditionProvider CreateForSimpleType(GeneratedMavlinkMessageFieldPrimitiveType simple, string invalid)
 	{
 		if (string.Equals(invalid, "NaN", StringComparison.OrdinalIgnoreCase))
 		{
@@ -43,7 +70,7 @@ public static class InvalidFieldHandlerFactory
 		return _cache.GetOrAdd(invalid, _ => new LiteralInvalidFieldHandler(invalid));
 	}
 
-	private static IInvalidFieldHandler CreateForEnumType(GeneratedMavlinkMessageFieldEnumType enumType, string invalid)
+	private static IValidationConditionProvider CreateForEnumType(GeneratedMavlinkMessageFieldEnumType enumType, string invalid)
 	{
 		string key = $"{invalid}:{enumType.GeneratedEnum.GeneratedName}";
 

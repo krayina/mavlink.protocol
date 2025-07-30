@@ -68,7 +68,7 @@ public class MavlinkNonBitmaskFieldSpanDeserializationStrategy : IMavlinkFieldDe
 		return safeFieldName;
 	}
 
-	private string AppendSimpleFieldValidated(StringBuilder sb, string typeName, IInvalidFieldHandler handler, ref int offset, string originalFieldName)
+	private string AppendSimpleFieldValidated(StringBuilder sb, string typeName, IValidationConditionProvider handler, ref int offset, string originalFieldName)
 	{
 		int size = Utilities.GetDotNetTypeSize(typeName);
 		string fieldName = Utilities.ToLowerCamelCase(originalFieldName);
@@ -116,7 +116,7 @@ if (!Enum.IsDefined(typeof({enumTypeName}), {enumFieldName}))
 		return enumFieldName;
 	}
 
-	private string AppendEnumFieldValidated(StringBuilder sb, GeneratedMavlinkMessageFieldEnumType enumType, IInvalidFieldHandler handler, ref int offset, string originalFieldName, string currentNamespace)
+	private string AppendEnumFieldValidated(StringBuilder sb, GeneratedMavlinkMessageFieldEnumType enumType, IValidationConditionProvider handler, ref int offset, string originalFieldName, string currentNamespace)
 	{
 		string enumTypeName = enumType.GetQualifiedEnumTypeName(currentNamespace);
 		string typeName = enumType.ConvertedType;
@@ -172,7 +172,7 @@ var {arrayFieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({
 		return arrayFieldName;
 	}
 
-	private string AppendArrayFieldValidated(StringBuilder sb, GeneratedMavlinkMessageFieldArrayType arrayType, IInvalidFieldHandler handler, ref int offset, string originalFieldName)
+	private string AppendArrayFieldValidated(StringBuilder sb, GeneratedMavlinkMessageFieldArrayType arrayType, IValidationConditionProvider handler, ref int offset, string originalFieldName)
 	{
 		string typeName = arrayType.ConvertedType;
 		int elementSize = Utilities.GetDotNetTypeSize(typeName);
@@ -233,21 +233,21 @@ var {arrayFieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({
 		return arrayFieldName;
 	}
 
-	private string AppendArrayEnumFieldValidated(StringBuilder sb, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, IInvalidFieldHandler handler, ref int offset, string originalFieldName, string currentNamespace)
+	private string AppendArrayEnumFieldValidated(StringBuilder sb, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, IValidationConditionProvider handler, ref int offset, string originalFieldName, string currentNamespace)
 	{
 		string enumTypeName = arrayEnumType.GetQualifiedEnumTypeName(currentNamespace);
 		string elementTypeName = arrayEnumType.ConvertedType;
 		int elementSize = Utilities.GetDotNetTypeSize(elementTypeName);
 		int totalSize = arrayEnumType.ArrayLength * elementSize;
-		string tempFieldName = Utilities.ToLowerCamelCase($"temp{originalFieldName}");
+
+		string fieldName = Utilities.ToLowerCamelCase(originalFieldName);
 		string arrayFieldName = Utilities.ToLowerCamelCase($"{originalFieldName}Array");
 		string indexVarName = $"idx{originalFieldName}";
 		string valueExpr = elementTypeName == "byte" ? $"span[{offset} + {indexVarName}]" :
-						  $"System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanDeserializationExtensions
-						  .GetBinaryPrimitivesMethod(elementTypeName)}(span.Slice({offset} + {indexVarName} * {elementSize}, {elementSize}))";
+						  $"System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanDeserializationExtensions.GetBinaryPrimitivesMethod(elementTypeName)}(span.Slice({offset} + {indexVarName} * {elementSize}, {elementSize}))";
 
 		sb.AppendLine($@"
-var {tempFieldName} = new List<{enumTypeName}>({arrayEnumType.ArrayLength});
+var {fieldName} = new {enumTypeName}?[{arrayEnumType.ArrayLength}];
 for (int {indexVarName} = 0; {indexVarName} < {arrayEnumType.ArrayLength}; {indexVarName}++)
 {{
     var value = {valueExpr};
@@ -263,11 +263,16 @@ for (int {indexVarName} = 0; {indexVarName} < {arrayEnumType.ArrayLength}; {inde
         }}");
 		}
 		sb.AppendLine($@"
-        {tempFieldName}.Add(enumValue);
+        {fieldName}[{indexVarName}] = enumValue;
+    }}
+    else
+    {{
+        {fieldName}[{indexVarName}] = null;
     }}
 }}
-var {arrayFieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({tempFieldName});
+var {arrayFieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({fieldName});
 ");
+
 		offset += totalSize;
 		return arrayFieldName;
 	}

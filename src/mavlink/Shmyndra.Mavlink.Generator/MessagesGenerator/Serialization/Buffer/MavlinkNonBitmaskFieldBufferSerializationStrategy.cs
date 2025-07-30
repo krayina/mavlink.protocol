@@ -100,13 +100,41 @@ if ({propertyName}.HasValue)
 		string propertyName = field.GeneratedName;
 		int totalSize = arrayType.ArrayLength * Utilities.GetDotNetTypeSize(arrayType.ConvertedType);
 
-		if (field.Original.IsRequired)
+		bool areElementsNullable = field.Original.Invalid != null;
+
+		if (areElementsNullable)
 		{
-			AppendRequiredArrayField(sb, propertyName, offset, totalSize);
+			string serializedVarName = $"serialized{field.GeneratedName}";
+			string elementTypeName = arrayType.ConvertedType;
+
+			var handler = InvalidFieldHandlerFactory.Create(field);
+
+			if (handler is IInvalidValueProvider valueProvider)
+			{
+				string invalidValueExpression = valueProvider.GetInvalidValueExpression();
+
+				sb.AppendLine($"var {serializedVarName} = new {elementTypeName}[{arrayType.ArrayLength}];");
+				sb.AppendLine($"for (int i = 0; i < {arrayType.ArrayLength}; i++)");
+				sb.AppendLine("{");
+				sb.AppendLine($"    {serializedVarName}[i] = {propertyName}[i] ?? {invalidValueExpression};");
+				sb.AppendLine("}");
+				sb.AppendLine($"Buffer.BlockCopy({serializedVarName}, 0, buffer, {offset}, {totalSize});");
+			}
+			else
+			{
+				throw new NotSupportedException($"Field '{field.Original.Name}' has an 'invalid' attribute, but no IInvalidValueProvider could be created for it.");
+			}
 		}
 		else
 		{
-			AppendOptionalArrayField(sb, propertyName, offset, totalSize);
+			if (field.Original.IsRequired)
+			{
+				AppendRequiredArrayField(sb, propertyName, offset, totalSize);
+			}
+			else
+			{
+				AppendOptionalArrayField(sb, propertyName, offset, totalSize);
+			}
 		}
 
 		offset += totalSize;

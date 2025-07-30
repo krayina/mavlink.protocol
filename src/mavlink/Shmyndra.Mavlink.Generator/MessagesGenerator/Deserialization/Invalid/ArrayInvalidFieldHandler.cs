@@ -1,6 +1,6 @@
 ﻿namespace Shmyndra.Mavlink.Generator;
 
-public class ArrayInvalidFieldHandler : IInvalidFieldHandler
+public class ArrayInvalidFieldHandler : IValidationConditionProvider
 {
 	private readonly string _invalidCondition;
 	private readonly int _arrayLength;

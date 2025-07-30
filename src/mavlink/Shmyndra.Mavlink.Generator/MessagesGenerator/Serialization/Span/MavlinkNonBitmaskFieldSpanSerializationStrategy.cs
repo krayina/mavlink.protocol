@@ -87,15 +87,38 @@ if ({propertyName}.HasValue)
 	{
 		string propertyName = field.GeneratedName;
 		string typeName = arrayType.ConvertedType;
-		int totalSize = arrayType.ArrayLength * Utilities.GetDotNetTypeSize(typeName);
+		int arrayLength = arrayType.ArrayLength;
+		int totalSize = arrayLength * Utilities.GetDotNetTypeSize(typeName);
+		bool areElementsNullable = field.Original.Invalid != null;
 
-		if (field.Original.IsRequired)
+		if (areElementsNullable)
 		{
-			AppendRequiredArrayField(sb, propertyName, typeName, arrayType.ArrayLength, offset, totalSize);
+			var handler = InvalidFieldHandlerFactory.Create(field);
+			if (handler is IInvalidValueProvider valueProvider)
+			{
+				string invalidValueExpression = valueProvider.GetInvalidValueExpression();
+
+				sb.AppendLine($"for (int i = 0; i < {arrayLength}; i++)");
+				sb.AppendLine("{");
+				sb.AppendLine($"    var valueToWrite = {propertyName}[i] ?? {invalidValueExpression};");
+				sb.AppendLine($"    {GenerateSingleElementSerialization("valueToWrite", typeName, offset, "i")}");
+				sb.AppendLine("}");
+			}
+			else
+			{
+				throw new NotSupportedException($"Field '{field.Original.Name}' has an 'invalid' attribute, but no IInvalidValueProvider could be created for it.");
+			}
 		}
 		else
 		{
-			AppendOptionalArrayField(sb, propertyName, typeName, arrayType.ArrayLength, offset, totalSize);
+			if (field.Original.IsRequired)
+			{
+				AppendRequiredArrayField(sb, propertyName, typeName, arrayLength, offset, totalSize);
+			}
+			else
+			{
+				AppendOptionalArrayField(sb, propertyName, typeName, arrayLength, offset, totalSize);
+			}
 		}
 
 		offset += totalSize;
@@ -246,30 +269,40 @@ if ({propertyName}.HasValue && !{propertyName}.Value.IsDefaultOrEmpty)
 
 	private string GenerateArraySerialization(string arrayName, string typeName, int arrayLength, int offset)
 	{
+		var sb = new StringBuilder();
+		sb.AppendLine($"for (int i = 0; i < {arrayLength}; i++)");
+		sb.AppendLine("{");
+		sb.AppendLine($"    {GenerateSingleElementSerialization($"{arrayName}[i]", typeName, offset, "i")}");
+		sb.AppendLine("}");
+		return sb.ToString();
+	}
+
+	private string GenerateSingleElementSerialization(string valueName, string typeName, int baseOffset, string indexVariable)
+	{
 		int size = Utilities.GetDotNetTypeSize(typeName);
+		string offsetExpression = $"{baseOffset} + {indexVariable} * {size}";
+
 		if (typeName == "byte")
 		{
-			return $"for (int i = 0; i < {arrayLength}; i++) {{ finalSpan[{offset} + i] = {arrayName}[i]; }}";
+			return $"finalSpan[{offsetExpression}] = {valueName};";
 		}
-		else if (typeName == "sbyte")
+		if (typeName == "sbyte")
 		{
-			return $"for (int i = 0; i < {arrayLength}; i++) {{ finalSpan[{offset} + i] = (byte){arrayName}[i]; }}";
+			return $"finalSpan[{offsetExpression}] = (byte){valueName};";
 		}
-		else if (typeName == "char")
+		if (typeName == "char")
 		{
-			return $"for (int i = 0; i < {arrayLength}; i++) {{ System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offset} + i * {size}, {size}), (ushort){arrayName}[i]); }}";
+			return $"System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(finalSpan.Slice({offsetExpression}, {size}), (ushort){valueName});";
 		}
-		else if (typeName == "float")
+		if (typeName == "float")
 		{
-			return $"for (int i = 0; i < {arrayLength}; i++) {{ System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offset} + i * {size}, {size}), BitConverter.SingleToInt32Bits({arrayName}[i])); }}";
+			return $"System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(finalSpan.Slice({offsetExpression}, {size}), BitConverter.SingleToInt32Bits({valueName}));";
 		}
-		else if (typeName == "double")
+		if (typeName == "double")
 		{
-			return $"for (int i = 0; i < {arrayLength}; i++) {{ System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offset} + i * {size}, {size}), BitConverter.DoubleToInt64Bits({arrayName}[i])); }}";
+			return $"System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(finalSpan.Slice({offsetExpression}, {size}), BitConverter.DoubleToInt64Bits({valueName}));";
 		}
-		else
-		{
-			return $"for (int i = 0; i < {arrayLength}; i++) {{ System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanSerializationExtensions.GetBinaryPrimitivesWriteMethod(typeName)}(finalSpan.Slice({offset} + i * {size}, {size}), {arrayName}[i]); }}";
-		}
+
+		return $"System.Buffers.Binary.BinaryPrimitives.{MavlinkSpanSerializationExtensions.GetBinaryPrimitivesWriteMethod(typeName)}(finalSpan.Slice({offsetExpression}, {size}), {valueName});";
 	}
 }

@@ -11,14 +11,19 @@ public class MaxValueInvalidFieldHandler : IInvalidFieldHandler
 
 	public string GenerateValidationCondition(string valueExpression)
 	{
-		return _maxValue switch
+		return $"{valueExpression} != {GetInvalidValueExpression()}";
+	}
+
+	public string GetInvalidValueExpression()
+	{
+		return _maxValue.ToUpper() switch
 		{
-			"UINT8_MAX" => $"{valueExpression} != byte.MaxValue",
-			"UINT16_MAX" => $"{valueExpression} != ushort.MaxValue",
-			"UINT32_MAX" => $"{valueExpression} != uint.MaxValue",
-			"INT8_MAX" => $"{valueExpression} != sbyte.MaxValue",
-			"INT16_MAX" => $"{valueExpression} != short.MaxValue",
-			"INT32_MAX" => $"{valueExpression} != int.MaxValue",
+			"UINT8_MAX" => "byte.MaxValue",
+			"UINT16_MAX" => "ushort.MaxValue",
+			"UINT32_MAX" => "uint.MaxValue",
+			"INT8_MAX" => "sbyte.MaxValue",
+			"INT16_MAX" => "short.MaxValue",
+			"INT32_MAX" => "int.MaxValue",
 			_ => throw new NotSupportedException($"Unsupported max value: {_maxValue}")
 		};
 	}

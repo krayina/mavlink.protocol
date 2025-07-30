@@ -17,4 +17,9 @@ public class NaNInvalidFieldHandler : IInvalidFieldHandler
 	{
 		return $"!{_typeName}.IsNaN({valueExpression})";
 	}
+
+	public string GetInvalidValueExpression()
+	{
+		return $"{_typeName}.NaN";
+	}
 }

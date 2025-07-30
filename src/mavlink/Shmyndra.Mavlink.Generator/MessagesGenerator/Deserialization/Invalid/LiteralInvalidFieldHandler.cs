@@ -13,4 +13,9 @@ public class LiteralInvalidFieldHandler : IInvalidFieldHandler
 	{
 		return $"{valueExpression} != {_invalidLiteral}";
 	}
+
+	public string GetInvalidValueExpression()
+	{
+		return _invalidLiteral;
+	}
 }
