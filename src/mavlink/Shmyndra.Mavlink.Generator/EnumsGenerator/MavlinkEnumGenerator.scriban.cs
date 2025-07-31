@@ -5,10 +5,8 @@ public partial class MavlinkEnumGenerator
 	internal static class Templates
 	{
 		internal const string EnumTemplate = @"
-{{- if summary }}
-/// <summary>
-/// {{ summary }}
-/// </summary>
+{{- if summary_comment_block }}
+{{ summary_comment_block }}
 {{- end }}
 {{- if remarks }}
 /// <remarks>
@@ -25,20 +23,7 @@ public partial class MavlinkEnumGenerator
 public enum {{ enum_name }}{{ if has_base_type }} : {{ base_type_name }}{{ end }}
 {
 {{- for entry in entries }}
-    {{- if entry.summary }}
-    /// <summary>
-    /// {{ entry.summary }}
-    /// </summary>
-    {{- end }}
-    {{- if entry.remarks }}
-    /// <remarks>
-    /// {{ entry.remarks }}
-    /// </remarks>
-    {{- end }}
-    {{- if entry.is_deprecated }}
-    [System.Obsolete(""{{ entry.deprecated_reason }}"")]
-    {{- end }}
-    {{ entry.name }} = {{ entry.value_expression }}{{ if for.index < entries.size - 1 }},{{ end }}
+{{ entry }}{{ if !for.last }},{{ end }}
 {{- end }}
 }
 ";
