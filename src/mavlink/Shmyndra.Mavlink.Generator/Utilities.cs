@@ -278,11 +278,21 @@ internal static class Utilities
 
 	public static string DetermineEnumBaseType(IEnumerable<uint> values)
 	{
+		if (values == null || !values.Any())
+		{
+			return "int";
+		}
+
 		var maxValue = values.Max();
-		if (maxValue <= byte.MaxValue) return "byte";
-		if (maxValue <= ushort.MaxValue) return "ushort";
-		if (maxValue <= uint.MaxValue) return "uint";
-		throw new InvalidOperationException("The enum base type value cannot be greater than uint.");
+		if (maxValue <= byte.MaxValue)
+		{
+			return "byte";
+		}
+		if (maxValue <= ushort.MaxValue)
+		{
+			return "ushort";
+		}
+		return "uint";
 	}
 
 	public static string DetermineBitmask(GeneratedMavlinkEnum generatedEnum)
