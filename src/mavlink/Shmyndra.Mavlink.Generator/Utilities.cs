@@ -165,23 +165,41 @@ internal static class Utilities
 
 	public static SyntaxTriviaList CreateSummaryTrivia(string description)
 	{
-		var summaryStart = SyntaxFactory.Comment("/// <summary>");
-		var summaryContent = description.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-										.Select(line => SyntaxFactory.Comment($"/// {line.Trim()}"));
-		var summaryEnd = SyntaxFactory.Comment("/// </summary>");
+		var triviaNodes = new List<SyntaxTrivia>
+		{
+			SyntaxFactory.Comment("/// <summary>"),
+			SyntaxFactory.CarriageReturnLineFeed
+		};
 
-		return SyntaxFactory.TriviaList(summaryStart)
-							.AddRange(summaryContent)
-							.Add(summaryEnd);
+		var lines = description.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+							   .Select(line => line.Trim())
+							   .Where(line => !string.IsNullOrEmpty(line));
+
+		if (lines.Any())
+		{
+			var contentTrivia = lines.SelectMany(line => new[]
+			{
+				SyntaxFactory.Comment($"/// {line}"),
+				SyntaxFactory.CarriageReturnLineFeed
+			});
+			triviaNodes.AddRange(contentTrivia);
+		}
+		triviaNodes.Add(SyntaxFactory.Comment("/// </summary>"));
+		triviaNodes.Add(SyntaxFactory.CarriageReturnLineFeed);
+
+		return SyntaxFactory.TriviaList(triviaNodes);
 	}
 
-	private static SyntaxTriviaList CreateRemarksTrivia(string description)
+	public static SyntaxTriviaList CreateRemarksTrivia(string description)
 	{
-		var remarksStart = SyntaxFactory.Comment("/// <remarks>");
-		var remarksContent = SyntaxFactory.Comment($"/// {description}");
-		var remarksEnd = SyntaxFactory.Comment("/// </remarks>");
-
-		return SyntaxFactory.TriviaList(remarksStart, remarksContent, remarksEnd);
+		return SyntaxFactory.TriviaList(
+			SyntaxFactory.Comment("/// <remarks>"),
+			SyntaxFactory.CarriageReturnLineFeed,
+			SyntaxFactory.Comment($"/// {description}"),
+			SyntaxFactory.CarriageReturnLineFeed,
+			SyntaxFactory.Comment("/// </remarks>"),
+			SyntaxFactory.CarriageReturnLineFeed
+		);
 	}
 
 	public static T AddSummaryTriviaIfNotNull<T>(this T node, string? description) where T : SyntaxNode
@@ -249,10 +267,12 @@ internal static class Utilities
 		}
 
 		var obsoleteAttribute = CreateObsoleteAttribute(obsoleteMessage);
-		var attributeList = SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(obsoleteAttribute));
+		var attributeList = SyntaxFactory
+			.AttributeList(SyntaxFactory.SingletonSeparatedList(obsoleteAttribute))
+			.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+
 		var attributes = member.AttributeLists.Add(attributeList);
 
-		// Ensure the cast back to the original type T
 		return (T)member.WithAttributeLists(attributes);
 	}
 
