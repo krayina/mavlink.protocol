@@ -9,6 +9,7 @@ public partial class MavlinkMessageFieldInitPropertyGenerator : IMavlinkMessageF
 {
 	private static readonly Template _propertyTemplate;
 	private readonly IMavlinkMessageFieldTypeNameResolutionStrategy _typeNameResolver;
+	private readonly IMavlinkMessageFieldValidationRuleProvider _validationRuleProvider;
 
 	static MavlinkMessageFieldInitPropertyGenerator()
 	{
@@ -20,9 +21,12 @@ public partial class MavlinkMessageFieldInitPropertyGenerator : IMavlinkMessageF
 		}
 	}
 
-	public MavlinkMessageFieldInitPropertyGenerator(IMavlinkMessageFieldTypeNameResolutionStrategy typeNameResolver)
+	public MavlinkMessageFieldInitPropertyGenerator(
+		IMavlinkMessageFieldTypeNameResolutionStrategy typeNameResolver,
+		IMavlinkMessageFieldValidationRuleProvider validationRuleProvider)
 	{
 		_typeNameResolver = typeNameResolver ?? throw new ArgumentNullException(nameof(typeNameResolver));
+		_validationRuleProvider = validationRuleProvider ?? throw new ArgumentNullException(nameof(validationRuleProvider));
 	}
 
 	public GeneratedMavlinkMessageField GeneratePrimitiveProperty(MavlinkMessageField field)
@@ -60,7 +64,7 @@ public partial class MavlinkMessageFieldInitPropertyGenerator : IMavlinkMessageF
 		return Generate(field, resolvedTypeName, typeInfo);
 	}
 
-	private GeneratedMavlinkMessageField Generate(MavlinkMessageField field, string propertyTypeName, GeneratedMavlinkMessageFieldTypeBase typeInfo)
+	private GeneratedMavlinkMessageField Generate(MavlinkMessageField field, string basePropertyTypeName, GeneratedMavlinkMessageFieldTypeBase typeInfo)
 	{
 		string normalizedFieldName = Utilities.ToUpperCamelCase(field.Name);
 
@@ -68,32 +72,21 @@ public partial class MavlinkMessageFieldInitPropertyGenerator : IMavlinkMessageF
 			? null
 			: Utilities.CreateSummaryTrivia(field.Description!).ToFullString().TrimEnd();
 
+		var validationRule = _validationRuleProvider.GetRule(field);
+		var typeStructure = BuildTypeStructure(field, validationRule, basePropertyTypeName);
+		var finalPropertyTypeName = RenderTypeStructure(typeStructure);
+
 		var attributesBuilder = ImmutableList.CreateBuilder<string>();
-
-		string finalPropertyType = propertyTypeName;
-
-		int? arrayLength = null;
-		switch (typeInfo)
+		if (TryGetArrayLength(typeStructure, out int arrayLength))
 		{
-			case GeneratedMavlinkMessageFieldArrayType arrayType:
-				arrayLength = arrayType.ArrayLength;
-				break;
-			case GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType:
-				arrayLength = arrayEnumType.ArrayLength;
-				break;
-		}
-
-		if (arrayLength.HasValue)
-		{
-			finalPropertyType = $"System.Collections.Immutable.ImmutableArray<{propertyTypeName}>";
-			attributesBuilder.Add($"[System.ComponentModel.DataAnnotations.RequiredArrayLength({arrayLength.Value})]");
+			attributesBuilder.Add($"[System.ComponentModel.DataAnnotations.RequiredArrayLength({arrayLength})]");
 		}
 
 		var model = new PropertyTemplateModel(
 			SummaryCommentBlock: summaryCommentBlock,
 			RemarksName: field.Name,
 			Attributes: attributesBuilder.ToImmutable(),
-			PropertyType: finalPropertyType,
+			PropertyType: finalPropertyTypeName,
 			PropertyName: normalizedFieldName);
 
 		string propertyCode = _propertyTemplate.Render(model);
@@ -113,9 +106,80 @@ public partial class MavlinkMessageFieldInitPropertyGenerator : IMavlinkMessageF
 
 		return new GeneratedMavlinkMessageField(
 			generatedName: normalizedFieldName,
+			generatedFieldType: typeInfo,
+			validationRule: validationRule,
 			declarationSyntax: propertySyntax,
-			original: field,
-			generatedFieldType: typeInfo);
+			original: field);
+	}
+
+	private bool TryGetArrayLength(GeneratedMavlinkMessageFieldTypeStructure structure, out int length)
+	{
+		length = 0;
+		switch (structure)
+		{
+			case GeneratedMavlinkMessageFieldArrayTypeStructure array:
+				length = array.Length;
+				return true;
+			case GeneratedMavlinkMessageFieldInvalidatableTypeStructure invalidatable when invalidatable.InnerType is GeneratedMavlinkMessageFieldArrayTypeStructure innerArray:
+				length = innerArray.Length;
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	private GeneratedMavlinkMessageFieldTypeStructure BuildTypeStructure(
+		MavlinkMessageField field,
+		GeneratedMavlinkMessageFieldValidationRule rule,
+		string baseTypeName)
+	{
+		bool isArray = field.Type.TypeName.Contains("[");
+		var scalarType = new GeneratedMavlinkMessageFieldScalarTypeStructure(baseTypeName);
+
+		if (isArray)
+		{
+			int length = ParseArrayLength(field.Type.TypeName);
+
+			return rule switch
+			{
+				GeneratedMavlinkMessagePerElementValidationRule =>
+					new GeneratedMavlinkMessageFieldArrayTypeStructure(
+						new GeneratedMavlinkMessageFieldInvalidatableTypeStructure(scalarType),
+						length),
+
+				GeneratedMavlinkMessageWholeFieldValidationRule =>
+					new GeneratedMavlinkMessageFieldInvalidatableTypeStructure(
+						new GeneratedMavlinkMessageFieldArrayTypeStructure(scalarType, length)),
+
+				_ => new GeneratedMavlinkMessageFieldArrayTypeStructure(scalarType, length),
+			};
+		}
+		else
+		{
+			return rule switch
+			{
+				GeneratedMavlinkMessageWholeFieldValidationRule =>
+					new GeneratedMavlinkMessageFieldInvalidatableTypeStructure(scalarType),
+
+				_ => scalarType,
+			};
+		}
+	}
+
+	private string RenderTypeStructure(GeneratedMavlinkMessageFieldTypeStructure structure)
+	{
+		return structure switch
+		{
+			GeneratedMavlinkMessageFieldScalarTypeStructure scalar => scalar.TypeName,
+
+			GeneratedMavlinkMessageFieldInvalidatableTypeStructure invalidatable =>
+				$"Invalidatable<{RenderTypeStructure(invalidatable.InnerType)}>",
+
+			GeneratedMavlinkMessageFieldArrayTypeStructure array =>
+				$"System.Collections.Immutable.ImmutableArray<{RenderTypeStructure(array.ElementType)}>",
+
+			_ => throw new NotSupportedException($"Cannot render type structure: {structure.GetType().Name}")
+		};
 	}
 
 	private static GeneratedMavlinkMessageFieldTypeBase CreateGeneratedPrimitiveTypeInfo(MavlinkMessageField field)
@@ -145,5 +209,13 @@ public partial class MavlinkMessageFieldInitPropertyGenerator : IMavlinkMessageF
 			return new GeneratedMavlinkMessageFieldArrayEnumType(csharpTypeName, generatedEnum, arrayLength, enumType);
 		}
 		return new GeneratedMavlinkMessageFieldEnumType(csharpTypeName, generatedEnum, enumType);
+	}
+
+	private static int ParseArrayLength(string typeName)
+	{
+		var startIndex = typeName.IndexOf('[') + 1;
+		var endIndex = typeName.IndexOf(']');
+		var lengthStr = typeName.Substring(startIndex, endIndex - startIndex);
+		return int.Parse(lengthStr);
 	}
 }

@@ -19,6 +19,12 @@ public record GeneratedMavlinkMessageField
 	public GeneratedMavlinkMessageFieldTypeBase GeneratedType { get; init; }
 
 	/// <summary>
+	/// Gets the validation rule determined for this field, which can be used by
+	/// subsequent code generation stages like deserialization.
+	/// </summary>
+	public GeneratedMavlinkMessageFieldValidationRule ValidationRule { get; init; }
+
+	/// <summary>
 	/// The declaration syntax of the field in C# code.
 	/// This syntax represents the C# code structure for the field's property in the generated class.
 	/// </summary>
@@ -32,11 +38,13 @@ public record GeneratedMavlinkMessageField
 	internal GeneratedMavlinkMessageField(
 		string generatedName,
 		GeneratedMavlinkMessageFieldTypeBase generatedFieldType,
+		GeneratedMavlinkMessageFieldValidationRule validationRule,
 		PropertyDeclarationSyntax declarationSyntax,
 		MavlinkMessageField original)
 	{
 		GeneratedName = generatedName;
 		GeneratedType = generatedFieldType;
+		ValidationRule = validationRule;
 		DeclarationSyntax = declarationSyntax;
 		Original = original;
 	}
