@@ -166,7 +166,7 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 					bitmaskSerializationStrategy,
 					new MavlinkNonBitmaskFieldBufferSerializationStrategy());
 
-				deserializationStrategy = new MavlinkBufferDeserializationGeneratorStrategy(
+				deserializationStrategy = new MavlinkBufferSerializationGeneratorStrategy(
 					bitmaskDeserializationStrategy,
 					new MavlinkNonBitmaskFieldBufferDeserializationStrategy());
 			}
