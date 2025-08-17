@@ -29,42 +29,47 @@ internal static class Utilities
 	}.ToImmutableDictionary();
 
 	/// <summary>
-	/// Gets the sorted required fields and array fields (only required ones) from the provided collection.
+	/// Gets the sorted required fields, partitioned into scalar and array fields.
 	/// </summary>
 	/// <param name="fields">An immutable array of generated message fields.</param>
 	/// <returns>
 	/// A tuple with two lists:
 	/// <list type="bullet">
-	/// <item><description>requiredFields</description></item>
-	/// <item><description>arrayFields</description></item>
+	/// <item><description>requiredScalarFields: Non-array fields, sorted by size for alignment.</description></item>
+	/// <item><description>requiredArrayFields: Array fields.</description></item>
 	/// </list>
 	/// </returns>
-	public static (List<GeneratedMavlinkMessageField> requiredFields, List<GeneratedMavlinkMessageField> arrayFields)
+	public static (List<GeneratedMavlinkMessageField> requiredScalarFields, List<GeneratedMavlinkMessageField> requiredArrayFields)
 		GetSortedFields(this ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
-		var requiredFields = fields
-			.Where(f => f.Original.IsRequired
-				&& !(f.GeneratedType is GeneratedMavlinkMessageFieldArrayType
-				|| f.GeneratedType is GeneratedMavlinkMessageFieldArrayEnumType))
-			.ToList();
+		var requiredScalarFields = new List<GeneratedMavlinkMessageField>();
+		var requiredArrayFields = new List<GeneratedMavlinkMessageField>();
 
-		// Sort required fields by type size (largest to smallest) for proper alignment.
-		requiredFields.Sort((field1, field2) =>
+		foreach (var field in fields)
 		{
-			var size1 = GetDotNetTypeSize(field1.GeneratedType.ConvertedType);
-			var size2 = GetDotNetTypeSize(field2.GeneratedType.ConvertedType);
+			if (!field.Original.IsRequired)
+			{
+				continue;
+			}
+
+			if (field.GeneratedType is GeneratedMavlinkMessageFieldArrayType)
+			{
+				requiredArrayFields.Add(field);
+			}
+			else
+			{
+				requiredScalarFields.Add(field);
+			}
+		}
+
+		requiredScalarFields.Sort((field1, field2) =>
+		{
+			var size1 = GetDotNetTypeSize(field1.GeneratedType.GetElementTypeOrSelf().ConvertedType);
+			var size2 = GetDotNetTypeSize(field2.GeneratedType.GetElementTypeOrSelf().ConvertedType);
 			return size2.CompareTo(size1);
 		});
-
-		var arrayFields = fields
-			.Where(f => f.Original.IsRequired
-				&& (f.GeneratedType is GeneratedMavlinkMessageFieldArrayType
-				|| f.GeneratedType is GeneratedMavlinkMessageFieldArrayEnumType))
-			.ToList();
-
-		return (requiredFields, arrayFields);
+		return (requiredScalarFields, requiredArrayFields);
 	}
-
 	/// <summary>
 	/// Escapes reserved C# keywords by prefixing them with '@' if necessary.
 	/// </summary>
@@ -465,9 +470,13 @@ internal static class Utilities
 	{
 		return field.GeneratedType switch
 		{
-			GeneratedMavlinkMessageFieldArrayType arrayField => GetDotNetTypeSize(arrayField.ConvertedType) * arrayField.ArrayLength,
-			GeneratedMavlinkMessageFieldArrayEnumType arrayEnumField => GetDotNetTypeSize(arrayEnumField.ConvertedType) * arrayEnumField.ArrayLength,
-			_ => GetDotNetTypeSize((field.GeneratedType).ConvertedType)
+			GeneratedMavlinkMessageFieldArrayType arrayType =>
+				GetDotNetTypeSize(arrayType.ConvertedType) * arrayType.ArrayLength,
+
+			GeneratedMavlinkMessageFieldScalarType scalarType =>
+				GetDotNetTypeSize(scalarType.ConvertedType),
+
+			_ => throw new NotSupportedException($"Cannot determine field size for type {field.GeneratedType.GetType().Name}")
 		};
 	}
 

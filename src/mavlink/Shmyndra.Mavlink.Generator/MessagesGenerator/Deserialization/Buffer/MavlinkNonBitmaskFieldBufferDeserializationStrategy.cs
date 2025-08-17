@@ -17,14 +17,17 @@ public class MavlinkNonBitmaskFieldBufferDeserializationStrategy : IMavlinkField
 
 		switch (field.GeneratedType)
 		{
-			case GeneratedMavlinkMessageFieldEnumType enumType when field.Original.Display != MavlinkMessageFieldDisplay.Bitmask:
-				return AppendEnumField(sb, enumType, ref offset, originalFieldName, currentNamespace, payloadParameterName);
+			case GeneratedMavlinkMessageFieldArrayType { ElementType: GeneratedMavlinkMessageFieldEnumType enumElementType } arrayType
+				when field.Original.Display != MavlinkMessageFieldDisplay.Bitmask:
+				return AppendArrayEnumField(sb, arrayType, enumElementType, ref offset, originalFieldName, currentNamespace, payloadParameterName);
 			case GeneratedMavlinkMessageFieldArrayType arrayType:
 				return AppendArrayField(sb, arrayType, ref offset, originalFieldName, payloadParameterName);
-			case GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType when field.Original.Display != MavlinkMessageFieldDisplay.Bitmask:
-				return AppendArrayEnumField(sb, arrayEnumType, ref offset, originalFieldName, currentNamespace, payloadParameterName);
+			case GeneratedMavlinkMessageFieldEnumType enumType
+				when field.Original.Display != MavlinkMessageFieldDisplay.Bitmask:
+				return AppendEnumField(sb, enumType, ref offset, originalFieldName, currentNamespace, payloadParameterName);
 			case GeneratedMavlinkMessageFieldPrimitiveType simpleType:
 				return AppendSimpleField(sb, simpleType.ConvertedType, ref offset, originalFieldName, payloadParameterName);
+
 			default:
 				throw new NotSupportedException($"Field type '{field.GeneratedType.GetType().Name}' is not supported in Non-Bitmask strategy.");
 		}
@@ -34,19 +37,22 @@ public class MavlinkNonBitmaskFieldBufferDeserializationStrategy : IMavlinkField
 	{
 		string fieldName = Utilities.ToLowerCamelCase(field.GeneratedName);
 		string originalFieldName = field.GeneratedName;
+		// FIX: Цей handler тепер буде замінений на нашу нову архітектуру,
+		// але поки що залишимо його для сумісності, поки не перейдемо на ValidationExpression.
 		var handler = InvalidFieldHandlerFactory.Create(field) ?? throw new InvalidOperationException($"No handler for field {field.GeneratedName}");
-
 		switch (field.GeneratedType)
 		{
-			case GeneratedMavlinkMessageFieldEnumType enumType when field.Original.Display != MavlinkMessageFieldDisplay.Bitmask:
-				AppendEnumFieldValidated(sb, enumType, handler, ref offset, fieldName, currentNamespace, payloadParameterName);
-				return $"{fieldName}Enum";
+			case GeneratedMavlinkMessageFieldArrayType { ElementType: GeneratedMavlinkMessageFieldEnumType enumElementType } arrayType
+				when field.Original.Display != MavlinkMessageFieldDisplay.Bitmask:
+				AppendArrayEnumFieldValidated(sb, arrayType, enumElementType, handler, ref offset, fieldName, originalFieldName, currentNamespace, payloadParameterName);
+				return $"{fieldName}Array";
 			case GeneratedMavlinkMessageFieldArrayType arrayType:
 				AppendArrayFieldValidated(sb, arrayType, handler, ref offset, fieldName, originalFieldName, payloadParameterName);
 				return $"{fieldName}Array";
-			case GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType when field.Original.Display != MavlinkMessageFieldDisplay.Bitmask:
-				AppendArrayEnumFieldValidated(sb, arrayEnumType, handler, ref offset, fieldName, originalFieldName, currentNamespace, payloadParameterName);
-				return $"{fieldName}Array";
+			case GeneratedMavlinkMessageFieldEnumType enumType
+				when field.Original.Display != MavlinkMessageFieldDisplay.Bitmask:
+				AppendEnumFieldValidated(sb, enumType, handler, ref offset, fieldName, currentNamespace, payloadParameterName);
+				return $"{fieldName}Enum";
 			case GeneratedMavlinkMessageFieldPrimitiveType simpleType:
 				AppendSimpleFieldValidated(sb, simpleType.ConvertedType, handler, ref offset, fieldName, payloadParameterName);
 				return fieldName;
@@ -189,12 +195,19 @@ var {fieldName}Array = System.Collections.Immutable.ImmutableArray.CreateRange({
 		offset += totalSize;
 	}
 
-	private string AppendArrayEnumField(StringBuilder sb, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, ref int offset, string originalFieldName, string currentNamespace, string payloadParameterName)
+	private string AppendArrayEnumField(
+		StringBuilder sb,
+		GeneratedMavlinkMessageFieldArrayType arrayType,
+		GeneratedMavlinkMessageFieldEnumType enumElementType,
+		ref int offset,
+		string originalFieldName,
+		string currentNamespace,
+		string payloadParameterName)
 	{
-		string enumTypeName = arrayEnumType.GetQualifiedEnumTypeName(currentNamespace);
-		string elementTypeName = arrayEnumType.ConvertedType;
+		string enumTypeName = enumElementType.GetQualifiedEnumTypeName(currentNamespace);
+		string elementTypeName = arrayType.ConvertedType;
 		int elementSize = Utilities.GetDotNetTypeSize(elementTypeName);
-		int totalSize = arrayEnumType.ArrayLength * elementSize;
+		int totalSize = arrayType.ArrayLength * elementSize;
 		string tempFieldName = Utilities.ToLowerCamelCase($"temp{originalFieldName}");
 		string arrayFieldName = Utilities.ToLowerCamelCase($"{originalFieldName}Array");
 		string indexVarName = $"idx{originalFieldName}";
@@ -203,12 +216,12 @@ var {fieldName}Array = System.Collections.Immutable.ImmutableArray.CreateRange({
 						  .GetBitConverterMethod(elementTypeName)}({payloadParameterName}, {offset} + {indexVarName} * {elementSize})";
 
 		sb.AppendLine($@"
-var {tempFieldName} = new {enumTypeName}[{arrayEnumType.ArrayLength}];
-for (int {indexVarName} = 0; {indexVarName} < {arrayEnumType.ArrayLength}; {indexVarName}++)
+var {tempFieldName} = new {enumTypeName}[{arrayType.ArrayLength}];
+for (int {indexVarName} = 0; {indexVarName} < {arrayType.ArrayLength}; {indexVarName}++)
 {{
     var value = {valueExpr};
     var enumValue = ({enumTypeName})value;");
-		if (arrayEnumType.GeneratedEnum.Original.Bitmask != true)
+		if (enumElementType.GeneratedEnum.Original.Bitmask != true)
 		{
 			sb.AppendLine($@"
     if (!Enum.IsDefined(typeof({enumTypeName}), enumValue))
@@ -225,25 +238,34 @@ var {arrayFieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({
 		return arrayFieldName;
 	}
 
-	private void AppendArrayEnumFieldValidated(StringBuilder sb, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, IValidationConditionProvider handler, ref int offset, string fieldName, string originalFieldName, string currentNamespace, string payloadParameterName)
+	private void AppendArrayEnumFieldValidated(
+		StringBuilder sb,
+		GeneratedMavlinkMessageFieldArrayType arrayType,
+		GeneratedMavlinkMessageFieldEnumType enumElementType,
+		IValidationConditionProvider handler,
+		ref int offset,
+		string fieldName,
+		string originalFieldName,
+		string currentNamespace,
+		string payloadParameterName)
 	{
-		string enumTypeName = arrayEnumType.GetQualifiedEnumTypeName(currentNamespace);
-		string elementTypeName = arrayEnumType.ConvertedType;
+		string enumTypeName = enumElementType.GetQualifiedEnumTypeName(currentNamespace);
+		string elementTypeName = arrayType.ConvertedType;
 		int elementSize = Utilities.GetDotNetTypeSize(elementTypeName);
-		int totalSize = arrayEnumType.ArrayLength * elementSize;
+		int totalSize = arrayType.ArrayLength * elementSize;
 		string indexVarName = $"idx{originalFieldName}";
 		string valueExpr = elementTypeName == "byte" ? $"{payloadParameterName}[{offset} + {indexVarName}]" :
 						  $"BitConverter.{MavlinkBufferDeserializationExtensions.GetBitConverterMethod(elementTypeName)}({payloadParameterName}, {offset} + {indexVarName} * {elementSize})";
 
 		sb.AppendLine($@"
-var {fieldName} = new {enumTypeName}?[{arrayEnumType.ArrayLength}];
-for (int {indexVarName} = 0; {indexVarName} < {arrayEnumType.ArrayLength}; {indexVarName}++)
+var {fieldName} = new {enumTypeName}?[{arrayType.ArrayLength}];
+for (int {indexVarName} = 0; {indexVarName} < {arrayType.ArrayLength}; {indexVarName}++)
 {{
     var value = {valueExpr};
     if ({handler.GenerateValidationCondition("value")})
     {{
         var enumValue = ({enumTypeName})value;");
-		if (arrayEnumType.GeneratedEnum.Original.Bitmask != true)
+		if (enumElementType.GeneratedEnum.Original.Bitmask != true)
 		{
 			sb.AppendLine($@"
         if (!Enum.IsDefined(typeof({enumTypeName}), enumValue))

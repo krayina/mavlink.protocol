@@ -12,10 +12,14 @@ public class MavlinkBitmaskFieldBufferDeserializationStrategy : IMavlinkFieldDes
 
 		switch (field.GeneratedType)
 		{
-			case GeneratedMavlinkMessageFieldEnumType enumType when field.Original.Display == MavlinkMessageFieldDisplay.Bitmask:
+			case GeneratedMavlinkMessageFieldArrayType { ElementType: GeneratedMavlinkMessageFieldEnumType enumElementType } arrayType
+				when field.Original.Display == MavlinkMessageFieldDisplay.Bitmask:
+				return AppendArrayEnumField(sb, arrayType, enumElementType, ref offset, originalFieldName, currentNamespace, payloadParameterName);
+
+			case GeneratedMavlinkMessageFieldEnumType enumType
+				when field.Original.Display == MavlinkMessageFieldDisplay.Bitmask:
 				return AppendEnumField(sb, enumType, ref offset, originalFieldName, currentNamespace, payloadParameterName);
-			case GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType when field.Original.Display == MavlinkMessageFieldDisplay.Bitmask:
-				return AppendArrayEnumField(sb, arrayEnumType, ref offset, originalFieldName, currentNamespace, payloadParameterName);
+
 			default:
 				throw new NotSupportedException($"Field type '{field.GeneratedType.GetType().Name}' is not supported in Bitmask strategy.");
 		}
@@ -51,20 +55,27 @@ var {fieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({tempF
 		return fieldName;
 	}
 
-	private string AppendArrayEnumField(StringBuilder sb, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, ref int offset, string originalFieldName, string currentNamespace, string payloadParameterName)
+	private string AppendArrayEnumField(
+		StringBuilder sb,
+		GeneratedMavlinkMessageFieldArrayType arrayType,
+		GeneratedMavlinkMessageFieldEnumType enumElementType,
+		ref int offset,
+		string originalFieldName,
+		string currentNamespace,
+		string payloadParameterName)
 	{
-		string enumTypeName = arrayEnumType.GetQualifiedEnumTypeName(currentNamespace);
-		string elementTypeName = arrayEnumType.ConvertedType;
+		string enumTypeName = enumElementType.GetQualifiedEnumTypeName(currentNamespace);
+		string elementTypeName = arrayType.ConvertedType;
 		int elementSize = Utilities.GetDotNetTypeSize(elementTypeName);
-		int totalSize = arrayEnumType.ArrayLength * elementSize;
+		int totalSize = arrayType.ArrayLength * elementSize;
 
 		string arrayFieldName = Utilities.ToLowerCamelCase($"{originalFieldName}Array");
 		string tempFieldName = Utilities.ToLowerCamelCase($"temp{originalFieldName}");
 		string indexVarName = $"idx{originalFieldName}";
 
 		sb.AppendLine($@"
-var {tempFieldName} = new {enumTypeName}[{arrayEnumType.ArrayLength}];
-for (int {indexVarName} = 0; {indexVarName} < {arrayEnumType.ArrayLength}; {indexVarName}++)
+var {tempFieldName} = new {enumTypeName}[{arrayType.ArrayLength}];
+for (int {indexVarName} = 0; {indexVarName} < {arrayType.ArrayLength}; {indexVarName}++)
 {{
     int elementOffset = {offset} + {indexVarName} * {elementSize};
     var value = BitConverter.{MavlinkBufferDeserializationExtensions.GetBitConverterMethod(elementTypeName)}({payloadParameterName}, elementOffset);

@@ -22,9 +22,10 @@ public class MavlinkBufferSerializationGeneratorStrategy : IMavlinkSerialization
 
 	public void AppendFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset)
 	{
-		if (field.Original.Display == MavlinkMessageFieldDisplay.Bitmask
-			&& (field.GeneratedType is GeneratedMavlinkMessageFieldEnumType
-				|| field.GeneratedType is GeneratedMavlinkMessageFieldArrayEnumType))
+		bool isBitmaskEligible = field.GeneratedType is GeneratedMavlinkMessageFieldEnumType ||
+								 field.GeneratedType is GeneratedMavlinkMessageFieldArrayType { ElementType: GeneratedMavlinkMessageFieldEnumType };
+
+		if (field.Original.Display == MavlinkMessageFieldDisplay.Bitmask && isBitmaskEligible)
 		{
 			_bitmaskStrategy.SerializeField(sb, field, ref offset);
 		}

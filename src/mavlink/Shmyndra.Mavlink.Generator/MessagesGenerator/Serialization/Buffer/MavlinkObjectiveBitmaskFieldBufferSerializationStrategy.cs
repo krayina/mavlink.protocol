@@ -22,9 +22,6 @@ public class MavlinkObjectiveBitmaskFieldBufferSerializationStrategy : IMavlinkF
 			case GeneratedMavlinkMessageFieldArrayType arrayType:
 				AppendArrayBitmaskField(sb, field, arrayType, ref offset);
 				break;
-			case GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType:
-				AppendArrayEnumBitmaskField(sb, field, arrayEnumType, ref offset);
-				break;
 			default:
 				throw new NotSupportedException($"Field type '{field.GeneratedType.GetType().Name}' is not supported in Objective Bitmask strategy.");
 		}
@@ -79,40 +76,6 @@ if ({propertyName}.HasValue)
 		string serializedVarName = $"serialized{field.GeneratedName}";
 		string arrayLength = arrayType.ArrayLength.ToString();
 		string elementType = arrayType.ConvertedType;
-
-		if (field.Original.IsRequired)
-		{
-			sb.AppendLine($"var {serializedVarName} = new {elementType}[{arrayLength}];");
-			sb.AppendLine($"for (int i = 0; i < {arrayLength}; i++)");
-			sb.AppendLine("{");
-			sb.AppendLine($"    {serializedVarName}[i] = {propertyName}[i].Bitmask;");
-			sb.AppendLine("}");
-			sb.AppendLine($"Buffer.BlockCopy({serializedVarName}, 0, buffer, {offset}, {totalSize});");
-		}
-		else
-		{
-			sb.AppendLine($@"
-if ({propertyName}.HasValue && !{propertyName}.Value.IsDefaultOrEmpty)
-{{
-    var {serializedVarName} = new {elementType}[{arrayLength}];
-    for (int i = 0; i < {arrayLength}; i++)
-    {{
-        {serializedVarName}[i] = {propertyName}.Value[i].Bitmask;
-    }}
-    Buffer.BlockCopy({serializedVarName}, 0, buffer, {offset}, {totalSize});
-}}");
-		}
-
-		offset += totalSize;
-	}
-
-	private void AppendArrayEnumBitmaskField(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, ref int offset)
-	{
-		int totalSize = field.GetFieldSize();
-		string propertyName = field.GeneratedName;
-		string serializedVarName = $"serialized{field.GeneratedName}";
-		string arrayLength = arrayEnumType.ArrayLength.ToString();
-		string elementType = arrayEnumType.ConvertedType;
 
 		if (field.Original.IsRequired)
 		{

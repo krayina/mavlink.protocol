@@ -12,12 +12,18 @@ public class MavlinkObjectiveBitmaskFieldSpanDeserializationStrategy : IMavlinkF
 		{
 			case GeneratedMavlinkMessageFieldPrimitiveType primitiveType:
 				return AppendPrimitiveField(sb, primitiveType, ref offset, originalFieldName, payloadParameterName);
+
+			case GeneratedMavlinkMessageFieldArrayType { ElementType: GeneratedMavlinkMessageFieldEnumType enumElementType } arrayType
+				when field.Original.Display == MavlinkMessageFieldDisplay.Bitmask:
+				return AppendArrayEnumField(sb, arrayType, enumElementType, ref offset, originalFieldName, currentNamespace, payloadParameterName);
+
 			case GeneratedMavlinkMessageFieldArrayType arrayType:
 				return AppendArrayField(sb, arrayType, ref offset, originalFieldName, payloadParameterName);
-			case GeneratedMavlinkMessageFieldEnumType enumType when field.Original.Display == MavlinkMessageFieldDisplay.Bitmask:
+
+			case GeneratedMavlinkMessageFieldEnumType enumType
+				when field.Original.Display == MavlinkMessageFieldDisplay.Bitmask:
 				return AppendEnumField(sb, enumType, ref offset, originalFieldName, currentNamespace, payloadParameterName);
-			case GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType when field.Original.Display == MavlinkMessageFieldDisplay.Bitmask:
-				return AppendArrayEnumField(sb, arrayEnumType, ref offset, originalFieldName, currentNamespace, payloadParameterName);
+
 			default:
 				throw new NotSupportedException($"Field type '{field.GeneratedType.GetType().Name}' is not supported in Objective Bitmask Span strategy.");
 		}
@@ -87,20 +93,27 @@ var {fieldName} = new {objectiveBitmaskType}(({typeName}){valueExpr});
 		return fieldName;
 	}
 
-	private string AppendArrayEnumField(StringBuilder sb, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, ref int offset, string originalFieldName, string currentNamespace, string payloadParameterName)
+	private string AppendArrayEnumField(
+		StringBuilder sb,
+		GeneratedMavlinkMessageFieldArrayType arrayType,
+		GeneratedMavlinkMessageFieldEnumType enumElementType,
+		ref int offset,
+		string originalFieldName,
+		string currentNamespace,
+		string payloadParameterName)
 	{
-		string enumTypeName = arrayEnumType.GetQualifiedEnumTypeName(currentNamespace);
-		string elementTypeName = arrayEnumType.ConvertedType;
+		string enumTypeName = enumElementType.GetQualifiedEnumTypeName(currentNamespace);
+		string elementTypeName = arrayType.ConvertedType;
 		int elementSize = Utilities.GetDotNetTypeSize(elementTypeName);
-		int totalSize = arrayEnumType.ArrayLength * elementSize;
+		int totalSize = arrayType.ArrayLength * elementSize;
 		string arrayFieldName = Utilities.ToLowerCamelCase($"{originalFieldName}Array");
 		string tempFieldName = Utilities.ToLowerCamelCase($"temp{originalFieldName}");
 		string indexVarName = $"idx{originalFieldName}";
 		string objectiveBitmaskType = $"{enumTypeName}Bitmask";
 
 		sb.AppendLine($@"
-var {tempFieldName} = new {objectiveBitmaskType}[{arrayEnumType.ArrayLength}];
-for (int {indexVarName} = 0; {indexVarName} < {arrayEnumType.ArrayLength}; {indexVarName}++)
+var {tempFieldName} = new {objectiveBitmaskType}[{arrayType.ArrayLength}];
+for (int {indexVarName} = 0; {indexVarName} < {arrayType.ArrayLength}; {indexVarName}++)
 {{
     int elementOffset = {offset} + {indexVarName} * {elementSize};
     var value = {(elementTypeName == "byte" ? $"{payloadParameterName}[elementOffset]" :

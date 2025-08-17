@@ -12,10 +12,14 @@ public class MavlinkBitmaskFieldSpanDeserializationStrategy : IMavlinkFieldDeser
 
 		switch (field.GeneratedType)
 		{
-			case GeneratedMavlinkMessageFieldEnumType enumType when field.Original.Display == MavlinkMessageFieldDisplay.Bitmask:
+			case GeneratedMavlinkMessageFieldArrayType { ElementType: GeneratedMavlinkMessageFieldEnumType enumElementType } arrayType
+				when field.Original.Display == MavlinkMessageFieldDisplay.Bitmask:
+				return AppendArrayEnumField(sb, arrayType, enumElementType, ref offset, originalFieldName, currentNamespace);
+
+			case GeneratedMavlinkMessageFieldEnumType enumType
+				when field.Original.Display == MavlinkMessageFieldDisplay.Bitmask:
 				return AppendEnumField(sb, enumType, ref offset, originalFieldName, currentNamespace);
-			case GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType when field.Original.Display == MavlinkMessageFieldDisplay.Bitmask:
-				return AppendArrayEnumField(sb, arrayEnumType, ref offset, originalFieldName, currentNamespace);
+
 			default:
 				throw new NotSupportedException($"Field type '{field.GeneratedType.GetType().Name}' is not supported in Bitmask strategy.");
 		}
@@ -50,12 +54,18 @@ var {fieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({tempF
 		return fieldName;
 	}
 
-	private string AppendArrayEnumField(StringBuilder sb, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, ref int offset, string originalFieldName, string currentNamespace)
+	private string AppendArrayEnumField(
+		StringBuilder sb,
+		GeneratedMavlinkMessageFieldArrayType arrayType,
+		GeneratedMavlinkMessageFieldEnumType enumElementType,
+		ref int offset,
+		string originalFieldName,
+		string currentNamespace)
 	{
-		string enumTypeName = arrayEnumType.GetQualifiedEnumTypeName(currentNamespace);
-		string elementTypeName = arrayEnumType.ConvertedType;
+		string enumTypeName = enumElementType.GetQualifiedEnumTypeName(currentNamespace);
+		string elementTypeName = arrayType.ConvertedType;
 		int elementSize = Utilities.GetDotNetTypeSize(elementTypeName);
-		int totalSize = arrayEnumType.ArrayLength * elementSize;
+		int totalSize = arrayType.ArrayLength * elementSize;
 		string fieldName = Utilities.ToLowerCamelCase(originalFieldName);
 		string arrayFieldName = Utilities.ToLowerCamelCase($"{originalFieldName}Array");
 		string indexVarName = $"idx{originalFieldName}";
@@ -64,8 +74,8 @@ var {fieldName} = System.Collections.Immutable.ImmutableArray.CreateRange({tempF
 		string tempFlagsName = Utilities.ToLowerCamelCase($"tempFlags{originalFieldName}");
 
 		sb.AppendLine($@"
-var {fieldName} = new {enumTypeName}[{arrayEnumType.ArrayLength}];
-for (int {indexVarName} = 0; {indexVarName} < {arrayEnumType.ArrayLength}; {indexVarName}++)
+var {fieldName} = new {enumTypeName}[{arrayType.ArrayLength}];
+for (int {indexVarName} = 0; {indexVarName} < {arrayType.ArrayLength}; {indexVarName}++)
 {{
     int elementOffset = {offset} + {indexVarName} * {elementSize};
     {combinedType} combined = {(elementTypeName == "byte" ? $"span[elementOffset]" :

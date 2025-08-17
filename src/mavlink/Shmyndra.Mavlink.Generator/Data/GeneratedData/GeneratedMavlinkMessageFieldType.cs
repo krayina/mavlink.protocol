@@ -1,59 +1,64 @@
 ﻿namespace Shmyndra.Mavlink.Generator;
 
 /// <summary>
-/// Base (non-generic) type for all generated Mavlink message field types.
+/// The abstract base record for all generated MAVLink message field types.
+/// This hierarchy models the C# representation of a field's type defined in MAVLink XML.
 /// </summary>
-public abstract record GeneratedMavlinkMessageFieldTypeBase(string ConvertedType);
+public abstract record GeneratedMavlinkMessageFieldType(MavlinkMessageFieldType Original)
+{
+	/// <summary>
+	/// Gets the name of the underlying C# type that represents this MAVLink type.
+	/// For example, "ushort" for a MAVLink "uint16_t".
+	/// </summary>
+	public abstract string ConvertedType { get; }
+}
 
 /// <summary>
-/// Generic base type for generated Mavlink message field types that includes the original Mavlink type.
-/// <para>
-/// For example, if the Mavlink field is defined as "uint16_t" or with an enum (e.g., enum="ESC_FAILURE_FLAGS"),
-/// the original type information is stored in the <paramref name="Original"/> property.
-/// </para>
+/// Represents a scalar MAVLink field type (a type that holds a single value).
+/// This is the base for all non-array types like primitives and enums.
 /// </summary>
-/// <typeparam name="TOriginal">The original Mavlink message field type (e.g., "uint_t", "enum=...").</typeparam>
-public abstract record GeneratedMavlinkMessageFieldType<TOriginal>(string ConvertedType, TOriginal Original)
-	: GeneratedMavlinkMessageFieldTypeBase(ConvertedType)
-	where TOriginal : MavlinkMessageFieldType;
+public abstract record GeneratedMavlinkMessageFieldScalarType(
+	string InnerConvertedType,
+	MavlinkMessageFieldType Original
+) : GeneratedMavlinkMessageFieldType(Original)
+{
+	/// <inheritdoc/>
+	public sealed override string ConvertedType => InnerConvertedType;
+}
 
 /// <summary>
-/// Represents a generated Mavlink message field for primitive types.
-/// Corresponds to Mavlink fields defined as a single value (e.g., "uint_t").
+/// Represents a MAVLink message field of a primitive type (e.g., uint16_t, float).
 /// </summary>
 public record GeneratedMavlinkMessageFieldPrimitiveType(
-	string ConvertedType,
-	MavlinkMessageFieldType Original)
-	: GeneratedMavlinkMessageFieldType<MavlinkMessageFieldType>(ConvertedType, Original);
+	string InnerConvertedType,
+	MavlinkMessageFieldType Original
+) : GeneratedMavlinkMessageFieldScalarType(InnerConvertedType, Original);
 
 /// <summary>
-/// Represents a generated Mavlink message field for enum types.
-/// Corresponds to Mavlink fields defined with an enum specification (e.g., "enum=...").
+/// Represents a MAVLink message field of an enum type.
 /// </summary>
 public record GeneratedMavlinkMessageFieldEnumType(
-	string ConvertedType,
+	string InnerConvertedType,
 	GeneratedMavlinkEnum GeneratedEnum,
-	MavlinkMessageFieldEnumType Original)
-	: GeneratedMavlinkMessageFieldType<MavlinkMessageFieldEnumType>(ConvertedType, Original);
+	MavlinkMessageFieldType Original
+) : GeneratedMavlinkMessageFieldScalarType(InnerConvertedType, Original)
+{
+	/// <summary>
+	/// Gets the original MAVLink type definition, safely cast to its specific enum type.
+	/// </summary>
+	public MavlinkMessageFieldEnumType SpecificOriginal => (MavlinkMessageFieldEnumType)Original;
+}
 
 /// <summary>
-/// Represents a generated Mavlink message field for an array of primitive types.
-/// Corresponds to Mavlink fields defined as an array of primitive values (e.g., "uint_t[]").
+/// Represents a MAVLink message field that is an array of a specific scalar type.
+/// This record uses composition to hold a reference to the element's type.
 /// </summary>
 public record GeneratedMavlinkMessageFieldArrayType(
-	string ConvertedType,
+	GeneratedMavlinkMessageFieldScalarType ElementType,
 	int ArrayLength,
-	MavlinkMessageFieldType Original)
-	: GeneratedMavlinkMessageFieldType<MavlinkMessageFieldType>(ConvertedType, Original);
-
-/// <summary>
-/// Represents a generated Mavlink message field for an array of enum types.
-/// Corresponds to Mavlink fields defined as an array with an enum specification 
-/// (e.g., "uint_t[]" where each element is defined as an enum using "enum=...").
-/// </summary>
-public record GeneratedMavlinkMessageFieldArrayEnumType(
-	string ConvertedType,
-	GeneratedMavlinkEnum GeneratedEnum,
-	int ArrayLength,
-	MavlinkMessageFieldEnumType Original)
-	: GeneratedMavlinkMessageFieldType<MavlinkMessageFieldEnumType>(ConvertedType, Original);
+	MavlinkMessageFieldType Original
+) : GeneratedMavlinkMessageFieldType(Original)
+{
+	/// <inheritdoc/>
+	public override string ConvertedType => ElementType.ConvertedType;
+}

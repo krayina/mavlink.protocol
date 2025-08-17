@@ -3,8 +3,6 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Scriban;
-using Scriban.Runtime;
 
 namespace Shmyndra.Mavlink.Generator.Tests.Unit;
 
@@ -57,26 +55,32 @@ public class MavlinkMessagesGeneratorTests
 
 	private static readonly ImmutableArray<GeneratedMavlinkMessageField> GeneratedFields =
 	[
-		new GeneratedMavlinkMessageField("Index", new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")), new GeneratedMavlinkMessageNoValidationRule(),
+		new("Index", new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")), new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"), MavlinkFields[0]),
-		new GeneratedMavlinkMessageField("TimeUsec", new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")), new GeneratedMavlinkMessageNoValidationRule(),
+
+		new("TimeUsec", new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")), new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ulong"), "TimeUsec"), MavlinkFields[1]),
-		new GeneratedMavlinkMessageField("Counter", new GeneratedMavlinkMessageFieldPrimitiveType("ushort", new MavlinkMessageFieldType("uint16_t")), new GeneratedMavlinkMessageNoValidationRule(),
+
+		new("Counter", new GeneratedMavlinkMessageFieldPrimitiveType("ushort", new MavlinkMessageFieldType("uint16_t")), new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "Counter"), MavlinkFields[2]),
-		new GeneratedMavlinkMessageField("Count", new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")), new GeneratedMavlinkMessageNoValidationRule(),
+
+		new("Count", new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")), new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Count"), MavlinkFields[3]),
-		new GeneratedMavlinkMessageField("ConnectionType", new GeneratedMavlinkMessageFieldEnumType("byte", GeneratedEnums[0],
-				(MavlinkMessageFieldEnumType)MavlinkFields[4].Type), new GeneratedMavlinkMessageNoValidationRule(),
+
+		new("ConnectionType", new GeneratedMavlinkMessageFieldEnumType("byte", GeneratedEnums[0], (MavlinkMessageFieldEnumType)MavlinkFields[4].Type), new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "ConnectionType"), MavlinkFields[4]),
-		new GeneratedMavlinkMessageField("Info", new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")), new GeneratedMavlinkMessageNoValidationRule(),
+
+		new("Info", new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")), new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Info"), MavlinkFields[5]),
-		new GeneratedMavlinkMessageField("FailureFlags", new GeneratedMavlinkMessageFieldArrayEnumType("ushort", GeneratedEnums[1], 4,
-				(MavlinkMessageFieldEnumType)MavlinkFields[6].Type), new GeneratedMavlinkMessageNoValidationRule(),
-			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort[]"), "FailureFlags"), MavlinkFields[6]),
-		new GeneratedMavlinkMessageField("ErrorCount", new GeneratedMavlinkMessageFieldArrayType("uint", 4, new MavlinkMessageFieldType("uint32_t[4]")), new GeneratedMavlinkMessageNoValidationRule(),
-			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint[]"), "ErrorCount"), MavlinkFields[7]),
-		new GeneratedMavlinkMessageField("Temperature", new GeneratedMavlinkMessageFieldArrayType("short", 4, new MavlinkMessageFieldType("int16_t[4]")), new GeneratedMavlinkMessagePerElementValidationRule("[INT16_MAX]"),
-			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("short[]"), "Temperature"), MavlinkFields[8])
+
+		new("FailureFlags", new GeneratedMavlinkMessageFieldArrayType(new GeneratedMavlinkMessageFieldEnumType("ushort", GeneratedEnums[1], (MavlinkMessageFieldEnumType)MavlinkFields[6].Type), 4, MavlinkFields[6].Type),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(), SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort[]"), "FailureFlags"), MavlinkFields[6]),
+
+		new("ErrorCount", new GeneratedMavlinkMessageFieldArrayType(new GeneratedMavlinkMessageFieldPrimitiveType("uint", new MavlinkMessageFieldType("uint32_t")), 4, new MavlinkMessageFieldType("uint32_t[4]")),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(), SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint[]"), "ErrorCount"), MavlinkFields[7]),
+
+		new("Temperature", new GeneratedMavlinkMessageFieldArrayType(new GeneratedMavlinkMessageFieldPrimitiveType("short", new MavlinkMessageFieldType("int16_t")), 4, new MavlinkMessageFieldType("int16_t[4]")),
+			new GeneratedMavlinkMessagePerElementValidationRuleDefinition("INT16_MAX"), SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("short[]"), "Temperature"), MavlinkFields[8])
 	];
 
 	private static readonly ImmutableArray<MavlinkMessage> MavlinkMessages =
@@ -113,10 +117,12 @@ public class MavlinkMessagesGeneratorTests
 			var typeNameResolver = CreateTypeNameResolver(useObjectiveBitmask);
 			var deserializationStrategy = CreateDeserializationStrategy(useObjectiveBitmask, type);
 			var serializationStrategy = CreateSerializationStrategy(useObjectiveBitmask, type);
-			var mavlinkMessageFieldValidationRuleProvider = new DefaultMavlinkMessageFieldValidationRuleProvider();
+
+			var ruleDefinitionProvider = new MavlinkMessageFieldValidationRuleDefinitionProvider();
+			var placementProvider = new InvalidatabilityPlacementProvider();
 
 			return new MavlinkMessageGenerator(
-				new MavlinkMessageFieldInitPropertyGenerator(typeNameResolver, mavlinkMessageFieldValidationRuleProvider),
+				new MavlinkMessageFieldInitPropertyGenerator(typeNameResolver, ruleDefinitionProvider, placementProvider),
 				new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy),
 				new MavlinkMessageSerializationMethodGenerator(serializationStrategy)
 			);
@@ -356,7 +362,7 @@ public class MavlinkMessagesGeneratorTests
 		var generatedField = new GeneratedMavlinkMessageField(
 			generatedName: "Fixed",
 			generatedFieldType: generatedType,
-			validationRule: new GeneratedMavlinkMessageNoValidationRule(),
+			validationRule: new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			declarationSyntax: SyntaxFactory.PropertyDeclaration(
 				SyntaxFactory.ParseTypeName("ushort"),
 				SyntaxFactory.Identifier("Fixed")
@@ -401,7 +407,7 @@ public class MavlinkMessagesGeneratorTests
 		var generatedField = new GeneratedMavlinkMessageField(
 			generatedName: "Payload",
 			generatedFieldType: generatedType,
-			validationRule: new GeneratedMavlinkMessageNoValidationRule(),
+			validationRule: new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			declarationSyntax: SyntaxFactory.PropertyDeclaration(
 				SyntaxFactory.ParseTypeName("test"),
 				SyntaxFactory.Identifier("Payload")
@@ -432,7 +438,7 @@ public class MavlinkMessagesGeneratorTests
 	{
 		// Arrange
 		var enumType = new GeneratedMavlinkMessageFieldEnumType(
-			ConvertedType: "uint",
+			InnerConvertedType: "uint",
 			GeneratedEnum: new GeneratedMavlinkEnum(
 				@namespace: "TestNamespace",
 				generatedName: "MavSysStatusSensorExtended",
@@ -452,7 +458,7 @@ public class MavlinkMessagesGeneratorTests
 		var generatedField = new GeneratedMavlinkMessageField(
 			generatedName: "OnboardControlSensorsPresentExtended",
 			generatedFieldType: enumType,
-			validationRule: new GeneratedMavlinkMessageNoValidationRule(),
+			validationRule: new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			declarationSyntax: SyntaxFactory.PropertyDeclaration(
 				SyntaxFactory.ParseTypeName("MavSysStatusSensorExtended?"),
 				SyntaxFactory.Identifier("OnboardControlSensorsPresentExtended")
@@ -508,7 +514,7 @@ public class MavlinkMessagesGeneratorTests
 	{
 		// Arrange
 		var enumType = new GeneratedMavlinkMessageFieldEnumType(
-			ConvertedType: "byte",
+			InnerConvertedType: "byte",
 			GeneratedEnum: new GeneratedMavlinkEnum(
 				@namespace: "TestNamespace",
 				generatedName: "LimitModule",
@@ -528,7 +534,7 @@ public class MavlinkMessagesGeneratorTests
 		var generatedField = new GeneratedMavlinkMessageField(
 			generatedName: "ModsEnabled",
 			generatedFieldType: enumType,
-			validationRule: new GeneratedMavlinkMessageNoValidationRule(),
+			validationRule: new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			declarationSyntax: SyntaxFactory.PropertyDeclaration(
 				SyntaxFactory.ParseTypeName("enumType"),
 				SyntaxFactory.Identifier("enumType")
@@ -564,8 +570,8 @@ public class MavlinkMessagesGeneratorTests
 	public async Task CreateBufferDeserializationMethod_WithEnumArrayWithoutBitmask_ShouldGenerateDeserialization()
 	{
 		// Arrange
-		var enumType = new GeneratedMavlinkMessageFieldArrayEnumType(
-			ConvertedType: "ushort",
+		var enumElementType = new GeneratedMavlinkMessageFieldEnumType(
+			InnerConvertedType: "ushort",
 			GeneratedEnum: new GeneratedMavlinkEnum(
 				@namespace: "TestNamespace",
 				generatedName: "MavCmd",
@@ -579,14 +585,19 @@ public class MavlinkMessagesGeneratorTests
 					entries: ImmutableArray<MavlinkEnumEntry>.Empty,
 					deprecated: null)
 			),
-			ArrayLength: 5,
 			Original: new MavlinkMessageFieldEnumType("uint16", "MAV_CMD")
+		);
+
+		var arrayEnumType = new GeneratedMavlinkMessageFieldArrayType(
+			ElementType: enumElementType,
+			ArrayLength: 5,
+			Original: new MavlinkMessageFieldType("uint16_t[5]")
 		);
 
 		var generatedField = new GeneratedMavlinkMessageField(
 			generatedName: "Command",
-			generatedFieldType: enumType,
-			validationRule: new GeneratedMavlinkMessageNoValidationRule(),
+			generatedFieldType: arrayEnumType,
+			validationRule: new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			declarationSyntax: SyntaxFactory.PropertyDeclaration(
 				SyntaxFactory.ParseTypeName("command"),
 				SyntaxFactory.Identifier("test")
@@ -623,7 +634,7 @@ public class MavlinkMessagesGeneratorTests
 	{
 		// Arrange
 		var floatGeneratedField = ImmutableArray.Create(new GeneratedMavlinkMessageField("SomeFloat", new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
-			new GeneratedMavlinkMessageWholeFieldValidationRule("NaN"),
+			new GeneratedMavlinkMessageWholeFieldValidationRuleDefinition("NaN"),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "SomeFloat"), MavlinkFields[0] with { Invalid = "NaN" }));
 		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Buffer);
 		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
@@ -651,22 +662,22 @@ public class MavlinkMessagesGeneratorTests
 		{
 			new GeneratedMavlinkMessageField("SomeUshort",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ushort", new MavlinkMessageFieldType("uint16_t")),
-				new GeneratedMavlinkMessageWholeFieldValidationRule("UINT16_MAX"),
+				new GeneratedMavlinkMessageWholeFieldValidationRuleDefinition("UINT16_MAX"),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeUshort"),
 				MavlinkFields[0] with { Invalid = "UINT16_MAX" }),
 			new GeneratedMavlinkMessageField("SomeShort",
 				new GeneratedMavlinkMessageFieldPrimitiveType("short", new MavlinkMessageFieldType("int16_t")),
-				new GeneratedMavlinkMessageWholeFieldValidationRule("INT16_MAX"),
+				new GeneratedMavlinkMessageWholeFieldValidationRuleDefinition("INT16_MAX"),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("short"), "SomeShort"),
 				MavlinkFields[0] with { Invalid = "INT16_MAX" }),
 			new GeneratedMavlinkMessageField("SomeByte",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-				new GeneratedMavlinkMessageWholeFieldValidationRule("UINT8_MAX"),
+				new GeneratedMavlinkMessageWholeFieldValidationRuleDefinition("UINT8_MAX"),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "SomeByte"),
 				MavlinkFields[0] with { Invalid = "UINT8_MAX" }),
 			new GeneratedMavlinkMessageField("SomeSbyte",
 				new GeneratedMavlinkMessageFieldPrimitiveType("sbyte", new MavlinkMessageFieldType("int8_t")),
-				new GeneratedMavlinkMessageWholeFieldValidationRule("INT8_MAX"),
+				new GeneratedMavlinkMessageWholeFieldValidationRuleDefinition("INT8_MAX"),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("sbyte"), "SomeSbyte"),
 				MavlinkFields[0] with { Invalid = "INT8_MAX" })
 		});
@@ -696,7 +707,7 @@ public class MavlinkMessagesGeneratorTests
 		var sb = new StringBuilder();
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeByte",
 			new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "SomeByte"),
 			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 		int offset = 0;
@@ -722,7 +733,7 @@ public class MavlinkMessagesGeneratorTests
 		var sb = new StringBuilder();
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeUInt",
 			new GeneratedMavlinkMessageFieldPrimitiveType("uint", new MavlinkMessageFieldType("uint32_t")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint"), "SomeUInt"),
 			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 		int offset = 0;
@@ -748,7 +759,7 @@ public class MavlinkMessagesGeneratorTests
 		var sb = new StringBuilder();
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeULong",
 			new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ulong"), "SomeULong"),
 			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 		int offset = 0;
@@ -774,7 +785,7 @@ public class MavlinkMessagesGeneratorTests
 		var sb = new StringBuilder();
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeUShort",
 			new GeneratedMavlinkMessageFieldPrimitiveType("ushort", new MavlinkMessageFieldType("uint16_t")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeUShort"),
 			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 		int offset = 0;
@@ -798,11 +809,17 @@ public class MavlinkMessagesGeneratorTests
 	{
 		// Arrange
 		var sb = new StringBuilder();
-		var bitmaskField = new GeneratedMavlinkMessageField("SomeUShort",
-			new GeneratedMavlinkMessageFieldArrayType("ushort", 4, new MavlinkMessageFieldType("uint16_t[4]")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+		var bitmaskField = new GeneratedMavlinkMessageField(
+			"SomeUShort",
+			new GeneratedMavlinkMessageFieldArrayType(
+				new GeneratedMavlinkMessageFieldPrimitiveType("ushort", new MavlinkMessageFieldType("uint16_t")),
+				4,
+				new MavlinkMessageFieldType("uint16_t[4]")
+			),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeUShort"),
-			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }
+		);
 		int offset = 0;
 
 		var deserializationFieldGenerator = new MavlinkObjectiveBitmaskFieldBufferDeserializationStrategy();
@@ -836,7 +853,7 @@ var someUShortArray = System.Collections.Immutable.ImmutableArray.CreateRange(te
 			new GeneratedMavlinkMessageFieldEnumType("ushort",
 				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
 				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
 			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
@@ -862,14 +879,25 @@ var someUShortArray = System.Collections.Immutable.ImmutableArray.CreateRange(te
 		// Arrange
 		var sb = new StringBuilder();
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		var bitmaskField = new GeneratedMavlinkMessageField("SomeEnumArray",
-			new GeneratedMavlinkMessageFieldArrayEnumType("ushort",
-				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
-				4,
-				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+		var enumElementType = new GeneratedMavlinkMessageFieldEnumType(
+			InnerConvertedType: "ushort",
+			GeneratedEnum: new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
+			Original: new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")
+		);
+
+		var arrayEnumType = new GeneratedMavlinkMessageFieldArrayType(
+			ElementType: enumElementType,
+			ArrayLength: 4,
+			Original: new MavlinkMessageFieldType("uint16_t[4]")
+		);
+
+		var bitmaskField = new GeneratedMavlinkMessageField(
+			"SomeEnumArray",
+			arrayEnumType,
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
-			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }
+		);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		int offset = 0;
 
@@ -939,7 +967,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var generatedField = new GeneratedMavlinkMessageField(
 			generatedName: "Fixed",
 			generatedFieldType: fieldType,
-			validationRule: new GeneratedMavlinkMessageNoValidationRule(),
+			validationRule: new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			declarationSyntax: SyntaxFactory.PropertyDeclaration(
 				SyntaxFactory.ParseTypeName("ushort"),
 				SyntaxFactory.Identifier("Fixed")),
@@ -988,7 +1016,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var generatedField = new GeneratedMavlinkMessageField(
 			generatedName: "Payload",
 			generatedFieldType: fieldType,
-			validationRule: new GeneratedMavlinkMessageNoValidationRule(),
+			validationRule: new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			declarationSyntax: SyntaxFactory.PropertyDeclaration(
 				SyntaxFactory.ParseTypeName("test"),
 				SyntaxFactory.Identifier("Payload")
@@ -1039,7 +1067,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var generatedField = new GeneratedMavlinkMessageField(
 			generatedName: "OnboardControlSensorsPresentExtended",
 			generatedFieldType: enumType,
-			validationRule: new GeneratedMavlinkMessageNoValidationRule(),
+			validationRule: new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			declarationSyntax: SyntaxFactory.PropertyDeclaration(
 				SyntaxFactory.ParseTypeName("MavSysStatusSensorExtended?"),
 				SyntaxFactory.Identifier("OnboardControlSensorsPresentExtended")
@@ -1123,7 +1151,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var generatedField = new GeneratedMavlinkMessageField(
 			generatedName: "ModsEnabled",
 			generatedFieldType: enumType,
-			validationRule: new GeneratedMavlinkMessageNoValidationRule(),
+			validationRule: new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			declarationSyntax: SyntaxFactory.PropertyDeclaration(
 				SyntaxFactory.ParseTypeName("LimitModule?"),
 				SyntaxFactory.Identifier("ModsEnabled")
@@ -1168,9 +1196,9 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 	public async Task CreateSpanDeserializationMethod_WithEnumArrayWithoutBitmask_ShouldGenerateDeserialization()
 	{
 		// Arrange
-		var enumType = new GeneratedMavlinkMessageFieldArrayEnumType(
-			"ushort",
-			new GeneratedMavlinkEnum(
+		var enumElementType = new GeneratedMavlinkMessageFieldEnumType(
+			InnerConvertedType: "ushort",
+			GeneratedEnum: new GeneratedMavlinkEnum(
 				@namespace: "TestNamespace",
 				generatedName: "MavCmd",
 				null,
@@ -1178,14 +1206,19 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 				declarationSyntax: SyntaxFactory.EnumDeclaration("MavCmd"),
 				original: new MavlinkEnum("MAV_CMD", null, null, ImmutableArray<MavlinkEnumEntry>.Empty, null)
 			),
-			5,
-			new MavlinkMessageFieldEnumType("uint16", "MAV_CMD")
+			Original: new MavlinkMessageFieldEnumType("uint16", "MAV_CMD")
+		);
+
+		var enumType = new GeneratedMavlinkMessageFieldArrayType(
+			ElementType: enumElementType,
+			ArrayLength: 5,
+			Original: new MavlinkMessageFieldType("uint16_t[5]")
 		);
 
 		var generatedField = new GeneratedMavlinkMessageField(
 			generatedName: "Command",
 			generatedFieldType: enumType,
-			validationRule: new GeneratedMavlinkMessageNoValidationRule(),
+			validationRule: new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			declarationSyntax: SyntaxFactory.PropertyDeclaration(
 				SyntaxFactory.ParseTypeName("command"),
 				SyntaxFactory.Identifier("test")
@@ -1231,7 +1264,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 	{
 		// Arrange
 		var floatGeneratedField = ImmutableArray.Create(new GeneratedMavlinkMessageField("SomeFloat", new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
-			new GeneratedMavlinkMessageWholeFieldValidationRule("NaN"),
+			new GeneratedMavlinkMessageWholeFieldValidationRuleDefinition("NaN"),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "SomeFloat"), MavlinkFields[0] with { Invalid = "NaN" }));
 		var deserializationStrategy = TestMavlinkGeneratorFactory.CreateDeserializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
 		var deserializationMethodGenerator = new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy);
@@ -1259,22 +1292,22 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		[
 			new GeneratedMavlinkMessageField("SomeUshort",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ushort", new MavlinkMessageFieldType("uint16")),
-				new GeneratedMavlinkMessageWholeFieldValidationRule("UINT16_MAX"),
+				new GeneratedMavlinkMessageWholeFieldValidationRuleDefinition("UINT16_MAX"),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeUshort"),
 				MavlinkFields[0] with { Invalid = "UINT16_MAX" }),
 			new GeneratedMavlinkMessageField("SomeShort",
 				new GeneratedMavlinkMessageFieldPrimitiveType("short", new MavlinkMessageFieldType("int16")),
-				new GeneratedMavlinkMessageWholeFieldValidationRule("INT16_MAX"),
+				new GeneratedMavlinkMessageWholeFieldValidationRuleDefinition("INT16_MAX"),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("short"), "SomeShort"),
 				MavlinkFields[0] with { Invalid = "INT16_MAX" }),
 			new GeneratedMavlinkMessageField("SomeByte",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8")),
-				new GeneratedMavlinkMessageWholeFieldValidationRule("UINT8_MAX"),
+				new GeneratedMavlinkMessageWholeFieldValidationRuleDefinition("UINT8_MAX"),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "SomeByte"),
 				MavlinkFields[0] with { Invalid = "UINT8_MAX" }),
 			new GeneratedMavlinkMessageField("SomeSbyte",
 				new GeneratedMavlinkMessageFieldPrimitiveType("sbyte", new MavlinkMessageFieldType("int8")),
-				new GeneratedMavlinkMessageWholeFieldValidationRule("INT8_MAX"),
+				new GeneratedMavlinkMessageWholeFieldValidationRuleDefinition("INT8_MAX"),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("sbyte"), "SomeSbyte"),
 				MavlinkFields[0] with { Invalid = "INT8_MAX" })
 		]);
@@ -1304,7 +1337,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var sb = new StringBuilder();
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeByte",
 			new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "SomeByte"),
 			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 		int offset = 0;
@@ -1329,7 +1362,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var sb = new StringBuilder();
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeUInt",
 			new GeneratedMavlinkMessageFieldPrimitiveType("uint", new MavlinkMessageFieldType("uint32_t")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint"), "SomeUInt"),
 			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 		int offset = 0;
@@ -1354,7 +1387,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var sb = new StringBuilder();
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeULong",
 			new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ulong"), "SomeULong"),
 			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 		int offset = 0;
@@ -1379,7 +1412,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var sb = new StringBuilder();
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeUShort",
 			new GeneratedMavlinkMessageFieldPrimitiveType("ushort", new MavlinkMessageFieldType("uint16_t")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeUShort"),
 			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 		int offset = 0;
@@ -1402,11 +1435,17 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 	{
 		// Arrange
 		var sb = new StringBuilder();
-		var bitmaskField = new GeneratedMavlinkMessageField("SomeUShort",
-			new GeneratedMavlinkMessageFieldArrayType("ushort", 4, new MavlinkMessageFieldType("uint16_t[4]")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+		var bitmaskField = new GeneratedMavlinkMessageField(
+			"SomeUShort",
+			new GeneratedMavlinkMessageFieldArrayType(
+				new GeneratedMavlinkMessageFieldPrimitiveType("ushort", new MavlinkMessageFieldType("uint16_t")),
+				4,
+				new MavlinkMessageFieldType("uint16_t[4]")
+			),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeUShort"),
-			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }
+		);
 		int offset = 0;
 
 		var deserializationFieldGenerator = new MavlinkObjectiveBitmaskFieldSpanDeserializationStrategy();
@@ -1440,7 +1479,7 @@ var someUShortArray = System.Collections.Immutable.ImmutableArray.CreateRange(te
 			new GeneratedMavlinkMessageFieldEnumType("ushort",
 				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
 				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
 			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
@@ -1465,14 +1504,25 @@ var someUShortArray = System.Collections.Immutable.ImmutableArray.CreateRange(te
 		// Arrange
 		var sb = new StringBuilder();
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		var bitmaskField = new GeneratedMavlinkMessageField("SomeEnumArray",
-			new GeneratedMavlinkMessageFieldArrayEnumType("ushort",
-				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
-				4,
-				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+		var enumElementType = new GeneratedMavlinkMessageFieldEnumType(
+			InnerConvertedType: "ushort",
+			GeneratedEnum: new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
+			Original: new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")
+		);
+
+		var arrayEnumType = new GeneratedMavlinkMessageFieldArrayType(
+			ElementType: enumElementType,
+			ArrayLength: 4,
+			Original: new MavlinkMessageFieldType("uint16_t[4]")
+		);
+
+		var bitmaskField = new GeneratedMavlinkMessageField(
+			"SomeEnumArray",
+			arrayEnumType,
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
-			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }
+		);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		int offset = 0;
 
@@ -1529,17 +1579,17 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		{
 			new GeneratedMavlinkMessageField("Index",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"),
 				MavlinkFields[0]),
 			new GeneratedMavlinkMessageField("TimeUsec",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint64_t"), "TimeUsec"),
 				MavlinkFields[1]),
 			new GeneratedMavlinkMessageField("FirstExtension",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
 				new MavlinkMessageField(
 					new MavlinkMessageFieldType("uint8_t"),
@@ -1578,17 +1628,17 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		{
 			new GeneratedMavlinkMessageField("Index",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"),
 				MavlinkFields[0]),
 			new GeneratedMavlinkMessageField("TimeUsec",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint64_t"), "TimeUsec"),
 				MavlinkFields[1]),
 			new GeneratedMavlinkMessageField("FirstExtension",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
 				new MavlinkMessageField(
 					new MavlinkMessageFieldType("uint8_t"),
@@ -1597,8 +1647,12 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 					MavlinkSystemUnit.Empty,
 					false, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("SecondExtension",
-				new GeneratedMavlinkMessageFieldArrayType("ulong", 4, new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageFieldArrayType(
+					new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
+					4,
+					new MavlinkMessageFieldType("uint64_t[4]")
+				),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
 				new MavlinkMessageField(
 					new MavlinkMessageFieldType("uint64_t"),
@@ -1628,17 +1682,17 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		{
 			new GeneratedMavlinkMessageField("Index",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"),
 				MavlinkFields[0]),
 			new GeneratedMavlinkMessageField("TimeUsec",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint64_t"), "TimeUsec"),
 				MavlinkFields[1]),
 			new GeneratedMavlinkMessageField("FirstExtension",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
 				new MavlinkMessageField(
 					new MavlinkMessageFieldType("uint8_t"),
@@ -1654,7 +1708,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 						SyntaxFactory.EnumDeclaration("Test"),
 						new MavlinkEnum("Test", null, null, ImmutableArray<MavlinkEnumEntry>.Empty, null)),
 					new MavlinkMessageFieldEnumType("uint64_t", "TestEnum")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
 				new MavlinkMessageField(
 					new MavlinkMessageFieldEnumType("uint64_t", "TestEnum"),
@@ -1680,21 +1734,33 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		// Arrange
 		var serializationStrategy = TestMavlinkGeneratorFactory.CreateSerializationStrategy(useObjectiveBitmask: false, SerializationType.Buffer);
 		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(serializationStrategy);
+		var escFailureFlagsElementType = new GeneratedMavlinkMessageFieldEnumType(
+			InnerConvertedType: "ushort",
+			GeneratedEnum: GeneratedEnums[1],
+			Original: new MavlinkMessageFieldEnumType("uint16_t", "ESC_FAILURE_FLAGS")
+		);
+
+		var escFailureFlagsArrayType = new GeneratedMavlinkMessageFieldArrayType(
+			ElementType: escFailureFlagsElementType,
+			ArrayLength: 4,
+			Original: new MavlinkMessageFieldEnumType("uint16_t[4]", "ESC_FAILURE_FLAGS")
+		);
+
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"),
 				MavlinkFields[0]),
 			new GeneratedMavlinkMessageField("FailureFlags",
-				new GeneratedMavlinkMessageFieldArrayEnumType("ushort", GeneratedEnums[1], 4, new MavlinkMessageFieldEnumType("uint16_t[4]", "ESC_FAILURE_FLAGS")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				escFailureFlagsArrayType,
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"),
 				MavlinkFields[6]),
 			new GeneratedMavlinkMessageField("FirstExtension",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
 				new MavlinkMessageField(
 					new MavlinkMessageFieldType("uint8_t"),
@@ -1703,8 +1769,8 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 					MavlinkSystemUnit.Empty,
 					false, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("SecondExtension",
-				new GeneratedMavlinkMessageFieldArrayEnumType("ushort", GeneratedEnums[1], 4, new MavlinkMessageFieldEnumType("uint16_t[4]", "ESC_FAILURE_FLAGS")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				escFailureFlagsArrayType,
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"),
 				MavlinkFields[6] with { IsRequired = false })
 		}.ToImmutableArray();
@@ -1726,7 +1792,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var sb = new StringBuilder();
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeByte",
 			new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "SomeByte"),
 			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 		int offset = 0;
@@ -1749,7 +1815,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var sb = new StringBuilder();
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeUInt",
 			new GeneratedMavlinkMessageFieldPrimitiveType("uint", new MavlinkMessageFieldType("uint32_t")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint"), "SomeUInt"),
 			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 		int offset = 0;
@@ -1772,7 +1838,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var sb = new StringBuilder();
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeULong",
 			new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ulong"), "SomeULong"),
 			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 		int offset = 0;
@@ -1795,7 +1861,7 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 		var sb = new StringBuilder();
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeUShort",
 			new GeneratedMavlinkMessageFieldPrimitiveType("ushort", new MavlinkMessageFieldType("uint16_t")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeUShort"),
 			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 		int offset = 0;
@@ -1816,11 +1882,17 @@ var someEnumArrayArray = System.Collections.Immutable.ImmutableArray.CreateRange
 	{
 		// Arrange
 		var sb = new StringBuilder();
-		var bitmaskField = new GeneratedMavlinkMessageField("SomeUShort",
-			new GeneratedMavlinkMessageFieldArrayType("ushort", 4, new MavlinkMessageFieldType("uint16_t[4]")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+		var bitmaskField = new GeneratedMavlinkMessageField(
+			"SomeUShort",
+			new GeneratedMavlinkMessageFieldArrayType(
+				new GeneratedMavlinkMessageFieldPrimitiveType("ushort", new MavlinkMessageFieldType("uint16_t")),
+				4,
+				new MavlinkMessageFieldType("uint16_t[4]")
+			),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeUShort"),
-			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }
+		);
 		int offset = 0;
 
 		var serializationFieldGenerator = new MavlinkObjectiveBitmaskFieldBufferSerializationStrategy();
@@ -1849,7 +1921,7 @@ Buffer.BlockCopy(serializedSomeUShort, 0, buffer, 0, 8);", code);
 			new GeneratedMavlinkMessageFieldEnumType("ushort",
 				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
 				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
 			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
@@ -1872,14 +1944,25 @@ Buffer.BlockCopy(serializedSomeUShort, 0, buffer, 0, 8);", code);
 		// Arrange
 		var sb = new StringBuilder();
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		var bitmaskField = new GeneratedMavlinkMessageField("SomeEnumArray",
-			new GeneratedMavlinkMessageFieldArrayEnumType("ushort",
-				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
-				4,
-				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+		var enumElementType = new GeneratedMavlinkMessageFieldEnumType(
+			InnerConvertedType: "ushort",
+			GeneratedEnum: new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
+			Original: new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")
+		);
+
+		var arrayEnumType = new GeneratedMavlinkMessageFieldArrayType(
+			ElementType: enumElementType,
+			ArrayLength: 4,
+			Original: new MavlinkMessageFieldType("uint16_t[4]")
+		);
+
+		var bitmaskField = new GeneratedMavlinkMessageField(
+			"SomeEnumArray",
+			arrayEnumType,
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
-			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }
+		);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		int offset = 0;
 
@@ -1931,17 +2014,17 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		{
 			new GeneratedMavlinkMessageField("Index",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"),
 				MavlinkFields[0]),
 			new GeneratedMavlinkMessageField("TimeUsec",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint64_t"), "TimeUsec"),
 				MavlinkFields[1]),
 			new GeneratedMavlinkMessageField("FirstExtension",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
 				new MavlinkMessageField(
 					new MavlinkMessageFieldType("uint8_t"),
@@ -1969,21 +2052,24 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		// Arrange
 		var serializationStrategy = TestMavlinkGeneratorFactory.CreateSerializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
 		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(serializationStrategy);
+		var ulongArrayElementType = new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t"));
+		var ulongArrayType = new GeneratedMavlinkMessageFieldArrayType(ulongArrayElementType, 4, new MavlinkMessageFieldType("uint64_t[4]"));
+
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"),
 				MavlinkFields[0]),
 			new GeneratedMavlinkMessageField("TimeUsec",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint64_t"), "TimeUsec"),
 				MavlinkFields[1]),
 			new GeneratedMavlinkMessageField("FirstExtension",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
 				new MavlinkMessageField(
 					new MavlinkMessageFieldType("uint8_t"),
@@ -1991,20 +2077,20 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 					MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty,
 					false, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("SecondExtension",
-				new GeneratedMavlinkMessageFieldArrayType("ulong", 4, new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				ulongArrayType,
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
 				new MavlinkMessageField(
-					new MavlinkMessageFieldType("uint64_t"),
+					new MavlinkMessageFieldType("uint64_t[4]"),
 					"Bank", "",
 					MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty,
 					false, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("ThirdExtension",
-				new GeneratedMavlinkMessageFieldArrayType("ulong", 4, new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				ulongArrayType,
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
 				new MavlinkMessageField(
-					new MavlinkMessageFieldType("uint64_t"),
+					new MavlinkMessageFieldType("uint64_t[4]"),
 					"Bank", "",
 					MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty,
 					false, null, null, null, null, null, null, null))
@@ -2030,17 +2116,17 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		{
 			new GeneratedMavlinkMessageField("Index",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"),
 				MavlinkFields[0]),
 			new GeneratedMavlinkMessageField("TimeUsec",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint64_t"), "TimeUsec"),
 				MavlinkFields[1]),
 			new GeneratedMavlinkMessageField("FirstExtension",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
 				new MavlinkMessageField(
 					new MavlinkMessageFieldType("uint8_t"),
@@ -2055,7 +2141,7 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 						SyntaxFactory.EnumDeclaration("Test"),
 						new MavlinkEnum("Test", null, null, ImmutableArray<MavlinkEnumEntry>.Empty, null)),
 					new MavlinkMessageFieldEnumType("uint64_t", "TestEnum")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
 				new MavlinkMessageField(
 					new MavlinkMessageFieldEnumType("uint64_t", "TestEnum"),
@@ -2080,21 +2166,33 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		// Arrange
 		var serializationStrategy = TestMavlinkGeneratorFactory.CreateSerializationStrategy(useObjectiveBitmask: false, SerializationType.Span);
 		var serializeMethodGenerator = new MavlinkMessageSerializationMethodGenerator(serializationStrategy);
+		var escFailureFlagsElementType = new GeneratedMavlinkMessageFieldEnumType(
+			InnerConvertedType: "ushort",
+			GeneratedEnum: GeneratedEnums[1],
+			Original: new MavlinkMessageFieldEnumType("uint16_t", "ESC_FAILURE_FLAGS")
+		);
+
+		var escFailureFlagsArrayType = new GeneratedMavlinkMessageFieldArrayType(
+			ElementType: escFailureFlagsElementType,
+			ArrayLength: 4,
+			Original: new MavlinkMessageFieldEnumType("uint16_t[4]", "ESC_FAILURE_FLAGS")
+		);
+
 		var testFields = new List<GeneratedMavlinkMessageField>()
 		{
 			new GeneratedMavlinkMessageField("Index",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Index"),
 				MavlinkFields[0]),
 			new GeneratedMavlinkMessageField("FailureFlags",
-				new GeneratedMavlinkMessageFieldArrayEnumType("ushort", GeneratedEnums[1], 4, new MavlinkMessageFieldEnumType("uint16_t[4]", "ESC_FAILURE_FLAGS")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				escFailureFlagsArrayType,
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort[]"), "Index"),
 				MavlinkFields[6]),
 			new GeneratedMavlinkMessageField("FirstExtension",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Bank"),
 				new MavlinkMessageField(
 					new MavlinkMessageFieldType("uint8_t"),
@@ -2102,8 +2200,8 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 					MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.Empty,
 					false, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("SecondExtension",
-				new GeneratedMavlinkMessageFieldArrayEnumType("ushort", GeneratedEnums[1], 4, new MavlinkMessageFieldEnumType("uint16_t[4]", "ESC_FAILURE_FLAGS")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				escFailureFlagsArrayType,
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort[]"), "Index"),
 				MavlinkFields[6] with { IsRequired = false })
 		}.ToImmutableArray();
@@ -2126,7 +2224,7 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		var sb = new StringBuilder();
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeByte",
 			new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "SomeByte"),
 			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 		int offset = 0;
@@ -2149,7 +2247,7 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		var sb = new StringBuilder();
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeUInt",
 			new GeneratedMavlinkMessageFieldPrimitiveType("uint", new MavlinkMessageFieldType("uint32_t")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint"), "SomeUInt"),
 			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 		int offset = 0;
@@ -2172,7 +2270,7 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		var sb = new StringBuilder();
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeULong",
 			new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ulong"), "SomeULong"),
 			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 		int offset = 0;
@@ -2195,7 +2293,7 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		var sb = new StringBuilder();
 		var bitmaskField = new GeneratedMavlinkMessageField("SomeUShort",
 			new GeneratedMavlinkMessageFieldPrimitiveType("ushort", new MavlinkMessageFieldType("uint16_t")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeUShort"),
 			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 		int offset = 0;
@@ -2216,11 +2314,17 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 	{
 		// Arrange
 		var sb = new StringBuilder();
-		var bitmaskField = new GeneratedMavlinkMessageField("SomeUShort",
-			new GeneratedMavlinkMessageFieldArrayType("ushort", 4, new MavlinkMessageFieldType("uint16_t[4]")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+		var bitmaskField = new GeneratedMavlinkMessageField(
+			"SomeUShort",
+			new GeneratedMavlinkMessageFieldArrayType(
+				new GeneratedMavlinkMessageFieldPrimitiveType("ushort", new MavlinkMessageFieldType("uint16_t")),
+				4,
+				new MavlinkMessageFieldType("uint16_t[4]")
+			),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeUShort"),
-			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+			MavlinkFields[0] with { Display = MavlinkMessageFieldDisplay.Bitmask }
+		);
 		int offset = 0;
 
 		var serializationFieldGenerator = new MavlinkObjectiveBitmaskFieldSpanSerializationStrategy();
@@ -2247,7 +2351,7 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 			new GeneratedMavlinkMessageFieldEnumType("ushort",
 				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
 				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
 			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
@@ -2270,14 +2374,25 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		// Arrange
 		var sb = new StringBuilder();
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		var bitmaskField = new GeneratedMavlinkMessageField("SomeEnumArray",
-			new GeneratedMavlinkMessageFieldArrayEnumType("ushort",
-				new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
-				4,
-				new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")),
-			new GeneratedMavlinkMessageNoValidationRule(),
+		var enumElementType = new GeneratedMavlinkMessageFieldEnumType(
+			InnerConvertedType: "ushort",
+			GeneratedEnum: new GeneratedMavlinkEnum("TestNamespace", "SomeEnumFlags", null, [], null, null),
+			Original: new MavlinkMessageFieldEnumType("uint16_t", "SomeEnumFlags")
+		);
+
+		var arrayEnumType = new GeneratedMavlinkMessageFieldArrayType(
+			ElementType: enumElementType,
+			ArrayLength: 4,
+			Original: new MavlinkMessageFieldType("uint16_t[4]")
+		);
+
+		var bitmaskField = new GeneratedMavlinkMessageField(
+			"SomeEnumArray",
+			arrayEnumType,
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 			SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "SomeEnum"),
-			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }); // Bitmask field
+			MavlinkFields[4] with { Display = MavlinkMessageFieldDisplay.Bitmask }
+		);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		int offset = 0;
 
@@ -2305,57 +2420,57 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		var fields = ImmutableArray.Create(
 			new GeneratedMavlinkMessageField("target_system",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "TargetSystem"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "target_system", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("target_component",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "TargetComponent"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "target_component", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("command",
 				new GeneratedMavlinkMessageFieldEnumType("ushort", GeneratedEnums[0], new MavlinkMessageFieldEnumType("uint16_t", "command")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "Command"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint16_t"), "command", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("confirmation",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Confirmation"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "confirmation", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("param1",
 				new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param1"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("float"), "param1", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("param2",
 				new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param2"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("float"), "param2", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("param3",
 				new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param3"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("float"), "param3", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("param4",
 				new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param4"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("float"), "param4", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("param5",
 				new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param5"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("float"), "param5", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("param6",
 				new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param6"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("float"), "param6", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("param7",
 				new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param7"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("float"), "param7", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null))
 		).ToImmutableArray();
@@ -2380,77 +2495,77 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		var fields = ImmutableArray.Create(
 			new GeneratedMavlinkMessageField("target_system",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "TargetSystem"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "target_system", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("target_component",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "TargetComponent"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "target_component", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("seq",
 				new GeneratedMavlinkMessageFieldPrimitiveType("ushort", new MavlinkMessageFieldType("uint16_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "Seq"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint16_t"), "seq", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("frame",
 				new GeneratedMavlinkMessageFieldEnumType("byte", GeneratedEnums[0], new MavlinkMessageFieldEnumType("byte", "SomeEnum")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Frame"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "frame", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("command",
 				new GeneratedMavlinkMessageFieldEnumType("ushort", GeneratedEnums[0], new MavlinkMessageFieldEnumType("ushort", "SomeEnum")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ushort"), "Command"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint16_t"), "command", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("current",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Current"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "current", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("autocontinue",
 				new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Autocontinue"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "autocontinue", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("param1",
 				new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param1"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("float"), "param1", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("param2",
 				new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param2"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("float"), "param2", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("param3",
 				new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param3"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("float"), "param3", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("param4",
 				new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Param4"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("float"), "param4", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("x",
 				new GeneratedMavlinkMessageFieldPrimitiveType("int", new MavlinkMessageFieldType("int32_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("int"), "X"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("int32_t"), "x", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("y",
 				new GeneratedMavlinkMessageFieldPrimitiveType("int", new MavlinkMessageFieldType("int32_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("int"), "Y"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("int32_t"), "y", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("z",
 				new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float"), "Z"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("float"), "z", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, true, null, null, null, null, null, null, null)),
 			new GeneratedMavlinkMessageField("mission_type",
 				new GeneratedMavlinkMessageFieldEnumType("byte", GeneratedEnums[0], new MavlinkMessageFieldEnumType("byte", "SomeEnum")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "MissionType"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "mission_type", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, false, null, null, null, null, null, null, null))
 		).ToImmutableArray();
@@ -2474,27 +2589,32 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		// Arrange
 		var fields = ImmutableArray.Create(
 			new GeneratedMavlinkMessageField("time_usec", new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("ulong"), "TimeUsec"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint64_t"),
 					"time_usec", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
 					null, null, null, null, null, null, null)
 			),
-			new GeneratedMavlinkMessageField("controls", new GeneratedMavlinkMessageFieldArrayType("float", 16, new MavlinkMessageFieldEnumType("float", "SomeEnum")),
-			new GeneratedMavlinkMessageNoValidationRule(), SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float[]"), "Controls"),
+			new GeneratedMavlinkMessageField("controls",
+				new GeneratedMavlinkMessageFieldArrayType(
+					new GeneratedMavlinkMessageFieldPrimitiveType("float", new MavlinkMessageFieldType("float")),
+					16,
+					new MavlinkMessageFieldType("float[16]")
+				),
+			new GeneratedMavlinkMessageNoValidationRuleDefinition(), SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("float[]"), "Controls"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("float[16]"),
 					"controls", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
 					null, null, null, null, null, null, null)
 			),
 			new GeneratedMavlinkMessageField("mode", new GeneratedMavlinkMessageFieldEnumType("byte", GeneratedEnums[0], new MavlinkMessageFieldEnumType("byte", "SomeEnum")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Mode"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"),
 					"mode", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
 					null, null, null, null, null, null, null)
 			),
 			new GeneratedMavlinkMessageField("flags", new GeneratedMavlinkMessageFieldPrimitiveType("ulong", new MavlinkMessageFieldType("uint64_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Flags"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint64_t"),
 					"flags", null, MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
@@ -2521,42 +2641,42 @@ Buffer.BlockCopy(serializedSomeEnumArray, 0, buffer, 0, 8);", code);
 		// Arrange
 		var fields = ImmutableArray.Create(
 			new GeneratedMavlinkMessageField("type", new GeneratedMavlinkMessageFieldEnumType("byte", GeneratedEnums[0], new MavlinkMessageFieldEnumType("byte", "SomeEnum")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Type"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "type", "MAV_TYPE",
 					MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
 					null, null, null, null, null, null, null)
 			),
 			new GeneratedMavlinkMessageField("autopilot", new GeneratedMavlinkMessageFieldEnumType("byte", GeneratedEnums[0], new MavlinkMessageFieldEnumType("byte", "SomeEnum")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "Autopilot"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "autopilot", "MAV_AUTOPILOT",
 					MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
 					null, null, null, null, null, null, null)
 			),
 			new GeneratedMavlinkMessageField("base_mode", new GeneratedMavlinkMessageFieldEnumType("byte", GeneratedEnums[0], new MavlinkMessageFieldEnumType("byte", "SomeEnum")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "BaseMode"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "base_mode", "MAV_MODE_FLAG",
 					MavlinkMessageFieldDisplay.Bitmask, MavlinkSystemUnit.A, isRequired: true,
 					null, null, null, null, null, null, null)
 			),
 			new GeneratedMavlinkMessageField("custom_mode", new GeneratedMavlinkMessageFieldPrimitiveType("uint", new MavlinkMessageFieldType("uint32_t")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("uint"), "CustomMode"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint32_t"), "custom_mode", null,
 					MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
 					null, null, null, null, null, null, null)
 			),
 			new GeneratedMavlinkMessageField("system_status", new GeneratedMavlinkMessageFieldEnumType("byte", GeneratedEnums[0], new MavlinkMessageFieldEnumType("byte", "SomeEnum")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "SystemStatus"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t"), "system_status", "MAV_STATE",
 					MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,
 					null, null, null, null, null, null, null)
 			),
 			new GeneratedMavlinkMessageField("mavlink_version", new GeneratedMavlinkMessageFieldPrimitiveType("byte", new MavlinkMessageFieldType("uint8_t_mavlink_version")),
-				new GeneratedMavlinkMessageNoValidationRule(),
+				new GeneratedMavlinkMessageNoValidationRuleDefinition(),
 				SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("byte"), "MavlinkVersion"),
 				new MavlinkMessageField(new MavlinkMessageFieldType("uint8_t_mavlink_version"), "mavlink_version", null,
 					MavlinkMessageFieldDisplay.None, MavlinkSystemUnit.A, isRequired: true,

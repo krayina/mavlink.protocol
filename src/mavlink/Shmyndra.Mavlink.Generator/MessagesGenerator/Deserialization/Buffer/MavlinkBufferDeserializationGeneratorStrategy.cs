@@ -36,8 +36,10 @@ else if ({payloadParameterName}.Length < {requiredSize})
 
 	public string AppendFieldDeserialization(StringBuilder sb, GeneratedMavlinkMessageField field, ref int offset, string currentNamespace, string payloadParameterName)
 	{
-		if (field.Original.Display == MavlinkMessageFieldDisplay.Bitmask &&
-			(field.GeneratedType is GeneratedMavlinkMessageFieldEnumType || field.GeneratedType is GeneratedMavlinkMessageFieldArrayEnumType))
+		bool isBitmaskEligible = field.GeneratedType is GeneratedMavlinkMessageFieldEnumType ||
+								 field.GeneratedType is GeneratedMavlinkMessageFieldArrayType { ElementType: GeneratedMavlinkMessageFieldEnumType };
+
+		if (field.Original.Display == MavlinkMessageFieldDisplay.Bitmask && isBitmaskEligible)
 		{
 			return _bitmaskStrategy.DeserializeField(sb, field, ref offset, currentNamespace, payloadParameterName);
 		}

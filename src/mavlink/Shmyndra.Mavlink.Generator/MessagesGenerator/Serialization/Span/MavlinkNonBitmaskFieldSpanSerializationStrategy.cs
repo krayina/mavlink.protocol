@@ -8,18 +8,24 @@ public class NonBitmaskFieldSpanSerializationStrategy : IMavlinkFieldSerializati
 	{
 		switch (field.GeneratedType)
 		{
-			case GeneratedMavlinkMessageFieldEnumType enumType when field.Original.Display != MavlinkMessageFieldDisplay.Bitmask:
-				AppendEnumFieldSerialization(sb, field, enumType, ref offset);
+			case GeneratedMavlinkMessageFieldArrayType { ElementType: GeneratedMavlinkMessageFieldEnumType enumElementType } arrayType
+				when field.Original.Display != MavlinkMessageFieldDisplay.Bitmask:
+				AppendArrayEnumFieldSerialization(sb, field, arrayType, enumElementType, ref offset);
 				break;
+
 			case GeneratedMavlinkMessageFieldArrayType arrayType:
 				AppendArrayFieldSerialization(sb, field, arrayType, ref offset);
 				break;
-			case GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType when field.Original.Display != MavlinkMessageFieldDisplay.Bitmask:
-				AppendArrayEnumFieldSerialization(sb, field, arrayEnumType, ref offset);
+
+			case GeneratedMavlinkMessageFieldEnumType enumType
+				when field.Original.Display != MavlinkMessageFieldDisplay.Bitmask:
+				AppendEnumFieldSerialization(sb, field, enumType, ref offset);
 				break;
+
 			case GeneratedMavlinkMessageFieldPrimitiveType simpleType:
 				AppendSimpleFieldSerialization(sb, field, simpleType, ref offset);
 				break;
+
 			default:
 				throw new NotSupportedException($"Field type '{field.GeneratedType.GetType().Name}' is not supported in Non-Bitmask strategy.");
 		}
@@ -124,20 +130,25 @@ if ({propertyName}.HasValue)
 		offset += totalSize;
 	}
 
-	private void AppendArrayEnumFieldSerialization(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, ref int offset)
+	private void AppendArrayEnumFieldSerialization(
+		StringBuilder sb,
+		GeneratedMavlinkMessageField field,
+		GeneratedMavlinkMessageFieldArrayType arrayType,
+		GeneratedMavlinkMessageFieldEnumType enumElementType,
+		ref int offset)
 	{
 		string propertyName = field.GeneratedName;
-		string elementTypeName = arrayEnumType.ConvertedType;
+		string elementTypeName = arrayType.ConvertedType;
 		int elementSize = Utilities.GetDotNetTypeSize(elementTypeName);
-		int totalSize = arrayEnumType.ArrayLength * elementSize;
+		int totalSize = arrayType.ArrayLength * elementSize;
 
 		if (field.Original.IsRequired)
 		{
-			AppendRequiredArrayEnumField(sb, propertyName, elementTypeName, arrayEnumType.ArrayLength, offset, totalSize);
+			AppendRequiredArrayEnumField(sb, propertyName, elementTypeName, arrayType.ArrayLength, offset, totalSize);
 		}
 		else
 		{
-			AppendOptionalArrayEnumField(sb, propertyName, elementTypeName, arrayEnumType.ArrayLength, offset, totalSize);
+			AppendOptionalArrayEnumField(sb, propertyName, elementTypeName, arrayType.ArrayLength, offset, totalSize);
 		}
 
 		offset += totalSize;

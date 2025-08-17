@@ -10,12 +10,16 @@ public class BitmaskFieldSpanSerializationStrategy : IMavlinkFieldSerializationS
 	{
 		switch (field.GeneratedType)
 		{
-			case GeneratedMavlinkMessageFieldEnumType enumType when field.Original.Display == MavlinkMessageFieldDisplay.Bitmask:
+			case GeneratedMavlinkMessageFieldEnumType enumType
+				when field.Original.Display == MavlinkMessageFieldDisplay.Bitmask:
 				AppendBitmaskEnumField(sb, field, enumType, ref offset);
 				break;
-			case GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType when field.Original.Display == MavlinkMessageFieldDisplay.Bitmask:
-				AppendBitmaskArrayEnumField(sb, field, arrayEnumType, ref offset);
+
+			case GeneratedMavlinkMessageFieldArrayType { ElementType: GeneratedMavlinkMessageFieldEnumType } arrayType
+				when field.Original.Display == MavlinkMessageFieldDisplay.Bitmask:
+				AppendBitmaskArrayEnumField(sb, field, arrayType, ref offset);
 				break;
+
 			default:
 				throw new NotSupportedException($"Field type '{field.GeneratedType.GetType().Name}' is not supported in Bitmask strategy.");
 		}
@@ -46,16 +50,16 @@ if ({propertyName}.HasValue && !{propertyName}.Value.IsDefaultOrEmpty)
 		offset += size;
 	}
 
-	private void AppendBitmaskArrayEnumField(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, ref int offset)
+	private void AppendBitmaskArrayEnumField(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldArrayType arrayType, ref int offset)
 	{
 		string propertyName = field.GeneratedName;
-		string elementTypeName = arrayEnumType.ConvertedType;
+		string elementTypeName = arrayType.ConvertedType;
 		int elementSize = Utilities.GetDotNetTypeSize(elementTypeName);
-		int totalSize = arrayEnumType.ArrayLength * elementSize;
+		int totalSize = arrayType.ArrayLength * elementSize;
 
 		if (field.Original.IsRequired)
 		{
-			sb.AppendLine($"for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)");
+			sb.AppendLine($"for (int i = 0; i < {arrayType.ArrayLength}; i++)");
 			sb.AppendLine("{");
 			sb.AppendLine($"    {elementTypeName} combinedFlags = 0;");
 			sb.AppendLine($"    foreach (var flag in {propertyName}[i])");
@@ -70,7 +74,7 @@ if ({propertyName}.HasValue && !{propertyName}.Value.IsDefaultOrEmpty)
 			sb.AppendLine($@"
 if ({propertyName}.HasValue && !{propertyName}.Value.IsDefaultOrEmpty)
 {{
-    for (int i = 0; i < {arrayEnumType.ArrayLength}; i++)
+    for (int i = 0; i < {arrayType.ArrayLength}; i++)
     {{
         {elementTypeName} combinedFlags = 0;
         foreach (var flag in {propertyName}.Value[i])
