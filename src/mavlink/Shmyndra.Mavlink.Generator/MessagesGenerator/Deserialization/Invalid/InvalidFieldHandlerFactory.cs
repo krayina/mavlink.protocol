@@ -25,23 +25,16 @@ public static class InvalidFieldHandlerFactory
 					{
 						return _cache.GetOrAdd(invalid, _ => new ArrayInvalidFieldHandler(invalid, arrayType.ArrayLength));
 					}
-					else
+					switch (arrayType.ElementType)
 					{
-						var elementType = new GeneratedMavlinkMessageFieldPrimitiveType(arrayType.ConvertedType, arrayType.Original);
-						return CreateForSimpleType(elementType, trimmedInvalid);
-					}
-				}
-			case GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType when invalid.StartsWith("["):
-				{
-					string trimmedInvalid = invalid.Trim('[', ']');
-					if (trimmedInvalid.Contains(',') || trimmedInvalid.Contains(':'))
-					{
-						return _cache.GetOrAdd(invalid, _ => new ArrayInvalidFieldHandler(invalid, arrayEnumType.ArrayLength));
-					}
-					else
-					{
-						var elementType = new GeneratedMavlinkMessageFieldEnumType(arrayEnumType.ConvertedType, arrayEnumType.GeneratedEnum, arrayEnumType.Original);
-						return CreateForEnumType(elementType, trimmedInvalid);
+						case GeneratedMavlinkMessageFieldEnumType enumElementType:
+							return CreateForEnumType(enumElementType, trimmedInvalid);
+
+						case GeneratedMavlinkMessageFieldPrimitiveType primitiveElementType:
+							return CreateForSimpleType(primitiveElementType, trimmedInvalid);
+
+						default:
+							throw new NotSupportedException($"Element type {arrayType.ElementType.GetType().Name} is not supported for per-element validation.");
 					}
 				}
 			case GeneratedMavlinkMessageFieldEnumType enumType:

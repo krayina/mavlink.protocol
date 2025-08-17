@@ -42,7 +42,6 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 		{
 			var xmlFiles = context.AdditionalTextsProvider
 				.Where(file => file.Path.EndsWith(".xml")
-					// Files that are not included in the project marked as "_"
 					&& !Path.GetFileName(file.Path).StartsWith("_"))
 				.Select((file, _) => (file.Path, Content: file.GetText()!.ToString()))
 				.Collect();
@@ -61,7 +60,7 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 			var enumTreeGenerator = new MavlinkEnumTreeGenerator(enumGenerator);
 
 			var generator = new MavlinkGenerator(
-				new MavlinkTreeBuilder(new MavlinkXmlParser()),
+				_treeBuilder,
 				enumGenerator,
 				enumTreeGenerator,
 				messageGenerator,
@@ -83,7 +82,6 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 
 			var generatedMessagesSourceCode = MavlinkMessagesGenerator.GenerateMessageExtensions(generatedMessages);
 
-			// TODO: Should be resolver
 			var enumBitmaskNamespaceBuilder = new CompilationUnitBuilder(MavlinkGeneratorConstants.TypesNamespace);
 			var mavlinkGenericEnumBitmaskGenerator = new MavlinkGenericEnumBitmaskGenerator();
 			var mavlinkSpecificEnumBitmaskGenerator = new MavlinkSpecificEnumBitmaskGenerator();
@@ -99,13 +97,12 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 			(GeneratedMavlinkEnum GeneratedEnum, string UnderlyingType)[] underlyingEnumDependencies = generatedMessages
 				.SelectMany(x => x.GeneratedFields)
 				.Where(x => x.Original.Display == MavlinkMessageFieldDisplay.Bitmask &&
-							x.GeneratedType is GeneratedMavlinkMessageFieldEnumType or GeneratedMavlinkMessageFieldArrayEnumType)
-				.Select(x => x.GeneratedType switch
-				{
-					GeneratedMavlinkMessageFieldEnumType enumType => (enumType.GeneratedEnum, enumType.ConvertedType),
-					GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType => (arrayEnumType.GeneratedEnum, arrayEnumType.ConvertedType),
-					_ => throw new NotImplementedException($"The type of {x.GeneratedType} is not recognized.")
-				})
+							(x.GeneratedType is GeneratedMavlinkMessageFieldEnumType ||
+							 x.GeneratedType is GeneratedMavlinkMessageFieldArrayType { ElementType: GeneratedMavlinkMessageFieldEnumType }))
+				.Select(x => x.GeneratedType.GetElementTypeOrSelf() as GeneratedMavlinkMessageFieldEnumType)
+				.Where(x => x != null)
+				.Select(x => (x!.GeneratedEnum, x.ConvertedType))
+				.Distinct()
 				.ToArray();
 
 			foreach (var item in underlyingEnumDependencies)
@@ -122,6 +119,9 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 		{
 			bool supportsSpan = IsSpanSerializationAvailable(compilation);
 			bool useObjectiveBitmask = IsObjectiveBitmaskEnabled(compilation);
+
+			var ruleDefinitionProvider = new MavlinkMessageFieldValidationRuleDefinitionProvider();
+			var placementProvider = new InvalidatabilityPlacementProvider();
 
 			IMavlinkMessageFieldTypeNameResolutionStrategy bitmaskTypeNameStrategy = useObjectiveBitmask
 				? new MavlinkObjectiveBitmaskFieldTypeNameResolutionStrategy()
@@ -166,13 +166,13 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 					bitmaskSerializationStrategy,
 					new MavlinkNonBitmaskFieldBufferSerializationStrategy());
 
-				deserializationStrategy = new MavlinkBufferSerializationGeneratorStrategy(
+				deserializationStrategy = new MavlinkBufferDeserializationGeneratorStrategy(
 					bitmaskDeserializationStrategy,
 					new MavlinkNonBitmaskFieldBufferDeserializationStrategy());
 			}
 
 			return new MavlinkMessageGenerator(
-				typeNameResolver,
+				new MavlinkMessageFieldInitPropertyGenerator(typeNameResolver, ruleDefinitionProvider, placementProvider),
 				new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy),
 				new MavlinkMessageSerializationMethodGenerator(serializationStrategy)
 			);
