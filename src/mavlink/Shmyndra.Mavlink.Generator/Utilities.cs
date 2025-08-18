@@ -438,20 +438,32 @@ internal static class Utilities
 
 	public static string IndentCode(string code, int indentLevel)
 	{
-		string indent = new string(' ', indentLevel * 4);
-		var sb = new StringBuilder();
-		foreach (var line in code.Split(new[] { "\n", "\r\n" }, StringSplitOptions.None))
+		if (string.IsNullOrEmpty(code))
 		{
+			return string.Empty;
+		}
+
+		var indent = new string(' ', indentLevel * 4);
+		var lines = code.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+
+		var sb = new StringBuilder();
+
+		for (int i = 0; i < lines.Length; i++)
+		{
+			var line = lines[i];
 			if (!string.IsNullOrWhiteSpace(line))
 			{
-				sb.AppendLine($"{indent}{line.TrimEnd()}");
+				sb.Append(indent);
 			}
-			else
+
+			sb.Append(line);
+			if (i < lines.Length - 1)
 			{
-				sb.AppendLine();
+				sb.Append('\n');
 			}
 		}
-		return sb.ToString().TrimEnd();
+
+		return sb.ToString();
 	}
 
 	public static void AppendWithIndent(StringBuilder sb, string content, int indentLevel)
