@@ -345,6 +345,39 @@ internal static class Utilities
 		return IndentCodeWithNesting(code);
 	}
 
+	public static string Indent(string text)
+	{
+		return Indent(text, "    ");
+	}
+
+	public static string Indent(string text, string indentation = "    ")
+	{
+		if (string.IsNullOrEmpty(text))
+		{
+			return string.Empty;
+		}
+
+		var lines = text.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+		var result = new StringBuilder();
+
+		for (int i = 0; i < lines.Length; i++)
+		{
+			var line = lines[i];
+			if (!string.IsNullOrWhiteSpace(line))
+			{
+				result.Append(indentation);
+			}
+
+			result.Append(line);
+
+			if (i < lines.Length - 1)
+			{
+				result.AppendLine();
+			}
+		}
+		return result.ToString();
+	}
+
 	private static string IndentCodeWithNesting(string code)
 	{
 		var lines = code.Split(new[] { "\n", "\r\n" }, StringSplitOptions.None);

@@ -1,4 +1,5 @@
 ﻿using Scriban;
+using Scriban.Functions;
 using Scriban.Runtime;
 
 namespace Shmyndra.Mavlink.Generator;
@@ -16,7 +17,9 @@ public static class CSharpScribanTemplateContext
 	/// </summary>
 	public static TemplateContext Create()
 	{
-		var context = new TemplateContext
+		var builtins = new BuiltinFunctions();
+
+		var context = new TemplateContext(builtins)
 		{
 			MemberRenamer = member => Utilities.PascalCaseToSnakeCase(member.Name),
 			MemberFilter = AllowAllMembers,
@@ -33,6 +36,7 @@ public static class CSharpScribanTemplateContext
 		globals.Import("to_upper_camel_case", new Func<string, string>(Utilities.ToUpperCamelCase));
 		globals.Import("escape_keyword", new Func<string, string>(Utilities.EscapeReservedKeyword));
 		globals.Import("safe_var", new Func<string, string[], string>(Utilities.GetSafeVariableName));
+		globals.Import("indent", new Func<string, string>(text => Utilities.Indent(text)));
 
 		context.PushGlobal(globals);
 		return context;
