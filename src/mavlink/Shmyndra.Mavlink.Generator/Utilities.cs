@@ -171,10 +171,10 @@ internal static class Utilities
 	public static SyntaxTriviaList CreateSummaryTrivia(string description)
 	{
 		var triviaNodes = new List<SyntaxTrivia>
-		{
-			SyntaxFactory.Comment("/// <summary>"),
-			SyntaxFactory.CarriageReturnLineFeed
-		};
+	{
+		SyntaxFactory.Comment("/// <summary>"),
+		SyntaxFactory.CarriageReturnLineFeed
+	};
 
 		var lines = description.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
 							   .Select(line => line.Trim())
@@ -184,9 +184,9 @@ internal static class Utilities
 		{
 			var contentTrivia = lines.SelectMany(line => new[]
 			{
-				SyntaxFactory.Comment($"/// {line}"),
-				SyntaxFactory.CarriageReturnLineFeed
-			});
+			SyntaxFactory.Comment($"/// {line}"),
+			SyntaxFactory.CarriageReturnLineFeed
+		});
 			triviaNodes.AddRange(contentTrivia);
 		}
 		triviaNodes.Add(SyntaxFactory.Comment("/// </summary>"));
@@ -501,14 +501,15 @@ internal static class Utilities
 
 	public static int CalculateFinalSize(this ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
-		int minSize = fields.CalculateMinSize();
-		int extensionLength = fields
-			.Where(f => !f.Original.IsRequired && !(f.GeneratedType is GeneratedMavlinkMessageFieldArrayType || f.GeneratedType is GeneratedMavlinkMessageFieldArrayEnumType))
+		int requiredSize = fields
+			.Where(f => f.Original.IsRequired)
 			.Sum(f => f.GetFieldSize());
-		int arrayExtensionSize = fields
-			.Where(f => !f.Original.IsRequired && (f.GeneratedType is GeneratedMavlinkMessageFieldArrayType || f.GeneratedType is GeneratedMavlinkMessageFieldArrayEnumType))
+
+		int extensionSize = fields
+			.Where(f => !f.Original.IsRequired)
 			.Sum(f => f.GetFieldSize());
-		return minSize + extensionLength + arrayExtensionSize;
+
+		return requiredSize + extensionSize;
 	}
 
 	public static int GetFieldSize(this GeneratedMavlinkMessageField field)
@@ -630,19 +631,7 @@ internal static class Utilities
 		return $"{enumType.GetQualifiedEnumTypeName(currentNamespace)}Bitmask";
 	}
 
-	public static string GetQualifiedBitmaskTypeName(this GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, string currentNamespace)
-	{
-		return $"{arrayEnumType.GetQualifiedEnumTypeName(currentNamespace)}Bitmask";
-	}
-
 	public static string GetQualifiedEnumTypeName(this GeneratedMavlinkMessageFieldEnumType enumType, string currentNamespace)
-	{
-		return enumType.GeneratedEnum.Namespace == currentNamespace
-			? enumType.GeneratedEnum.GeneratedName
-			: $"{enumType.GeneratedEnum.Namespace}.{enumType.GeneratedEnum.GeneratedName}";
-	}
-
-	public static string GetQualifiedEnumTypeName(this GeneratedMavlinkMessageFieldArrayEnumType enumType, string currentNamespace)
 	{
 		return enumType.GeneratedEnum.Namespace == currentNamespace
 			? enumType.GeneratedEnum.GeneratedName
@@ -665,13 +654,9 @@ internal static class Utilities
 			var typeName = field.Original.Type.TypeName.Equals("uint8_t_mavlink_version") ? "uint8_t" : field.Original.Type.GetTypeWithoutArray();
 			crc = X25Crc.Accumulate($"{typeName} {field.Original.Name} ", crc);
 
-			if (field.GeneratedType is GeneratedMavlinkMessageFieldArrayType arrayField)
+			if (field.GeneratedType is GeneratedMavlinkMessageFieldArrayType arrayType)
 			{
-				crc = X25Crc.Accumulate(crc, (byte)arrayField.ArrayLength);
-			}
-			else if (field.GeneratedType is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumField)
-			{
-				crc = X25Crc.Accumulate(crc, (byte)arrayEnumField.ArrayLength);
+				crc = X25Crc.Accumulate(crc, (byte)arrayType.ArrayLength);
 			}
 		}
 
