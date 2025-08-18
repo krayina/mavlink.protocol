@@ -8,37 +8,19 @@ public partial class MavlinkMessageGenerator
 		public string OriginalName { get; init; }
 		public uint Id { get; init; }
 		public bool HasExtensions { get; init; }
-		public List<MavlinkMessagePropertyScribanMetadata> Properties { get; init; }
-		public List<string> Methods { get; init; }
+		public List<string> AllMembers { get; init; }
 
-		public string? Summary { get; set; }
+		public string? SummaryCommentBlock { get; set; }
 		public bool IsObsolete { get; set; }
 		public string? ObsoleteMessage { get; set; }
 
-		public MavlinkMessageScribanMetadata(string name, string originalName, uint id, bool hasExtensions, List<MavlinkMessagePropertyScribanMetadata> properties, List<string> methods)
+		public MavlinkMessageScribanMetadata(string name, string originalName, uint id, bool hasExtensions, List<string> allMembers)
 		{
 			Name = name;
 			OriginalName = originalName;
 			Id = id;
 			HasExtensions = hasExtensions;
-			Properties = properties;
-			Methods = methods;
-		}
-	}
-
-	internal class MavlinkMessagePropertyScribanMetadata
-	{
-		public string Declaration { get; }
-
-		public string? Summary { get; }
-
-		public string Remarks { get; }
-
-		public MavlinkMessagePropertyScribanMetadata(string declaration, string? summary, string remarks)
-		{
-			Declaration = declaration;
-			Summary = summary;
-			Remarks = remarks;
+			AllMembers = allMembers;
 		}
 	}
 }

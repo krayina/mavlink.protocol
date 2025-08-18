@@ -5,37 +5,36 @@ public partial class MavlinkMessageGenerator
 	internal static class Templates
 	{
 		internal const string MessageTemplate = @"
-{{- if summary }}
-/// <summary>
-/// {{ summary | string.replace ""\n"" ""\n/// "" }}
-/// </summary>
-{{- end }}
+{{- # Explicitly output newline to separate summary from remarks.
+    # See: https://github.com/scriban/scriban/issues/145 -}}
+{{- if message.summary_comment_block -}}
+{{ message.summary_comment_block }}
+{{- ""\n"" -}}
+{{- end -}}
 /// <remarks>
-/// Original name: {{ original_name }}
+/// Original name: {{ message.original_name }}
 /// </remarks>
-{{- if is_obsolete }}
-[System.Obsolete(""{{ obsolete_message }}"")]
+{{- if message.is_obsolete }}
+[System.Obsolete(""{{ message.obsolete_message }}"")]
 {{- end }}
-[MavlinkIdentifiedType({{ id }}U, ""{{ original_name }}"")]
-public readonly record struct {{ name }} : MavlinkMessage, IMavlinkMessageSerializerWithoutExtensions{{ if has_extensions }}, IMavlinkMessageSerializerWithExtensions{{ end }}
+[MavlinkIdentifiedType({{ message.id }}U, ""{{ message.original_name }}"")]
+public readonly record struct {{ message.name }} : MavlinkMessage, IMavlinkMessageSerializerWithoutExtensions{{ if message.has_extensions }}, IMavlinkMessageSerializerWithExtensions{{ end }}
 {
-    {{- for prop in properties ~}}
-    {{- if prop.summary }}
-    /// <summary>
-    /// {{ prop.summary | string.replace ""\n"" ""\n    /// "" }}
-    /// </summary>
-    {{- end }}
-    /// <remarks>
-    /// {{ prop.remarks }}
-    /// </remarks>
-    {{ prop.declaration }}
-    
-    {{ end -}}
+    {{- # Add a blank line after { only if there are members. -}}
+    {{- if message.all_members | array.size > 0 -}}
+    {{- ""\n"" -}}
+    {{- end -}}
 
-    {{- for method_text in methods ~}}
-    {{ method_text }}
-    {{ end -}}
-}
-";
+    {{- for member in message.all_members -}}
+    {{- indent member -}}
+    {{- # Always add a single newline after each member.
+        # This prevents the final `end` tag from sticking to the last member's code. -}}
+    {{- ""\n"" -}}
+    {{- # If it's not the last member, add a second newline to create a blank line. -}}
+    {{- if !for.last -}}
+    {{- ""\n"" -}}
+    {{- end -}}
+    {{- end -}}
+}";
 	}
 }
