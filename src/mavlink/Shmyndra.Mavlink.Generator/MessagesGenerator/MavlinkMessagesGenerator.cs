@@ -35,7 +35,7 @@ internal static class MavlinkMessagesGenerator
 
 		foreach (var field in message.GeneratedFields)
 		{
-			int fieldSize = field.GetFieldSize();
+			int fieldSize = field.GeneratedType.GetFieldTypeSize();
 			maxSize += fieldSize;
 
 			if (field.Original.IsRequired)

@@ -488,7 +488,7 @@ internal static class Utilities
 
 		foreach (var field in fields)
 		{
-			int fieldSize = field.GetFieldSize();
+			int fieldSize = field.GeneratedType.GetFieldTypeSize();
 
 			if (field.Original.IsRequired)
 			{
@@ -503,18 +503,18 @@ internal static class Utilities
 	{
 		int requiredSize = fields
 			.Where(f => f.Original.IsRequired)
-			.Sum(f => f.GetFieldSize());
+			.Sum(f => f.GeneratedType.GetFieldTypeSize());
 
 		int extensionSize = fields
 			.Where(f => !f.Original.IsRequired)
-			.Sum(f => f.GetFieldSize());
+			.Sum(f => f.GeneratedType.GetFieldTypeSize());
 
 		return requiredSize + extensionSize;
 	}
 
-	public static int GetFieldSize(this GeneratedMavlinkMessageField field)
+	public static int GetFieldTypeSize(this GeneratedMavlinkMessageFieldType type)
 	{
-		return field.GeneratedType switch
+		return type switch
 		{
 			GeneratedMavlinkMessageFieldArrayType arrayType =>
 				GetDotNetTypeSize(arrayType.ConvertedType) * arrayType.ArrayLength,
@@ -522,7 +522,7 @@ internal static class Utilities
 			GeneratedMavlinkMessageFieldScalarType scalarType =>
 				GetDotNetTypeSize(scalarType.ConvertedType),
 
-			_ => throw new NotSupportedException($"Cannot determine field size for type {field.GeneratedType.GetType().Name}")
+			_ => throw new NotSupportedException($"Cannot determine field size for type {type.GetType().Name}")
 		};
 	}
 

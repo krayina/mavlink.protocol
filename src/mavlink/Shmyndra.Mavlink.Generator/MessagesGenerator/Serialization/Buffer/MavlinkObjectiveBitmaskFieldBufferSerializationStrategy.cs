@@ -29,7 +29,7 @@ public class MavlinkObjectiveBitmaskFieldBufferSerializationStrategy : IMavlinkF
 
 	private void AppendPrimitiveBitmaskField(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldPrimitiveType primitiveType, ref int offset)
 	{
-		int size = field.GetFieldSize();
+		int size = field.GeneratedType.GetFieldTypeSize();
 		string propertyName = field.GeneratedName;
 
 		if (field.Original.IsRequired)
@@ -50,7 +50,7 @@ if ({propertyName}.HasValue)
 
 	private void AppendEnumBitmaskField(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldEnumType enumType, ref int offset)
 	{
-		int size = field.GetFieldSize();
+		int size = field.GeneratedType.GetFieldTypeSize();
 		string propertyName = field.GeneratedName;
 
 		if (field.Original.IsRequired)
@@ -71,7 +71,7 @@ if ({propertyName}.HasValue)
 
 	private void AppendArrayBitmaskField(StringBuilder sb, GeneratedMavlinkMessageField field, GeneratedMavlinkMessageFieldArrayType arrayType, ref int offset)
 	{
-		int totalSize = field.GetFieldSize();
+		int totalSize = field.GeneratedType.GetFieldTypeSize();
 		string propertyName = field.GeneratedName;
 		string serializedVarName = $"serialized{field.GeneratedName}";
 		string arrayLength = arrayType.ArrayLength.ToString();
