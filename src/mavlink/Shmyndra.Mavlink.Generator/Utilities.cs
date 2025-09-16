@@ -564,7 +564,7 @@ internal static class Utilities
 			"ulong" => 8,
 			"long" => 8,
 			"double" => 8,
-			_ => throw new InvalidOperationException($"Unknown type: {convertedType}"),
+			_ => throw new NotSupportedException($"Unsupported type: {convertedType}"),
 		};
 	}
 
