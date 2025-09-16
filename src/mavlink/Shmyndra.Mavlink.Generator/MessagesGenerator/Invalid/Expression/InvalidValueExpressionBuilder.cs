@@ -9,9 +9,18 @@ public class InvalidValueExpressionBuilder : IInvalidValueExpressionBuilder
 {
 	public string BuildCondition(string variableName, string rawInvalidValue, GeneratedMavlinkMessageFieldType type)
 	{
-		if (string.Equals(rawInvalidValue, "NaN", StringComparison.OrdinalIgnoreCase) && type.IsFloatingPoint())
+		if (string.Equals(rawInvalidValue, "NaN", StringComparison.OrdinalIgnoreCase))
 		{
-			return $"!float.IsNaN({variableName})";
+			switch (type.ConvertedType)
+			{
+				case "float":
+					return $"!float.IsNaN({variableName})";
+				case "double":
+					return $"!double.IsNaN({variableName})";
+				default:
+					throw new FormatException(
+						$"The invalid value 'NaN' is only applicable to floating-point types, but was used with '{type.ConvertedType}'.");
+			}
 		}
 
 		string literal = TranslateToPrimitiveLiteral(rawInvalidValue, type);
@@ -38,9 +47,19 @@ public class InvalidValueExpressionBuilder : IInvalidValueExpressionBuilder
 			case "INT64_MAX": return "long.MaxValue";
 		}
 
-		if (double.TryParse(rawInvalidValue, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
+		if (double.TryParse(rawInvalidValue, NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedValue))
 		{
-			return rawInvalidValue;
+			string literal;
+			if (type.ConvertedType == "float")
+			{
+				literal = ((float)parsedValue).ToString("R", CultureInfo.InvariantCulture) + "f";
+			}
+			else
+			{
+				literal = parsedValue.ToString("R", CultureInfo.InvariantCulture);
+			}
+
+			return literal;
 		}
 
 		throw new FormatException(
