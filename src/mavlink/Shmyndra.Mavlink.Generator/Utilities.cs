@@ -555,7 +555,7 @@ internal static class Utilities
 		{
 			"byte" => 1,
 			"sbyte" => 1,
-			"char" => 1,
+			"char" => 2,
 			"ushort" => 2,
 			"short" => 2,
 			"uint" => 4,
