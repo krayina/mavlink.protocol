@@ -10,6 +10,12 @@ public class SpanDeserializationPayloadReadScribanStrategy : IDeserializationPay
 	/// <inheritdoc/>
 	public string GenerateScalarReadExpression(string typeName, int offset, int size)
 	{
+		int expectedSize = Utilities.GetDotNetTypeSize(typeName);
+		if (size != expectedSize)
+		{
+			throw new NotSupportedException($"The provided size {size} for type '{typeName}' is incorrect. Expected size is {expectedSize}.");
+		}
+
 		return size == 1
 			? GenerateSingleByteReadExpression(typeName, offset.ToString())
 			: $"System.Buffers.Binary.BinaryPrimitives.{GetBinaryPrimitivesMethod(typeName)}({PayloadParameterName}.Slice({offset}, {size}))";
