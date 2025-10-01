@@ -9,11 +9,17 @@ namespace Shmyndra.Mavlink.Generator;
 
 public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 {
+	private const string SerializeWithoutExtensionsMethodName = "SerializeWithoutExtensions";
+	private const string SerializeWithExtensionsMethodName = "SerializeWithExtensions";
+
+	private const string DeserializeWithoutExtensionsMethodName = "DeserializeWithoutExtensions";
+	private const string DeserializeWithExtensionsMethodName = "DeserializeWithExtensions";
+
 	private static readonly Template _messageTemplate;
 
-	private readonly IMavlinkMessageFieldPropertyGenerator _propertyGenerator;
-	private readonly MavlinkMessageDeserializationMethodGenerator _deserializerGenerator;
-	private readonly MavlinkMessageSerializationMethodGenerator _serializerGenerator;
+	private readonly MavlinkMessageFieldInitPropertyGenerator _propertyGenerator;
+	private readonly MavlinkMessageDeserializationMethodGenerator _deserializationGenerator;
+	private readonly MavlinkMessageSerializationMethodGenerator _serializationGenerator;
 
 	private readonly Dictionary<(string Namespace, string MavlinkMessageName), GeneratedMavlinkMessage> _generatedMessages = new();
 
@@ -28,13 +34,13 @@ public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 	}
 
 	public MavlinkMessageGenerator(
-		IMavlinkMessageFieldPropertyGenerator propertyGenerator,
-		MavlinkMessageDeserializationMethodGenerator deserializerGenerator,
-		MavlinkMessageSerializationMethodGenerator serializerGenerator)
+		MavlinkMessageFieldInitPropertyGenerator propertyGenerator,
+		MavlinkMessageDeserializationMethodGenerator deserializationGenerator,
+		MavlinkMessageSerializationMethodGenerator serializationGenerator)
 	{
 		_propertyGenerator = propertyGenerator;
-		_deserializerGenerator = deserializerGenerator;
-		_serializerGenerator = serializerGenerator;
+		_deserializationGenerator = deserializationGenerator;
+		_serializationGenerator = serializationGenerator;
 	}
 
 	#region Explicit IGeneratedStorage Implementation
@@ -71,8 +77,8 @@ public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 
 		var generatedFields = GenerateMessageFields(message, @namespace, enumsMap);
 
-		var deserializeMethods = _deserializerGenerator.CreateDeserializeMethod(@namespace, normalizedName, generatedFields);
-		var serializeMethods = _serializerGenerator.CreateSerializeMethod(generatedFields);
+		var deserializeMethods = CreateDeserializationMethods(@namespace, normalizedName, generatedFields);
+		var serializeMethods = CreateSerializationMethods(@namespace, normalizedName, generatedFields);
 
 		var model = CreateScribanModel(message, normalizedName, generatedFields, deserializeMethods, serializeMethods);
 		string code = RenderTemplate(model);
@@ -89,6 +95,64 @@ public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 
 		_generatedMessages.Add((@namespace, message.Name), generatedMessage);
 		return generatedMessage;
+	}
+
+	private ImmutableArray<GeneratedMavlinkMessageDeserializationMethod> CreateDeserializationMethods(
+		string @namespace,
+		string messageName,
+		ImmutableArray<GeneratedMavlinkMessageField> fields)
+	{
+		var generatedMethods = ImmutableArray.CreateBuilder<GeneratedMavlinkMessageDeserializationMethod>();
+
+		var requiredFields = fields.Where(f => f.Original.IsRequired).ToImmutableArray();
+		var withoutExtensionsMethod = _deserializationGenerator.Generate(
+			DeserializeWithoutExtensionsMethodName,
+			@namespace,
+			messageName,
+			requiredFields);
+		generatedMethods.Add(withoutExtensionsMethod);
+
+		bool hasExtensionFields = fields.Any(f => !f.Original.IsRequired);
+		if (hasExtensionFields)
+		{
+			var withExtensionsMethod = _deserializationGenerator.Generate(
+				DeserializeWithExtensionsMethodName,
+				@namespace,
+				messageName,
+				fields);
+			generatedMethods.Add(withExtensionsMethod);
+		}
+
+		return generatedMethods.ToImmutable();
+	}
+
+	private ImmutableArray<GeneratedMavlinkMessageSerializationMethod> CreateSerializationMethods(
+		string @namespace,
+		string messageName,
+		ImmutableArray<GeneratedMavlinkMessageField> fields)
+	{
+		var generatedMethods = ImmutableArray.CreateBuilder<GeneratedMavlinkMessageSerializationMethod>();
+
+		var requiredFields = fields.Where(f => f.Original.IsRequired).ToImmutableArray();
+		var withoutExtensionsMethod = _serializationGenerator.Generate(
+			SerializeWithoutExtensionsMethodName,
+			@namespace,
+			messageName,
+			requiredFields);
+		generatedMethods.Add(withoutExtensionsMethod);
+
+		bool hasExtensionFields = fields.Any(f => !f.Original.IsRequired);
+		if (hasExtensionFields)
+		{
+			var withExtensionsMethod = _serializationGenerator.Generate(
+				SerializeWithExtensionsMethodName,
+				@namespace,
+				messageName,
+				fields);
+			generatedMethods.Add(withExtensionsMethod);
+		}
+
+		return generatedMethods.ToImmutable();
 	}
 
 	private void ValidateAndCheckCache(MavlinkMessage message, string @namespace)
@@ -135,8 +199,8 @@ public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 		MavlinkMessage message,
 		string normalizedName,
 		ImmutableArray<GeneratedMavlinkMessageField> generatedFields,
-		GeneratedMavlinkMessageDeserializeMethod deserializeMethods,
-		GeneratedMavlinkMessageSerializeMethod serializeMethods)
+		ImmutableArray<GeneratedMavlinkMessageDeserializationMethod> deserializeMethods,
+		ImmutableArray<GeneratedMavlinkMessageSerializationMethod> serializeMethods)
 	{
 		string? summaryCommentBlock = string.IsNullOrEmpty(message.Description)
 			? null
@@ -152,11 +216,13 @@ public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 		allMembers.AddRange(propertiesDeclarations);
 		allMembers.AddRange(methodDeclarations);
 
+		bool hasExtensions = serializeMethods.Length > 1;
+
 		return new MavlinkMessageScribanMetadata(
 			name: normalizedName,
 			originalName: message.Name,
 			id: message.Id,
-			hasExtensions: serializeMethods.SerializeWithExtensionsMethod != null,
+			hasExtensions: hasExtensions,
 			allMembers: allMembers
 		)
 		{
@@ -167,15 +233,21 @@ public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 	}
 
 	private List<string> PrepareMethodDeclarations(
-		GeneratedMavlinkMessageDeserializeMethod deserializeMethods,
-		GeneratedMavlinkMessageSerializeMethod serializeMethods)
+		ImmutableArray<GeneratedMavlinkMessageDeserializationMethod> deserializeMethods,
+		ImmutableArray<GeneratedMavlinkMessageSerializationMethod> serializeMethods)
 	{
 		var methods = new List<string>();
 
-		AddMethod(deserializeMethods.DeserializeWithoutExtensionsMethod);
-		AddMethod(serializeMethods.SerializeWithoutExtensionsMethod);
-		AddMethod(deserializeMethods.DeserializeWithExtensionsMethod);
-		AddMethod(serializeMethods.SerializeWithExtensionsMethod);
+		var deserializeWithoutExt = deserializeMethods.FirstOrDefault(m => m.MethodSyntax.Identifier.Text == DeserializeWithoutExtensionsMethodName);
+		var deserializeWithExt = deserializeMethods.FirstOrDefault(m => m.MethodSyntax.Identifier.Text == DeserializeWithExtensionsMethodName);
+
+		var serializeWithoutExt = serializeMethods.FirstOrDefault(m => m.MethodSyntax.Identifier.Text == SerializeWithoutExtensionsMethodName);
+		var serializeWithExt = serializeMethods.FirstOrDefault(m => m.MethodSyntax.Identifier.Text == SerializeWithExtensionsMethodName);
+
+		AddMethod(deserializeWithoutExt?.MethodSyntax);
+		AddMethod(serializeWithoutExt?.MethodSyntax);
+		AddMethod(deserializeWithExt?.MethodSyntax);
+		AddMethod(serializeWithExt?.MethodSyntax);
 
 		void AddMethod(MethodDeclarationSyntax? methodSyntax)
 		{

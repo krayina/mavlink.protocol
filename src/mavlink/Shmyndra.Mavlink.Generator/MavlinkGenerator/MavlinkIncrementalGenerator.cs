@@ -122,6 +122,8 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 
 			var ruleDefinitionProvider = new MavlinkMessageFieldValidationRuleDefinitionProvider();
 			var placementProvider = new InvalidatabilityPlacementProvider();
+			var invalidValueBuilder = new InvalidValueExpressionBuilder();
+			var validationCompiler = new MavlinkMessageFieldValidationExpressionCompiler(invalidValueBuilder);
 
 			IMavlinkMessageFieldTypeNameResolutionStrategy bitmaskTypeNameStrategy = useObjectiveBitmask
 				? new MavlinkObjectiveBitmaskFieldTypeNameResolutionStrategy()
@@ -131,50 +133,34 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 				bitmaskTypeNameStrategy,
 				new MavlinkNonBitmaskFieldTypeNameResolutionStrategy());
 
-			IMavlinkSerializationGeneratorStrategy serializationStrategy;
-			IMavlinkDeserializationGeneratorStrategy deserializationStrategy;
+			MavlinkMessageDeserializationMethodGenerator deserializationGenerator;
+			MavlinkMessageSerializationMethodGenerator serializationGenerator;
 
 			if (supportsSpan)
 			{
-				IMavlinkFieldSerializationStrategy bitmaskSerializationStrategy = useObjectiveBitmask
-					? new MavlinkObjectiveBitmaskFieldSpanSerializationStrategy()
-					: new BitmaskFieldSpanSerializationStrategy();
+				deserializationGenerator = new MavlinkMessageSpanDeserializationMethodGenerator(
+					validationCompiler,
+					useObjectiveBitmask);
 
-				IMavlinkFieldDeserializationStrategy bitmaskDeserializationStrategy = useObjectiveBitmask
-					? new MavlinkObjectiveBitmaskFieldSpanDeserializationStrategy()
-					: new MavlinkBitmaskFieldSpanDeserializationStrategy();
-
-				serializationStrategy = new MavlinkSpanSerializationGeneratorStrategy(
-					bitmaskSerializationStrategy,
-					new NonBitmaskFieldSpanSerializationStrategy());
-
-				deserializationStrategy = new MavlinkSpanDeserializationGeneratorStrategy(
-					bitmaskDeserializationStrategy,
-					new MavlinkNonBitmaskFieldSpanDeserializationStrategy());
+				serializationGenerator = new MavlinkMessageSpanSerializationMethodGenerator(
+					invalidValueBuilder,
+					useObjectiveBitmask);
 			}
 			else
 			{
-				IMavlinkFieldSerializationStrategy bitmaskSerializationStrategy = useObjectiveBitmask
-					? new MavlinkObjectiveBitmaskFieldBufferSerializationStrategy()
-					: new MavlinkBitmaskFieldBufferSerializationStrategy();
+				deserializationGenerator = new MavlinkMessageBufferDeserializationMethodGenerator(
+					validationCompiler,
+					useObjectiveBitmask);
 
-				IMavlinkFieldDeserializationStrategy bitmaskDeserializationStrategy = useObjectiveBitmask
-					? new MavlinkObjectiveBitmaskFieldBufferDeserializationStrategy()
-					: new MavlinkBitmaskFieldBufferDeserializationStrategy();
-
-				serializationStrategy = new MavlinkBufferSerializationGeneratorStrategy(
-					bitmaskSerializationStrategy,
-					new MavlinkNonBitmaskFieldBufferSerializationStrategy());
-
-				deserializationStrategy = new MavlinkBufferDeserializationGeneratorStrategy(
-					bitmaskDeserializationStrategy,
-					new MavlinkNonBitmaskFieldBufferDeserializationStrategy());
+				serializationGenerator = new MavlinkMessageBufferSerializationMethodGenerator(
+					invalidValueBuilder,
+					useObjectiveBitmask);
 			}
 
 			return new MavlinkMessageGenerator(
 				new MavlinkMessageFieldInitPropertyGenerator(typeNameResolver, ruleDefinitionProvider, placementProvider),
-				new MavlinkMessageDeserializationMethodGenerator(deserializationStrategy),
-				new MavlinkMessageSerializationMethodGenerator(serializationStrategy)
+				deserializationGenerator,
+				serializationGenerator
 			);
 		}
 
