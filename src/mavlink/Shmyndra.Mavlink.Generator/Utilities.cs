@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
@@ -27,6 +28,40 @@ internal static class Utilities
 		// The same as uint8_t
 		{ "uint8_t_mavlink_version",("byte", 1) }
 	}.ToImmutableDictionary();
+
+	public static string TranslateToPrimitiveLiteral(this GeneratedMavlinkMessageFieldType type, string rawInvalidValue)
+	{
+		switch (rawInvalidValue.ToUpperInvariant())
+		{
+			case "UINT8_MAX": return "byte.MaxValue";
+			case "UINT16_MAX": return "ushort.MaxValue";
+			case "UINT32_MAX": return "uint.MaxValue";
+			case "UINT64_MAX": return "ulong.MaxValue";
+			case "INT8_MAX": return "sbyte.MaxValue";
+			case "INT16_MAX": return "short.MaxValue";
+			case "INT32_MAX": return "int.MaxValue";
+			case "INT64_MAX": return "long.MaxValue";
+		}
+
+		if (double.TryParse(rawInvalidValue, NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedValue))
+		{
+			string literal;
+			if (type.ConvertedType == "float")
+			{
+				literal = ((float)parsedValue).ToString("R", CultureInfo.InvariantCulture) + "f";
+			}
+			else
+			{
+				literal = parsedValue.ToString("R", CultureInfo.InvariantCulture);
+			}
+
+			return literal;
+		}
+
+		throw new FormatException(
+			$"The raw invalid value '{rawInvalidValue}' is not a valid numeric literal or a known MAVLink constant."
+		);
+	}
 
 	/// <summary>
 	/// Gets the sorted required fields, partitioned into scalar and array fields.

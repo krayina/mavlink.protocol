@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace Shmyndra.Mavlink.Generator;
+﻿namespace Shmyndra.Mavlink.Generator;
 
 /// <summary>
 /// A concrete implementation of the expression builder.
@@ -23,7 +21,7 @@ public class InvalidValueExpressionBuilder : IInvalidValueExpressionBuilder
 			}
 		}
 
-		string literal = TranslateToPrimitiveLiteral(rawInvalidValue, type);
+		string literal = type.TranslateToPrimitiveLiteral(rawInvalidValue);
 
 		if (type is GeneratedMavlinkMessageFieldEnumType enumType)
 		{
@@ -31,39 +29,5 @@ public class InvalidValueExpressionBuilder : IInvalidValueExpressionBuilder
 		}
 
 		return $"{variableName} != {literal}";
-	}
-
-	private string TranslateToPrimitiveLiteral(string rawInvalidValue, GeneratedMavlinkMessageFieldType type)
-	{
-		switch (rawInvalidValue.ToUpperInvariant())
-		{
-			case "UINT8_MAX": return "byte.MaxValue";
-			case "UINT16_MAX": return "ushort.MaxValue";
-			case "UINT32_MAX": return "uint.MaxValue";
-			case "UINT64_MAX": return "ulong.MaxValue";
-			case "INT8_MAX": return "sbyte.MaxValue";
-			case "INT16_MAX": return "short.MaxValue";
-			case "INT32_MAX": return "int.MaxValue";
-			case "INT64_MAX": return "long.MaxValue";
-		}
-
-		if (double.TryParse(rawInvalidValue, NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedValue))
-		{
-			string literal;
-			if (type.ConvertedType == "float")
-			{
-				literal = ((float)parsedValue).ToString("R", CultureInfo.InvariantCulture) + "f";
-			}
-			else
-			{
-				literal = parsedValue.ToString("R", CultureInfo.InvariantCulture);
-			}
-
-			return literal;
-		}
-
-		throw new FormatException(
-			$"The raw invalid value '{rawInvalidValue}' is not a valid numeric literal or a known MAVLink constant."
-		);
 	}
 }
