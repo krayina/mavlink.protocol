@@ -1,0 +1,280 @@
+﻿/// <summary>
+/// Generic bitmask for the <see cref="Namespace1.EscFailureFlags"/> enum.
+/// </summary>
+/// <remarks>
+/// <see cref="TUnderlying"/> can be any integer type (byte, sbyte, ushort, short, uint, int, ulong, long).
+/// </remarks>
+/// <example>
+/// var bitmask = new EscFailureFlagsBitmask&lt;ushort&gt;(0x0003);
+/// </example>
+#if NET8_0_OR_GREATER
+public readonly struct EscFailureFlagsBitmask<TUnderlying> : EnumBitmask.IEnumBitmask<Namespace1.EscFailureFlags, TUnderlying>
+    where TUnderlying : struct, System.Numerics.IBinaryInteger<TUnderlying>
+#else
+public readonly struct EscFailureFlagsBitmask<TUnderlying> : EnumBitmask.IEnumBitmask<Namespace1.EscFailureFlags, TUnderlying>
+    where TUnderlying : struct
+#endif
+{
+    private readonly TUnderlying _bitmask;
+    private readonly Lazy<System.Collections.Immutable.ImmutableArray<Namespace1.EscFailureFlags>> _activeFlagsLazy;
+
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<TUnderlying, System.Collections.Immutable.ImmutableArray<Namespace1.EscFailureFlags>> _activeFlagsCache = new();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EscFailureFlagsBitmask{TUnderlying}"/> struct with the specified bitmask value.
+    /// Active flags are computed lazily on first access and cached for performance.
+    /// </summary>
+    /// <param name="bitmask">The bitmask value representing a combination of <see cref="Namespace1.EscFailureFlags"/> flags.</param>
+    /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the bitmask contains bits outside the valid range of <see cref="Namespace1.EscFailureFlags"/>.</exception>
+    public EscFailureFlagsBitmask(TUnderlying bitmask)
+    {
+#if NET8_0_OR_GREATER
+        if ((bitmask & ~TUnderlying.CreateTruncating(0xFF)) != TUnderlying.Zero)
+#else
+        if ((bitmask & ~(TUnderlying)(byte)(0xFF)) != default(TUnderlying))
+#endif
+        {
+            throw new System.ArgumentOutOfRangeException(nameof(bitmask), "Bitmask contains bits outside the range of Namespace1.EscFailureFlags (byte).");
+        }
+#if NET8_0_OR_GREATER
+        _bitmask = bitmask & TUnderlying.CreateTruncating(0xFF);
+#else
+        _bitmask = bitmask & (TUnderlying)(byte)(0xFF);
+#endif
+        _activeFlagsLazy = new Lazy<System.Collections.Immutable.ImmutableArray<Namespace1.EscFailureFlags>>(
+            () => _activeFlagsCache.GetOrAdd(_bitmask, ComputeActiveFlags)
+        );
+    }
+
+    /// <summary>
+    /// Gets the underlying bitmask value representing the combination of enum flags.
+    /// </summary>
+    public TUnderlying Bitmask => _bitmask;
+
+    /// <summary>
+    /// Gets the <see cref="Namespace1.EscFailureFlags"/> enum value interpreted from the bitmask.
+    /// The bitmask is cast to the enum's base type (byte) to ensure compatibility.
+    /// </summary>
+    public Namespace1.EscFailureFlags Value
+    {
+        get
+        {
+#if NET8_0_OR_GREATER
+            return (Namespace1.EscFailureFlags)TUnderlying.CreateTruncating(_bitmask);
+#else
+            return (Namespace1.EscFailureFlags)(byte)_bitmask;
+#endif
+        }
+    }
+
+    /// <summary>
+    /// Gets an immutable array of active <see cref="Namespace1.EscFailureFlags"/> flags set in the bitmask.
+    /// The flags are computed on first access and cached locally for subsequent accesses to optimize performance.
+    /// </summary>
+    public System.Collections.Immutable.ImmutableArray<Namespace1.EscFailureFlags> ActiveFlags => _activeFlagsLazy.Value;
+
+    /// <summary>
+    /// Computes the active flags from the specified bitmask value.
+    /// </summary>
+    /// <param name="bitmask">The bitmask value to analyze.</param>
+    /// <returns>An immutable array containing the <see cref="Namespace1.EscFailureFlags"/> flags that are set in the bitmask.</returns>
+    private System.Collections.Immutable.ImmutableArray<Namespace1.EscFailureFlags> ComputeActiveFlags(TUnderlying bitmask)
+    {
+#if NET8_0_OR_GREATER
+        if (bitmask == TUnderlying.Zero)
+        {
+            return System.Collections.Immutable.ImmutableArray<Namespace1.EscFailureFlags>.Empty;
+        }
+        int count = bitmask switch
+        {
+            byte b => System.Numerics.BitOperations.PopCount(b),
+            sbyte sb => System.Numerics.BitOperations.PopCount((byte)sb),
+            ushort us => System.Numerics.BitOperations.PopCount(us),
+            short s => System.Numerics.BitOperations.PopCount((ushort)s),
+            uint u => System.Numerics.BitOperations.PopCount(u),
+            int i => System.Numerics.BitOperations.PopCount((uint)i),
+            ulong ul => System.Numerics.BitOperations.PopCount(ul),
+            long l => System.Numerics.BitOperations.PopCount((ulong)l),
+            _ => throw new System.InvalidOperationException("Unsupported underlying type for PopCount.")
+        };
+        var builder = System.Collections.Immutable.ImmutableArray.CreateBuilder<Namespace1.EscFailureFlags>(count);
+
+        if ((bitmask & TUnderlying.CreateTruncating((byte)Namespace1.EscFailureFlags.OverCurrent)) != TUnderlying.Zero)
+        {
+            builder.Add(Namespace1.EscFailureFlags.OverCurrent);
+        }
+
+        if ((bitmask & TUnderlying.CreateTruncating((byte)Namespace1.EscFailureFlags.OverVoltage)) != TUnderlying.Zero)
+        {
+            builder.Add(Namespace1.EscFailureFlags.OverVoltage);
+        }
+
+        if ((bitmask & TUnderlying.CreateTruncating((byte)Namespace1.EscFailureFlags.OverTemperature)) != TUnderlying.Zero)
+        {
+            builder.Add(Namespace1.EscFailureFlags.OverTemperature);
+        }
+
+        if ((bitmask & TUnderlying.CreateTruncating((byte)Namespace1.EscFailureFlags.OverRpm)) != TUnderlying.Zero)
+        {
+            builder.Add(Namespace1.EscFailureFlags.OverRpm);
+        }
+
+        if ((bitmask & TUnderlying.CreateTruncating((byte)Namespace1.EscFailureFlags.InconsistentCmd)) != TUnderlying.Zero)
+        {
+            builder.Add(Namespace1.EscFailureFlags.InconsistentCmd);
+        }
+
+        if ((bitmask & TUnderlying.CreateTruncating((byte)Namespace1.EscFailureFlags.MotorStuck)) != TUnderlying.Zero)
+        {
+            builder.Add(Namespace1.EscFailureFlags.MotorStuck);
+        }
+
+        if ((bitmask & TUnderlying.CreateTruncating((byte)Namespace1.EscFailureFlags.Generic)) != TUnderlying.Zero)
+        {
+            builder.Add(Namespace1.EscFailureFlags.Generic);
+        }
+
+        return builder.MoveToImmutable();
+#elif NETCOREAPP3_0_OR_GREATER
+        if (System.Collections.Generic.EqualityComparer<TUnderlying>.Default.Equals(bitmask, default))
+        {
+            return System.Collections.Immutable.ImmutableArray<Namespace1.EscFailureFlags>.Empty;
+        }
+        int count = bitmask switch
+        {
+            byte b => System.Numerics.BitOperations.PopCount(b),
+            sbyte sb => System.Numerics.BitOperations.PopCount((byte)sb),
+            ushort us => System.Numerics.BitOperations.PopCount(us),
+            short s => System.Numerics.BitOperations.PopCount((ushort)s),
+            uint u => System.Numerics.BitOperations.PopCount(u),
+            int i => System.Numerics.BitOperations.PopCount((uint)i),
+            ulong ul => System.Numerics.BitOperations.PopCount(ul),
+            long l => System.Numerics.BitOperations.PopCount((ulong)l),
+            _ => System.Numerics.BitOperations.PopCount(Convert.ToUInt64(bitmask))
+        };
+        var builder = System.Collections.Immutable.ImmutableArray.CreateBuilder<Namespace1.EscFailureFlags>(count);
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.EscFailureFlags.OverCurrent) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.EscFailureFlags.OverCurrent);
+        }
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.EscFailureFlags.OverVoltage) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.EscFailureFlags.OverVoltage);
+        }
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.EscFailureFlags.OverTemperature) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.EscFailureFlags.OverTemperature);
+        }
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.EscFailureFlags.OverRpm) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.EscFailureFlags.OverRpm);
+        }
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.EscFailureFlags.InconsistentCmd) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.EscFailureFlags.InconsistentCmd);
+        }
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.EscFailureFlags.MotorStuck) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.EscFailureFlags.MotorStuck);
+        }
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.EscFailureFlags.Generic) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.EscFailureFlags.Generic);
+        }
+
+        return builder.MoveToImmutable();
+#else
+        if (System.Collections.Generic.EqualityComparer<TUnderlying>.Default.Equals(bitmask, default))
+        {
+            return System.Collections.Immutable.ImmutableArray<Namespace1.EscFailureFlags>.Empty;
+        }
+        var builder = System.Collections.Immutable.ImmutableArray.CreateBuilder<Namespace1.EscFailureFlags>(7);
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.EscFailureFlags.OverCurrent) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.EscFailureFlags.OverCurrent);
+        }
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.EscFailureFlags.OverVoltage) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.EscFailureFlags.OverVoltage);
+        }
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.EscFailureFlags.OverTemperature) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.EscFailureFlags.OverTemperature);
+        }
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.EscFailureFlags.OverRpm) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.EscFailureFlags.OverRpm);
+        }
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.EscFailureFlags.InconsistentCmd) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.EscFailureFlags.InconsistentCmd);
+        }
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.EscFailureFlags.MotorStuck) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.EscFailureFlags.MotorStuck);
+        }
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.EscFailureFlags.Generic) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.EscFailureFlags.Generic);
+        }
+
+        return builder.MoveToImmutable();
+#endif
+    }
+
+    /// <summary>
+    /// Determines whether the specified object is equal to the current instance by comparing their bitmask values.
+    /// </summary>
+    /// <param name="obj">The object to compare with the current instance.</param>
+    /// <returns><c>true</c> if the specified object is a <see cref="EscFailureFlagsBitmask{TUnderlying}"/> with the same bitmask; otherwise, <c>false</c>.</returns>
+    public override bool Equals(object? obj) => obj is EscFailureFlagsBitmask<TUnderlying> other && Equals(other);
+
+    /// <summary>
+    /// Determines whether the specified <see cref="EscFailureFlagsBitmask{TUnderlying}"/> instance is equal to the current instance by comparing their bitmask values.
+    /// </summary>
+    /// <param name="other">The <see cref="EscFailureFlagsBitmask{TUnderlying}"/> instance to compare with the current instance.</param>
+    /// <returns><c>true</c> if the bitmask values are equal; otherwise, <c>false</c>.</returns>
+    public bool Equals(EscFailureFlagsBitmask<TUnderlying> other) => System.Collections.Generic.EqualityComparer<TUnderlying>.Default.Equals(_bitmask, other._bitmask);
+
+    /// <summary>
+    /// Returns the hash code for the bitmask value.
+    /// </summary>
+    /// <returns>A hash code based on the underlying bitmask value.</returns>
+    public override int GetHashCode() => _bitmask.GetHashCode();
+
+    /// <summary>
+    /// Determines whether two <see cref="EscFailureFlagsBitmask{TUnderlying}"/> instances have the same bitmask value.
+    /// </summary>
+    /// <param name="left">The first instance to compare.</param>
+    /// <param name="right">The second instance to compare.</param>
+    /// <returns><c>true</c> if the bitmask values are equal; otherwise, <c>false</c>.</returns>
+    public static bool operator ==(EscFailureFlagsBitmask<TUnderlying> left, EscFailureFlagsBitmask<TUnderlying> right) => left.Equals(right);
+
+    /// <summary>
+    /// Determines whether two <see cref="EscFailureFlagsBitmask{TUnderlying}"/> instances have different bitmask values.
+    /// </summary>
+    /// <param name="left">The first instance to compare.</param>
+    /// <param name="right">The second instance to compare.</param>
+    /// <returns><c>true</c> if the bitmask values are different; otherwise, <c>false</c>.</returns>
+    public static bool operator !=(EscFailureFlagsBitmask<TUnderlying> left, EscFailureFlagsBitmask<TUnderlying> right) => !left.Equals(right);
+
+    /// <summary>
+    /// Returns a string representation of the bitmask and its active flags.
+    /// </summary>
+    /// <returns>A string in the format "Bitmask: [value], Active flags: [flag1, flag2, ...]".</returns>
+    public override string ToString() => $"Bitmask: {_bitmask}, Active flags: [{string.Join(", ", ActiveFlags)}]";
+}

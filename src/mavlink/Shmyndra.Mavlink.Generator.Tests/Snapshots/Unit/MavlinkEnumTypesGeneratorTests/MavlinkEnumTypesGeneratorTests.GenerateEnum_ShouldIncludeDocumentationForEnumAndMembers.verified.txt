@@ -1,0 +1,17 @@
+﻿/// <summary>
+/// Mavlink frame enumeration
+/// </summary>
+/// <remarks>
+/// Original name: MavFrameGlobalInt
+/// </remarks>
+[MavlinkType("MavFrameGlobalInt")]
+public enum MavFrameGlobalInt : byte
+{
+    /// <summary>
+    /// Global integer frame description
+    /// </summary>
+    /// <remarks>
+    /// Original name: MAV_FRAME_GLOBAL_INT_Property
+    /// </remarks>
+    MavFrameGlobalIntProperty = 5
+}

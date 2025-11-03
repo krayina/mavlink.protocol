@@ -1,0 +1,158 @@
+﻿/// <summary>
+/// A readonly struct that encapsulates a bitmask for the <see cref="Namespace1.TestEnum"/> enum,
+/// allowing manipulation and inspection of enum flags using an underlying <see cref="ushort"/> type.
+/// Implements <see cref="EnumBitmask.IEnumBitmask{TEnum, TUnderlying}"/> for type-safe bitmask operations.
+/// </summary>
+public readonly struct TestEnumUshortBitmask : EnumBitmask.IEnumBitmask<Namespace1.TestEnum, ushort>
+{
+    private readonly ushort _bitmask;
+    private readonly Lazy<System.Collections.Immutable.ImmutableArray<Namespace1.TestEnum>> _activeFlagsLazy;
+
+    private const ushort ValidMask = 0x3;
+    private const int EnumValuesCount = 2;
+
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<ushort, System.Collections.Immutable.ImmutableArray<Namespace1.TestEnum>> _activeFlagsCache = new();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TestEnumUshortBitmask"/> struct with the specified bitmask value.
+    /// Active flags are computed lazily on first access and cached for performance.
+    /// </summary>
+    /// <param name="bitmask">The bitmask value representing a combination of <see cref="Namespace1.TestEnum"/> flags.</param>
+    /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the bitmask contains bits outside the valid range of <see cref="Namespace1.TestEnum"/>.</exception>
+    public TestEnumUshortBitmask(ushort bitmask)
+    {
+        if ((bitmask & ~ValidMask) != 0)
+        {
+            throw new System.ArgumentOutOfRangeException(nameof(bitmask), "Bitmask contains bits outside the range of Namespace1.TestEnum.");
+        }
+        _bitmask = bitmask;
+        _activeFlagsLazy = new Lazy<System.Collections.Immutable.ImmutableArray<Namespace1.TestEnum>>(
+        () => _activeFlagsCache.GetOrAdd(_bitmask, ComputeActiveFlags)
+        );
+    }
+
+    /// <summary>
+    /// Gets the underlying bitmask value representing the combination of enum flags.
+    /// </summary>
+    public ushort Bitmask => _bitmask;
+
+    /// <summary>
+    /// Gets the <see cref="Namespace1.TestEnum"/> enum value interpreted from the bitmask.
+    /// This is a direct cast of the bitmask to the enum's base type.
+    /// </summary>
+    public Namespace1.TestEnum Value => (Namespace1.TestEnum)(byte)_bitmask;
+
+    /// <summary>
+    /// Gets an immutable array of active <see cref="Namespace1.TestEnum"/> flags set in the bitmask.
+    /// The flags are computed on first access and cached locally for subsequent accesses to optimize performance.
+    /// </summary>
+    public System.Collections.Immutable.ImmutableArray<Namespace1.TestEnum> ActiveFlags => _activeFlagsLazy.Value;
+
+    /// <summary>
+    /// Computes the active flags from the specified bitmask value.
+    /// </summary>
+    /// <param name="bitmask">The bitmask value to analyze.</param>
+    /// <returns>An immutable array containing the <see cref="Namespace1.TestEnum"/> flags that are set in the bitmask.</returns>
+    private static System.Collections.Immutable.ImmutableArray<Namespace1.TestEnum> ComputeActiveFlags(ushort bitmask)
+    {
+#if NET8_0_OR_GREATER
+        if (bitmask == 0)
+        {
+            return System.Collections.Immutable.ImmutableArray<Namespace1.TestEnum>.Empty;
+        }
+        int count = ushort.PopCount(bitmask);
+        var builder = System.Collections.Immutable.ImmutableArray.CreateBuilder<Namespace1.TestEnum>(count);
+
+        if ((bitmask & (ushort)Namespace1.TestEnum.ValueA) != 0)
+        {
+            builder.Add(Namespace1.TestEnum.ValueA);
+        }
+
+        if ((bitmask & (ushort)Namespace1.TestEnum.ValueB) != 0)
+        {
+            builder.Add(Namespace1.TestEnum.ValueB);
+        }
+
+        return builder.MoveToImmutable();
+        #elif NETCOREAPP3_0_OR_GREATER
+        if (bitmask == 0)
+        {
+            return System.Collections.Immutable.ImmutableArray<Namespace1.TestEnum>.Empty;
+        }
+        int count = System.Numerics.BitOperations.PopCount((ulong)bitmask);
+        var builder = System.Collections.Immutable.ImmutableArray.CreateBuilder<Namespace1.TestEnum>(count);
+
+        if ((bitmask & (ushort)Namespace1.TestEnum.ValueA) != 0)
+        {
+            builder.Add(Namespace1.TestEnum.ValueA);
+        }
+
+        if ((bitmask & (ushort)Namespace1.TestEnum.ValueB) != 0)
+        {
+            builder.Add(Namespace1.TestEnum.ValueB);
+        }
+
+        return builder.MoveToImmutable();
+#else
+        if (bitmask == 0)
+        {
+            return System.Collections.Immutable.ImmutableArray<Namespace1.TestEnum>.Empty;
+        }
+        var builder = System.Collections.Immutable.ImmutableArray.CreateBuilder<Namespace1.TestEnum>(EnumValuesCount);
+
+        if ((bitmask & (ushort)Namespace1.TestEnum.ValueA) != 0)
+        {
+            builder.Add(Namespace1.TestEnum.ValueA);
+        }
+
+        if ((bitmask & (ushort)Namespace1.TestEnum.ValueB) != 0)
+        {
+            builder.Add(Namespace1.TestEnum.ValueB);
+        }
+
+        return builder.MoveToImmutable();
+#endif
+    }
+
+    /// <summary>
+    /// Determines whether the specified object is equal to the current instance by comparing their bitmask values.
+    /// </summary>
+    /// <param name="obj">The object to compare with the current instance.</param>
+    /// <returns><c>true</c> if the specified object is a <see cref="TestEnumUshortBitmask"/> with the same bitmask; otherwise, <c>false</c>.</returns>
+    public override bool Equals(object? obj) => obj is TestEnumUshortBitmask other && _bitmask == other._bitmask;
+
+    /// <summary>
+    /// Determines whether the specified <see cref="TestEnumUshortBitmask"/> instance is equal to the current instance by comparing their bitmask values.
+    /// </summary>
+    /// <param name="other">The <see cref="TestEnumUshortBitmask"/> instance to compare with the current instance.</param>
+    /// <returns><c>true</c> if the bitmask values are equal; otherwise, <c>false</c>.</returns>
+    public bool Equals(TestEnumUshortBitmask other) => _bitmask == other._bitmask;
+
+    /// <summary>
+    /// Returns the hash code for the bitmask value.
+    /// </summary>
+    /// <returns>A hash code based on the underlying bitmask value.</returns>
+    public override int GetHashCode() => _bitmask.GetHashCode();
+
+    /// <summary>
+    /// Determines whether two <see cref="TestEnumUshortBitmask"/> instances have the same bitmask value.
+    /// </summary>
+    /// <param name="left">The first instance to compare.</param>
+    /// <param name="right">The second instance to compare.</param>
+    /// <returns><c>true</c> if the bitmask values are equal; otherwise, <c>false</c>.</returns>
+    public static bool operator ==(TestEnumUshortBitmask left, TestEnumUshortBitmask right) => left._bitmask == right._bitmask;
+
+    /// <summary>
+    /// Determines whether two <see cref="TestEnumUshortBitmask"/> instances have different bitmask values.
+    /// </summary>
+    /// <param name="left">The first instance to compare.</param>
+    /// <param name="right">The second instance to compare.</param>
+    /// <returns><c>true</c> if the bitmask values are different; otherwise, <c>false</c>.</returns>
+    public static bool operator !=(TestEnumUshortBitmask left, TestEnumUshortBitmask right) => left._bitmask != right._bitmask;
+
+    /// <summary>
+    /// Returns a string representation of the bitmask and its active flags.
+    /// </summary>
+    /// <returns>A string in the format "Bitmask: [value], Active flags: [flag1, flag2, ...]".</returns>
+    public override string ToString() => $"Bitmask: {_bitmask}, Active flags: [{string.Join(", ", ActiveFlags)}]";
+}

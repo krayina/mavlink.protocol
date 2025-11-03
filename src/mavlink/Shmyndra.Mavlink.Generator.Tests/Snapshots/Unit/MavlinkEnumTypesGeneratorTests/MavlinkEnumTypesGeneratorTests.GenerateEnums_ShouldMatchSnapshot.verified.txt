@@ -31,7 +31,7 @@ public enum EscConnectionType : byte
 /// Original name: ESC_FAILURE_FLAGS
 /// </remarks>
 [MavlinkType("ESC_FAILURE_FLAGS")]
-[System.FlagsAttribute]
+[System.Flags]
 public enum EscFailureFlags : byte
 {
     /// <summary>

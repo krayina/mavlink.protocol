@@ -1,0 +1,205 @@
+﻿/// <summary>
+/// Generic bitmask for the <see cref="Namespace1.TestEnum"/> enum.
+/// </summary>
+/// <remarks>
+/// <see cref="TUnderlying"/> can be any integer type (byte, sbyte, ushort, short, uint, int, ulong, long).
+/// </remarks>
+/// <example>
+/// var bitmask = new TestEnumBitmask&lt;ushort&gt;(0x0003);
+/// </example>
+#if NET8_0_OR_GREATER
+public readonly struct TestEnumBitmask<TUnderlying> : EnumBitmask.IEnumBitmask<Namespace1.TestEnum, TUnderlying>
+    where TUnderlying : struct, System.Numerics.IBinaryInteger<TUnderlying>
+#else
+public readonly struct TestEnumBitmask<TUnderlying> : EnumBitmask.IEnumBitmask<Namespace1.TestEnum, TUnderlying>
+    where TUnderlying : struct
+#endif
+{
+    private readonly TUnderlying _bitmask;
+    private readonly Lazy<System.Collections.Immutable.ImmutableArray<Namespace1.TestEnum>> _activeFlagsLazy;
+
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<TUnderlying, System.Collections.Immutable.ImmutableArray<Namespace1.TestEnum>> _activeFlagsCache = new();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TestEnumBitmask{TUnderlying}"/> struct with the specified bitmask value.
+    /// Active flags are computed lazily on first access and cached for performance.
+    /// </summary>
+    /// <param name="bitmask">The bitmask value representing a combination of <see cref="Namespace1.TestEnum"/> flags.</param>
+    /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the bitmask contains bits outside the valid range of <see cref="Namespace1.TestEnum"/>.</exception>
+    public TestEnumBitmask(TUnderlying bitmask)
+    {
+#if NET8_0_OR_GREATER
+        if ((bitmask & ~TUnderlying.CreateTruncating(0xFF)) != TUnderlying.Zero)
+#else
+        if ((bitmask & ~(TUnderlying)(byte)(0xFF)) != default(TUnderlying))
+#endif
+        {
+            throw new System.ArgumentOutOfRangeException(nameof(bitmask), "Bitmask contains bits outside the range of Namespace1.TestEnum (byte).");
+        }
+#if NET8_0_OR_GREATER
+        _bitmask = bitmask & TUnderlying.CreateTruncating(0xFF);
+#else
+        _bitmask = bitmask & (TUnderlying)(byte)(0xFF);
+#endif
+        _activeFlagsLazy = new Lazy<System.Collections.Immutable.ImmutableArray<Namespace1.TestEnum>>(
+            () => _activeFlagsCache.GetOrAdd(_bitmask, ComputeActiveFlags)
+        );
+    }
+
+    /// <summary>
+    /// Gets the underlying bitmask value representing the combination of enum flags.
+    /// </summary>
+    public TUnderlying Bitmask => _bitmask;
+
+    /// <summary>
+    /// Gets the <see cref="Namespace1.TestEnum"/> enum value interpreted from the bitmask.
+    /// The bitmask is cast to the enum's base type (byte) to ensure compatibility.
+    /// </summary>
+    public Namespace1.TestEnum Value
+    {
+        get
+        {
+#if NET8_0_OR_GREATER
+            return (Namespace1.TestEnum)TUnderlying.CreateTruncating(_bitmask);
+#else
+            return (Namespace1.TestEnum)(byte)_bitmask;
+#endif
+        }
+    }
+
+    /// <summary>
+    /// Gets an immutable array of active <see cref="Namespace1.TestEnum"/> flags set in the bitmask.
+    /// The flags are computed on first access and cached locally for subsequent accesses to optimize performance.
+    /// </summary>
+    public System.Collections.Immutable.ImmutableArray<Namespace1.TestEnum> ActiveFlags => _activeFlagsLazy.Value;
+
+    /// <summary>
+    /// Computes the active flags from the specified bitmask value.
+    /// </summary>
+    /// <param name="bitmask">The bitmask value to analyze.</param>
+    /// <returns>An immutable array containing the <see cref="Namespace1.TestEnum"/> flags that are set in the bitmask.</returns>
+    private System.Collections.Immutable.ImmutableArray<Namespace1.TestEnum> ComputeActiveFlags(TUnderlying bitmask)
+    {
+#if NET8_0_OR_GREATER
+        if (bitmask == TUnderlying.Zero)
+        {
+            return System.Collections.Immutable.ImmutableArray<Namespace1.TestEnum>.Empty;
+        }
+        int count = bitmask switch
+        {
+            byte b => System.Numerics.BitOperations.PopCount(b),
+            sbyte sb => System.Numerics.BitOperations.PopCount((byte)sb),
+            ushort us => System.Numerics.BitOperations.PopCount(us),
+            short s => System.Numerics.BitOperations.PopCount((ushort)s),
+            uint u => System.Numerics.BitOperations.PopCount(u),
+            int i => System.Numerics.BitOperations.PopCount((uint)i),
+            ulong ul => System.Numerics.BitOperations.PopCount(ul),
+            long l => System.Numerics.BitOperations.PopCount((ulong)l),
+            _ => throw new System.InvalidOperationException("Unsupported underlying type for PopCount.")
+        };
+        var builder = System.Collections.Immutable.ImmutableArray.CreateBuilder<Namespace1.TestEnum>(count);
+
+        if ((bitmask & TUnderlying.CreateTruncating((byte)Namespace1.TestEnum.ValueA)) != TUnderlying.Zero)
+        {
+            builder.Add(Namespace1.TestEnum.ValueA);
+        }
+
+        if ((bitmask & TUnderlying.CreateTruncating((byte)Namespace1.TestEnum.ValueB)) != TUnderlying.Zero)
+        {
+            builder.Add(Namespace1.TestEnum.ValueB);
+        }
+
+        return builder.MoveToImmutable();
+#elif NETCOREAPP3_0_OR_GREATER
+        if (System.Collections.Generic.EqualityComparer<TUnderlying>.Default.Equals(bitmask, default))
+        {
+            return System.Collections.Immutable.ImmutableArray<Namespace1.TestEnum>.Empty;
+        }
+        int count = bitmask switch
+        {
+            byte b => System.Numerics.BitOperations.PopCount(b),
+            sbyte sb => System.Numerics.BitOperations.PopCount((byte)sb),
+            ushort us => System.Numerics.BitOperations.PopCount(us),
+            short s => System.Numerics.BitOperations.PopCount((ushort)s),
+            uint u => System.Numerics.BitOperations.PopCount(u),
+            int i => System.Numerics.BitOperations.PopCount((uint)i),
+            ulong ul => System.Numerics.BitOperations.PopCount(ul),
+            long l => System.Numerics.BitOperations.PopCount((ulong)l),
+            _ => System.Numerics.BitOperations.PopCount(Convert.ToUInt64(bitmask))
+        };
+        var builder = System.Collections.Immutable.ImmutableArray.CreateBuilder<Namespace1.TestEnum>(count);
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.TestEnum.ValueA) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.TestEnum.ValueA);
+        }
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.TestEnum.ValueB) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.TestEnum.ValueB);
+        }
+
+        return builder.MoveToImmutable();
+#else
+        if (System.Collections.Generic.EqualityComparer<TUnderlying>.Default.Equals(bitmask, default))
+        {
+            return System.Collections.Immutable.ImmutableArray<Namespace1.TestEnum>.Empty;
+        }
+        var builder = System.Collections.Immutable.ImmutableArray.CreateBuilder<Namespace1.TestEnum>(2);
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.TestEnum.ValueA) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.TestEnum.ValueA);
+        }
+
+        if ((bitmask & (TUnderlying)(byte)Namespace1.TestEnum.ValueB) != default(TUnderlying))
+        {
+            builder.Add(Namespace1.TestEnum.ValueB);
+        }
+
+        return builder.MoveToImmutable();
+#endif
+    }
+
+    /// <summary>
+    /// Determines whether the specified object is equal to the current instance by comparing their bitmask values.
+    /// </summary>
+    /// <param name="obj">The object to compare with the current instance.</param>
+    /// <returns><c>true</c> if the specified object is a <see cref="TestEnumBitmask{TUnderlying}"/> with the same bitmask; otherwise, <c>false</c>.</returns>
+    public override bool Equals(object? obj) => obj is TestEnumBitmask<TUnderlying> other && Equals(other);
+
+    /// <summary>
+    /// Determines whether the specified <see cref="TestEnumBitmask{TUnderlying}"/> instance is equal to the current instance by comparing their bitmask values.
+    /// </summary>
+    /// <param name="other">The <see cref="TestEnumBitmask{TUnderlying}"/> instance to compare with the current instance.</param>
+    /// <returns><c>true</c> if the bitmask values are equal; otherwise, <c>false</c>.</returns>
+    public bool Equals(TestEnumBitmask<TUnderlying> other) => System.Collections.Generic.EqualityComparer<TUnderlying>.Default.Equals(_bitmask, other._bitmask);
+
+    /// <summary>
+    /// Returns the hash code for the bitmask value.
+    /// </summary>
+    /// <returns>A hash code based on the underlying bitmask value.</returns>
+    public override int GetHashCode() => _bitmask.GetHashCode();
+
+    /// <summary>
+    /// Determines whether two <see cref="TestEnumBitmask{TUnderlying}"/> instances have the same bitmask value.
+    /// </summary>
+    /// <param name="left">The first instance to compare.</param>
+    /// <param name="right">The second instance to compare.</param>
+    /// <returns><c>true</c> if the bitmask values are equal; otherwise, <c>false</c>.</returns>
+    public static bool operator ==(TestEnumBitmask<TUnderlying> left, TestEnumBitmask<TUnderlying> right) => left.Equals(right);
+
+    /// <summary>
+    /// Determines whether two <see cref="TestEnumBitmask{TUnderlying}"/> instances have different bitmask values.
+    /// </summary>
+    /// <param name="left">The first instance to compare.</param>
+    /// <param name="right">The second instance to compare.</param>
+    /// <returns><c>true</c> if the bitmask values are different; otherwise, <c>false</c>.</returns>
+    public static bool operator !=(TestEnumBitmask<TUnderlying> left, TestEnumBitmask<TUnderlying> right) => !left.Equals(right);
+
+    /// <summary>
+    /// Returns a string representation of the bitmask and its active flags.
+    /// </summary>
+    /// <returns>A string in the format "Bitmask: [value], Active flags: [flag1, flag2, ...]".</returns>
+    public override string ToString() => $"Bitmask: {_bitmask}, Active flags: [{string.Join(", ", ActiveFlags)}]";
+}

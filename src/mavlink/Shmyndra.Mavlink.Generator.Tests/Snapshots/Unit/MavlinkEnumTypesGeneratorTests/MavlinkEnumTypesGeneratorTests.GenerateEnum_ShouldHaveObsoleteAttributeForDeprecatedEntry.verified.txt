@@ -1,0 +1,12 @@
+﻿/// <remarks>
+/// Original name: MavFrameGlobalInt
+/// </remarks>
+[MavlinkType("MavFrameGlobalInt")]
+public enum MavFrameGlobalInt : byte
+{
+    /// <remarks>
+    /// Original name: MAV_FRAME_GLOBAL_INT_Property
+    /// </remarks>
+    [System.Obsolete("Use MAV_FRAME_GLOBAL in COMMAND_INT (and elsewhere) as a synonymous replacement. Since: 2024-03. Replaced by: MAV_FRAME_GLOBAL.")]
+    MavFrameGlobalIntProperty = 5
+}
