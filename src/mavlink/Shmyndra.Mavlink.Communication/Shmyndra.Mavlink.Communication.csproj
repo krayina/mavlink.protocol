@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>$(LibraryTargetFrameworks)</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SerialPortStream" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Shmyndra.Mavlink\Shmyndra.Mavlink.csproj" />
+  </ItemGroup>
+
+</Project>
