@@ -30,6 +30,23 @@ public class CompilationUnitBuilder
 	}
 
 	/// <summary>
+	/// Adds a member (e.g., struct, enum) to the namespace from a string representation.
+	/// </summary> 
+	/// <param name="memberCode">The string containing the member code.</param>
+	/// <returns>This instance for chaining.</returns>
+	/// <exception cref="ArgumentException">Thrown when the member code cannot be parsed.</exception>
+	public CompilationUnitBuilder AddMember(string memberCode)
+	{
+		var member = SyntaxFactory.ParseMemberDeclaration(memberCode);
+		if (member == null)
+		{
+			throw new ArgumentException("Invalid member code provided.", nameof(memberCode));
+		}
+		_members.Add(member);
+		return this;
+	}
+
+	/// <summary>
 	/// Adds a using directive specific to this namespace.
 	/// </summary>
 	/// <param name="usingDirective">The using directive (e.g., "System").</param>

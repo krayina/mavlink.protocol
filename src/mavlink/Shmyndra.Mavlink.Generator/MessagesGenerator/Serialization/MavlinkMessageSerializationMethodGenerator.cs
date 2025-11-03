@@ -1,112 +1,127 @@
 ﻿using System.Collections.Immutable;
-using System.Text;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Scriban;
+using Scriban.Runtime;
 
 namespace Shmyndra.Mavlink.Generator;
 
 /// <summary>
-/// Generates serialization methods for Mavlink messages, converting instances of generated message types into byte streams.
-/// This class uses a provided serialization strategy to support different approaches, such as buffer-based or span-based serialization.
+/// The main orchestrator for generating a MAVLink message serialization method.
+/// This is the serialization counterpart to <c>MavlinkMessageDeserializationMethodGenerator</c>.
 /// </summary>
-/// <remarks>
-/// The class separates the serialization of required fields from optional extension fields, ensuring efficient processing
-/// and extensibility. It relies on an <see cref="IMavlinkSerializationGeneratorStrategy"/> to generate the actual serialization code.
-/// </remarks>
-public class MavlinkMessageSerializationMethodGenerator
+public abstract partial class MavlinkMessageSerializationMethodGenerator
 {
-	private const string SerializeWithExtensionsMethodName = "SerializeWithExtensions";
-	private const string SerializeWithoutExtensionsMethodName = "SerializeWithoutExtensions";
+	private readonly ImmutableArray<ISerializationFieldScribanTemplateModelFactory> _factories;
+	private readonly ISerializationPayloadWriteScribanStrategy _payloadWriteScribanStrategy;
+	private readonly IInvalidValueExpressionBuilder _invalidValueBuilder;
+	private readonly bool _useObjectiveBitmask;
+	private readonly Template _scribanTemplate;
 
-	private readonly IMavlinkSerializationGeneratorStrategy _serializationStrategy;
-
-	public MavlinkMessageSerializationMethodGenerator(IMavlinkSerializationGeneratorStrategy serializationStrategy)
+	/// <summary>
+	/// Initializes a new instance of the <see cref="MavlinkMessageSerializationMethodGenerator"/> class.
+	/// </summary>
+	protected MavlinkMessageSerializationMethodGenerator(
+		ISerializationPayloadWriteScribanStrategy payloadWriteScribanStrategy,
+		IInvalidValueExpressionBuilder invalidValueBuilder,
+		bool useObjectiveBitmask)
 	{
-		_serializationStrategy = serializationStrategy;
+		_payloadWriteScribanStrategy = payloadWriteScribanStrategy;
+		_invalidValueBuilder = invalidValueBuilder;
+		_useObjectiveBitmask = useObjectiveBitmask;
+		_factories = CreateFactories();
+		_scribanTemplate = Template.Parse(Templates.SerializationMethodTemplate);
 	}
 
 	/// <summary>
-	/// Creates serialization methods for a Mavlink message, including both methods with and without optional extension fields.
+	/// Generates the complete serialization method for a given set of fields.
 	/// </summary>
-	/// <param name="namespace">The namespace of the generated message type.</param>
-	/// <param name="messageName">The name of the generated message type.</param>
-	/// <param name="fields">An immutable array of fields representing the Mavlink message.</param>
-	/// <returns>A <see cref="GeneratedMavlinkMessageSerializeMethod"/> containing the serialization methods.</returns>
-	public GeneratedMavlinkMessageSerializeMethod CreateSerializeMethod(ImmutableArray<GeneratedMavlinkMessageField> fields)
+	/// <param name="methodName">The name for the generated C# method (e.g., "SerializeWithoutExtensions").</param>
+	/// <param name="currentNamespace">The namespace for the message class.</param>
+	/// <param name="messageName">The name of the message class.</param>
+	/// <param name="fieldsToProcess">The specific fields to include in this serialization method.</param>
+	/// <returns>A <see cref="GeneratedMavlinkMessageSerializationMethod"/> containing the generated code.</returns>
+	public GeneratedMavlinkMessageSerializationMethod Generate(
+		string methodName,
+		string currentNamespace,
+		string messageName,
+		ImmutableArray<GeneratedMavlinkMessageField> fieldsToProcess)
 	{
-		MethodDeclarationSyntax serializeWithoutExtensionsMethod = CreateSerializeWithoutExtensionsMethodInternal(fields);
-		MethodDeclarationSyntax? serializeWithExtensionsMethod = null;
-
-		if (fields.Any(x => !x.Original.IsRequired))
-		{
-			serializeWithExtensionsMethod = CreateSerializeWithExtensionsMethodInternal(fields);
-		}
-
-		return new GeneratedMavlinkMessageSerializeMethod(fields, serializeWithoutExtensionsMethod, serializeWithExtensionsMethod);
-	}
-
-	internal MethodDeclarationSyntax CreateSerializeWithoutExtensionsMethodInternal(ImmutableArray<GeneratedMavlinkMessageField> fields)
-	{
-		var methodBody = new StringBuilder();
+		int totalSize = fieldsToProcess.Sum(f => f.GeneratedType.GetFieldTypeSize());
+		var fieldModels = ImmutableArray.CreateBuilder<ISerializationFieldScribanTemplateModel>();
 		int offset = 0;
 
-		_serializationStrategy.AppendBufferInitialization(methodBody, fields.CalculateMinSize());
-		AppendNonExtensionFields(methodBody, fields, ref offset);
-		_serializationStrategy.AppendReturnStatement(methodBody);
-
-		return WrapMethod(SerializeWithoutExtensionsMethodName, methodBody.ToString());
-	}
-
-	internal MethodDeclarationSyntax CreateSerializeWithExtensionsMethodInternal(ImmutableArray<GeneratedMavlinkMessageField> fields)
-	{
-		var methodBody = new StringBuilder();
-		int offset = 0;
-
-		_serializationStrategy.AppendBufferInitialization(methodBody, fields.CalculateFinalSize());
-		AppendNonExtensionFields(methodBody, fields, ref offset);
-		AppendExtensionFields(methodBody, fields, ref offset);
-		_serializationStrategy.AppendReturnStatement(methodBody);
-
-		return WrapMethod(SerializeWithExtensionsMethodName, methodBody.ToString());
-	}
-
-	private void AppendNonExtensionFields(StringBuilder sb, ImmutableArray<GeneratedMavlinkMessageField> fields, ref int offset)
-	{
-		var (requiredFields, arrayFields) = fields.GetSortedFields();
-		foreach (var field in requiredFields)
+		foreach (var field in fieldsToProcess)
 		{
-			_serializationStrategy.AppendFieldSerialization(sb, field, ref offset);
+			var factory = _factories.FirstOrDefault(f => f.CanHandle(field, _useObjectiveBitmask));
+			if (factory == null)
+			{
+				throw new NotSupportedException($"No serialization model factory found for field '{field.GeneratedName}' of type '{field.GeneratedType.GetType().Name}'.");
+			}
+
+			var context = new FieldSerializationScribanContext(
+				field,
+				offset,
+				_payloadWriteScribanStrategy,
+				_useObjectiveBitmask,
+				_invalidValueBuilder
+			);
+
+			var model = factory.CreateModel(context);
+			fieldModels.Add(model);
+
+			offset += field.GeneratedType.GetFieldTypeSize();
 		}
-		foreach (var field in arrayFields)
-		{
-			_serializationStrategy.AppendFieldSerialization(sb, field, ref offset);
-		}
+
+		var rootModel = new MavlinkSerializationMethodModel(
+			messageName,
+			GetMethodSignature(methodName, messageName),
+			GetInitializationBlock(messageName, totalSize),
+			fieldModels.ToImmutable(),
+			totalSize
+		);
+
+		var scribanContext = CSharpScribanTemplateContext.Create(); // Assumes this helper exists
+		scribanContext.PushGlobal(new ScriptObject { ["model"] = rootModel });
+
+		string methodCode = _scribanTemplate.Render(scribanContext);
+
+		var syntaxTree = CSharpSyntaxTree.ParseText($"class D {{ {methodCode} }}", new CSharpParseOptions(LanguageVersion.Latest));
+		var methodSyntax = syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
+
+		return new GeneratedMavlinkMessageSerializationMethod(
+			currentNamespace,
+			messageName,
+			fieldsToProcess,
+			methodSyntax.NormalizeWhitespace()
+		);
 	}
 
-	private void AppendExtensionFields(StringBuilder sb, ImmutableArray<GeneratedMavlinkMessageField> fields, ref int offset)
+	/// <summary>
+	/// Creates and configures the list of field serialization model factories.
+	/// The order is important: more specific factories should come before more general ones.
+	/// </summary>
+	private static ImmutableArray<ISerializationFieldScribanTemplateModelFactory> CreateFactories()
 	{
-		foreach (var field in fields.Where(f => !f.Original.IsRequired))
-		{
-			_serializationStrategy.AppendFieldSerialization(sb, field, ref offset);
-		}
+		return
+		[
+			new TerminatedStringSerializationFieldScribanTemplateModelFactory(),
+			new ClassicBitmaskSerializationFieldScribanTemplateModelFactory(),
+			new ObjectiveBitmaskSerializationFieldScribanTemplateModelFactory(),
+			new ArrayFieldSerializationFieldScribanTemplateModelFactory(),
+			new EnumFieldSerializationFieldScribanTemplateModelFactory(),
+			new PrimitiveFieldSerializationFieldScribanTemplateModelFactory()
+		];
 	}
 
-	private MethodDeclarationSyntax WrapMethod(string methodName, string methodBody)
-	{
-		var methodString = $@"
-public byte[] {methodName}()
-{{
-    {methodBody}
-}}";
-		var classWrapper = $@"
-public class TemporaryClass
-{{
-    {methodString}
-}}";
-		var syntaxTree = CSharpSyntaxTree.ParseText(classWrapper);
-		return syntaxTree.GetRoot()
-						 .DescendantNodes()
-						 .OfType<MethodDeclarationSyntax>()
-						 .First(m => m.Identifier.Text == methodName);
-	}
+	/// <summary>
+	/// When implemented in a derived class, gets the full C# method signature.
+	/// </summary>
+	protected abstract string GetMethodSignature(string methodName, string messageName);
+
+	/// <summary>
+	/// When implemented in a derived class, gets the C# code block for payload initialization and validation.
+	/// </summary>
+	protected abstract string GetInitializationBlock(string messageName, int requiredSize);
 }

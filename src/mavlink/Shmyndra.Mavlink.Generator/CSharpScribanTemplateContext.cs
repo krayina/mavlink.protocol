@@ -1,4 +1,5 @@
 ﻿using Scriban;
+using Scriban.Functions;
 using Scriban.Runtime;
 
 namespace Shmyndra.Mavlink.Generator;
@@ -8,7 +9,6 @@ namespace Shmyndra.Mavlink.Generator;
 /// </summary>
 public static class CSharpScribanTemplateContext
 {
-	private static readonly MemberRenamerDelegate PassthroughRenamer = memberInfo => memberInfo.Name;
 	private static readonly MemberFilterDelegate AllowAllMembers = memberInfo => true;
 
 	/// <summary>
@@ -17,9 +17,11 @@ public static class CSharpScribanTemplateContext
 	/// </summary>
 	public static TemplateContext Create()
 	{
-		var context = new TemplateContext
+		var builtins = new BuiltinFunctions();
+
+		var context = new TemplateContext(builtins)
 		{
-			MemberRenamer = PassthroughRenamer,
+			MemberRenamer = member => Utilities.PascalCaseToSnakeCase(member.Name),
 			MemberFilter = AllowAllMembers,
 			StrictVariables = true,
 			EnableRelaxedMemberAccess = false,
@@ -30,10 +32,11 @@ public static class CSharpScribanTemplateContext
 		};
 
 		var globals = new ScriptObject();
-		globals.Import("to_lower_camel", new Func<string, string>(Utilities.ToLowerCamelCase));
-		globals.Import("to_camel_case", new Func<string, string>(Utilities.ToCamelCase));
+		globals.Import("to_lower_camel_case", new Func<string, string>(Utilities.ToLowerCamelCase));
+		globals.Import("to_upper_camel_case", new Func<string, string>(Utilities.ToUpperCamelCase));
 		globals.Import("escape_keyword", new Func<string, string>(Utilities.EscapeReservedKeyword));
 		globals.Import("safe_var", new Func<string, string[], string>(Utilities.GetSafeVariableName));
+		globals.Import("indent", new Func<string, string>(text => Utilities.Indent(text)));
 
 		context.PushGlobal(globals);
 		return context;

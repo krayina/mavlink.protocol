@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
@@ -9,43 +10,101 @@ namespace Shmyndra.Mavlink.Generator;
 
 internal static class Utilities
 {
+	public static ImmutableDictionary<string, (string TypeName, int Size)> MavlinkTypeMap { get; } = new Dictionary<string, (string, int)>
+	{
+		// MAVLink Type Name  => (C# Type Name, Size in bytes)
+		{ "char",                   ("char", 1) },
+		{ "uint8_t",                ("byte", 1) },
+		{ "int8_t",                 ("sbyte", 1) },
+		{ "uint16_t",               ("ushort", 2) },
+		{ "int16_t",                ("short", 2) },
+		{ "uint32_t",               ("uint", 4) },
+		{ "int32_t",                ("int", 4) },
+		{ "uint64_t",               ("ulong", 8) },
+		{ "int64_t",                ("long", 8) },
+		{ "float",                  ("float", 4) },
+		{ "double",                 ("double", 8) },
+    
+		// The same as uint8_t
+		{ "uint8_t_mavlink_version",("byte", 1) }
+	}.ToImmutableDictionary();
+
+	public static string TranslateToPrimitiveLiteral(this GeneratedMavlinkMessageFieldType type, string rawInvalidValue)
+	{
+		switch (rawInvalidValue.ToUpperInvariant())
+		{
+			case "UINT8_MAX": return "byte.MaxValue";
+			case "UINT16_MAX": return "ushort.MaxValue";
+			case "UINT32_MAX": return "uint.MaxValue";
+			case "UINT64_MAX": return "ulong.MaxValue";
+			case "INT8_MAX": return "sbyte.MaxValue";
+			case "INT16_MAX": return "short.MaxValue";
+			case "INT32_MAX": return "int.MaxValue";
+			case "INT64_MAX": return "long.MaxValue";
+		}
+
+		if (double.TryParse(rawInvalidValue, NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedValue))
+		{
+			string literal;
+			if (type.ConvertedType == "float")
+			{
+				literal = ((float)parsedValue).ToString("R", CultureInfo.InvariantCulture) + "f";
+			}
+			else
+			{
+				literal = parsedValue.ToString("R", CultureInfo.InvariantCulture);
+			}
+
+			return literal;
+		}
+
+		throw new FormatException(
+			$"The raw invalid value '{rawInvalidValue}' is not a valid numeric literal or a known MAVLink constant."
+		);
+	}
+
 	/// <summary>
-	/// Gets the sorted required fields and array fields (only required ones) from the provided collection.
+	/// Gets the sorted required fields, partitioned into scalar and array fields.
 	/// </summary>
 	/// <param name="fields">An immutable array of generated message fields.</param>
 	/// <returns>
 	/// A tuple with two lists:
 	/// <list type="bullet">
-	/// <item><description>requiredFields</description></item>
-	/// <item><description>arrayFields</description></item>
+	/// <item><description>requiredScalarFields: Non-array fields, sorted by size for alignment.</description></item>
+	/// <item><description>requiredArrayFields: Array fields.</description></item>
 	/// </list>
 	/// </returns>
-	public static (List<GeneratedMavlinkMessageField> requiredFields, List<GeneratedMavlinkMessageField> arrayFields)
+	public static (List<GeneratedMavlinkMessageField> requiredScalarFields, List<GeneratedMavlinkMessageField> requiredArrayFields)
 		GetSortedFields(this ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
-		var requiredFields = fields
-			.Where(f => f.Original.IsRequired
-				&& !(f.GeneratedType is GeneratedMavlinkMessageFieldArrayType
-				|| f.GeneratedType is GeneratedMavlinkMessageFieldArrayEnumType))
-			.ToList();
+		var requiredScalarFields = new List<GeneratedMavlinkMessageField>();
+		var requiredArrayFields = new List<GeneratedMavlinkMessageField>();
 
-		// Sort required fields by type size (largest to smallest) for proper alignment.
-		requiredFields.Sort((field1, field2) =>
+		foreach (var field in fields)
 		{
-			var size1 = GetDotNetTypeSize(field1.GeneratedType.ConvertedType);
-			var size2 = GetDotNetTypeSize(field2.GeneratedType.ConvertedType);
+			if (!field.Original.IsRequired)
+			{
+				continue;
+			}
+
+			if (field.GeneratedType is GeneratedMavlinkMessageFieldArrayType)
+			{
+				requiredArrayFields.Add(field);
+			}
+			else
+			{
+				requiredScalarFields.Add(field);
+			}
+		}
+
+		requiredScalarFields.Sort((field1, field2) =>
+		{
+			var size1 = GetDotNetTypeSize(field1.GeneratedType.GetElementTypeOrSelf().ConvertedType);
+			var size2 = GetDotNetTypeSize(field2.GeneratedType.GetElementTypeOrSelf().ConvertedType);
 			return size2.CompareTo(size1);
 		});
-
-		var arrayFields = fields
-			.Where(f => f.Original.IsRequired
-				&& (f.GeneratedType is GeneratedMavlinkMessageFieldArrayType
-				|| f.GeneratedType is GeneratedMavlinkMessageFieldArrayEnumType))
-			.ToList();
-
-		return (requiredFields, arrayFields);
+		return (requiredScalarFields, requiredArrayFields);
 	}
-
 	/// <summary>
 	/// Escapes reserved C# keywords by prefixing them with '@' if necessary.
 	/// </summary>
@@ -71,46 +130,116 @@ internal static class Utilities
 		return name;
 	}
 
+	public static string PascalCaseToSnakeCase(string text)
+	{
+		if (string.IsNullOrEmpty(text))
+		{
+			return text;
+		}
+
+		return Regex.Replace(
+			text,
+			@"(?<!^)(?=[A-Z])",
+			"_"
+		).ToLowerInvariant();
+	}
+
 	public static string ToLowerCamelCase(string name)
 	{
 		return char.ToLowerInvariant(name[0]) + name.Substring(1);
 	}
 
-	public static string ToCamelCase(string input)
+	public static string ToUpperCamelCase(string input)
 	{
 		if (string.IsNullOrEmpty(input))
 		{
 			return input;
 		}
 
-		// Split the input string by hyphens, underscores, or spaces
-		var words = input.Split(new[] { '-', '_', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+		if (IsUpperCamelCase(input))
+		{
+			return input;
+		}
 
-		// Capitalize the first letter of each word and concatenate them
+		var words = SplitIntoWords(input);
+
 		var result = string.Concat(words.Select(word => char.ToUpper(word[0]) + word.Substring(1).ToLower()));
 
 		return result;
 	}
 
-	public static SyntaxTriviaList CreateSummaryTrivia(string description)
+	private static bool IsUpperCamelCase(string input)
 	{
-		var summaryStart = SyntaxFactory.Comment("/// <summary>");
-		var summaryContent = description.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-										.Select(line => SyntaxFactory.Comment($"/// {line.Trim()}"));
-		var summaryEnd = SyntaxFactory.Comment("/// </summary>");
+		if (input.Any(c => c == '-' || c == '_' || c == ' '))
+		{
+			return false;
+		}
 
-		return SyntaxFactory.TriviaList(summaryStart)
-							.AddRange(summaryContent)
-							.Add(summaryEnd);
+		var words = SplitIntoWords(input);
+
+		return words.All(word => char.IsUpper(word[0]));
 	}
 
-	private static SyntaxTriviaList CreateRemarksTrivia(string description)
+	private static List<string> SplitIntoWords(string input)
 	{
-		var remarksStart = SyntaxFactory.Comment("/// <remarks>");
-		var remarksContent = SyntaxFactory.Comment($"/// {description}");
-		var remarksEnd = SyntaxFactory.Comment("/// </remarks>");
+		var words = new List<string>();
 
-		return SyntaxFactory.TriviaList(remarksStart, remarksContent, remarksEnd);
+		if (input.Any(c => c == '-' || c == '_' || c == ' '))
+		{
+			return input.Split(['-', '_', ' '], StringSplitOptions.RemoveEmptyEntries).ToList();
+		}
+
+		int start = 0;
+		for (int i = 1; i < input.Length; i++)
+		{
+			if (char.IsUpper(input[i]))
+			{
+				words.Add(input.Substring(start, i - start));
+				start = i;
+			}
+		}
+		words.Add(input.Substring(start));
+
+		return words;
+	}
+
+	public static SyntaxTriviaList CreateSummaryTrivia(string description)
+	{
+		var triviaNodes = new List<SyntaxTrivia>
+	{
+		SyntaxFactory.Comment("/// <summary>"),
+		SyntaxFactory.CarriageReturnLineFeed
+	};
+
+		var lines = description.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+							   .Select(line => line.Trim())
+							   .Where(line => !string.IsNullOrEmpty(line));
+
+		if (lines.Any())
+		{
+			var contentTrivia = lines.SelectMany(line => new[]
+			{
+			SyntaxFactory.Comment($"/// {line}"),
+			SyntaxFactory.CarriageReturnLineFeed
+		});
+			triviaNodes.AddRange(contentTrivia);
+		}
+		triviaNodes.Add(SyntaxFactory.Comment("/// </summary>"));
+		triviaNodes.Add(SyntaxFactory.CarriageReturnLineFeed);
+
+		return SyntaxFactory.TriviaList(triviaNodes);
+	}
+
+	public static SyntaxTriviaList CreateRemarksTrivia(string description)
+	{
+		return SyntaxFactory.TriviaList(
+			SyntaxFactory.Comment("/// <remarks>"),
+			SyntaxFactory.CarriageReturnLineFeed,
+			SyntaxFactory.Comment($"/// {description}"),
+			SyntaxFactory.CarriageReturnLineFeed,
+			SyntaxFactory.Comment("/// </remarks>"),
+			SyntaxFactory.CarriageReturnLineFeed
+		);
 	}
 
 	public static T AddSummaryTriviaIfNotNull<T>(this T node, string? description) where T : SyntaxNode
@@ -178,10 +307,12 @@ internal static class Utilities
 		}
 
 		var obsoleteAttribute = CreateObsoleteAttribute(obsoleteMessage);
-		var attributeList = SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(obsoleteAttribute));
+		var attributeList = SyntaxFactory
+			.AttributeList(SyntaxFactory.SingletonSeparatedList(obsoleteAttribute))
+			.WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+
 		var attributes = member.AttributeLists.Add(attributeList);
 
-		// Ensure the cast back to the original type T
 		return (T)member.WithAttributeLists(attributes);
 	}
 
@@ -207,11 +338,21 @@ internal static class Utilities
 
 	public static string DetermineEnumBaseType(IEnumerable<uint> values)
 	{
+		if (values == null || !values.Any())
+		{
+			return "int";
+		}
+
 		var maxValue = values.Max();
-		if (maxValue <= byte.MaxValue) return "byte";
-		if (maxValue <= ushort.MaxValue) return "ushort";
-		if (maxValue <= uint.MaxValue) return "uint";
-		throw new InvalidOperationException("The enum base type value cannot be greater than uint.");
+		if (maxValue <= byte.MaxValue)
+		{
+			return "byte";
+		}
+		if (maxValue <= ushort.MaxValue)
+		{
+			return "ushort";
+		}
+		return "uint";
 	}
 
 	public static string DetermineBitmask(GeneratedMavlinkEnum generatedEnum)
@@ -237,6 +378,39 @@ internal static class Utilities
 		code = Regex.Replace(code, @"#endif(\w+)", "#endif $1");
 		code = code.Replace("? )", "?)");
 		return IndentCodeWithNesting(code);
+	}
+
+	public static string Indent(string text)
+	{
+		return Indent(text, "    ");
+	}
+
+	public static string Indent(string text, string indentation = "    ")
+	{
+		if (string.IsNullOrEmpty(text))
+		{
+			return string.Empty;
+		}
+
+		var lines = text.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+		var result = new StringBuilder();
+
+		for (int i = 0; i < lines.Length; i++)
+		{
+			var line = lines[i];
+			if (!string.IsNullOrWhiteSpace(line))
+			{
+				result.Append(indentation);
+			}
+
+			result.Append(line);
+
+			if (i < lines.Length - 1)
+			{
+				result.AppendLine();
+			}
+		}
+		return result.ToString();
 	}
 
 	private static string IndentCodeWithNesting(string code)
@@ -299,20 +473,32 @@ internal static class Utilities
 
 	public static string IndentCode(string code, int indentLevel)
 	{
-		string indent = new string(' ', indentLevel * 4);
-		var sb = new StringBuilder();
-		foreach (var line in code.Split(new[] { "\n", "\r\n" }, StringSplitOptions.None))
+		if (string.IsNullOrEmpty(code))
 		{
+			return string.Empty;
+		}
+
+		var indent = new string(' ', indentLevel * 4);
+		var lines = code.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+
+		var sb = new StringBuilder();
+
+		for (int i = 0; i < lines.Length; i++)
+		{
+			var line = lines[i];
 			if (!string.IsNullOrWhiteSpace(line))
 			{
-				sb.AppendLine($"{indent}{line.TrimEnd()}");
+				sb.Append(indent);
 			}
-			else
+
+			sb.Append(line);
+			if (i < lines.Length - 1)
 			{
-				sb.AppendLine();
+				sb.Append('\n');
 			}
 		}
-		return sb.ToString().TrimEnd();
+
+		return sb.ToString();
 	}
 
 	public static void AppendWithIndent(StringBuilder sb, string content, int indentLevel)
@@ -337,7 +523,7 @@ internal static class Utilities
 
 		foreach (var field in fields)
 		{
-			int fieldSize = field.GetFieldSize();
+			int fieldSize = field.GeneratedType.GetFieldTypeSize();
 
 			if (field.Original.IsRequired)
 			{
@@ -350,23 +536,28 @@ internal static class Utilities
 
 	public static int CalculateFinalSize(this ImmutableArray<GeneratedMavlinkMessageField> fields)
 	{
-		int minSize = fields.CalculateMinSize();
-		int extensionLength = fields
-			.Where(f => !f.Original.IsRequired && !(f.GeneratedType is GeneratedMavlinkMessageFieldArrayType || f.GeneratedType is GeneratedMavlinkMessageFieldArrayEnumType))
-			.Sum(f => f.GetFieldSize());
-		int arrayExtensionSize = fields
-			.Where(f => !f.Original.IsRequired && (f.GeneratedType is GeneratedMavlinkMessageFieldArrayType || f.GeneratedType is GeneratedMavlinkMessageFieldArrayEnumType))
-			.Sum(f => f.GetFieldSize());
-		return minSize + extensionLength + arrayExtensionSize;
+		int requiredSize = fields
+			.Where(f => f.Original.IsRequired)
+			.Sum(f => f.GeneratedType.GetFieldTypeSize());
+
+		int extensionSize = fields
+			.Where(f => !f.Original.IsRequired)
+			.Sum(f => f.GeneratedType.GetFieldTypeSize());
+
+		return requiredSize + extensionSize;
 	}
 
-	public static int GetFieldSize(this GeneratedMavlinkMessageField field)
+	public static int GetFieldTypeSize(this GeneratedMavlinkMessageFieldType type)
 	{
-		return field.GeneratedType switch
+		return type switch
 		{
-			GeneratedMavlinkMessageFieldArrayType arrayField => GetDotNetTypeSize(arrayField.ConvertedType) * arrayField.ArrayLength,
-			GeneratedMavlinkMessageFieldArrayEnumType arrayEnumField => GetDotNetTypeSize(arrayEnumField.ConvertedType) * arrayEnumField.ArrayLength,
-			_ => GetDotNetTypeSize((field.GeneratedType).ConvertedType)
+			GeneratedMavlinkMessageFieldArrayType arrayType =>
+				GetDotNetTypeSize(arrayType.ConvertedType) * arrayType.ArrayLength,
+
+			GeneratedMavlinkMessageFieldScalarType scalarType =>
+				GetDotNetTypeSize(scalarType.ConvertedType),
+
+			_ => throw new NotSupportedException($"Cannot determine field size for type {type.GetType().Name}")
 		};
 	}
 
@@ -399,7 +590,7 @@ internal static class Utilities
 		{
 			"byte" => 1,
 			"sbyte" => 1,
-			"char" => 1,
+			"char" => 2,
 			"ushort" => 2,
 			"short" => 2,
 			"uint" => 4,
@@ -408,7 +599,7 @@ internal static class Utilities
 			"ulong" => 8,
 			"long" => 8,
 			"double" => 8,
-			_ => throw new InvalidOperationException($"Unknown type: {convertedType}"),
+			_ => throw new NotSupportedException($"Unsupported type: {convertedType}"),
 		};
 	}
 
@@ -448,24 +639,34 @@ internal static class Utilities
 		return typeName;
 	}
 
+	/// <summary>
+	/// Gets the fully qualified name of the generated enum, including its namespace,
+	/// unless it resides in the same namespace as the referencing type.
+	/// </summary>
+	/// <param name="generatedEnum">The generated enum for which to get the name.</param>
+	/// <param name="referencingNamespace">The namespace of the code that will be referencing this enum (e.g., the message's namespace).</param>
+	/// <returns>
+	/// The simple name of the enum if it's in the same namespace, 
+	/// or the fully qualified name (e.g., "MyProject.Enums.MyEnum") otherwise.
+	/// </returns>
+	public static string GetQualifiedName(this GeneratedMavlinkEnum generatedEnum, string referencingNamespace)
+	{
+		if (string.IsNullOrEmpty(referencingNamespace) || generatedEnum.Namespace == referencingNamespace)
+		{
+			return generatedEnum.GeneratedName;
+		}
+		else
+		{
+			return $"{generatedEnum.Namespace}.{generatedEnum.GeneratedName}";
+		}
+	}
+
 	public static string GetQualifiedBitmaskTypeName(this GeneratedMavlinkMessageFieldEnumType enumType, string currentNamespace)
 	{
 		return $"{enumType.GetQualifiedEnumTypeName(currentNamespace)}Bitmask";
 	}
 
-	public static string GetQualifiedBitmaskTypeName(this GeneratedMavlinkMessageFieldArrayEnumType arrayEnumType, string currentNamespace)
-	{
-		return $"{arrayEnumType.GetQualifiedEnumTypeName(currentNamespace)}Bitmask";
-	}
-
 	public static string GetQualifiedEnumTypeName(this GeneratedMavlinkMessageFieldEnumType enumType, string currentNamespace)
-	{
-		return enumType.GeneratedEnum.Namespace == currentNamespace
-			? enumType.GeneratedEnum.GeneratedName
-			: $"{enumType.GeneratedEnum.Namespace}.{enumType.GeneratedEnum.GeneratedName}";
-	}
-
-	public static string GetQualifiedEnumTypeName(this GeneratedMavlinkMessageFieldArrayEnumType enumType, string currentNamespace)
 	{
 		return enumType.GeneratedEnum.Namespace == currentNamespace
 			? enumType.GeneratedEnum.GeneratedName
@@ -488,13 +689,9 @@ internal static class Utilities
 			var typeName = field.Original.Type.TypeName.Equals("uint8_t_mavlink_version") ? "uint8_t" : field.Original.Type.GetTypeWithoutArray();
 			crc = X25Crc.Accumulate($"{typeName} {field.Original.Name} ", crc);
 
-			if (field.GeneratedType is GeneratedMavlinkMessageFieldArrayType arrayField)
+			if (field.GeneratedType is GeneratedMavlinkMessageFieldArrayType arrayType)
 			{
-				crc = X25Crc.Accumulate(crc, (byte)arrayField.ArrayLength);
-			}
-			else if (field.GeneratedType is GeneratedMavlinkMessageFieldArrayEnumType arrayEnumField)
-			{
-				crc = X25Crc.Accumulate(crc, (byte)arrayEnumField.ArrayLength);
+				crc = X25Crc.Accumulate(crc, (byte)arrayType.ArrayLength);
 			}
 		}
 

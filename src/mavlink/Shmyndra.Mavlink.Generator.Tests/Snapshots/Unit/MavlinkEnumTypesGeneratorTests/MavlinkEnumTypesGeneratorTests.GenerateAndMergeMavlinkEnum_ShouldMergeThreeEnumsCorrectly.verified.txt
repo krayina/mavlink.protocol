@@ -1,0 +1,52 @@
+﻿/// <summary>
+/// Third enum
+/// </summary>
+/// <remarks>
+/// Original name: Test_Enum
+/// </remarks>
+[MavlinkType("Test_Enum")]
+public enum TestEnum : byte
+{
+    /// <summary>
+    /// First value
+    /// </summary>
+    /// <remarks>
+    /// Original name: Value_A
+    /// </remarks>
+    ValueA = Namespace2.TestEnum.ValueA,
+    /// <summary>
+    /// Second value
+    /// </summary>
+    /// <remarks>
+    /// Original name: Value_B
+    /// </remarks>
+    ValueB = Namespace2.TestEnum.ValueB,
+    /// <summary>
+    /// Third value
+    /// </summary>
+    /// <remarks>
+    /// Original name: Value_C
+    /// </remarks>
+    ValueC = Namespace2.TestEnum.ValueC,
+    /// <summary>
+    /// Fourth value
+    /// </summary>
+    /// <remarks>
+    /// Original name: Value_D
+    /// </remarks>
+    ValueD = Namespace2.TestEnum.ValueD,
+    /// <summary>
+    /// Fifth value
+    /// </summary>
+    /// <remarks>
+    /// Original name: Value_E
+    /// </remarks>
+    ValueE = 5,
+    /// <summary>
+    /// Sixth value
+    /// </summary>
+    /// <remarks>
+    /// Original name: Value_F
+    /// </remarks>
+    ValueF = 6
+}

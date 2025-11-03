@@ -40,7 +40,6 @@ public record MavlinkEnum
 	/// <param name="bitmask">Indicates whether the enum is a bitmask.</param>
 	/// <param name="entries">The array of entries in the Mavlink enum.</param>
 	/// <param name="deprecated">The deprecation information of the Mavlink enum.</param>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="name"/> or <paramref name="entries"/> is <c>null</c>.</exception>
 	public MavlinkEnum(
 		string name,
 		string? description,
@@ -48,7 +47,7 @@ public record MavlinkEnum
 		ImmutableArray<MavlinkEnumEntry> entries,
 		MavlinkDeprecatedInfo? deprecated)
 	{
-		Name = name ?? throw new ArgumentNullException(nameof(name));
+		Name = name;
 		Entries = entries;
 		Description = description;
 		Bitmask = bitmask;

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
@@ -35,13 +36,12 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 
 	class Generator
 	{
-		private static readonly IMavlinkFilesTreeBuilder _treeBuilder = new MavlinkFilesTreeBuilder(new MavlinkXmlParser());
+		private static readonly IMavlinkTreeBuilder _treeBuilder = new MavlinkTreeBuilder(new MavlinkXmlParser());
 
 		internal void Generate(IncrementalGeneratorInitializationContext context)
 		{
 			var xmlFiles = context.AdditionalTextsProvider
 				.Where(file => file.Path.EndsWith(".xml")
-					// Files that are not included in the project marked as "_"
 					&& !Path.GetFileName(file.Path).StartsWith("_"))
 				.Select((file, _) => (file.Path, Content: file.GetText()!.ToString()))
 				.Collect();
@@ -54,11 +54,15 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 		{
 			var (compilation, files) = input;
 
+			var enumGenerator = new MavlinkEnumGenerator();
 			var messageGenerator = GetMavlinkMessageGeneratorInstanceWithNetStandardCondition(compilation);
 
+			var enumTreeGenerator = new MavlinkEnumTreeGenerator(enumGenerator);
+
 			var generator = new MavlinkGenerator(
-				new MavlinkFilesTreeBuilder(new MavlinkXmlParser()),
-				new MavlinkEnumGenerator(),
+				_treeBuilder,
+				enumGenerator,
+				enumTreeGenerator,
 				messageGenerator,
 				new MavlinkSpecificationGenerator());
 
@@ -71,42 +75,99 @@ public class MavlinkIncrementalGenerator : IIncrementalGenerator
 			}
 
 			var messagesStorage = (IGeneratedStorage<GeneratedMavlinkMessage>)messageGenerator;
+			var enumsStorage = (IGeneratedStorage<GeneratedMavlinkEnum>)enumGenerator;
+
 			var generatedMessages = messagesStorage.GetGeneratedTypes();
+			var generatedEnums = enumsStorage.GetGeneratedTypes();
+
 			var generatedMessagesSourceCode = MavlinkMessagesGenerator.GenerateMessageExtensions(generatedMessages);
+
+			var enumBitmaskNamespaceBuilder = new CompilationUnitBuilder(MavlinkGeneratorConstants.TypesNamespace);
+			var mavlinkGenericEnumBitmaskGenerator = new MavlinkGenericEnumBitmaskGenerator();
+			var mavlinkSpecificEnumBitmaskGenerator = new MavlinkSpecificEnumBitmaskGenerator();
+			foreach (var generatedEnum in generatedEnums)
+			{
+				if (generatedEnum.Original.Bitmask == true)
+				{
+					var generatedGenericEnumBitmask = mavlinkGenericEnumBitmaskGenerator.Generate(generatedEnum);
+					enumBitmaskNamespaceBuilder.AddMember(generatedGenericEnumBitmask);
+				}
+			}
+
+			(GeneratedMavlinkEnum GeneratedEnum, string UnderlyingType)[] underlyingEnumDependencies = generatedMessages
+				.SelectMany(x => x.GeneratedFields)
+				.Where(x => x.Original.Display == MavlinkMessageFieldDisplay.Bitmask &&
+							(x.GeneratedType is GeneratedMavlinkMessageFieldEnumType ||
+							 x.GeneratedType is GeneratedMavlinkMessageFieldArrayType { ElementType: GeneratedMavlinkMessageFieldEnumType }))
+				.Select(x => x.GeneratedType.GetElementTypeOrSelf() as GeneratedMavlinkMessageFieldEnumType)
+				.Where(x => x != null)
+				.Select(x => (x!.GeneratedEnum, x.ConvertedType))
+				.Distinct()
+				.ToArray();
+
+			foreach (var item in underlyingEnumDependencies)
+			{
+				var generatedSpecificEnumBitmaskType = mavlinkSpecificEnumBitmaskGenerator.Generate(item.GeneratedEnum, item.UnderlyingType);
+				enumBitmaskNamespaceBuilder.AddMember(generatedSpecificEnumBitmaskType);
+			}
+
 			AddSource(spc, MavlinkGeneratorConstants.TypesNamespace, generatedMessagesSourceCode);
+			AddSource(spc, "EnumBitmaskTypes", enumBitmaskNamespaceBuilder.Build());
 		}
 
 		private MavlinkMessageGenerator GetMavlinkMessageGeneratorInstanceWithNetStandardCondition(Compilation compilation)
 		{
 			bool supportsSpan = IsSpanSerializationAvailable(compilation);
+			bool useObjectiveBitmask = IsObjectiveBitmaskEnabled(compilation);
+
+			var ruleDefinitionProvider = new MavlinkMessageFieldValidationRuleDefinitionProvider();
+			var placementProvider = new InvalidatabilityPlacementProvider();
+			var invalidValueBuilder = new InvalidValueExpressionBuilder();
+			var validationCompiler = new MavlinkMessageFieldValidationExpressionCompiler(invalidValueBuilder);
+
+			IMavlinkMessageFieldTypeNameResolutionStrategy bitmaskTypeNameStrategy = useObjectiveBitmask
+				? new MavlinkObjectiveBitmaskFieldTypeNameResolutionStrategy()
+				: new MavlinkBitmaskFieldTypeNameResolutionStrategy();
+
+			var typeNameResolver = new MavlinkFieldTypeNameResolverFacade(
+				bitmaskTypeNameStrategy,
+				new MavlinkNonBitmaskFieldTypeNameResolutionStrategy());
+
+			MavlinkMessageDeserializationMethodGenerator deserializationGenerator;
+			MavlinkMessageSerializationMethodGenerator serializationGenerator;
 
 			if (supportsSpan)
 			{
-				return new MavlinkMessageGenerator
-				(
+				deserializationGenerator = new MavlinkMessageSpanDeserializationMethodGenerator(
+					validationCompiler,
+					useObjectiveBitmask);
 
-					new MavlinkMessageDeserializationMethodGenerator
-					(
-						new MavlinkSpanDeserializationGeneratorStrategy()
-					),
-					new MavlinkMessageSerializationMethodGenerator
-					(
-						new MavlinkSpanSerializationGeneratorStrategy()
-					)
-				);
+				serializationGenerator = new MavlinkMessageSpanSerializationMethodGenerator(
+					invalidValueBuilder,
+					useObjectiveBitmask);
+			}
+			else
+			{
+				deserializationGenerator = new MavlinkMessageBufferDeserializationMethodGenerator(
+					validationCompiler,
+					useObjectiveBitmask);
+
+				serializationGenerator = new MavlinkMessageBufferSerializationMethodGenerator(
+					invalidValueBuilder,
+					useObjectiveBitmask);
 			}
 
-			return new MavlinkMessageGenerator
-			(
-				new MavlinkMessageDeserializationMethodGenerator
-				(
-					new MavlinkBufferDeserializationGeneratorStrategy()
-				),
-				new MavlinkMessageSerializationMethodGenerator
-				(
-					new MavlinkBufferSerializationGeneratorStrategy()
-				)
+			return new MavlinkMessageGenerator(
+				new MavlinkMessageFieldInitPropertyGenerator(typeNameResolver, ruleDefinitionProvider, placementProvider),
+				deserializationGenerator,
+				serializationGenerator
 			);
+		}
+
+		private static bool IsObjectiveBitmaskEnabled(Compilation compilation)
+		{
+			return compilation.SyntaxTrees.FirstOrDefault()?.Options is CSharpParseOptions options &&
+				   options.PreprocessorSymbolNames.Contains("USE_OBJECTIVE_BITMASK_SERIALIZATION_AND_DESERIALIZATION");
 		}
 
 		private static bool IsSpanSerializationAvailable(Compilation compilation)

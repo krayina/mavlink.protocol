@@ -20,19 +20,23 @@ public interface IMavlinkGenerator
 
 public class MavlinkGenerator : IMavlinkGenerator
 {
-	private readonly IMavlinkFilesTreeBuilder _filesTreeBuilder;
+	private readonly IMavlinkTreeBuilder _filesTreeBuilder;
 	private readonly IMavlinkEnumGenerator _enumGenerator;
+	private readonly IMavlinkEnumTreeGenerator _enumTreeGenerator;
 	private readonly IMavlinkMessageGenerator _messageGenerator;
 	private readonly IMavlinkSpecificationGenerator _specificationGenerator;
 
 	public MavlinkGenerator(
-		IMavlinkFilesTreeBuilder filesTreeBuilder,
+		IMavlinkTreeBuilder filesTreeBuilder,
+		// TODO : Temporary object. Should be removed with new messages architecture
 		IMavlinkEnumGenerator enumGenerator,
+		IMavlinkEnumTreeGenerator enumTreeGenerator,
 		IMavlinkMessageGenerator messageGenerator,
 		IMavlinkSpecificationGenerator specificationGenerator)
 	{
 		_filesTreeBuilder = filesTreeBuilder;
 		_enumGenerator = enumGenerator;
+		_enumTreeGenerator = enumTreeGenerator;
 		_messageGenerator = messageGenerator;
 		_specificationGenerator = specificationGenerator;
 	}
@@ -46,16 +50,17 @@ public class MavlinkGenerator : IMavlinkGenerator
 		fileTreeNods.ForEachTree(node =>
 		{
 			var members = new List<MemberDeclarationSyntax>();
-			var namespaceName = GenerateNamespaceName(node.FilePath);
+			var namespaceName = GenerateNamespaceName(node.Namespace);
 
-			GenerateEnums(node, namespaceName, members);
+			var generatedEnums = _enumTreeGenerator.GenerateEnums(node, namespaceName);
+			members.AddRange(generatedEnums.Select(e => e.DeclarationSyntax));
 
 			GenerateMessages(node, fileTreeNods, namespaceName, members);
 
 			GenerateSpecification(node, members);
 
 			var compilationUnit = CreateCompilationUnit(namespaceName, members);
-			generatedFiles.Add(node.FilePath, (i++, (namespaceName, compilationUnit)));
+			generatedFiles.Add(node.Namespace, (i++, (namespaceName, compilationUnit)));
 		});
 
 		return generatedFiles.ToImmutableIndexSortedDictionary();
@@ -63,44 +68,50 @@ public class MavlinkGenerator : IMavlinkGenerator
 
 	private string GenerateNamespaceName(string filePath)
 	{
-		return $"{MavlinkGeneratorConstants.TypesNamespace}.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(filePath))}";
+		return $"{MavlinkGeneratorConstants.TypesNamespace}.{Utilities.ToUpperCamelCase(Path.GetFileNameWithoutExtension(filePath))}";
 	}
 
-	private void GenerateEnums(MavlinkFileNode node, string namespaceName, List<MemberDeclarationSyntax> members)
-	{
-		foreach (var @enum in node.Data.Enums)
-		{
-			var enumDeclarationSyntax = _enumGenerator.GenerateMavlinkEnum(@enum, namespaceName, node.Data.Includes, node.FilePath).DeclarationSyntax;
-			members.Add(enumDeclarationSyntax);
-		}
-	}
-
-	private void GenerateMessages(MavlinkFileNode node, ReadOnlyMavlinkTree fileTreeNods, string namespaceName, List<MemberDeclarationSyntax> members)
+	private void GenerateMessages(MavlinkNode node, ReadOnlyMavlinkTree fileTreeNods, string namespaceName, List<MemberDeclarationSyntax> members)
 	{
 		foreach (var message in node.Data.Messages)
 		{
 			var dependedEnums = GetDependedEnumsForMessage(node, fileTreeNods, message);
-			var messageDeclarationSyntax = _messageGenerator.GenerateMavlinkMessage(message, namespaceName, dependedEnums.ToImmutableDictionary()).DeclarationSyntax;
+			var messageDeclarationSyntax = _messageGenerator.GenerateMavlinkMessage(message, namespaceName, dependedEnums.ToImmutableArray()).DeclarationSyntax;
 			members.Add(messageDeclarationSyntax);
 		}
 	}
 
-	private Dictionary<string, GeneratedMavlinkEnum> GetDependedEnumsForMessage(MavlinkFileNode node, ReadOnlyMavlinkTree fileTreeNods, MavlinkMessage message)
+	private List<GeneratedMavlinkEnum> GetDependedEnumsForMessage(MavlinkNode node, ReadOnlyMavlinkTree fileTreeNods, MavlinkMessage message)
 	{
-		Dictionary<string, GeneratedMavlinkEnum> dependedEnums = new();
+		var dependedEnums = new List<GeneratedMavlinkEnum>();
+		var seenEnumNames = new HashSet<string>();
 
 		foreach (var field in message.Fields)
 		{
 			if (field.Type is MavlinkMessageFieldEnumType enumType
-				&& !dependedEnums.ContainsKey(enumType.EnumName))
+				&& seenEnumNames.Add(enumType.EnumName))
 			{
-				var nodeWithDependedEnum = node.FindNode(node => node.Data.Enums.FirstOrDefault(@enum => @enum.Name == enumType.EnumName) != null);
+				var nodeWithDependedEnum = node.FindNode(n => n.Data.Enums.Any(e => e.Name == enumType.EnumName));
 
 				if (nodeWithDependedEnum is not null)
 				{
-					var enumNamespace = $"{MavlinkGeneratorConstants.TypesNamespace}.{Utilities.ToCamelCase(Path.GetFileNameWithoutExtension(nodeWithDependedEnum.FilePath))}";
-					GeneratedMavlinkEnum generatedDependedEnum = _enumGenerator.GetGeneratedTypes(@enum => @enum.Namespace == enumNamespace && @enum.Name == enumType.EnumName).First();
-					dependedEnums.Add(enumType.EnumName, generatedDependedEnum);
+					var enumFileNamespace = Utilities.ToUpperCamelCase(Path.GetFileNameWithoutExtension(nodeWithDependedEnum.Namespace));
+					var enumNamespace = $"{MavlinkGeneratorConstants.TypesNamespace}.{enumFileNamespace}";
+
+					GeneratedMavlinkEnum? generatedDependedEnum = _enumGenerator
+						.GetGeneratedTypes(
+							e => e.Namespace == enumNamespace
+							&& e.Original.Name == enumType.EnumName
+						).FirstOrDefault();
+
+					if (generatedDependedEnum is not null)
+					{
+						dependedEnums.Add(generatedDependedEnum);
+					}
+					else
+					{
+						throw new InvalidOperationException($"Enum '{enumType.EnumName}' was found in a node but could not be retrieved from the generator storage.");
+					}
 				}
 				else
 				{
@@ -112,7 +123,7 @@ public class MavlinkGenerator : IMavlinkGenerator
 		return dependedEnums;
 	}
 
-	private void GenerateSpecification(MavlinkFileNode node, List<MemberDeclarationSyntax> members)
+	private void GenerateSpecification(MavlinkNode node, List<MemberDeclarationSyntax> members)
 	{
 		var specificationDeclarationSyntax = _specificationGenerator.GenerateSpecification(node.Data);
 		members.Add(specificationDeclarationSyntax);

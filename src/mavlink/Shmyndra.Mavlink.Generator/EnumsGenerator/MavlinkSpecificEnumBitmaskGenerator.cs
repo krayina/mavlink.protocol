@@ -43,7 +43,7 @@ public partial class MavlinkSpecificEnumBitmaskGenerator
 
 		string enumName = generatedEnum.GeneratedName;
 		string enumBaseType = Utilities.DetermineEnumBaseType(generatedEnum.GeneratedEntries.Select(e => e.Original.Value));
-		string structName = $"{enumName}{Utilities.ToCamelCase(underlyingType)}Bitmask";
+		string structName = $"{enumName}{Utilities.ToUpperCamelCase(underlyingType)}Bitmask";
 
 		var entries = generatedEnum.GeneratedEntries
 			.Where(e => e.Original.Value != 0)

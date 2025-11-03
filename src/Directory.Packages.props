@@ -16,6 +16,7 @@
 
   <!-- Test packages -->
   <ItemGroup>
+    <PackageVersion Include="FluentAssertions" Version="8.6.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
     <PackageVersion Include="Moq" Version="4.20.70" />

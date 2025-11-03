@@ -16,7 +16,13 @@ public record GeneratedMavlinkMessageField
 	/// The type of the generated field. This property maps to the .NET representation
 	/// of the Mavlink message field type.
 	/// </summary>
-	public GeneratedMavlinkMessageFieldTypeBase GeneratedType { get; init; }
+	public GeneratedMavlinkMessageFieldType GeneratedType { get; init; }
+
+	/// <summary>
+	/// Gets the validation rule determined for this field, which can be used by
+	/// subsequent code generation stages like deserialization.
+	/// </summary>
+	public GeneratedMavlinkMessageFieldValidationRuleDefinition ValidationRule { get; init; }
 
 	/// <summary>
 	/// The declaration syntax of the field in C# code.
@@ -31,12 +37,14 @@ public record GeneratedMavlinkMessageField
 
 	internal GeneratedMavlinkMessageField(
 		string generatedName,
-		GeneratedMavlinkMessageFieldTypeBase generatedFieldType,
+		GeneratedMavlinkMessageFieldType generatedFieldType,
+		GeneratedMavlinkMessageFieldValidationRuleDefinition validationRule,
 		PropertyDeclarationSyntax declarationSyntax,
 		MavlinkMessageField original)
 	{
 		GeneratedName = generatedName;
 		GeneratedType = generatedFieldType;
+		ValidationRule = validationRule;
 		DeclarationSyntax = declarationSyntax;
 		Original = original;
 	}

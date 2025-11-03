@@ -43,12 +43,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="**\*.scriban.cs">
-      <DependentUpon>$([System.IO.Path]::GetFileNameWithoutExtension('%(Filename)')).cs</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Include="..\Shmyndra.Mavlink\Attributes\**\*.cs">
       <Link>Attributes\%(RecursiveDir)%(FileName)%(Extension)</Link>
     </Compile>
