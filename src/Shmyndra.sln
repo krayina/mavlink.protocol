@@ -29,6 +29,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.V1", "mavl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.V2", "mavlink\Shmyndra.Mavlink.V2\Shmyndra.Mavlink.V2.csproj", "{7B780D42-8BB0-4CF2-8B32-3D6FF63F670D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shmyndra.Mavlink.Communication", "mavlink\Shmyndra.Mavlink.Communication\Shmyndra.Mavlink.Communication.csproj", "{CC4314D7-B064-46C1-A69D-69B4169E3150}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{7B780D42-8BB0-4CF2-8B32-3D6FF63F670D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B780D42-8BB0-4CF2-8B32-3D6FF63F670D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B780D42-8BB0-4CF2-8B32-3D6FF63F670D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC4314D7-B064-46C1-A69D-69B4169E3150}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC4314D7-B064-46C1-A69D-69B4169E3150}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC4314D7-B064-46C1-A69D-69B4169E3150}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC4314D7-B064-46C1-A69D-69B4169E3150}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -80,6 +86,7 @@ Global
 		{1712CE07-3ABA-4876-803D-F3891988E00E} = {6AB13417-C239-4754-B583-6644C50A9D4E}
 		{37568044-D29A-474A-8ED4-7A4F11E1A4C9} = {6AB13417-C239-4754-B583-6644C50A9D4E}
 		{7B780D42-8BB0-4CF2-8B32-3D6FF63F670D} = {6AB13417-C239-4754-B583-6644C50A9D4E}
+		{CC4314D7-B064-46C1-A69D-69B4169E3150} = {6AB13417-C239-4754-B583-6644C50A9D4E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {925CC2D9-D9C9-4CBE-AEBB-AFA759F1CF5E}
