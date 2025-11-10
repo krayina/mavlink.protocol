@@ -3,9 +3,9 @@
 public static class MavlinkV2PacketConverter
 {
 	/// <summary>
-	/// Converts byte array data from TcpStream to MavlinkV2Packet.
+	/// Converts byte array data from MavlinkTcpStream to MavlinkV2Packet.
 	/// </summary>
-	/// <param name="data">Byte array data from TcpStream.</param>
+	/// <param name="data">Byte array data from MavlinkTcpStream.</param>
 	/// <returns>MavlinkV2Packet object.</returns>
 	public static MavlinkV2Packet FromByteArray(byte[] data)
 	{

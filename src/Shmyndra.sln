@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.7.33808.371
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11123.170
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mavlink", "mavlink", "{6AB13417-C239-4754-B583-6644C50A9D4E}"
 EndProject
@@ -21,8 +21,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.Generator"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.Generator.Tests", "mavlink\Shmyndra.Mavlink.Generator.Tests\Shmyndra.Mavlink.Generator.Tests.csproj", "{7E3686DE-63A3-4342-A219-DC71137BF850}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.Proxy.ConsoleApp", "mavlink\Shmyndra.Mavlink.Proxy.ConsoleApp\Shmyndra.Mavlink.Proxy.ConsoleApp.csproj", "{78F852AD-1756-46EB-AFB9-613D294A212B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.Protocol.v3_0.Tests", "mavlink\Shmyndra.Mavlink.Protocol.v3_0.Tests\Shmyndra.Mavlink.Protocol.v3_0.Tests.csproj", "{1712CE07-3ABA-4876-803D-F3891988E00E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.V1", "mavlink\Shmyndra.Mavlink.V1\Shmyndra.Mavlink.V1.csproj", "{37568044-D29A-474A-8ED4-7A4F11E1A4C9}"
@@ -30,6 +28,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.V2", "mavlink\Shmyndra.Mavlink.V2\Shmyndra.Mavlink.V2.csproj", "{7B780D42-8BB0-4CF2-8B32-3D6FF63F670D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shmyndra.Mavlink.Communication", "mavlink\Shmyndra.Mavlink.Communication\Shmyndra.Mavlink.Communication.csproj", "{CC4314D7-B064-46C1-A69D-69B4169E3150}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Smyndra.Mavlink.PoC", "mavlink\Smyndra.Mavlink.PoC\Smyndra.Mavlink.PoC.csproj", "{E82471CE-E6BA-420A-A557-C6E32929E8B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,10 +53,6 @@ Global
 		{7E3686DE-63A3-4342-A219-DC71137BF850}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E3686DE-63A3-4342-A219-DC71137BF850}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E3686DE-63A3-4342-A219-DC71137BF850}.Release|Any CPU.Build.0 = Release|Any CPU
-		{78F852AD-1756-46EB-AFB9-613D294A212B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{78F852AD-1756-46EB-AFB9-613D294A212B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{78F852AD-1756-46EB-AFB9-613D294A212B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{78F852AD-1756-46EB-AFB9-613D294A212B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1712CE07-3ABA-4876-803D-F3891988E00E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1712CE07-3ABA-4876-803D-F3891988E00E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1712CE07-3ABA-4876-803D-F3891988E00E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -73,6 +69,10 @@ Global
 		{CC4314D7-B064-46C1-A69D-69B4169E3150}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC4314D7-B064-46C1-A69D-69B4169E3150}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC4314D7-B064-46C1-A69D-69B4169E3150}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E82471CE-E6BA-420A-A557-C6E32929E8B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E82471CE-E6BA-420A-A557-C6E32929E8B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E82471CE-E6BA-420A-A557-C6E32929E8B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E82471CE-E6BA-420A-A557-C6E32929E8B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -82,11 +82,11 @@ Global
 		{0E997B51-A9D4-411A-AC0A-518B4D121637} = {6AB13417-C239-4754-B583-6644C50A9D4E}
 		{C85DE7C5-E67F-4052-B6C0-9E0BFF04F9F0} = {6AB13417-C239-4754-B583-6644C50A9D4E}
 		{7E3686DE-63A3-4342-A219-DC71137BF850} = {6AB13417-C239-4754-B583-6644C50A9D4E}
-		{78F852AD-1756-46EB-AFB9-613D294A212B} = {6AB13417-C239-4754-B583-6644C50A9D4E}
 		{1712CE07-3ABA-4876-803D-F3891988E00E} = {6AB13417-C239-4754-B583-6644C50A9D4E}
 		{37568044-D29A-474A-8ED4-7A4F11E1A4C9} = {6AB13417-C239-4754-B583-6644C50A9D4E}
 		{7B780D42-8BB0-4CF2-8B32-3D6FF63F670D} = {6AB13417-C239-4754-B583-6644C50A9D4E}
 		{CC4314D7-B064-46C1-A69D-69B4169E3150} = {6AB13417-C239-4754-B583-6644C50A9D4E}
+		{E82471CE-E6BA-420A-A557-C6E32929E8B6} = {6AB13417-C239-4754-B583-6644C50A9D4E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {925CC2D9-D9C9-4CBE-AEBB-AFA759F1CF5E}

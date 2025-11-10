@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a MAVLink V2 packet.
 /// </summary>
-public record struct MavlinkV2Packet : MavlinkPacket
+public record struct MavlinkV2Packet
 {
 	/// <summary>
 	/// Gets the start byte. Always 0xFD for V2.
