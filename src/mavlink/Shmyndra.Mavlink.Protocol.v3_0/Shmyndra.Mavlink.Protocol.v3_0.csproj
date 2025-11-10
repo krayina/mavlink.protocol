@@ -5,17 +5,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shmyndra.Mavlink.V1\Shmyndra.Mavlink.V1.csproj" />
-    <ProjectReference Include="..\Shmyndra.Mavlink.V2\Shmyndra.Mavlink.V2.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Shmyndra.Mavlink.Generator\Shmyndra.Mavlink.Generator.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
       <OutputItemType>Analyzer</OutputItemType>
     </ProjectReference>
     <ProjectReference Include="..\Shmyndra.Mavlink\Shmyndra.Mavlink.csproj" />
   </ItemGroup>
+  
+  <!-- PropertyGroup for Mavlink.Generator setup -->
+  <PropertyGroup>
+    <GenerateEnumBitmaskTypes>true</GenerateEnumBitmaskTypes>
+  </PropertyGroup>
   
   <!-- PropertyGroup for Debugging Generator --> 
   <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
@@ -25,8 +25,7 @@
 
   <!-- ItemGroup for Debugging Generator -->
   <ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true' AND '$(EmitCompilerGeneratedFiles)' == 'true'">
-    <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**" />
-    <None Include="$(CompilerGeneratedFilesOutputPath)/**" />
+    <Compile Include="$(CompilerGeneratedFilesOutputPath)/**" />
   </ItemGroup>
 
   <ItemGroup>
