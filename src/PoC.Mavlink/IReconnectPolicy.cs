@@ -1,4 +1,7 @@
-﻿namespace Mavlink;
+﻿using System.IO.Ports;
+using System.Net.Sockets;
+
+namespace Mavlink;
 
 public interface IReconnectPolicy
 {
@@ -62,5 +65,76 @@ public sealed class ExponentialBackoffPolicy : IReconnectPolicy
         var ticks = (long)Math.Min(
             _initial.Ticks * Math.Pow(_factor, attempt - 1), _max.Ticks);
         return TimeSpan.FromTicks(ticks);
+    }
+}
+
+internal sealed class TcpReconnectPolicy : IReconnectPolicy
+{
+    private readonly TimeSpan _refusedInitial = TimeSpan.FromMilliseconds(500);
+    private readonly TimeSpan _max = TimeSpan.FromSeconds(15);
+
+    public bool RetryInitialConnect => true;
+
+    public TimeSpan? GetDelay(int attempt, Exception? lastError)
+    {
+        var sockEx = FindSocketException(lastError);
+
+        if (sockEx?.SocketErrorCode is SocketError.ConnectionRefused or SocketError.ConnectionReset)
+        {
+            var ticks = (long)Math.Min(_refusedInitial.Ticks * Math.Pow(2, attempt - 1), _max.Ticks);
+            return TimeSpan.FromTicks(ticks);
+        }
+
+        if (lastError is MavlinkConnectionException { InnerException: null } mce
+            && mce.Message.Contains("timed out"))
+        {
+            return TimeSpan.FromMilliseconds(250);
+        }
+
+        var t = (long)Math.Min(TimeSpan.FromSeconds(1).Ticks * Math.Pow(2, attempt - 1), _max.Ticks);
+        return TimeSpan.FromTicks(t);
+    }
+
+    private static SocketException? FindSocketException(Exception? ex)
+    {
+        for (var e = ex; e != null; e = e.InnerException)
+        {
+            if (e is SocketException se)
+            {
+                return se;
+            }
+        }
+        return null;
+    }
+}
+
+internal sealed class SerialReconnectPolicy : IReconnectPolicy
+{
+    private readonly string _portName;
+    private readonly TimeSpan _pollWhenAbsent = TimeSpan.FromMilliseconds(500);
+    private readonly TimeSpan _retryWhenPresent = TimeSpan.FromMilliseconds(200);
+
+    public SerialReconnectPolicy(string portName) => _portName = portName;
+
+    public bool RetryInitialConnect => true;
+
+    public TimeSpan? GetDelay(int attempt, Exception? lastError)
+    {
+        bool present;
+        try
+        {
+            present = Array.Exists(SerialPort.GetPortNames(),
+                n => string.Equals(n, _portName, StringComparison.OrdinalIgnoreCase));
+        }
+        catch
+        {
+            present = true;
+        }
+
+        if (!present)
+        {
+            return _pollWhenAbsent;
+        }
+        return _retryWhenPresent;
     }
 }
