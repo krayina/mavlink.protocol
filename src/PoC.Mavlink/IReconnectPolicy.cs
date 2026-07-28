@@ -6,6 +6,17 @@ namespace Mavlink;
 public interface IReconnectPolicy
 {
     bool RetryInitialConnect { get; }
+
+    /// <summary>
+    /// Decides whether and how long to wait before the next connection attempt.
+    /// </summary>
+    /// <param name="attempt">
+    /// 1-based attempt number within the current reconnect series. Resets to 1
+    /// each time a new series starts (initial connect, or recovery after a drop).
+    /// Stateful policies may rely on <c>attempt == 1</c> as a series-start signal.
+    /// </param>
+    /// <param name="lastError">The exception that failed the previous attempt, if any.</param>
+    /// <returns>Delay before the next attempt, or <c>null</c> to give up.</returns>
     TimeSpan? GetDelay(int attempt, Exception? lastError);
 }
 
