@@ -21,6 +21,12 @@ public sealed class SerialEndpoint : MavlinkEndpoint
         PortName = portName ?? throw new ArgumentNullException(nameof(portName));
     }
 
+    /// <summary>
+    /// Default: infinite retry. Polls SerialPort.GetPortNames() to distinguish
+    /// "device absent" (retry every 500 ms) from "device present but busy"
+    /// (retry every 200 ms). Never gives up — wrap in TimeBudgetPolicy or
+    /// supply your own policy to bound it.
+    /// </summary>
     public override IReconnectPolicy DefaultReconnectPolicy
         => new SerialReconnectPolicy(PortName);
 
