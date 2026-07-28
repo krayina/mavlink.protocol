@@ -1,9 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>$(LibraryTargetFrameworks)</TargetFrameworks>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Shmyndra.Mavlink\Shmyndra.Mavlink.csproj" />
-  </ItemGroup>
-</Project>
