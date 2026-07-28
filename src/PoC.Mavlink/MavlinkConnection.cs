@@ -44,6 +44,8 @@ internal sealed class MavlinkConnection : IMavlinkConnection, IDisposable, IAsyn
 
     public event Action<MavlinkConnectionStateChangedEventArgs>? StateChanged;
 
+    public event Action<MavlinkReconnectAttemptEventArgs>? ReconnectAttempt;
+
     public void Abort()
     {
         _ = ClosePortAsync();
@@ -168,105 +170,71 @@ internal sealed class MavlinkConnection : IMavlinkConnection, IDisposable, IAsyn
 
     private async Task LifecycleLoopAsync(CancellationToken ct)
     {
-        try
+        bool isInitial = true;
+
+        while (!ct.IsCancellationRequested)
         {
-            while (!ct.IsCancellationRequested)
+            if (!await EstablishAsync(isInitial, ct).ConfigureAwait(false))
             {
-                try
-                {
-                    await OpenPortAsync(ct).ConfigureAwait(false);
-                    SetState(MavlinkConnectionState.Connected);
-                }
-                catch (OperationCanceledException) when (ct.IsCancellationRequested)
-                {
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    _lastError = ex;
-                    await ClosePortAsync().ConfigureAwait(false);
-
-                    if (!_policy.RetryInitialConnect || !_provider.CanRecreatePort)
-                    {
-                        SetState(MavlinkConnectionState.ConnectionLost, ex);
-                        return;
-                    }
-
-                    SetState(MavlinkConnectionState.Reconnecting, ex);
-
-                    if (!await WaitBeforeRetryAsync(1, ct).ConfigureAwait(false))
-                    {
-                        SetState(MavlinkConnectionState.ConnectionLost, _lastError);
-                        return;
-                    }
-                    continue;
-                }
-
-                try
-                {
-                    await PumpAsync(ct).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException) when (ct.IsCancellationRequested)
-                {
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    _lastError = ex;
-                }
-
-                await ClosePortAsync().ConfigureAwait(false);
-
-                if (!_provider.CanRecreatePort || ct.IsCancellationRequested)
+                if (!ct.IsCancellationRequested)
                 {
                     SetState(MavlinkConnectionState.ConnectionLost, _lastError);
-                    return;
                 }
-
-                SetState(MavlinkConnectionState.Reconnecting, _lastError);
-                int attempt = 1;
-                bool reconnected = false;
-
-                while (!ct.IsCancellationRequested)
-                {
-                    if (!await WaitBeforeRetryAsync(attempt++, ct).ConfigureAwait(false))
-                    {
-                        break;
-                    }
-
-                    try
-                    {
-                        await OpenPortAsync(ct).ConfigureAwait(false);
-                        reconnected = true;
-                        break;
-                    }
-                    catch (OperationCanceledException) when (ct.IsCancellationRequested)
-                    {
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        _lastError = ex;
-                    }
-                }
-
-                if (!reconnected)
-                {
-                    SetState(MavlinkConnectionState.ConnectionLost, _lastError);
-                    return;
-                }
-
-                SetState(MavlinkConnectionState.Connected);
+                return;
             }
-        }
-        finally
-        {
+
+            SetState(MavlinkConnectionState.Connected);
+            isInitial = false;
+
+            try
+            {
+                await PumpAsync(ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                _lastError = ex;
+            }
+
+            await ClosePortAsync().ConfigureAwait(false);
+
+            if (ct.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (!_provider.CanRecreatePort)
+            {
+                SetState(MavlinkConnectionState.ConnectionLost, _lastError);
+                return;
+            }
+
+            SetState(MavlinkConnectionState.Reconnecting, _lastError);
         }
     }
 
-    private async Task<bool> WaitBeforeRetryAsync(int attempt, CancellationToken ct)
+    private async Task<bool> WaitBeforeRetryAsync(int attempt, bool isInitial, CancellationToken ct)
     {
         var delay = _policy.GetDelay(attempt, _lastError);
+
+        try
+        {
+            ReconnectAttempt?.Invoke(new MavlinkReconnectAttemptEventArgs
+            {
+                Attempt = attempt,
+                Error = _lastError,
+                NextDelay = delay,
+                IsInitialConnect = isInitial,
+            });
+        }
+        catch
+        {
+            // Listener faults must not kill the lifecycle loop.
+        }
+
         if (!delay.HasValue)
         {
             return false;
@@ -285,6 +253,70 @@ internal sealed class MavlinkConnection : IMavlinkConnection, IDisposable, IAsyn
         }
 
         return !ct.IsCancellationRequested;
+    }
+
+    /// <summary>
+    /// One reconnect series: keeps attempting to open a port until success,
+    /// policy give-up, or cancellation. The attempt counter is honest and
+    /// monotonic within the series — this is what makes maxAttempts,
+    /// exponential backoff and TimeBudgetPolicy work in BOTH phases.
+    /// </summary>
+    private async Task<bool> EstablishAsync(bool isInitial, CancellationToken ct)
+    {
+        int attempt = 0;
+
+        // A link that just died gets one pacing delay BEFORE the first reopen,
+        // so a flapping connection (opens fine, dies instantly) cannot hot-loop
+        // connect/disconnect. Initial connect fires immediately — the user just
+        // pressed Connect and expects an instant first try.
+        if (!isInitial)
+        {
+            attempt = 1;
+            if (!await WaitBeforeRetryAsync(attempt, isInitial: false, ct).ConfigureAwait(false))
+            {
+                return false;
+            }
+        }
+
+        while (!ct.IsCancellationRequested)
+        {
+            try
+            {
+                await OpenPortAsync(ct).ConfigureAwait(false);
+                return true;
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _lastError = ex;
+                await ClosePortAsync().ConfigureAwait(false);
+
+                // Very first failure of the very first connect: the policy may
+                // forbid retrying the initial connect at all.
+                if (isInitial && attempt == 0 && !_policy.RetryInitialConnect)
+                {
+                    return false;
+                }
+
+                if (!_provider.CanRecreatePort)
+                {
+                    return false;
+                }
+
+                SetState(MavlinkConnectionState.Reconnecting, ex);
+
+                attempt++;
+                if (!await WaitBeforeRetryAsync(attempt, isInitial, ct).ConfigureAwait(false))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return false;
     }
 
     public async ValueTask WriteAsync(ReadOnlyMemory<byte> data, CancellationToken ct = default)
