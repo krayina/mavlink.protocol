@@ -21,6 +21,9 @@ public sealed class SerialEndpoint : MavlinkEndpoint
         PortName = portName ?? throw new ArgumentNullException(nameof(portName));
     }
 
+    public override IReconnectPolicy DefaultReconnectPolicy
+        => new SerialReconnectPolicy(PortName);
+
     public string PortName { get; }
 
     public int BaudRate { get; set; } = 57600;

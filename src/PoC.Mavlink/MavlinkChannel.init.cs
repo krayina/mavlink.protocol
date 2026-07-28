@@ -60,9 +60,7 @@ public sealed partial class MavlinkChannel
         {
             PortProvider = endpoint.CreateProvider(),
             Dialect = dialect,
-            ReconnectPolicy = endpoint.SupportsReconnect
-                ? new ExponentialBackoffPolicy(retryInitialConnect: true) // wait forever
-                : NoReconnectPolicy.Instance,
+            ReconnectPolicy = endpoint.DefaultReconnectPolicy,
         };
 
         configure?.Invoke(options);

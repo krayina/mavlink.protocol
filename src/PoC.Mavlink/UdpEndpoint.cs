@@ -34,6 +34,12 @@ public sealed class UdpEndpoint : MavlinkEndpoint
         Port = port;
     }
 
+    public override IReconnectPolicy DefaultReconnectPolicy
+        => new FixedReconnectPolicy(
+            TimeSpan.FromMilliseconds(500),
+            maxAttempts: null,
+            retryInitialConnect: true);
+
     public UdpEndpointMode Mode { get; set; } = UdpEndpointMode.Listen;
 
     /// <summary>

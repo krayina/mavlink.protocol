@@ -24,7 +24,7 @@ public sealed class FileEndpoint : MavlinkEndpoint
 
     public string Path { get; }
 
-    public override bool SupportsReconnect => false;
+    public override IReconnectPolicy DefaultReconnectPolicy => NoReconnectPolicy.Instance;
 
     internal static bool TryParseScheme(
         MavlinkConnectionStringParts parts,

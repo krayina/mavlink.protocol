@@ -22,11 +22,13 @@ public abstract class MavlinkEndpoint
     public abstract IMavlinkPortProvider CreateProvider();
 
     /// <summary>
-    /// False for one-shot transports (e.g. a finished file replay) where
-    /// reconnecting makes no sense. Factories use this to pick the default
-    /// reconnect policy (infinite backoff vs. NoReconnectPolicy).
+    /// Transport-appropriate reconnect policy used when the user does not supply
+    /// one explicitly. Built-in transports return internal, transport-tuned
+    /// policies; custom endpoints may override to declare their own default,
+    /// or leave the base implementation for a safe exponential backoff.
     /// </summary>
-    public virtual bool SupportsReconnect => true;
+    public virtual IReconnectPolicy DefaultReconnectPolicy
+        => new ExponentialBackoffPolicy(retryInitialConnect: true);
 
     internal delegate bool SchemeParser(
         MavlinkConnectionStringParts parts,

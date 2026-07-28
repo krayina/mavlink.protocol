@@ -25,6 +25,9 @@ public sealed class WebSocketEndpoint : MavlinkEndpoint
     {
     }
 
+    public override IReconnectPolicy DefaultReconnectPolicy
+        => new TcpReconnectPolicy();
+
     public Uri Uri { get; }
 
     public string? SubProtocol { get; set; }

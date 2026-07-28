@@ -26,6 +26,9 @@ public sealed class TcpEndpoint : MavlinkEndpoint
         Port = port;
     }
 
+    public override IReconnectPolicy DefaultReconnectPolicy
+        => new TcpReconnectPolicy();
+
     public TcpEndpointMode Mode { get; set; } = TcpEndpointMode.Client;
 
     /// <summary>
