@@ -1,4 +1,5 @@
-﻿using System.IO.Ports;
+﻿using System.Diagnostics;
+using System.IO.Ports;
 using System.Net.Sockets;
 
 namespace Mavlink;
@@ -157,6 +158,11 @@ internal sealed class TcpReconnectPolicy : IReconnectPolicy
         }
         return null;
     }
+
+    public override string ToString()
+    {
+        return "tcp(refused→expo 0.5s..15s, timeout→250ms, infinite)";
+    }
 }
 
 internal sealed class SerialReconnectPolicy : IReconnectPolicy
@@ -187,5 +193,13 @@ internal sealed class SerialReconnectPolicy : IReconnectPolicy
             return _pollWhenAbsent;
         }
         return _retryWhenPresent;
+    }
+
+    public override string ToString()
+    {
+        return $"serial({_portName}: " +
+            $"absent→poll {_pollWhenAbsent.TotalMilliseconds}ms, " +
+            $"present→retry {_retryWhenPresent.TotalMilliseconds}ms, " +
+            $"infinite)";
     }
 }
