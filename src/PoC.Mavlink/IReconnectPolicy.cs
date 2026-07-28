@@ -79,6 +79,46 @@ public sealed class ExponentialBackoffPolicy : IReconnectPolicy
     }
 }
 
+/// <summary>
+/// Wraps any policy with a wall-clock budget per reconnect series.
+/// </summary>
+public sealed class TimeBudgetPolicy : IReconnectPolicy
+{
+    private readonly IReconnectPolicy _inner;
+    private readonly TimeSpan _budget;
+    private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
+
+    public TimeBudgetPolicy(TimeSpan budget, IReconnectPolicy inner)
+    {
+        _budget = budget;
+        _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+    }
+
+    public bool RetryInitialConnect => _inner.RetryInitialConnect;
+
+    public TimeSpan? GetDelay(int attempt, Exception? lastError)
+    {
+        // attempt == 1 marks the start of a new reconnect series (see IReconnectPolicy);
+        // the budget applies per series, so restart the clock.
+        if (attempt == 1)
+        {
+            _stopwatch.Restart();
+        }
+
+        if (_stopwatch.Elapsed >= _budget)
+        {
+            return null;
+        }
+
+        return _inner.GetDelay(attempt, lastError);
+    }
+
+    public override string ToString()
+    {
+        return $"budget({_budget.TotalSeconds}s over {_inner})";
+    }
+}
+
 internal sealed class TcpReconnectPolicy : IReconnectPolicy
 {
     private readonly TimeSpan _refusedInitial = TimeSpan.FromMilliseconds(500);
