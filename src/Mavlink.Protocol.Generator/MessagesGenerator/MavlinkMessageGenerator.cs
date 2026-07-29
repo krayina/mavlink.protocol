@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Scriban;
 using Scriban.Runtime;
 
-namespace Shmyndra.Mavlink.Generator;
+namespace Mavlink.Protocol.Generator;
 
 public partial class MavlinkMessageGenerator : IMavlinkMessageGenerator
 {

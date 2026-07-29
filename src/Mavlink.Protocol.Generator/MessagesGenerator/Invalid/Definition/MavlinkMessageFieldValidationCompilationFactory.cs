@@ -1,4 +1,4 @@
-﻿namespace Shmyndra.Mavlink.Generator;
+﻿namespace Mavlink.Protocol.Generator;
 
 /// <summary>
 /// Creates a specific compilation operation based on a given rule definition.

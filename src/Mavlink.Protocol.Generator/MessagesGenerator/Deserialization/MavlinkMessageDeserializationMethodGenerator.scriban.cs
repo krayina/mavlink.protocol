@@ -1,4 +1,4 @@
-﻿namespace Shmyndra.Mavlink.Generator;
+﻿namespace Mavlink.Protocol.Generator;
 
 /// <summary>
 /// Contains the Scriban templates used for code generation.

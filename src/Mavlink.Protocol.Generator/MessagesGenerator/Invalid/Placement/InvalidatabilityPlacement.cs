@@ -1,4 +1,4 @@
-﻿namespace Shmyndra.Mavlink.Generator;
+﻿namespace Mavlink.Protocol.Generator;
 
 /// <summary>
 /// Represents the semantic placement of the <c>Invalidatable&lt;T&gt;</c> wrapper

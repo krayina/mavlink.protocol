@@ -2,7 +2,7 @@
 using Scriban.Functions;
 using Scriban.Runtime;
 
-namespace Shmyndra.Mavlink.Generator;
+namespace Mavlink.Protocol.Generator;
 
 /// <summary>
 /// Provides a preconfigured <see cref="TemplateContext"/> for rendering in-code Scriban templates in C# code generators.

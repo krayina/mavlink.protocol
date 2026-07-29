@@ -1,4 +1,4 @@
-﻿namespace Shmyndra.Mavlink.Generator;
+﻿namespace Mavlink.Protocol.Generator;
 
 /// <summary>
 /// Defines a contract for generating a MAVLink message property/field representation.

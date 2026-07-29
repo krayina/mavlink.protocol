@@ -1,4 +1,4 @@
-﻿namespace Shmyndra.Mavlink.Generator;
+﻿namespace Mavlink.Protocol.Generator;
 
 /// <summary>
 /// Describes the abstract structure of a generated C# property type.

@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
 
-namespace Shmyndra.Mavlink.Generator;
+namespace Mavlink.Protocol.Generator;
 
 /// <summary>
 /// Represents the generated serialization method for a MAVLink message.

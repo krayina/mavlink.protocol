@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace Shmyndra.Mavlink.Generator;
+namespace Mavlink.Protocol.Generator;
 
 public interface IMavlinkEnumTreeGenerator
 {

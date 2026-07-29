@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Immutable;
 
-namespace Shmyndra.Mavlink.Generator;
+namespace Mavlink.Protocol.Generator;
 
 public class ReadOnlyMavlinkTree : IReadOnlyCollection<MavlinkNode>
 {

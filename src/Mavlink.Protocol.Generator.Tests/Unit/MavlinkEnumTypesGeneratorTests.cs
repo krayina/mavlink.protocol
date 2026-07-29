@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Shmyndra.Mavlink.Generator.Tests.Unit;
+namespace Mavlink.Protocol.Generator.Tests.Unit;
 
 public class MavlinkEnumTypesGeneratorTests
 {

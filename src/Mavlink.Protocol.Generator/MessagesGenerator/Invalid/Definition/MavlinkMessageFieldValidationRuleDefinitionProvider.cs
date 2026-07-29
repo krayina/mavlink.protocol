@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace Shmyndra.Mavlink.Generator;
+namespace Mavlink.Protocol.Generator;
 
 /// <summary>
 /// Provides a concrete implementation for parsing the `invalid` attribute of a MAVLink message field.

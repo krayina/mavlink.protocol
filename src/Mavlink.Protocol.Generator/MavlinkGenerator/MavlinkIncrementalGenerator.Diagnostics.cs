@@ -1,7 +1,7 @@
 ﻿#if false
 using Microsoft.CodeAnalysis;
 
-namespace Shmyndra.Mavlink.Generator;
+namespace Mavlink.Protocol.Generator;
 
 public static class MavlinkGeneratorDiagnostics
 {

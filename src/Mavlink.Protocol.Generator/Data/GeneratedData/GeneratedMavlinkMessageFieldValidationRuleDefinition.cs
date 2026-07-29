@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace Shmyndra.Mavlink.Generator;
+namespace Mavlink.Protocol.Generator;
 
 /// <summary>
 /// Represents a validation rule derived from a MAVLink field's <c>invalid</c> attribute.

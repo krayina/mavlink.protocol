@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
 
-namespace Shmyndra.Mavlink.Generator.Tests;
+namespace Mavlink.Protocol.Generator.Tests;
 
 public static class TestsHelper
 {

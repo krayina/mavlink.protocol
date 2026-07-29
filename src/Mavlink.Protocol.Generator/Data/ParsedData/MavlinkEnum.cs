@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace Shmyndra.Mavlink.Generator;
+namespace Mavlink.Protocol.Generator;
 
 /// <summary>
 /// Represents an enum in Mavlink with a name, description, bitmask, and a list of entries.

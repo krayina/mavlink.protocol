@@ -3,7 +3,7 @@ using System.Xml.Serialization;
 using Microsoft.CodeAnalysis;
 using Moq;
 
-namespace Shmyndra.Mavlink.Generator.Tests.Unit;
+namespace Mavlink.Protocol.Generator.Tests.Unit;
 
 public class MavlinkXmlParserTests
 {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis;
 
-namespace Shmyndra.Mavlink.Generator.Tests;
+namespace Mavlink.Protocol.Generator.Tests;
 
 public class TestAdditionalFile : AdditionalText
 {

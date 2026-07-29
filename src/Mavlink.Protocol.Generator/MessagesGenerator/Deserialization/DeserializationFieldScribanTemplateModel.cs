@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace Shmyndra.Mavlink.Generator;
+namespace Mavlink.Protocol.Generator;
 
 /// <summary>
 /// Represents the data model for a single field being deserialized.

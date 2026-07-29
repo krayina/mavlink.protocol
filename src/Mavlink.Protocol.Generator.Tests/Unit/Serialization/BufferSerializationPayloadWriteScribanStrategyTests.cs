@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 
-namespace Shmyndra.Mavlink.Generator;
+namespace Mavlink.Protocol.Generator;
 
 public class BufferSerializationPayloadWriteScribanStrategyTests
 {

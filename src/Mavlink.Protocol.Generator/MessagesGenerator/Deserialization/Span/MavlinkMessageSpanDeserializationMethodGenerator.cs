@@ -1,4 +1,4 @@
-﻿namespace Shmyndra.Mavlink.Generator;
+﻿namespace Mavlink.Protocol.Generator;
 
 /// <summary>
 /// A concrete generator for creating deserialization methods that operate on ReadOnlySpan&lt;byte&gt;.

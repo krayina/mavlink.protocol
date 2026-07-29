@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 
-namespace Shmyndra.Mavlink.Generator.Tests.Unit.Deserializtion;
+namespace Mavlink.Protocol.Generator.Tests.Unit.Deserializtion;
 
 public class SpanDeserializationPayloadReadScribanStrategyTests
 {

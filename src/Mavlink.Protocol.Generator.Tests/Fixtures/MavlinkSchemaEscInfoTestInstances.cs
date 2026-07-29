@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Globalization;
 
-namespace Shmyndra.Mavlink.Generator.Tests;
+namespace Mavlink.Protocol.Generator.Tests;
 
 public static class MavlinkSchemaEscInfoTestInstances
 {

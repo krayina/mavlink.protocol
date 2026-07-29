@@ -1,4 +1,4 @@
-﻿namespace Shmyndra.Mavlink.Generator;
+﻿namespace Mavlink.Protocol.Generator;
 
 /// <summary>
 /// An implementation of <see cref="IDeserializationPayloadReadScribanStrategy"/> for deserializing from a ReadOnlySpan&lt;byte&gt;.

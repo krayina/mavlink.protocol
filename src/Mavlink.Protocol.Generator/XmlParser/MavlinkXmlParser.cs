@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace Shmyndra.Mavlink.Generator;
+namespace Mavlink.Protocol.Generator;
 
 public interface IMavlinkParser
 {

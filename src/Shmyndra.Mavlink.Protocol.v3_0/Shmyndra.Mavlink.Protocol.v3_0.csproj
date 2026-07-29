@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shmyndra.Mavlink.Generator\Shmyndra.Mavlink.Generator.csproj">
+    <ProjectReference Include="..\Mavlink.Protocol.Generator\Mavlink.Protocol.Generator.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
       <OutputItemType>Analyzer</OutputItemType>
     </ProjectReference>

@@ -1,4 +1,4 @@
-﻿namespace Shmyndra.Mavlink.Generator;
+﻿namespace Mavlink.Protocol.Generator;
 
 /// <summary>
 /// Defines a strategy for generating C# code snippets that write data into a specific payload type (e.g., byte[], Span<byte>).

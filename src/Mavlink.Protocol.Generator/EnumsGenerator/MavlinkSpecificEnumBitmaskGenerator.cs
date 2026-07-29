@@ -4,7 +4,7 @@ using Scriban;
 using Scriban.Runtime;
 using Scriban.Syntax;
 
-namespace Shmyndra.Mavlink.Generator;
+namespace Mavlink.Protocol.Generator;
 
 public partial class MavlinkSpecificEnumBitmaskGenerator
 {

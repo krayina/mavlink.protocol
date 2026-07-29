@@ -35,14 +35,14 @@
   </Target>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Shmyndra.Mavlink.Generator.Tests" />
+    <InternalsVisibleTo Include="Mavlink.Protocol.Generator.Tests" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Shmyndra.Mavlink\Attributes\**\*.cs">
+    <Compile Include="..\Mavlink.Protocol\Attributes\**\*.cs">
       <Link>Attributes\%(RecursiveDir)%(FileName)%(Extension)</Link>
     </Compile>
-    <Compile Include="..\Shmyndra.Mavlink\Extensions\**\*.cs">
+    <Compile Include="..\Mavlink.Protocol\Extensions\**\*.cs">
       <Link>Extensions\%(RecursiveDir)%(FileName)%(Extension)</Link>
     </Compile>
   </ItemGroup>

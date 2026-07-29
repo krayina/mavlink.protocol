@@ -1,4 +1,4 @@
-﻿namespace Shmyndra.Mavlink.Generator;
+﻿namespace Mavlink.Protocol.Generator;
 
 /// <summary>
 /// An implementation of <see cref="ISerializationPayloadWriteScribanStrategy"/> for writing to a standard byte array (byte[]).

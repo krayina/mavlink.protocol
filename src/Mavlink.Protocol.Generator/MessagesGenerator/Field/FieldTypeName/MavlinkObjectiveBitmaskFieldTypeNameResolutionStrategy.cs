@@ -1,4 +1,4 @@
-﻿namespace Shmyndra.Mavlink.Generator;
+﻿namespace Mavlink.Protocol.Generator;
 
 public class MavlinkObjectiveBitmaskFieldTypeNameResolutionStrategy : IMavlinkMessageFieldTypeNameResolutionStrategy
 {
