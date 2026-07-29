@@ -1,9 +1,11 @@
-﻿using System.Runtime.CompilerServices;
+﻿#if NET8_0_OR_GREATER
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+#endif
 
 namespace Mavlink;
 
-public readonly struct MavlinkReceivedPacket
+public readonly record struct MavlinkReceivedPacket
 {
 	public uint MessageId { get; }
 	public byte SenderSystemId { get; }

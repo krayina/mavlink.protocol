@@ -1,8 +1,7 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace Mavlink;
+﻿namespace Mavlink;
 
 #if NET8_0_OR_GREATER
+using System.Runtime.CompilerServices;
 [InlineArray(255)]
 internal struct MavlinkPayloadBuffer
 {
