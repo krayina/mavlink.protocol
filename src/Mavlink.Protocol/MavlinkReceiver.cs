@@ -1,6 +1,5 @@
-﻿using Mavlink.Dialects;
-using System.Buffers;
-using System.Runtime.CompilerServices;
+﻿using System.Buffers;
+using Mavlink.Dialects;
 
 namespace Mavlink;
 
@@ -175,7 +174,7 @@ internal sealed class MavlinkReceiver : IDisposable, IAsyncDisposable
 		return reader.Position;
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 	private bool ParseAndDispatchFrame(ReadOnlySpan<byte> frame, MavlinkPacketVersion version)
 	{
 		var result = MavlinkPacketParser.TryParse(frame, version, _dialect, out var packet);

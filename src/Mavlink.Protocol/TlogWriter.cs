@@ -1,6 +1,5 @@
 ﻿using System.Buffers;
 using System.Buffers.Binary;
-using System.Collections;
 using System.Threading.Channels;
 
 namespace Mavlink.Transport;
