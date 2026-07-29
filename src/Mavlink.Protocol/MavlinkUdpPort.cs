@@ -36,7 +36,7 @@ public sealed class MavlinkUdpPort : IMavlinkPort, IAsyncDisposable, IDisposable
 			UdpReceiveResult result;
 
 #if NET6_0_OR_GREATER
-            result = await _udp.ReceiveAsync(ct).ConfigureAwait(false);
+			result = await _udp.ReceiveAsync(ct).ConfigureAwait(false);
 #else
 			result = await ReceiveWithCancellationAsync(ct).ConfigureAwait(false);
 #endif
@@ -104,7 +104,7 @@ public sealed class MavlinkUdpPort : IMavlinkPort, IAsyncDisposable, IDisposable
 		try
 		{
 #if NET6_0_OR_GREATER
-            await _udp.SendAsync(data, ct).ConfigureAwait(false);
+			await _udp.SendAsync(data, ct).ConfigureAwait(false);
 #else
 			var array = data.ToArray();
 			await _udp.SendAsync(array, array.Length).ConfigureAwait(false);
@@ -173,14 +173,14 @@ public sealed class MavlinkUdpPort : IMavlinkPort, IAsyncDisposable, IDisposable
 		if (!_leaveOpen)
 		{
 #if NET6_0_OR_GREATER
-            try
-            {
-                _udp.Dispose();
-            }
-            catch
-            {
-                // Suppress exception during disposal
-            }
+			try
+			{
+				_udp.Dispose();
+			}
+			catch
+			{
+				// Suppress exception during disposal
+			}
 #else
 			try
 			{

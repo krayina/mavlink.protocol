@@ -16,10 +16,10 @@ public readonly struct MavlinkReceivedPacket
 	private readonly MavlinkPayloadBuffer _payload;
 
 #if NET8_0_OR_GREATER
-    public ReadOnlySpan<byte> Payload => MemoryMarshal.CreateReadOnlySpan(
-        ref Unsafe.AsRef(in _payload.Element0),
-        PayloadLength
-    );
+	public ReadOnlySpan<byte> Payload => MemoryMarshal.CreateReadOnlySpan(
+		ref Unsafe.AsRef(in _payload.Element0),
+		PayloadLength
+	);
 #else
 	public ReadOnlySpan<byte> Payload => _payload.AsSpan(PayloadLength);
 #endif
@@ -42,11 +42,11 @@ public readonly struct MavlinkReceivedPacket
 		PayloadLength = (byte)payloadSpan.Length;
 
 #if NET8_0_OR_GREATER
-        Span<byte> dest = MemoryMarshal.CreateSpan(
-            ref Unsafe.AsRef(in _payload.Element0),
-            255
-        );
-        payloadSpan.CopyTo(dest);
+		Span<byte> dest = MemoryMarshal.CreateSpan(
+			ref Unsafe.AsRef(in _payload.Element0),
+			255
+		);
+		payloadSpan.CopyTo(dest);
 #else
 		_payload.CopyFrom(payloadSpan);
 #endif

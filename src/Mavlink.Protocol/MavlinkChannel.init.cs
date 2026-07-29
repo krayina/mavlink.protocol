@@ -118,7 +118,7 @@ public sealed partial class MavlinkChannel
 		}
 
 #if NET5_0_OR_GREATER
-        return MavlinkDialects.Auto;
+		return MavlinkDialects.Auto;
 #else
 		throw new ArgumentNullException(nameof(dialect),
 			"An explicit dialect is required on netstandard targets " +

@@ -177,14 +177,14 @@ public sealed class TcpEndpoint : MavlinkEndpoint
 			}
 
 #if NET5_0_OR_GREATER
-            try
-            {
-                await client.ConnectAsync(host, port, cts.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
-            {
-                throw new MavlinkConnectionException($"TCP connect to {host}:{port} timed out.");
-            }
+			try
+			{
+				await client.ConnectAsync(host, port, cts.Token).ConfigureAwait(false);
+			}
+			catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+			{
+				throw new MavlinkConnectionException($"TCP connect to {host}:{port} timed out.");
+			}
 #else
 			var connectTask = client.ConnectAsync(host, port);
 
@@ -227,7 +227,7 @@ public sealed class TcpEndpoint : MavlinkEndpoint
 	private static async Task<TcpClient> AcceptAsync(TcpListener listener, CancellationToken ct)
 	{
 #if NET6_0_OR_GREATER
-        return await listener.AcceptTcpClientAsync(ct).ConfigureAwait(false);
+		return await listener.AcceptTcpClientAsync(ct).ConfigureAwait(false);
 #else
 		var acceptTask = listener.AcceptTcpClientAsync();
 

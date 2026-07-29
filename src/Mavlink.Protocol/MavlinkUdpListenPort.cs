@@ -38,7 +38,7 @@ public sealed class MavlinkUdpListenPort : IMavlinkPort
 			UdpReceiveResult result;
 
 #if NET6_0_OR_GREATER
-            result = await _udp.ReceiveAsync(ct).ConfigureAwait(false);
+			result = await _udp.ReceiveAsync(ct).ConfigureAwait(false);
 #else
 			result = await ReceiveWithCancellationAsync(ct).ConfigureAwait(false);
 #endif
@@ -114,7 +114,7 @@ public sealed class MavlinkUdpListenPort : IMavlinkPort
 		try
 		{
 #if NET6_0_OR_GREATER
-            await _udp.SendAsync(data, remote, ct).ConfigureAwait(false);
+			await _udp.SendAsync(data, remote, ct).ConfigureAwait(false);
 #else
 			var array = data.ToArray();
 			await _udp.SendAsync(array, array.Length, remote).ConfigureAwait(false);

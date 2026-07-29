@@ -111,9 +111,9 @@ public sealed class MavlinkSigner : IDisposable
 		Store48BitTimestamp(timestamp, buffer.Slice(32 + packetWithoutSignature.Length + 1));
 
 #if NET6_0_OR_GREATER
-        Span<byte> sha256Output = stackalloc byte[32];
-        SHA256.HashData(buffer, sha256Output);
-        sha256Output.Slice(0, 6).CopyTo(output48bit);
+		Span<byte> sha256Output = stackalloc byte[32];
+		SHA256.HashData(buffer, sha256Output);
+		sha256Output.Slice(0, 6).CopyTo(output48bit);
 #else
 		lock (_hasherLock)
 		{

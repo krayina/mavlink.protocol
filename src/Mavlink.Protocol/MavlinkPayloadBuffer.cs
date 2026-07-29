@@ -6,7 +6,7 @@ namespace Mavlink;
 [InlineArray(255)]
 internal struct MavlinkPayloadBuffer
 {
-    internal byte Element0;
+	internal byte Element0;
 }
 #else
 internal unsafe struct MavlinkPayloadBuffer

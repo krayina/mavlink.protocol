@@ -209,7 +209,7 @@ public sealed partial class MavlinkChannel : IDisposable, IAsyncDisposable
 	}
 
 #if NET6_0_OR_GREATER
-    [System.Runtime.CompilerServices.AsyncMethodBuilder(typeof(System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder))]
+	[System.Runtime.CompilerServices.AsyncMethodBuilder(typeof(System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder))]
 #endif
 	internal async ValueTask SendFrameAsync<T>(
 		T message,
@@ -232,7 +232,7 @@ public sealed partial class MavlinkChannel : IDisposable, IAsyncDisposable
 	}
 
 #if NET6_0_OR_GREATER
-    [System.Runtime.CompilerServices.AsyncMethodBuilder(typeof(System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder))]
+	[System.Runtime.CompilerServices.AsyncMethodBuilder(typeof(System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder))]
 #endif
 	internal async ValueTask SendFrameAsync(
 		IMavlinkMessage message,

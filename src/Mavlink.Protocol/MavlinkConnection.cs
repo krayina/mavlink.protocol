@@ -150,7 +150,7 @@ internal sealed class MavlinkConnection : IMavlinkConnection, IDisposable, IAsyn
 		}
 
 #if NET6_0_OR_GREATER
-        await tcs.Task.WaitAsync(ct).ConfigureAwait(false);
+		await tcs.Task.WaitAsync(ct).ConfigureAwait(false);
 #else
 		var tcsTask = tcs.Task;
 		if (!tcsTask.IsCompleted)
@@ -380,7 +380,7 @@ internal sealed class MavlinkConnection : IMavlinkConnection, IDisposable, IAsyn
 			}
 
 #if NET6_0_OR_GREATER
-        await tcs.Task.WaitAsync(ct).ConfigureAwait(false);
+			await tcs.Task.WaitAsync(ct).ConfigureAwait(false);
 #else
 			var tcsTask = tcs.Task;
 			if (!tcsTask.IsCompleted)

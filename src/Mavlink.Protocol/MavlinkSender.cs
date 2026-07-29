@@ -26,7 +26,7 @@ internal sealed class MavlinkSender : IDisposable, IAsyncDisposable
 	}
 
 #if NET6_0_OR_GREATER
-    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
+	[AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
 #endif
 	public async ValueTask<int> SendFrameAsync<T>(
 		T message,
@@ -59,7 +59,7 @@ internal sealed class MavlinkSender : IDisposable, IAsyncDisposable
 	}
 
 #if NET6_0_OR_GREATER
-    [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
+	[AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
 #endif
 	public async ValueTask<int> SendFrameAsync(
 		IMavlinkMessage message,

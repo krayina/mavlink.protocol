@@ -104,9 +104,9 @@ public sealed class MavlinkSignatureVerifier : IDisposable
 		Store48BitTimestamp(timestamp, buffer.Slice(32 + packetWithCrc.Length + 1));
 
 #if NET6_0_OR_GREATER
-        Span<byte> sha = stackalloc byte[32];
-        SHA256.HashData(buffer, sha);
-        sha.Slice(0, 6).CopyTo(output48bit);
+		Span<byte> sha = stackalloc byte[32];
+		SHA256.HashData(buffer, sha);
+		sha.Slice(0, 6).CopyTo(output48bit);
 #else
 		lock (_hasherLock)
 		{
@@ -136,7 +136,7 @@ public sealed class MavlinkSignatureVerifier : IDisposable
 	private static bool FixedTimeEquals(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
 	{
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        return CryptographicOperations.FixedTimeEquals(a, b);
+		return CryptographicOperations.FixedTimeEquals(a, b);
 #else
 		if (a.Length != b.Length)
 		{
@@ -184,7 +184,7 @@ public sealed class MavlinkSignatureVerifier : IDisposable
 	private static void CryptographicZero(byte[] key)
 	{
 #if NETCOREAPP3_0_OR_GREATER
-        CryptographicOperations.ZeroMemory(key);
+		CryptographicOperations.ZeroMemory(key);
 #else
 		Array.Clear(key, 0, key.Length);
 #endif
