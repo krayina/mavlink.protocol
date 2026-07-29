@@ -1,6 +1,6 @@
 ﻿namespace Mavlink;
 
-public readonly struct MavlinkReconnectAttemptEventArgs
+public readonly record struct MavlinkReconnectAttemptEventArgs
 {
 	public int Attempt { get; init; }
 	public Exception? Error { get; init; }
