@@ -13,7 +13,7 @@ public static class MavlinkV1Serializer
 	/// Serializes a message to MAVLink V1 packet (Typed version).
 	/// </summary>
 #if NETSTANDARD2_1_OR_GREATER
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
 	public static int Serialize<T>(
 		T message,
@@ -40,7 +40,7 @@ public static class MavlinkV1Serializer
 	/// Serializes a message to MAVLink V1 packet (Untyped version).
 	/// </summary>
 #if NETSTANDARD2_1_OR_GREATER
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
 	public static int Serialize(
 		IMavlinkMessage message,

@@ -14,7 +14,7 @@ public sealed class MavlinkStreamPort : IMavlinkPort
 	private int _disposed;
 
 #if NETSTANDARD2_1_OR_GREATER
-    public System.IO.Pipelines.PipeReader? Reader { get; }
+	public System.IO.Pipelines.PipeReader? Reader { get; }
 #endif
 
 	public MavlinkStreamPort(
@@ -30,13 +30,13 @@ public sealed class MavlinkStreamPort : IMavlinkPort
 		_cancelHook = cancelHook;
 
 #if NETSTANDARD2_1_OR_GREATER
-        if (exposeReader)
-        {
-            // leaveOpen: true intentionally — this port owns disposal of the
-            // stream and the owner itself; the reader must never dispose the
-            // stream a second time behind our back.
-            Reader = PipeReader.Create(_stream, new StreamPipeReaderOptions(leaveOpen: true));
-        }
+		if (exposeReader)
+		{
+			// leaveOpen: true intentionally — this port owns disposal of the
+			// stream and the owner itself; the reader must never dispose the
+			// stream a second time behind our back.
+			Reader = PipeReader.Create(_stream, new StreamPipeReaderOptions(leaveOpen: true));
+		}
 #endif
 	}
 
@@ -49,7 +49,7 @@ public sealed class MavlinkStreamPort : IMavlinkPort
 		try
 		{
 #if NETSTANDARD2_1_OR_GREATER
-            return await _stream.ReadAsync(buffer, ct).ConfigureAwait(false);
+			return await _stream.ReadAsync(buffer, ct).ConfigureAwait(false);
 #else
 			if (MemoryMarshal.TryGetArray((ReadOnlyMemory<byte>)buffer, out ArraySegment<byte> segment)
 				&& segment.Array is not null)
@@ -89,7 +89,7 @@ public sealed class MavlinkStreamPort : IMavlinkPort
 		try
 		{
 #if NETSTANDARD2_1_OR_GREATER
-            await _stream.WriteAsync(data, ct).ConfigureAwait(false);
+			await _stream.WriteAsync(data, ct).ConfigureAwait(false);
 #else
 			if (MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment)
 				&& segment.Array is not null)
@@ -173,14 +173,14 @@ public sealed class MavlinkStreamPort : IMavlinkPort
 		}
 
 #if NETSTANDARD2_1_OR_GREATER
-        try
-        {
-            Reader?.Complete();
-        }
-        catch
-        {
-            // Suppress reader completion faults
-        }
+		try
+		{
+			Reader?.Complete();
+		}
+		catch
+		{
+			// Suppress reader completion faults
+		}
 #endif
 
 		if (_leaveOpen)
@@ -215,17 +215,17 @@ public sealed class MavlinkStreamPort : IMavlinkPort
 		}
 
 #if NETSTANDARD2_1_OR_GREATER
-        try
-        {
-            if (Reader is { } reader)
-            {
-                await reader.CompleteAsync().ConfigureAwait(false);
-            }
-        }
-        catch
-        {
-            // Suppress reader completion faults
-        }
+		try
+		{
+			if (Reader is { } reader)
+			{
+				await reader.CompleteAsync().ConfigureAwait(false);
+			}
+		}
+		catch
+		{
+			// Suppress reader completion faults
+		}
 #endif
 
 		if (_leaveOpen)

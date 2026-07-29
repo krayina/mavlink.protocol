@@ -118,11 +118,11 @@ public sealed class MavlinkSigner : IDisposable
 		lock (_hasherLock)
 		{
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-            Span<byte> sha256Output = stackalloc byte[32];
-            if (_hasher.TryComputeHash(buffer, sha256Output, out _))
-            {
-                sha256Output.Slice(0, 6).CopyTo(output48bit);
-            }
+			Span<byte> sha256Output = stackalloc byte[32];
+			if (_hasher.TryComputeHash(buffer, sha256Output, out _))
+			{
+				sha256Output.Slice(0, 6).CopyTo(output48bit);
+			}
 #else
 			byte[] rentBuffer = ArrayPool<byte>.Shared.Rent(totalLen);
 			try

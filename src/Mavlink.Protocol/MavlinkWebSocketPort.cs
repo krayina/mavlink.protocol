@@ -14,7 +14,7 @@ public sealed class MavlinkWebSocketPort : IMavlinkPort
 	private int _disposed;
 
 #if NETSTANDARD2_1_OR_GREATER
-    public System.IO.Pipelines.PipeReader? Reader => null;
+	public System.IO.Pipelines.PipeReader? Reader => null;
 #endif
 
 	public MavlinkWebSocketPort(ClientWebSocket ws)
@@ -34,14 +34,14 @@ public sealed class MavlinkWebSocketPort : IMavlinkPort
 		try
 		{
 #if NETSTANDARD2_1_OR_GREATER
-            var result = await _ws.ReceiveAsync(buffer, ct).ConfigureAwait(false);
- 
-            if (result.MessageType == WebSocketMessageType.Close)
-            {
-                return 0; // EOF → reconnect loop
-            }
- 
-            return result.Count;
+			var result = await _ws.ReceiveAsync(buffer, ct).ConfigureAwait(false);
+
+			if (result.MessageType == WebSocketMessageType.Close)
+			{
+				return 0; // EOF → reconnect loop
+			}
+
+			return result.Count;
 #else
 			if (!MemoryMarshal.TryGetArray(
 					(ReadOnlyMemory<byte>)buffer, out ArraySegment<byte> segment)
@@ -80,8 +80,8 @@ public sealed class MavlinkWebSocketPort : IMavlinkPort
 		try
 		{
 #if NETSTANDARD2_1_OR_GREATER
-            await _ws.SendAsync(data, WebSocketMessageType.Binary, endOfMessage: true, ct)
-                .ConfigureAwait(false);
+			await _ws.SendAsync(data, WebSocketMessageType.Binary, endOfMessage: true, ct)
+				.ConfigureAwait(false);
 #else
 			if (!MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment)
 				|| segment.Array is null)

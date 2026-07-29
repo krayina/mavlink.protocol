@@ -411,30 +411,30 @@ internal sealed class MavlinkConnection : IMavlinkConnection, IDisposable, IAsyn
 		var writer = _pipe.Writer;
 
 #if NETSTANDARD2_1_OR_GREATER
-        if (port.Reader is { } src)
-        {
-            while (!ct.IsCancellationRequested)
-            {
-                var res = await src.ReadAsync(ct).ConfigureAwait(false);
-                var buf = res.Buffer;
+		if (port.Reader is { } src)
+		{
+			while (!ct.IsCancellationRequested)
+			{
+				var res = await src.ReadAsync(ct).ConfigureAwait(false);
+				var buf = res.Buffer;
 
-                foreach (var seg in buf)
-                {
-                    var mem = writer.GetMemory(seg.Length);
-                    seg.Span.CopyTo(mem.Span);
-                    writer.Advance(seg.Length);
-                }
+				foreach (var seg in buf)
+				{
+					var mem = writer.GetMemory(seg.Length);
+					seg.Span.CopyTo(mem.Span);
+					writer.Advance(seg.Length);
+				}
 
-                src.AdvanceTo(buf.End);
-                var flush = await writer.FlushAsync(ct).ConfigureAwait(false);
+				src.AdvanceTo(buf.End);
+				var flush = await writer.FlushAsync(ct).ConfigureAwait(false);
 
-                if (flush.IsCompleted || res.IsCompleted)
-                {
-                    break;
-                }
-            }
-            return;
-        }
+				if (flush.IsCompleted || res.IsCompleted)
+				{
+					break;
+				}
+			}
+			return;
+		}
 #endif
 
 		var pool = System.Buffers.ArrayPool<byte>.Shared;

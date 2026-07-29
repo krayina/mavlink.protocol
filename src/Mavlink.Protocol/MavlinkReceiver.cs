@@ -76,7 +76,7 @@ internal sealed class MavlinkReceiver : IDisposable, IAsyncDisposable
 
 				SequencePosition consumed;
 #if NETSTANDARD2_1_OR_GREATER
-                consumed = EnqueueFramesFromSequence(buffer);
+				consumed = EnqueueFramesFromSequence(buffer);
 #else
 				if (_resetRequested)
 				{
@@ -102,100 +102,100 @@ internal sealed class MavlinkReceiver : IDisposable, IAsyncDisposable
 	}
 
 #if NETSTANDARD2_1_OR_GREATER
-    private static readonly byte[] _magics = { MavlinkConstants.MAGIC_V1, MavlinkConstants.MAGIC_V2 };
-    private SequencePosition EnqueueFramesFromSequence(ReadOnlySequence<byte> sequence)
-    {
-        var reader = new SequenceReader<byte>(sequence);
-        // 10 + 255 + 2 + 13 = 280;
-        Span<byte> scratch = stackalloc byte[MavlinkConstants.MAX_FRAME_LENGTH];
+	private static readonly byte[] _magics = { MavlinkConstants.MAGIC_V1, MavlinkConstants.MAGIC_V2 };
+	private SequencePosition EnqueueFramesFromSequence(ReadOnlySequence<byte> sequence)
+	{
+		var reader = new SequenceReader<byte>(sequence);
+		// 10 + 255 + 2 + 13 = 280;
+		Span<byte> scratch = stackalloc byte[MavlinkConstants.MAX_FRAME_LENGTH];
 
-        while (true)
-        {
-            if (!reader.TryAdvanceToAny(_magics, advancePastDelimiter: false))
-            {
-                reader.Advance(reader.Remaining);
-                break;
-            }
+		while (true)
+		{
+			if (!reader.TryAdvanceToAny(_magics, advancePastDelimiter: false))
+			{
+				reader.Advance(reader.Remaining);
+				break;
+			}
 
-            var peek = reader;
-            if (peek.Remaining < 3) // magic + len + (for V2) incompat
-            {
-                break;
-            }
+			var peek = reader;
+			if (peek.Remaining < 3) // magic + len + (for V2) incompat
+			{
+				break;
+			}
 
-            peek.TryRead(out byte magicByte);
-            peek.TryRead(out byte lenByte);
+			peek.TryRead(out byte magicByte);
+			peek.TryRead(out byte lenByte);
 
-            var version = magicByte == MavlinkConstants.MAGIC_V2
-                ? MavlinkPacketVersion.V2
-                : MavlinkPacketVersion.V1;
+			var version = magicByte == MavlinkConstants.MAGIC_V2
+				? MavlinkPacketVersion.V2
+				: MavlinkPacketVersion.V1;
 
-            int fullLength = (version == MavlinkPacketVersion.V2 ? 10 : 6) + lenByte + 2;
+			int fullLength = (version == MavlinkPacketVersion.V2 ? 10 : 6) + lenByte + 2;
 
-            if (version == MavlinkPacketVersion.V2)
-            {
-                peek.TryRead(out byte incompatFlags);
+			if (version == MavlinkPacketVersion.V2)
+			{
+				peek.TryRead(out byte incompatFlags);
 
-                // Spec: unknown incompatibility bits => the frame is incompatible, so we drop it.
-                if ((incompatFlags & ~(byte)MavlinkIncompatFlags.Signed) != 0)
-                {
-                    _errorListener.OnParserError(MavlinkDeserializeResult.UnsupportedIncompatFlags);
-                    reader.Advance(1);
-                    continue;
-                }
+				// Spec: unknown incompatibility bits => the frame is incompatible, so we drop it.
+				if ((incompatFlags & ~(byte)MavlinkIncompatFlags.Signed) != 0)
+				{
+					_errorListener.OnParserError(MavlinkDeserializeResult.UnsupportedIncompatFlags);
+					reader.Advance(1);
+					continue;
+				}
 
-                if ((incompatFlags & (byte)MavlinkIncompatFlags.Signed) != 0)
-                {
-                    fullLength += 13;
-                }
-            }
+				if ((incompatFlags & (byte)MavlinkIncompatFlags.Signed) != 0)
+				{
+					fullLength += 13;
+				}
+			}
 
-            if (reader.Remaining < fullLength)
-            {
-                break;
-            }
+			if (reader.Remaining < fullLength)
+			{
+				break;
+			}
 
-            var packetSlice = reader.Sequence.Slice(reader.Position, fullLength);
-            bool parsed;
+			var packetSlice = reader.Sequence.Slice(reader.Position, fullLength);
+			bool parsed;
 
-            if (packetSlice.IsSingleSegment)
-            {
-                parsed = ParseAndDispatchFrame(packetSlice.FirstSpan, version);
-            }
-            else
-            {
-                var dst = scratch.Slice(0, fullLength);
-                packetSlice.CopyTo(dst);
-                parsed = ParseAndDispatchFrame(dst, version);
-            }
+			if (packetSlice.IsSingleSegment)
+			{
+				parsed = ParseAndDispatchFrame(packetSlice.FirstSpan, version);
+			}
+			else
+			{
+				var dst = scratch.Slice(0, fullLength);
+				packetSlice.CopyTo(dst);
+				parsed = ParseAndDispatchFrame(dst, version);
+			}
 
-            reader.Advance(parsed ? fullLength : 1);
-        }
+			reader.Advance(parsed ? fullLength : 1);
+		}
 
-        return reader.Position;
-    }
+		return reader.Position;
+	}
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool ParseAndDispatchFrame(ReadOnlySpan<byte> frame, MavlinkPacketVersion version)
-    {
-        var result = MavlinkPacketParser.TryParse(frame, version, _dialect, out var packet);
- 
-        if (result != MavlinkDeserializeResult.Success)
-        {
-            _errorListener.OnParserError(result);
-            return false;
-        }
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private bool ParseAndDispatchFrame(ReadOnlySpan<byte> frame, MavlinkPacketVersion version)
+	{
+		var result = MavlinkPacketParser.TryParse(frame, version, _dialect, out var packet);
 
-        NotifyFrameReceived(frame);
+		if (result != MavlinkDeserializeResult.Success)
+		{
+			_errorListener.OnParserError(result);
+			return false;
+		}
 
-        if (_verifier != null && !_verifier.Verify(frame, in packet))
-        {
-            return true;
-        }
- 
-        _listener.OnPacketReceived(in packet);
-        return true;
-    }
+		NotifyFrameReceived(frame);
+
+		if (_verifier != null && !_verifier.Verify(frame, in packet))
+		{
+			return true;
+		}
+
+		_listener.OnPacketReceived(in packet);
+		return true;
+	}
 #else
 
 	private SequencePosition EnqueueFramesFallback(ReadOnlySequence<byte> sequence)

@@ -16,7 +16,7 @@ public sealed class MavlinkUdpListenPort : IMavlinkPort
 	private int _disposed;
 
 #if NETSTANDARD2_1_OR_GREATER
-        public System.IO.Pipelines.PipeReader? Reader => null;
+	public System.IO.Pipelines.PipeReader? Reader => null;
 #endif
 
 	public MavlinkUdpListenPort(UdpClient udp)

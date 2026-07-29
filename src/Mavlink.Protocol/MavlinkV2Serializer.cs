@@ -13,7 +13,7 @@ public static class MavlinkV2Serializer
 	/// Serializes a message to MAVLink V2 packet (Typed version - Zero Boxing/Casting).
 	/// </summary>
 #if NETSTANDARD2_1_OR_GREATER
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
 	public static int Serialize<T>(
 		T message,
@@ -44,7 +44,7 @@ public static class MavlinkV2Serializer
 	/// Serializes a message to MAVLink V2 packet (Untyped version - Interface call).
 	/// </summary>
 #if NETSTANDARD2_1_OR_GREATER
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
 	public static int Serialize(
 		IMavlinkMessage message,
