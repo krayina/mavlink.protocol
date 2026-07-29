@@ -3,11 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.0.11123.170
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mavlink", "mavlink", "{6AB13417-C239-4754-B583-6644C50A9D4E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.Protocol.v3_0", "mavlink\Shmyndra.Mavlink.Protocol.v3_0\Shmyndra.Mavlink.Protocol.v3_0.csproj", "{B3C96638-9981-4D74-A969-B765673AB5F4}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{2ABC6460-2DF6-4827-BE09-89A6020E8D04}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2ABC6460-2DF6-4827-BE09-89A6020E8D04}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
@@ -15,13 +11,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{2ABC64
 		PolySharp.targets = PolySharp.targets
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink", "mavlink\Shmyndra.Mavlink\Shmyndra.Mavlink.csproj", "{0E997B51-A9D4-411A-AC0A-518B4D121637}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mavlink.Protocol", "Mavlink.Protocol\Mavlink.Protocol.csproj", "{FF71A417-2356-644A-04F1-4B95DD235E5F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.Generator", "mavlink\Shmyndra.Mavlink.Generator\Shmyndra.Mavlink.Generator.csproj", "{C85DE7C5-E67F-4052-B6C0-9E0BFF04F9F0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mavlink.Protocol.Generator", "Mavlink.Protocol.Generator\Mavlink.Protocol.Generator.csproj", "{7BE92373-0D92-919D-9736-CDE857C2C38A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.Generator.Tests", "mavlink\Shmyndra.Mavlink.Generator.Tests\Shmyndra.Mavlink.Generator.Tests.csproj", "{7E3686DE-63A3-4342-A219-DC71137BF850}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mavlink.Protocol.Generator.Tests", "Mavlink.Protocol.Generator.Tests\Mavlink.Protocol.Generator.Tests.csproj", "{632CE8D9-5510-6FB2-2027-D6122D6AC0FA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shmyndra.Mavlink.Protocol.v3_0.Tests", "mavlink\Shmyndra.Mavlink.Protocol.v3_0.Tests\Shmyndra.Mavlink.Protocol.v3_0.Tests.csproj", "{1712CE07-3ABA-4876-803D-F3891988E00E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shmyndra.Mavlink", "Shmyndra.Mavlink\Shmyndra.Mavlink.csproj", "{7FC95F61-14D8-AD18-1319-F460BF48DCB1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shmyndra.Mavlink.Protocol.v3_0", "Shmyndra.Mavlink.Protocol.v3_0\Shmyndra.Mavlink.Protocol.v3_0.csproj", "{E976BDBB-210C-8D9C-B580-A46AC74CD3CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shmyndra.Mavlink.Protocol.v3_0.Tests", "Shmyndra.Mavlink.Protocol.v3_0.Tests\Shmyndra.Mavlink.Protocol.v3_0.Tests.csproj", "{A2495D11-2DAA-6986-FE37-97BC92575D49}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,36 +29,33 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B3C96638-9981-4D74-A969-B765673AB5F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B3C96638-9981-4D74-A969-B765673AB5F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B3C96638-9981-4D74-A969-B765673AB5F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B3C96638-9981-4D74-A969-B765673AB5F4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0E997B51-A9D4-411A-AC0A-518B4D121637}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0E997B51-A9D4-411A-AC0A-518B4D121637}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0E997B51-A9D4-411A-AC0A-518B4D121637}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0E997B51-A9D4-411A-AC0A-518B4D121637}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C85DE7C5-E67F-4052-B6C0-9E0BFF04F9F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C85DE7C5-E67F-4052-B6C0-9E0BFF04F9F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C85DE7C5-E67F-4052-B6C0-9E0BFF04F9F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C85DE7C5-E67F-4052-B6C0-9E0BFF04F9F0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7E3686DE-63A3-4342-A219-DC71137BF850}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7E3686DE-63A3-4342-A219-DC71137BF850}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7E3686DE-63A3-4342-A219-DC71137BF850}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7E3686DE-63A3-4342-A219-DC71137BF850}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1712CE07-3ABA-4876-803D-F3891988E00E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1712CE07-3ABA-4876-803D-F3891988E00E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1712CE07-3ABA-4876-803D-F3891988E00E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1712CE07-3ABA-4876-803D-F3891988E00E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF71A417-2356-644A-04F1-4B95DD235E5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF71A417-2356-644A-04F1-4B95DD235E5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF71A417-2356-644A-04F1-4B95DD235E5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF71A417-2356-644A-04F1-4B95DD235E5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BE92373-0D92-919D-9736-CDE857C2C38A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BE92373-0D92-919D-9736-CDE857C2C38A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BE92373-0D92-919D-9736-CDE857C2C38A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BE92373-0D92-919D-9736-CDE857C2C38A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{632CE8D9-5510-6FB2-2027-D6122D6AC0FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{632CE8D9-5510-6FB2-2027-D6122D6AC0FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{632CE8D9-5510-6FB2-2027-D6122D6AC0FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{632CE8D9-5510-6FB2-2027-D6122D6AC0FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FC95F61-14D8-AD18-1319-F460BF48DCB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FC95F61-14D8-AD18-1319-F460BF48DCB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FC95F61-14D8-AD18-1319-F460BF48DCB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FC95F61-14D8-AD18-1319-F460BF48DCB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E976BDBB-210C-8D9C-B580-A46AC74CD3CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E976BDBB-210C-8D9C-B580-A46AC74CD3CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E976BDBB-210C-8D9C-B580-A46AC74CD3CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E976BDBB-210C-8D9C-B580-A46AC74CD3CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2495D11-2DAA-6986-FE37-97BC92575D49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2495D11-2DAA-6986-FE37-97BC92575D49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2495D11-2DAA-6986-FE37-97BC92575D49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2495D11-2DAA-6986-FE37-97BC92575D49}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{B3C96638-9981-4D74-A969-B765673AB5F4} = {6AB13417-C239-4754-B583-6644C50A9D4E}
-		{0E997B51-A9D4-411A-AC0A-518B4D121637} = {6AB13417-C239-4754-B583-6644C50A9D4E}
-		{C85DE7C5-E67F-4052-B6C0-9E0BFF04F9F0} = {6AB13417-C239-4754-B583-6644C50A9D4E}
-		{7E3686DE-63A3-4342-A219-DC71137BF850} = {6AB13417-C239-4754-B583-6644C50A9D4E}
-		{1712CE07-3ABA-4876-803D-F3891988E00E} = {6AB13417-C239-4754-B583-6644C50A9D4E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {925CC2D9-D9C9-4CBE-AEBB-AFA759F1CF5E}
