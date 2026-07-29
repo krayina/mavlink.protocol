@@ -2,22 +2,22 @@
 
 public static class MavlinkDialects
 {
-    /// <summary>
-    /// Merges several dialects into one. On message-id overlap the EARLIER
-    /// dialect wins — overlap is normal in MAVLink (e.g. ardupilotmega
-    /// includes common), so it is resolved by priority, not by throwing.
-    /// </summary>
-    public static IMavlinkDialect Combine(params IMavlinkDialect[] dialects)
-    {
-        if (dialects is null || dialects.Length == 0)
-        {
-            throw new ArgumentException("At least one dialect is required.", nameof(dialects));
-        }
+	/// <summary>
+	/// Merges several dialects into one. On message-id overlap the EARLIER
+	/// dialect wins — overlap is normal in MAVLink (e.g. ardupilotmega
+	/// includes common), so it is resolved by priority, not by throwing.
+	/// </summary>
+	public static IMavlinkDialect Combine(params IMavlinkDialect[] dialects)
+	{
+		if (dialects is null || dialects.Length == 0)
+		{
+			throw new ArgumentException("At least one dialect is required.", nameof(dialects));
+		}
 
-        return dialects.Length == 1
-            ? dialects[0]
-            : new MavlinkDialectCompositor(dialects);
-    }
+		return dialects.Length == 1
+			? dialects[0]
+			: new MavlinkDialectCompositor(dialects);
+	}
 
 #if NET5_0_OR_GREATER
     /// <summary>

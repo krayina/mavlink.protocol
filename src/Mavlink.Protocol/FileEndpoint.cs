@@ -12,64 +12,64 @@
 /// </summary>
 public sealed class FileEndpoint : MavlinkEndpoint
 {
-    public FileEndpoint(string path)
-    {
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            throw new ArgumentException("Path must not be empty.", nameof(path));
-        }
+	public FileEndpoint(string path)
+	{
+		if (string.IsNullOrWhiteSpace(path))
+		{
+			throw new ArgumentException("Path must not be empty.", nameof(path));
+		}
 
-        Path = path;
-    }
+		Path = path;
+	}
 
-    public string Path { get; }
+	public string Path { get; }
 
-    public override IReconnectPolicy DefaultReconnectPolicy => NoReconnectPolicy.Instance;
+	public override IReconnectPolicy DefaultReconnectPolicy => NoReconnectPolicy.Instance;
 
-    internal static bool TryParseScheme(
-        MavlinkConnectionStringParts parts,
-        out MavlinkEndpoint? endpoint,
-        out string? error)
-    {
-        endpoint = null;
-        error = null;
+	internal static bool TryParseScheme(
+		MavlinkConnectionStringParts parts,
+		out MavlinkEndpoint? endpoint,
+		out string? error)
+	{
+		endpoint = null;
+		error = null;
 
-        var body = Uri.UnescapeDataString(parts.Body);
+		var body = Uri.UnescapeDataString(parts.Body);
 
-        // "file:///C:/logs/x.tlog" tokenizes to "/C:/logs/x.tlog" — strip the
-        // leading slash for Windows drive paths.
-        if (body.Length >= 3 && body[0] == '/' && char.IsLetter(body[1]) && body[2] == ':')
-        {
-            body = body.Substring(1);
-        }
+		// "file:///C:/logs/x.tlog" tokenizes to "/C:/logs/x.tlog" — strip the
+		// leading slash for Windows drive paths.
+		if (body.Length >= 3 && body[0] == '/' && char.IsLetter(body[1]) && body[2] == ':')
+		{
+			body = body.Substring(1);
+		}
 
-        if (string.IsNullOrWhiteSpace(body))
-        {
-            error = "File path is empty. Expected e.g. 'file:C:/logs/flight.tlog'.";
-            return false;
-        }
+		if (string.IsNullOrWhiteSpace(body))
+		{
+			error = "File path is empty. Expected e.g. 'file:C:/logs/flight.tlog'.";
+			return false;
+		}
 
-        endpoint = new FileEndpoint(body);
-        return true;
-    }
+		endpoint = new FileEndpoint(body);
+		return true;
+	}
 
-    public override IMavlinkPortProvider CreateProvider()
-    {
-        var path = Path;
+	public override IMavlinkPortProvider CreateProvider()
+	{
+		var path = Path;
 
-        return new DelegatePortProvider(ct =>
-        {
-            var stream = new FileStream(
-                path, FileMode.Open, FileAccess.Read, FileShare.Read,
-                bufferSize: 64 * 1024, useAsync: true);
+		return new DelegatePortProvider(ct =>
+		{
+			var stream = new FileStream(
+				path, FileMode.Open, FileAccess.Read, FileShare.Read,
+				bufferSize: 64 * 1024, useAsync: true);
 
-            return new ValueTask<IMavlinkPort>(new MavlinkStreamPort(stream));
-        })
-        {
-            CanRecreatePort = false,
-            CanWrite = false,
-        };
-    }
+			return new ValueTask<IMavlinkPort>(new MavlinkStreamPort(stream));
+		})
+		{
+			CanRecreatePort = false,
+			CanWrite = false,
+		};
+	}
 
-    public override string ToString() => $"file:{Path}";
+	public override string ToString() => $"file:{Path}";
 }

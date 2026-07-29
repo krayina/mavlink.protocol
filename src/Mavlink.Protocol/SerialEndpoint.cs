@@ -16,170 +16,170 @@ namespace Mavlink.Transport;
 /// </summary>
 public sealed class SerialEndpoint : MavlinkEndpoint
 {
-    public SerialEndpoint(string portName)
-    {
-        PortName = portName ?? throw new ArgumentNullException(nameof(portName));
-    }
+	public SerialEndpoint(string portName)
+	{
+		PortName = portName ?? throw new ArgumentNullException(nameof(portName));
+	}
 
-    /// <summary>
-    /// Default: infinite retry. Polls SerialPort.GetPortNames() to distinguish
-    /// "device absent" (retry every 500 ms) from "device present but busy"
-    /// (retry every 200 ms). Never gives up — wrap in TimeBudgetPolicy or
-    /// supply your own policy to bound it.
-    /// </summary>
-    public override IReconnectPolicy DefaultReconnectPolicy
-        => new SerialReconnectPolicy(PortName);
+	/// <summary>
+	/// Default: infinite retry. Polls SerialPort.GetPortNames() to distinguish
+	/// "device absent" (retry every 500 ms) from "device present but busy"
+	/// (retry every 200 ms). Never gives up — wrap in TimeBudgetPolicy or
+	/// supply your own policy to bound it.
+	/// </summary>
+	public override IReconnectPolicy DefaultReconnectPolicy
+		=> new SerialReconnectPolicy(PortName);
 
-    public string PortName { get; }
+	public string PortName { get; }
 
-    public int BaudRate { get; set; } = 57600;
+	public int BaudRate { get; set; } = 57600;
 
-    public int DataBits { get; set; } = 8;
+	public int DataBits { get; set; } = 8;
 
-    public Parity Parity { get; set; } = Parity.None;
+	public Parity Parity { get; set; } = Parity.None;
 
-    public StopBits StopBits { get; set; } = StopBits.One;
+	public StopBits StopBits { get; set; } = StopBits.One;
 
-    public Handshake Handshake { get; set; } = Handshake.None;
+	public Handshake Handshake { get; set; } = Handshake.None;
 
-    public bool DtrEnable { get; set; }
+	public bool DtrEnable { get; set; }
 
-    public bool RtsEnable { get; set; }
+	public bool RtsEnable { get; set; }
 
-    internal static bool TryParseScheme(
-        MavlinkConnectionStringParts parts,
-        out MavlinkEndpoint? endpoint,
-        out string? error)
-    {
-        endpoint = null;
-        error = null;
+	internal static bool TryParseScheme(
+		MavlinkConnectionStringParts parts,
+		out MavlinkEndpoint? endpoint,
+		out string? error)
+	{
+		endpoint = null;
+		error = null;
 
-        var body = parts.Body;
-        var name = body;
-        int baudFromPath = -1;
+		var body = parts.Body;
+		var name = body;
+		int baudFromPath = -1;
 
-        // "COM3:57600" / "/dev/ttyUSB0:115200" — trailing ":digits" is the baud rate.
-        int idx = body.LastIndexOf(':');
-        if (idx > 0 && idx < body.Length - 1
-            && int.TryParse(
-                body.Substring(idx + 1),
-                System.Globalization.NumberStyles.None,
-                System.Globalization.CultureInfo.InvariantCulture,
-                out var b))
-        {
-            name = body.Substring(0, idx);
-            baudFromPath = b;
-        }
+		// "COM3:57600" / "/dev/ttyUSB0:115200" — trailing ":digits" is the baud rate.
+		int idx = body.LastIndexOf(':');
+		if (idx > 0 && idx < body.Length - 1
+			&& int.TryParse(
+				body.Substring(idx + 1),
+				System.Globalization.NumberStyles.None,
+				System.Globalization.CultureInfo.InvariantCulture,
+				out var b))
+		{
+			name = body.Substring(0, idx);
+			baudFromPath = b;
+		}
 
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            error = "Serial port name is empty. Expected e.g. 'serial:COM3?baud=57600' or 'serial:/dev/ttyUSB0:115200'.";
-            return false;
-        }
+		if (string.IsNullOrWhiteSpace(name))
+		{
+			error = "Serial port name is empty. Expected e.g. 'serial:COM3?baud=57600' or 'serial:/dev/ttyUSB0:115200'.";
+			return false;
+		}
 
-        var ep = new SerialEndpoint(name);
+		var ep = new SerialEndpoint(name);
 
-        if (baudFromPath > 0)
-        {
-            ep.BaudRate = baudFromPath;
-        }
+		if (baudFromPath > 0)
+		{
+			ep.BaudRate = baudFromPath;
+		}
 
-        if (ConnectionStringHelpers.TryGetInt(parts.Query, "baud", out var baud) && baud > 0)
-        {
-            ep.BaudRate = baud;
-        }
+		if (ConnectionStringHelpers.TryGetInt(parts.Query, "baud", out var baud) && baud > 0)
+		{
+			ep.BaudRate = baud;
+		}
 
-        if (ConnectionStringHelpers.TryGetInt(parts.Query, "databits", out var dataBits)
-            || ConnectionStringHelpers.TryGetInt(parts.Query, "data", out dataBits))
-        {
-            ep.DataBits = dataBits;
-        }
+		if (ConnectionStringHelpers.TryGetInt(parts.Query, "databits", out var dataBits)
+			|| ConnectionStringHelpers.TryGetInt(parts.Query, "data", out dataBits))
+		{
+			ep.DataBits = dataBits;
+		}
 
-        if (parts.Query.TryGetValue("parity", out var parity))
-        {
-            switch (parity.ToLowerInvariant())
-            {
-                case "none": ep.Parity = Parity.None; break;
-                case "odd": ep.Parity = Parity.Odd; break;
-                case "even": ep.Parity = Parity.Even; break;
-                case "mark": ep.Parity = Parity.Mark; break;
-                case "space": ep.Parity = Parity.Space; break;
-                default:
-                    error = $"Unknown parity '{parity}'.";
-                    return false;
-            }
-        }
+		if (parts.Query.TryGetValue("parity", out var parity))
+		{
+			switch (parity.ToLowerInvariant())
+			{
+				case "none": ep.Parity = Parity.None; break;
+				case "odd": ep.Parity = Parity.Odd; break;
+				case "even": ep.Parity = Parity.Even; break;
+				case "mark": ep.Parity = Parity.Mark; break;
+				case "space": ep.Parity = Parity.Space; break;
+				default:
+					error = $"Unknown parity '{parity}'.";
+					return false;
+			}
+		}
 
-        if (parts.Query.TryGetValue("stopbits", out var stop)
-            || parts.Query.TryGetValue("stop", out stop))
-        {
-            switch (stop)
-            {
-                case "1": ep.StopBits = StopBits.One; break;
-                case "1.5": ep.StopBits = StopBits.OnePointFive; break;
-                case "2": ep.StopBits = StopBits.Two; break;
-                default:
-                    error = $"Unknown stop bits '{stop}' (expected 1, 1.5 or 2).";
-                    return false;
-            }
-        }
+		if (parts.Query.TryGetValue("stopbits", out var stop)
+			|| parts.Query.TryGetValue("stop", out stop))
+		{
+			switch (stop)
+			{
+				case "1": ep.StopBits = StopBits.One; break;
+				case "1.5": ep.StopBits = StopBits.OnePointFive; break;
+				case "2": ep.StopBits = StopBits.Two; break;
+				default:
+					error = $"Unknown stop bits '{stop}' (expected 1, 1.5 or 2).";
+					return false;
+			}
+		}
 
-        if (ConnectionStringHelpers.TryGetBool(parts.Query, "dtr", out var dtr))
-        {
-            ep.DtrEnable = dtr;
-        }
+		if (ConnectionStringHelpers.TryGetBool(parts.Query, "dtr", out var dtr))
+		{
+			ep.DtrEnable = dtr;
+		}
 
-        if (ConnectionStringHelpers.TryGetBool(parts.Query, "rts", out var rts))
-        {
-            ep.RtsEnable = rts;
-        }
+		if (ConnectionStringHelpers.TryGetBool(parts.Query, "rts", out var rts))
+		{
+			ep.RtsEnable = rts;
+		}
 
-        endpoint = ep;
-        return true;
-    }
+		endpoint = ep;
+		return true;
+	}
 
-    public override IMavlinkPortProvider CreateProvider()
-    {
-        var portName = PortName;
-        var baud = BaudRate;
-        var dataBits = DataBits;
-        var parity = Parity;
-        var stopBits = StopBits;
-        var handshake = Handshake;
-        var dtr = DtrEnable;
-        var rts = RtsEnable;
+	public override IMavlinkPortProvider CreateProvider()
+	{
+		var portName = PortName;
+		var baud = BaudRate;
+		var dataBits = DataBits;
+		var parity = Parity;
+		var stopBits = StopBits;
+		var handshake = Handshake;
+		var dtr = DtrEnable;
+		var rts = RtsEnable;
 
-        return new DelegatePortProvider(ct =>
-        {
-            var serial = new SerialPort(portName, baud, parity, dataBits, stopBits)
-            {
-                Handshake = handshake,
-                DtrEnable = dtr,
-                RtsEnable = rts,
-                // Blocking timeouts are irrelevant: async I/O over BaseStream,
-                // cancellation by closing the port.
-                ReadTimeout = SerialPort.InfiniteTimeout,
-                WriteTimeout = SerialPort.InfiniteTimeout,
-            };
+		return new DelegatePortProvider(ct =>
+		{
+			var serial = new SerialPort(portName, baud, parity, dataBits, stopBits)
+			{
+				Handshake = handshake,
+				DtrEnable = dtr,
+				RtsEnable = rts,
+				// Blocking timeouts are irrelevant: async I/O over BaseStream,
+				// cancellation by closing the port.
+				ReadTimeout = SerialPort.InfiniteTimeout,
+				WriteTimeout = SerialPort.InfiniteTimeout,
+			};
 
-            try
-            {
-                ct.ThrowIfCancellationRequested();
-                serial.Open();
+			try
+			{
+				ct.ThrowIfCancellationRequested();
+				serial.Open();
 
-                return new ValueTask<IMavlinkPort>(new MavlinkStreamPort(
-                    serial.BaseStream,
-                    owner: serial,
-                    cancelHook: () => serial.Close(),
-                    exposeReader: false));
-            }
-            catch
-            {
-                serial.Dispose();
-                throw;
-            }
-        });
-    }
+				return new ValueTask<IMavlinkPort>(new MavlinkStreamPort(
+					serial.BaseStream,
+					owner: serial,
+					cancelHook: () => serial.Close(),
+					exposeReader: false));
+			}
+			catch
+			{
+				serial.Dispose();
+				throw;
+			}
+		});
+	}
 
-    public override string ToString() => $"serial:{PortName}:{BaudRate}";
+	public override string ToString() => $"serial:{PortName}:{BaudRate}";
 }

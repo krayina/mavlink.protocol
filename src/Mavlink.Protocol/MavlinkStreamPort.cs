@@ -7,27 +7,27 @@ namespace Mavlink.Transport;
 
 public sealed class MavlinkStreamPort : IMavlinkPort
 {
-    private readonly Stream _stream;
-    private readonly bool _leaveOpen;
-    private readonly IDisposable? _owner;
-    private readonly Action? _cancelHook;
-    private int _disposed;
+	private readonly Stream _stream;
+	private readonly bool _leaveOpen;
+	private readonly IDisposable? _owner;
+	private readonly Action? _cancelHook;
+	private int _disposed;
 
 #if NETSTANDARD2_1_OR_GREATER
     public System.IO.Pipelines.PipeReader? Reader { get; }
 #endif
 
-    public MavlinkStreamPort(
-        Stream stream,
-        bool leaveOpen = false,
-        IDisposable? owner = null,
-        Action? cancelHook = null,
-        bool exposeReader = true)
-    {
-        _stream = stream ?? throw new ArgumentNullException(nameof(stream));
-        _leaveOpen = leaveOpen;
-        _owner = owner;
-        _cancelHook = cancelHook;
+	public MavlinkStreamPort(
+		Stream stream,
+		bool leaveOpen = false,
+		IDisposable? owner = null,
+		Action? cancelHook = null,
+		bool exposeReader = true)
+	{
+		_stream = stream ?? throw new ArgumentNullException(nameof(stream));
+		_leaveOpen = leaveOpen;
+		_owner = owner;
+		_cancelHook = cancelHook;
 
 #if NETSTANDARD2_1_OR_GREATER
         if (exposeReader)
@@ -38,139 +38,139 @@ public sealed class MavlinkStreamPort : IMavlinkPort
             Reader = PipeReader.Create(_stream, new StreamPipeReaderOptions(leaveOpen: true));
         }
 #endif
-    }
+	}
 
-    public async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken ct)
-    {
-        ThrowIfDisposed();
+	public async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken ct)
+	{
+		ThrowIfDisposed();
 
-        using var registration = RegisterCancelHook(ct);
+		using var registration = RegisterCancelHook(ct);
 
-        try
-        {
+		try
+		{
 #if NETSTANDARD2_1_OR_GREATER
             return await _stream.ReadAsync(buffer, ct).ConfigureAwait(false);
 #else
-            if (MemoryMarshal.TryGetArray((ReadOnlyMemory<byte>)buffer, out ArraySegment<byte> segment)
-                && segment.Array is not null)
-            {
-                return await _stream.ReadAsync(segment.Array, segment.Offset, segment.Count, ct)
-                    .ConfigureAwait(false);
-            }
+			if (MemoryMarshal.TryGetArray((ReadOnlyMemory<byte>)buffer, out ArraySegment<byte> segment)
+				&& segment.Array is not null)
+			{
+				return await _stream.ReadAsync(segment.Array, segment.Offset, segment.Count, ct)
+					.ConfigureAwait(false);
+			}
 
-            var temp = ArrayPool<byte>.Shared.Rent(buffer.Length);
-            try
-            {
-                int read = await _stream.ReadAsync(temp, 0, buffer.Length, ct).ConfigureAwait(false);
-                if (read > 0)
-                {
-                    temp.AsSpan(0, read).CopyTo(buffer.Span);
-                }
-                return read;
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(temp);
-            }
+			var temp = ArrayPool<byte>.Shared.Rent(buffer.Length);
+			try
+			{
+				int read = await _stream.ReadAsync(temp, 0, buffer.Length, ct).ConfigureAwait(false);
+				if (read > 0)
+				{
+					temp.AsSpan(0, read).CopyTo(buffer.Span);
+				}
+				return read;
+			}
+			finally
+			{
+				ArrayPool<byte>.Shared.Return(temp);
+			}
 #endif
-        }
-        catch (Exception ex) when (IsTransportError(ex))
-        {
-            throw Translate(ex, ct, "read");
-        }
-    }
+		}
+		catch (Exception ex) when (IsTransportError(ex))
+		{
+			throw Translate(ex, ct, "read");
+		}
+	}
 
-    public async ValueTask WriteAsync(ReadOnlyMemory<byte> data, CancellationToken ct)
-    {
-        ThrowIfDisposed();
+	public async ValueTask WriteAsync(ReadOnlyMemory<byte> data, CancellationToken ct)
+	{
+		ThrowIfDisposed();
 
-        using var registration = RegisterCancelHook(ct);
+		using var registration = RegisterCancelHook(ct);
 
-        try
-        {
+		try
+		{
 #if NETSTANDARD2_1_OR_GREATER
             await _stream.WriteAsync(data, ct).ConfigureAwait(false);
 #else
-            if (MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment)
-                && segment.Array is not null)
-            {
-                await _stream.WriteAsync(segment.Array, segment.Offset, segment.Count, ct)
-                    .ConfigureAwait(false);
-            }
-            else
-            {
-                var array = data.ToArray();
-                await _stream.WriteAsync(array, 0, array.Length, ct).ConfigureAwait(false);
-            }
+			if (MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment)
+				&& segment.Array is not null)
+			{
+				await _stream.WriteAsync(segment.Array, segment.Offset, segment.Count, ct)
+					.ConfigureAwait(false);
+			}
+			else
+			{
+				var array = data.ToArray();
+				await _stream.WriteAsync(array, 0, array.Length, ct).ConfigureAwait(false);
+			}
 #endif
-        }
-        catch (Exception ex) when (IsTransportError(ex))
-        {
-            throw Translate(ex, ct, "write");
-        }
-    }
+		}
+		catch (Exception ex) when (IsTransportError(ex))
+		{
+			throw Translate(ex, ct, "write");
+		}
+	}
 
-    private CancellationTokenRegistration RegisterCancelHook(CancellationToken ct)
-    {
-        if (_cancelHook is null)
-        {
-            return default;
-        }
-        else
-        {
-            return ct.Register(static state =>
-            {
-                try
-                {
-                    ((Action)state!)();
-                }
-                catch
-                {
-                    // Suppress cancel hook faults
-                }
-            }, _cancelHook);
-        }
-    }
+	private CancellationTokenRegistration RegisterCancelHook(CancellationToken ct)
+	{
+		if (_cancelHook is null)
+		{
+			return default;
+		}
+		else
+		{
+			return ct.Register(static state =>
+			{
+				try
+				{
+					((Action)state!)();
+				}
+				catch
+				{
+					// Suppress cancel hook faults
+				}
+			}, _cancelHook);
+		}
+	}
 
-    private static bool IsTransportError(Exception ex)
-    {
-        return ex is IOException
-            or ObjectDisposedException
-            or InvalidOperationException
-            or UnauthorizedAccessException
-            or NotSupportedException
-            or SocketException;
-    }
+	private static bool IsTransportError(Exception ex)
+	{
+		return ex is IOException
+			or ObjectDisposedException
+			or InvalidOperationException
+			or UnauthorizedAccessException
+			or NotSupportedException
+			or SocketException;
+	}
 
-    private Exception Translate(Exception ex, CancellationToken ct, string op)
-    {
-        if (ct.IsCancellationRequested)
-        {
-            return new OperationCanceledException(ct);
-        }
+	private Exception Translate(Exception ex, CancellationToken ct, string op)
+	{
+		if (ct.IsCancellationRequested)
+		{
+			return new OperationCanceledException(ct);
+		}
 
-        if (Volatile.Read(ref _disposed) != 0)
-        {
-            return new ObjectDisposedException(nameof(MavlinkStreamPort), ex);
-        }
+		if (Volatile.Read(ref _disposed) != 0)
+		{
+			return new ObjectDisposedException(nameof(MavlinkStreamPort), ex);
+		}
 
-        return new MavlinkConnectionException($"Port error during {op}.", ex);
-    }
+		return new MavlinkConnectionException($"Port error during {op}.", ex);
+	}
 
-    private void ThrowIfDisposed()
-    {
-        if (Volatile.Read(ref _disposed) != 0)
-        {
-            throw new ObjectDisposedException(nameof(MavlinkStreamPort));
-        }
-    }
+	private void ThrowIfDisposed()
+	{
+		if (Volatile.Read(ref _disposed) != 0)
+		{
+			throw new ObjectDisposedException(nameof(MavlinkStreamPort));
+		}
+	}
 
-    public void Dispose()
-    {
-        if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0)
-        {
-            return;
-        }
+	public void Dispose()
+	{
+		if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0)
+		{
+			return;
+		}
 
 #if NETSTANDARD2_1_OR_GREATER
         try
@@ -183,36 +183,36 @@ public sealed class MavlinkStreamPort : IMavlinkPort
         }
 #endif
 
-        if (_leaveOpen)
-        {
-            return;
-        }
+		if (_leaveOpen)
+		{
+			return;
+		}
 
-        try
-        {
-            _stream.Dispose();
-        }
-        catch
-        {
-            // Suppress stream disposal faults
-        }
+		try
+		{
+			_stream.Dispose();
+		}
+		catch
+		{
+			// Suppress stream disposal faults
+		}
 
-        try
-        {
-            _owner?.Dispose();
-        }
-        catch
-        {
-            // Suppress owner disposal faults
-        }
-    }
+		try
+		{
+			_owner?.Dispose();
+		}
+		catch
+		{
+			// Suppress owner disposal faults
+		}
+	}
 
-    public async ValueTask DisposeAsync()
-    {
-        if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0)
-        {
-            return;
-        }
+	public async ValueTask DisposeAsync()
+	{
+		if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0)
+		{
+			return;
+		}
 
 #if NETSTANDARD2_1_OR_GREATER
         try
@@ -228,41 +228,41 @@ public sealed class MavlinkStreamPort : IMavlinkPort
         }
 #endif
 
-        if (_leaveOpen)
-        {
-            return;
-        }
+		if (_leaveOpen)
+		{
+			return;
+		}
 
-        try
-        {
-            if (_stream is IAsyncDisposable asyncStream)
-            {
-                await asyncStream.DisposeAsync().ConfigureAwait(false);
-            }
-            else
-            {
-                _stream.Dispose();
-            }
-        }
-        catch
-        {
-            // Suppress stream disposal faults
-        }
+		try
+		{
+			if (_stream is IAsyncDisposable asyncStream)
+			{
+				await asyncStream.DisposeAsync().ConfigureAwait(false);
+			}
+			else
+			{
+				_stream.Dispose();
+			}
+		}
+		catch
+		{
+			// Suppress stream disposal faults
+		}
 
-        try
-        {
-            if (_owner is IAsyncDisposable asyncOwner)
-            {
-                await asyncOwner.DisposeAsync().ConfigureAwait(false);
-            }
-            else
-            {
-                _owner?.Dispose();
-            }
-        }
-        catch
-        {
-            // Suppress owner disposal faults
-        }
-    }
+		try
+		{
+			if (_owner is IAsyncDisposable asyncOwner)
+			{
+				await asyncOwner.DisposeAsync().ConfigureAwait(false);
+			}
+			else
+			{
+				_owner?.Dispose();
+			}
+		}
+		catch
+		{
+			// Suppress owner disposal faults
+		}
+	}
 }

@@ -8,7 +8,7 @@
 /// </summary>
 public interface IMavlinkTargetedMessageInfo : IMavlinkMessageInfo
 {
-    IMavlinkMessage WithTarget(IMavlinkMessage message, byte targetSystem, byte targetComponent);
+	IMavlinkMessage WithTarget(IMavlinkMessage message, byte targetSystem, byte targetComponent);
 }
 
 /// <summary>
@@ -26,10 +26,10 @@ public interface IMavlinkTargetedMessageInfo : IMavlinkMessageInfo
 /// passed into SendAsync).
 /// </summary>
 public interface IMavlinkTargetedMessageInfo<T> : IMavlinkTargetedMessageInfo
-    where T : struct, IMavlinkTargetedMessage
+	where T : struct, IMavlinkTargetedMessage
 {
-    /// <summary>Returns a copy of the message with the target fields set.
-    /// Always OVERWRITES existing values: in SendToAsync the target argument
-    /// wins over whatever the user pre-set in the struct.</summary>
-    T WithTarget(in T message, byte targetSystem, byte targetComponent);
+	/// <summary>Returns a copy of the message with the target fields set.
+	/// Always OVERWRITES existing values: in SendToAsync the target argument
+	/// wins over whatever the user pre-set in the struct.</summary>
+	T WithTarget(in T message, byte targetSystem, byte targetComponent);
 }

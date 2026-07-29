@@ -2,5 +2,5 @@
 
 internal interface IMavlinkReceivedPacketCallback
 {
-    void Invoke(in MavlinkReceivedPacket context);
+	void Invoke(in MavlinkReceivedPacket context);
 }

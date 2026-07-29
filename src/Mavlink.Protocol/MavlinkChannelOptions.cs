@@ -4,70 +4,70 @@ namespace Mavlink;
 
 public sealed class MavlinkChannelOptions
 {
-    public IMavlinkPortProvider PortProvider { get; set; } = null!;
+	public IMavlinkPortProvider PortProvider { get; set; } = null!;
 
-    public IMavlinkDialect Dialect { get; set; } = null!;
+	public IMavlinkDialect Dialect { get; set; } = null!;
 
-    public IReconnectPolicy ReconnectPolicy { get; set; } = NoReconnectPolicy.Instance;
+	public IReconnectPolicy ReconnectPolicy { get; set; } = NoReconnectPolicy.Instance;
 
-    public bool EnableReceive { get; set; } = true;
+	public bool EnableReceive { get; set; } = true;
 
-    public TimeSpan? LinkTimeout { get; set; } = TimeSpan.FromSeconds(5);
+	public TimeSpan? LinkTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
-    public TimeSpan? SystemTimeout { get; set; } = TimeSpan.FromSeconds(5);
+	public TimeSpan? SystemTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
-    public MavlinkSigner? Signer { get; set; }
+	public MavlinkSigner? Signer { get; set; }
 
-    public MavlinkSignatureVerifier? SignatureVerifier { get; set; }
+	public MavlinkSignatureVerifier? SignatureVerifier { get; set; }
 
-    public IMavlinkRawFrameListener? FrameListener { get; set; }
+	public IMavlinkRawFrameListener? FrameListener { get; set; }
 
-    public int DispatchChannelCapacity { get; set; } = 256;
+	public int DispatchChannelCapacity { get; set; } = 256;
 
-    internal void Validate()
-    {
-        if (PortProvider is null)
-        {
-            throw new ArgumentNullException(nameof(PortProvider));
-        }
+	internal void Validate()
+	{
+		if (PortProvider is null)
+		{
+			throw new ArgumentNullException(nameof(PortProvider));
+		}
 
-        if (Dialect is null)
-        {
-            throw new ArgumentNullException(nameof(Dialect));
-        }
+		if (Dialect is null)
+		{
+			throw new ArgumentNullException(nameof(Dialect));
+		}
 
-        if (ReconnectPolicy is null)
-        {
-            throw new ArgumentNullException(nameof(ReconnectPolicy));
-        }
+		if (ReconnectPolicy is null)
+		{
+			throw new ArgumentNullException(nameof(ReconnectPolicy));
+		}
 
-        if (DispatchChannelCapacity < 1)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(DispatchChannelCapacity),
-                DispatchChannelCapacity,
-                "Channel capacity must be at least 1.");
-        }
+		if (DispatchChannelCapacity < 1)
+		{
+			throw new ArgumentOutOfRangeException(
+				nameof(DispatchChannelCapacity),
+				DispatchChannelCapacity,
+				"Channel capacity must be at least 1.");
+		}
 
-        if (!EnableReceive && !PortProvider.CanWrite)
-        {
-            throw new ArgumentException(
-                "Channel would be inert: EnableReceive is false and the port provider " +
-                "cannot write. Enable receive or use a writable transport.");
-        }
+		if (!EnableReceive && !PortProvider.CanWrite)
+		{
+			throw new ArgumentException(
+				"Channel would be inert: EnableReceive is false and the port provider " +
+				"cannot write. Enable receive or use a writable transport.");
+		}
 
-        if (!EnableReceive && SignatureVerifier != null)
-        {
-            throw new ArgumentException(
-                "SignatureVerifier requires EnableReceive = true: there is nothing to verify " +
-                "on a send-only channel. Use Signer to sign outgoing frames instead.");
-        }
+		if (!EnableReceive && SignatureVerifier != null)
+		{
+			throw new ArgumentException(
+				"SignatureVerifier requires EnableReceive = true: there is nothing to verify " +
+				"on a send-only channel. Use Signer to sign outgoing frames instead.");
+		}
 
-        if (Signer != null && !PortProvider.CanWrite)
-        {
-            throw new ArgumentException(
-                "Signer is set but the transport is read-only. Did you mean SignatureVerifier " +
-                "(incoming signature checking)?");
-        }
-    }
+		if (Signer != null && !PortProvider.CanWrite)
+		{
+			throw new ArgumentException(
+				"Signer is set but the transport is read-only. Did you mean SignatureVerifier " +
+				"(incoming signature checking)?");
+		}
+	}
 }

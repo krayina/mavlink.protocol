@@ -2,8 +2,8 @@
 
 public enum MavlinkSignatureVerifyResult
 {
-    Valid = 0,
-    BadSignature,
-    TimestampReplay,
-    NewStreamTimestampOutOfRange,
+	Valid = 0,
+	BadSignature,
+	TimestampReplay,
+	NewStreamTimestampOutOfRange,
 }

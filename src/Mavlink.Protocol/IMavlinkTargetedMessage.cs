@@ -23,6 +23,6 @@
 /// </summary>
 public interface IMavlinkTargetedMessage : IMavlinkMessage
 {
-    byte TargetSystem { get; }
-    byte TargetComponent { get; }
+	byte TargetSystem { get; }
+	byte TargetComponent { get; }
 }

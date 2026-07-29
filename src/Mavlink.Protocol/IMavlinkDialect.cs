@@ -2,7 +2,7 @@
 
 public interface IMavlinkDialect
 {
-    string Name { get; }
-    IMavlinkMessageInfo? GetInfo(uint msgId);
-    IMavlinkMessageInfo? GetInfo(Type type);
+	string Name { get; }
+	IMavlinkMessageInfo? GetInfo(uint msgId);
+	IMavlinkMessageInfo? GetInfo(Type type);
 }

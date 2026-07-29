@@ -2,9 +2,9 @@
 
 public interface IMavlinkPortProvider
 {
-    bool CanRecreatePort { get; }
+	bool CanRecreatePort { get; }
 
-    bool CanWrite { get; }
+	bool CanWrite { get; }
 
-    ValueTask<IMavlinkPort> CreatePortAsync(CancellationToken ct);
+	ValueTask<IMavlinkPort> CreatePortAsync(CancellationToken ct);
 }

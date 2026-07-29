@@ -2,51 +2,51 @@
 
 internal sealed class MavlinkSignatureFrameVerifier : IMavlinkFrameVerifier
 {
-    private const int SignatureBlockLength = 13;
+	private const int SignatureBlockLength = 13;
 
-    private readonly MavlinkSignatureVerifier _verifier;
-    private readonly MavlinkDiagnostics _diagnostics;
+	private readonly MavlinkSignatureVerifier _verifier;
+	private readonly MavlinkDiagnostics _diagnostics;
 
-    public MavlinkSignatureFrameVerifier(
-        MavlinkSignatureVerifier verifier, MavlinkDiagnostics diagnostics)
-    {
-        _verifier = verifier ?? throw new ArgumentNullException(nameof(verifier));
-        _diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
-    }
+	public MavlinkSignatureFrameVerifier(
+		MavlinkSignatureVerifier verifier, MavlinkDiagnostics diagnostics)
+	{
+		_verifier = verifier ?? throw new ArgumentNullException(nameof(verifier));
+		_diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
+	}
 
-    public bool Verify(ReadOnlySpan<byte> frame, in MavlinkReceivedPacket packet)
-    {
-        if (!packet.IsSigned)
-        {
-            if (_verifier.AllowUnsigned)
-            {
-                return true;
-            }
+	public bool Verify(ReadOnlySpan<byte> frame, in MavlinkReceivedPacket packet)
+	{
+		if (!packet.IsSigned)
+		{
+			if (_verifier.AllowUnsigned)
+			{
+				return true;
+			}
 
-            _diagnostics.OnSignatureFailure();
-            return false;
-        }
+			_diagnostics.OnSignatureFailure();
+			return false;
+		}
 
-        if (frame.Length <= SignatureBlockLength)
-        {
-            _diagnostics.OnSignatureFailure();
-            return false;
-        }
+		if (frame.Length <= SignatureBlockLength)
+		{
+			_diagnostics.OnSignatureFailure();
+			return false;
+		}
 
-        int splitAt = frame.Length - SignatureBlockLength;
+		int splitAt = frame.Length - SignatureBlockLength;
 
-        var result = _verifier.Verify(
-            frame.Slice(0, splitAt),
-            frame.Slice(splitAt, SignatureBlockLength),
-            packet.SenderSystemId,
-            packet.SenderComponentId);
+		var result = _verifier.Verify(
+			frame.Slice(0, splitAt),
+			frame.Slice(splitAt, SignatureBlockLength),
+			packet.SenderSystemId,
+			packet.SenderComponentId);
 
-        if (result == MavlinkSignatureVerifyResult.Valid)
-        {
-            return true;
-        }
+		if (result == MavlinkSignatureVerifyResult.Valid)
+		{
+			return true;
+		}
 
-        _diagnostics.OnSignatureFailure();
-        return false;
-    }
+		_diagnostics.OnSignatureFailure();
+		return false;
+	}
 }

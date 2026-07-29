@@ -2,5 +2,5 @@
 
 internal interface IMavlinkFrameVerifier
 {
-    bool Verify(ReadOnlySpan<byte> frame, in MavlinkReceivedPacket packet);
+	bool Verify(ReadOnlySpan<byte> frame, in MavlinkReceivedPacket packet);
 }

@@ -2,10 +2,10 @@
 
 public enum MavlinkConnectionState
 {
-    Disconnected,
-    Connecting,
-    Connected,
-    Disconnecting,
-    Reconnecting,
-    ConnectionLost
+	Disconnected,
+	Connecting,
+	Connected,
+	Disconnecting,
+	Reconnecting,
+	ConnectionLost
 }

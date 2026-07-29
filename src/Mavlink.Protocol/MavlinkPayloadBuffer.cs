@@ -11,23 +11,23 @@ internal struct MavlinkPayloadBuffer
 #else
 internal unsafe struct MavlinkPayloadBuffer
 {
-    private fixed byte _data[255];
+	private fixed byte _data[255];
 
-    public ReadOnlySpan<byte> AsSpan(int length)
-    {
-        fixed (byte* ptr = _data)
-        {
-            return new ReadOnlySpan<byte>(ptr, length);
-        }
-    }
+	public ReadOnlySpan<byte> AsSpan(int length)
+	{
+		fixed (byte* ptr = _data)
+		{
+			return new ReadOnlySpan<byte>(ptr, length);
+		}
+	}
 
-    public void CopyFrom(ReadOnlySpan<byte> source)
-    {
-        fixed (byte* ptr = _data)
-        {
-            var target = new Span<byte>(ptr, 255);
-            source.CopyTo(target);
-        }
-    }
+	public void CopyFrom(ReadOnlySpan<byte> source)
+	{
+		fixed (byte* ptr = _data)
+		{
+			var target = new Span<byte>(ptr, 255);
+			source.CopyTo(target);
+		}
+	}
 }
 #endif
