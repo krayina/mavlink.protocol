@@ -7,14 +7,8 @@ public enum MavlinkSystemState : byte
 	Silent = 2,
 }
 
-public readonly struct MavlinkSystemStateChange
-{
-	public MavlinkSystemStateChange(MavlinkSystemState oldState, MavlinkSystemState newState)
-	{
-		OldState = oldState;
-		NewState = newState;
-	}
-
-	public MavlinkSystemState OldState { get; }
-	public MavlinkSystemState NewState { get; }
-}
+public readonly record struct MavlinkSystemStateChange
+(
+	MavlinkSystemState OldState,
+	MavlinkSystemState NewState
+);
