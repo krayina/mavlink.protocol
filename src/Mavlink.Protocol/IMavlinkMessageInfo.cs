@@ -1,8 +1,7 @@
-﻿using System.ComponentModel;
-
-namespace Mavlink;
+﻿namespace Mavlink;
 
 #if NETSTANDARD2_1_OR_GREATER
+using System.ComponentModel;
 [EditorBrowsable(EditorBrowsableState.Never)]
 #endif
 public interface IMavlinkMessageInfo

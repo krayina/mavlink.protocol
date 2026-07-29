@@ -43,6 +43,7 @@ public readonly record struct MavlinkReceivedPacket
 		IsSigned = isSigned;
 		PayloadLength = (byte)payloadSpan.Length;
 
+		_payload = default;
 #if NET8_0_OR_GREATER
 		Span<byte> dest = MemoryMarshal.CreateSpan(
 			ref Unsafe.AsRef(in _payload.Element0),

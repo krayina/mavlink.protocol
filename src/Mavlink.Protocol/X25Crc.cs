@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿#if NETSTANDARD2_1_OR_GREATER
+using System.Runtime.CompilerServices;
+#endif
 using System.Text;
 
 namespace Mavlink;

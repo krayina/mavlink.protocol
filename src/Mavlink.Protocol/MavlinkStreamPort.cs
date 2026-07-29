@@ -1,7 +1,9 @@
-﻿using System.Buffers;
+﻿using System.Net.Sockets;
+#if NETSTANDARD2_1_OR_GREATER
 using System.IO.Pipelines;
-using System.Net.Sockets;
+#else
 using System.Runtime.InteropServices;
+#endif
 
 namespace Mavlink.Transport;
 
@@ -58,7 +60,7 @@ public sealed class MavlinkStreamPort : IMavlinkPort
 					.ConfigureAwait(false);
 			}
 
-			var temp = ArrayPool<byte>.Shared.Rent(buffer.Length);
+			var temp = System.Buffers.ArrayPool<byte>.Shared.Rent(buffer.Length);
 			try
 			{
 				int read = await _stream.ReadAsync(temp, 0, buffer.Length, ct).ConfigureAwait(false);
@@ -70,7 +72,7 @@ public sealed class MavlinkStreamPort : IMavlinkPort
 			}
 			finally
 			{
-				ArrayPool<byte>.Shared.Return(temp);
+				System.Buffers.ArrayPool<byte>.Shared.Return(temp);
 			}
 #endif
 		}

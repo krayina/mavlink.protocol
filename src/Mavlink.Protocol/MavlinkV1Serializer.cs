@@ -1,5 +1,7 @@
 ﻿using System.Buffers.Binary;
+#if NETSTANDARD2_1_OR_GREATER
 using System.Runtime.CompilerServices;
+#endif
 
 namespace Mavlink;
 
