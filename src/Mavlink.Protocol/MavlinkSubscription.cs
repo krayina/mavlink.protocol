@@ -2,15 +2,19 @@
 
 internal sealed class MavlinkSubscription : IDisposable
 {
-	private Action? _onDispose;
+	private MavlinkReceivedPacketCallbackRegistry? _registry;
+	private readonly IMavlinkReceivedPacketCallback _handler;
 
-	public MavlinkSubscription(Action onDispose)
+	public MavlinkSubscription(
+		MavlinkReceivedPacketCallbackRegistry registry,
+		IMavlinkReceivedPacketCallback handler)
 	{
-		_onDispose = onDispose;
+		_registry = registry;
+		_handler = handler;
 	}
 
 	public void Dispose()
 	{
-		Interlocked.Exchange(ref _onDispose, null)?.Invoke();
+		Interlocked.Exchange(ref _registry, null)?.Remove(_handler);
 	}
 }

@@ -7,27 +7,47 @@ internal sealed class MavlinkReceivedPacketCallback : IMavlinkReceivedPacketCall
 	private readonly MavlinkMessageHandler _callback;
 	private readonly MavlinkPacketFilter? _filter;
 	private readonly IMavlinkDialect _dialect;
+	private readonly byte? _senderSystemId;
+	private readonly byte? _senderComponentId;
 
 	public MavlinkReceivedPacketCallback(
 		MavlinkMessageHandler callback,
 		MavlinkPacketFilter? filter,
-		IMavlinkDialect dialect)
+		IMavlinkDialect dialect,
+		byte? senderSystemId,
+		byte? senderComponentId)
 	{
 		_callback = callback;
 		_filter = filter;
 		_dialect = dialect;
+		_senderSystemId = senderSystemId;
+		_senderComponentId = senderComponentId;
 	}
 
 	public void Invoke(in MavlinkReceivedPacket context)
 	{
-		if (_filter == null || _filter(in context))
+		if (_senderSystemId is byte sys && context.SenderSystemId != sys)
 		{
-			var info = _dialect.GetInfo(context.MessageId);
-			if (info != null)
-			{
-				IMavlinkMessage message = MavlinkDeserializer.Deserialize(in context, info);
-				_callback(message, in context);
-			}
+			return;
 		}
+
+		if (_senderComponentId is byte comp && context.SenderComponentId != comp)
+		{
+			return;
+		}
+
+		if (_filter != null && !_filter(in context))
+		{
+			return;
+		}
+
+		var info = _dialect.GetInfo(context.MessageId);
+		if (info == null)
+		{
+			return;
+		}
+
+		IMavlinkMessage message = MavlinkDeserializer.Deserialize(in context, info);
+		_callback(message, in context);
 	}
 }

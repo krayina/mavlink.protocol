@@ -32,21 +32,7 @@ public sealed class MavlinkComponentView
 		MavlinkPacketFilter? filter = null)
 		where T : struct, IMavlinkMessage
 	{
-		byte sys = SystemId;
-		byte comp = ComponentId;
-		MavlinkPacketFilter combined;
-		if (filter == null)
-		{
-			combined = (in MavlinkReceivedPacket p)
-				=> p.SenderSystemId == sys && p.SenderComponentId == comp;
-		}
-		else
-		{
-			combined = (in MavlinkReceivedPacket p)
-				=> p.SenderSystemId == sys && p.SenderComponentId == comp && filter(in p);
-		}
-
-		return _eventBus.Subscribe(callback, combined);
+		return _eventBus.Subscribe(callback, filter, SystemId, ComponentId);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

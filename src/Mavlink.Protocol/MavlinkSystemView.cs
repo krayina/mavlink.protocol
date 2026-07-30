@@ -55,30 +55,24 @@ public sealed class MavlinkSystemView
 	public event Action<MavlinkSystemView, MavlinkSystemStateChange>? StateChanged;
 
 	public IReadOnlyCollection<MavlinkComponentView> Components
-		=> (IReadOnlyCollection<MavlinkComponentView>)_components.Values;
+	{
+		get
+		{
+			return (IReadOnlyCollection<MavlinkComponentView>)_components.Values;
+		}
+	}
 
 	public MavlinkComponentView GetComponent(byte componentId)
-		=> _components.GetOrAdd(componentId, _componentFactory);
+	{
+		return _components.GetOrAdd(componentId, _componentFactory);
+	}
 
 	public IDisposable Subscribe<T>(
 		MavlinkMessageHandler<T> callback,
 		MavlinkPacketFilter? filter = null)
 		where T : struct, IMavlinkMessage
 	{
-		byte id = SystemId;
-
-		MavlinkPacketFilter combined;
-		if (filter == null)
-		{
-			combined = (in MavlinkReceivedPacket p) => p.SenderSystemId == id;
-		}
-		else
-		{
-			combined = (in MavlinkReceivedPacket p)
-				=> p.SenderSystemId == id && filter(in p);
-		}
-
-		return _eventBus.Subscribe(callback, combined);
+		return _eventBus.Subscribe(callback, filter, SystemId, null);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

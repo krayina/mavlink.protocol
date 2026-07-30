@@ -30,32 +30,63 @@ internal sealed class MavlinkEventBus
 		MavlinkPacketFilter? filter = null)
 		where T : struct, IMavlinkMessage
 	{
-		if (callback is null)
-		{
-			throw new ArgumentNullException(nameof(callback));
-		}
-
-		var info = _dialect.GetInfo(typeof(T)) as IMavlinkMessageInfo<T>
-			?? throw new ArgumentException($"Type {typeof(T).Name} not registered in dialect.");
-
-		var handler = new MavlinkReceivedPacketCallback<T>(callback, filter, info);
-		var list = _typed.GetOrAdd(info.MessageId, _ => new MavlinkReceivedPacketCallbackRegistry());
-		list.Add(handler);
-		return new MavlinkSubscription(() => list.Remove(handler));
+		return Subscribe(callback, filter, null, null);
 	}
 
-	public IDisposable SubscribeAll(
-		MavlinkMessageHandler callback,
-		MavlinkPacketFilter? filter = null)
+	internal IDisposable Subscribe<T>(
+		MavlinkMessageHandler<T> callback,
+		MavlinkPacketFilter? filter,
+		byte? senderSystemId,
+		byte? senderComponentId)
+		where T : struct, IMavlinkMessage
 	{
 		if (callback is null)
 		{
 			throw new ArgumentNullException(nameof(callback));
 		}
 
-		var handler = new MavlinkReceivedPacketCallback(callback, filter, _dialect);
+		var raw = _dialect.GetInfo(typeof(T))
+			?? throw new ArgumentException($"Type {typeof(T).Name} is not registered in dialect.");
+
+		var info = raw as IMavlinkMessageInfo<T>
+			?? throw new InvalidOperationException(
+				$"Dialect returned {raw.GetType().Name} for {typeof(T).Name}, " +
+				$"which does not implement IMavlinkMessageInfo<{typeof(T).Name}>.");
+
+		var handler = new MavlinkReceivedPacketCallback<T>(
+			callback, filter, info, senderSystemId, senderComponentId);
+
+		var list = _typed.GetOrAdd(
+			info.MessageId,
+			static _ => new MavlinkReceivedPacketCallbackRegistry());
+
+		list.Add(handler);
+		return new MavlinkSubscription(list, handler);
+	}
+
+	public IDisposable SubscribeAll(
+		MavlinkMessageHandler callback,
+		MavlinkPacketFilter? filter = null)
+	{
+		return SubscribeAll(callback, filter, null, null);
+	}
+
+	internal IDisposable SubscribeAll(
+		MavlinkMessageHandler callback,
+		MavlinkPacketFilter? filter,
+		byte? senderSystemId,
+		byte? senderComponentId)
+	{
+		if (callback is null)
+		{
+			throw new ArgumentNullException(nameof(callback));
+		}
+
+		var handler = new MavlinkReceivedPacketCallback(
+			callback, filter, _dialect, senderSystemId, senderComponentId);
+
 		_all.Add(handler);
-		return new MavlinkSubscription(() => _all.Remove(handler));
+		return new MavlinkSubscription(_all, handler);
 	}
 
 	public void Publish(in MavlinkReceivedPacket context)
