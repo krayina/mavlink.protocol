@@ -61,14 +61,22 @@ public sealed class MavlinkSystemView
 		=> _components.GetOrAdd(componentId, _componentFactory);
 
 	public IDisposable Subscribe<T>(
-		Action<T, MavlinkReceivedPacket> callback,
-		Func<MavlinkReceivedPacket, bool>? filter = null)
+		MavlinkMessageHandler<T> callback,
+		MavlinkPacketFilter? filter = null)
 		where T : struct, IMavlinkMessage
 	{
 		byte id = SystemId;
-		Func<MavlinkReceivedPacket, bool> combined = filter == null
-			? p => p.SenderSystemId == id
-			: p => p.SenderSystemId == id && filter(p);
+
+		MavlinkPacketFilter combined;
+		if (filter == null)
+		{
+			combined = (in MavlinkReceivedPacket p) => p.SenderSystemId == id;
+		}
+		else
+		{
+			combined = (in MavlinkReceivedPacket p)
+				=> p.SenderSystemId == id && filter(in p);
+		}
 
 		return _eventBus.Subscribe(callback, combined);
 	}

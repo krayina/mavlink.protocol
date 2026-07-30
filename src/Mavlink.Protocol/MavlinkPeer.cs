@@ -35,8 +35,8 @@ public sealed class MavlinkPeer
 	}
 
 	public IDisposable Subscribe<T>(
-		Action<T, MavlinkReceivedPacket> callback,
-		Func<MavlinkReceivedPacket, bool>? filter = null)
+		MavlinkMessageHandler<T> callback,
+		MavlinkPacketFilter? filter = null)
 		where T : struct, IMavlinkMessage
 	{
 		return _component != null

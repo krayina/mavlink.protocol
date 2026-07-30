@@ -28,15 +28,23 @@ public sealed class MavlinkComponentView
 	}
 
 	public IDisposable Subscribe<T>(
-		Action<T, MavlinkReceivedPacket> callback,
-		Func<MavlinkReceivedPacket, bool>? filter = null)
+		MavlinkMessageHandler<T> callback,
+		MavlinkPacketFilter? filter = null)
 		where T : struct, IMavlinkMessage
 	{
 		byte sys = SystemId;
 		byte comp = ComponentId;
-		Func<MavlinkReceivedPacket, bool> combined = filter == null
-			? p => p.SenderSystemId == sys && p.SenderComponentId == comp
-			: p => p.SenderSystemId == sys && p.SenderComponentId == comp && filter(p);
+		MavlinkPacketFilter combined;
+		if (filter == null)
+		{
+			combined = (in MavlinkReceivedPacket p)
+				=> p.SenderSystemId == sys && p.SenderComponentId == comp;
+		}
+		else
+		{
+			combined = (in MavlinkReceivedPacket p)
+				=> p.SenderSystemId == sys && p.SenderComponentId == comp && filter(in p);
+		}
 
 		return _eventBus.Subscribe(callback, combined);
 	}

@@ -56,8 +56,8 @@ public sealed partial class MavlinkClient : IDisposable, IAsyncDisposable
 	}
 
 	public IDisposable Subscribe<T>(
-		Action<T, MavlinkReceivedPacket> callback,
-		Func<MavlinkReceivedPacket, bool>? filter = null)
+		MavlinkMessageHandler<T> callback,
+		MavlinkPacketFilter? filter = null)
 		where T : struct, IMavlinkMessage
 	{
 		ThrowIfDisposed();

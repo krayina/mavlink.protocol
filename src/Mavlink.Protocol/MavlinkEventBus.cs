@@ -26,10 +26,15 @@ internal sealed class MavlinkEventBus
 	}
 
 	public IDisposable Subscribe<T>(
-		Action<T, MavlinkReceivedPacket> callback,
-		Func<MavlinkReceivedPacket, bool>? filter = null)
+		MavlinkMessageHandler<T> callback,
+		MavlinkPacketFilter? filter = null)
 		where T : struct, IMavlinkMessage
 	{
+		if (callback is null)
+		{
+			throw new ArgumentNullException(nameof(callback));
+		}
+
 		var info = _dialect.GetInfo(typeof(T)) as IMavlinkMessageInfo<T>
 			?? throw new ArgumentException($"Type {typeof(T).Name} not registered in dialect.");
 
@@ -40,9 +45,14 @@ internal sealed class MavlinkEventBus
 	}
 
 	public IDisposable SubscribeAll(
-		Action<IMavlinkMessage, MavlinkReceivedPacket> callback,
-		Func<MavlinkReceivedPacket, bool>? filter = null)
+		MavlinkMessageHandler callback,
+		MavlinkPacketFilter? filter = null)
 	{
+		if (callback is null)
+		{
+			throw new ArgumentNullException(nameof(callback));
+		}
+
 		var handler = new MavlinkReceivedPacketCallback(callback, filter, _dialect);
 		_all.Add(handler);
 		return new MavlinkSubscription(() => _all.Remove(handler));

@@ -3,13 +3,13 @@
 internal sealed class MavlinkReceivedPacketCallback<T> : IMavlinkReceivedPacketCallback
 	where T : struct, IMavlinkMessage
 {
-	private readonly Action<T, MavlinkReceivedPacket> _callback;
-	private readonly Func<MavlinkReceivedPacket, bool>? _filter;
+	private readonly MavlinkMessageHandler<T> _callback;
+	private readonly MavlinkPacketFilter? _filter;
 	private readonly IMavlinkMessageInfo<T> _messageInfo;
 
 	public MavlinkReceivedPacketCallback(
-		Action<T, MavlinkReceivedPacket> callback,
-		Func<MavlinkReceivedPacket, bool>? filter,
+		MavlinkMessageHandler<T> callback,
+		MavlinkPacketFilter? filter,
 		IMavlinkMessageInfo<T> messageInfo)
 	{
 		_callback = callback;
@@ -19,11 +19,17 @@ internal sealed class MavlinkReceivedPacketCallback<T> : IMavlinkReceivedPacketC
 
 	public void Invoke(in MavlinkReceivedPacket context)
 	{
-		if (context.MessageId == _messageInfo.MessageId
-			&& (_filter == null || _filter(context)))
+		if (context.MessageId != _messageInfo.MessageId)
 		{
-			T typedMessage = MavlinkDeserializer.Deserialize(in context, _messageInfo);
-			_callback(typedMessage, context);
+			return;
 		}
+
+		if (_filter != null && !_filter(in context))
+		{
+			return;
+		}
+
+		T typedMessage = MavlinkDeserializer.Deserialize(in context, _messageInfo);
+		_callback(typedMessage, in context);
 	}
 }
