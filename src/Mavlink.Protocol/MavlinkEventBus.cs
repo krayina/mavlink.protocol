@@ -1,19 +1,22 @@
-﻿using Mavlink.Dialects;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
+using Mavlink.Dialects;
+using Mavlink.Protocol;
 
 namespace Mavlink;
 
 internal sealed class MavlinkEventBus
 {
 	private readonly IMavlinkDialect _dialect;
-	private readonly ConcurrentDictionary<uint, MavlinkReceivedPacketCallbackRegistry> _typed = new();
-	private readonly MavlinkReceivedPacketCallbackRegistry _all = new();
+	private readonly ConcurrentDictionary<uint, IMavlinkHandlerGroup> _typed = new();
+	private readonly MavlinkWildcardHandlerGroup _all;
+	private long _nextToken;
 
 	internal event Action<Exception>? ErrorReceived;
 
 	public MavlinkEventBus(IMavlinkDialect dialect)
 	{
 		_dialect = dialect ?? throw new ArgumentNullException(nameof(dialect));
+		_all = new MavlinkWildcardHandlerGroup(_dialect);
 	}
 
 	internal void RaiseError(Exception ex)
@@ -22,7 +25,10 @@ internal sealed class MavlinkEventBus
 		{
 			ErrorReceived?.Invoke(ex);
 		}
-		catch { /* prevent cascading failures */ }
+		catch
+		{
+			// Prevent cascading failures
+		}
 	}
 
 	public IDisposable Subscribe<T>(
@@ -53,15 +59,18 @@ internal sealed class MavlinkEventBus
 				$"Dialect returned {raw.GetType().Name} for {typeof(T).Name}, " +
 				$"which does not implement IMavlinkMessageInfo<{typeof(T).Name}>.");
 
-		var handler = new MavlinkReceivedPacketCallback<T>(
-			callback, filter, info, senderSystemId, senderComponentId);
-
-		var list = _typed.GetOrAdd(
+		var group = _typed.GetOrAdd(
 			info.MessageId,
-			static _ => new MavlinkReceivedPacketCallbackRegistry());
+			_ => new MavlinkTypedHandlerGroup<T>(info));
 
-		list.Add(handler);
-		return new MavlinkSubscription(list, handler);
+		var typedGroup = group as MavlinkTypedHandlerGroup<T>
+			?? throw new InvalidOperationException(
+				$"Message id {info.MessageId} is already bound to a different CLR type " +
+				$"({group.GetType().Name}); cannot subscribe as {typeof(T).Name}.");
+
+		long token = Interlocked.Increment(ref _nextToken);
+		typedGroup.Add(token, callback, filter, senderSystemId, senderComponentId);
+		return new MavlinkSubscription(typedGroup, token);
 	}
 
 	public IDisposable SubscribeAll(
@@ -82,37 +91,32 @@ internal sealed class MavlinkEventBus
 			throw new ArgumentNullException(nameof(callback));
 		}
 
-		var handler = new MavlinkReceivedPacketCallback(
-			callback, filter, _dialect, senderSystemId, senderComponentId);
-
-		_all.Add(handler);
-		return new MavlinkSubscription(_all, handler);
+		long token = Interlocked.Increment(ref _nextToken);
+		_all.Add(token, callback, filter, senderSystemId, senderComponentId);
+		return new MavlinkSubscription(_all, token);
 	}
 
 	public void Publish(in MavlinkReceivedPacket context)
 	{
-		if (_typed.TryGetValue(context.MessageId, out var list))
-		{
-			InvokeHandlers(list.Snapshot, in context);
-		}
-
-		InvokeHandlers(_all.Snapshot, in context);
-	}
-
-	private void InvokeHandlers(
-		IMavlinkReceivedPacketCallback[] handlers,
-		in MavlinkReceivedPacket context)
-	{
-		for (int i = 0; i < handlers.Length; i++)
+		if (_typed.TryGetValue(context.MessageId, out var group))
 		{
 			try
 			{
-				handlers[i].Invoke(in context);
+				group.Invoke(in context, this);
 			}
 			catch (Exception ex)
 			{
 				RaiseError(ex);
 			}
+		}
+
+		try
+		{
+			_all.Invoke(in context, this);
+		}
+		catch (Exception ex)
+		{
+			RaiseError(ex);
 		}
 	}
 }

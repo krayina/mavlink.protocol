@@ -2,19 +2,17 @@
 
 internal sealed class MavlinkSubscription : IDisposable
 {
-	private MavlinkReceivedPacketCallbackRegistry? _registry;
-	private readonly IMavlinkReceivedPacketCallback _handler;
+	private IMavlinkHandlerGroup? _group;
+	private readonly long _token;
 
-	public MavlinkSubscription(
-		MavlinkReceivedPacketCallbackRegistry registry,
-		IMavlinkReceivedPacketCallback handler)
+	public MavlinkSubscription(IMavlinkHandlerGroup group, long token)
 	{
-		_registry = registry;
-		_handler = handler;
+		_group = group;
+		_token = token;
 	}
 
 	public void Dispose()
 	{
-		Interlocked.Exchange(ref _registry, null)?.Remove(_handler);
+		Interlocked.Exchange(ref _group, null)?.Remove(_token);
 	}
 }
