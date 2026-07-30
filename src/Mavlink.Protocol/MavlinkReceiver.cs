@@ -216,11 +216,11 @@ internal sealed class MavlinkReceiver : IDisposable, IAsyncDisposable
 				continue;
 			}
 
+			NotifyFrameReceived(frame);
+			bool verified = _verifier == null || _verifier.Verify(frame, in packet);
 			_framer.Consume(length);
 
-			NotifyFrameReceived(frame);
-
-			if (_verifier != null && !_verifier.Verify(frame, in packet))
+			if (!verified)
 			{
 				continue;
 			}
