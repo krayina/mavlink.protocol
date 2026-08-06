@@ -126,6 +126,36 @@ public sealed partial class MavlinkClient : IDisposable, IAsyncDisposable
 		return MavlinkPacketVersion.V2;
 	}
 
+	public ValueTask SendToAsync(
+		IMavlinkMessage message,
+		MavlinkSystemView target,
+		MavlinkPacketVersion? version = null,
+		CancellationToken ct = default)
+	{
+		if (message is null) throw new ArgumentNullException(nameof(message));
+		if (target is null) throw new ArgumentNullException(nameof(target));
+
+		return SendToCoreAsync(
+			message, target.SystemId, targetComponent: 0,
+			ResolveVersion(version, target), ct);
+	}
+
+	public ValueTask SendToAsync(
+		IMavlinkMessage message,
+		MavlinkComponentView target,
+		MavlinkPacketVersion? version = null,
+		CancellationToken ct = default)
+	{
+		if (message is null) throw new ArgumentNullException(nameof(message));
+		if (target is null) throw new ArgumentNullException(nameof(target));
+
+		var system = _channel.GetSystem(target.SystemId);
+
+		return SendToCoreAsync(
+			message, target.SystemId, target.ComponentId,
+			ResolveVersion(version, system), ct);
+	}
+
 	public ValueTask SendToAsync<T>(
 		T message,
 		MavlinkSystemView target,
@@ -160,6 +190,39 @@ public sealed partial class MavlinkClient : IDisposable, IAsyncDisposable
 		return SendToCoreAsync(
 			message, target.SystemId, target.ComponentId,
 			ResolveVersion(version, system), ct);
+	}
+
+	private ValueTask SendToCoreAsync(
+		IMavlinkMessage message,
+		byte targetSystem,
+		byte targetComponent,
+		MavlinkPacketVersion version,
+		CancellationToken ct)
+	{
+		ThrowIfDisposed();
+
+		var type = message.GetType();
+
+		var info = _channel.Dialect.GetInfo(type)
+			?? throw new ArgumentException($"{type.Name} not registered in dialect.");
+
+		if (info is not IMavlinkTargetedMessageInfo targeted)
+		{
+			throw new ArgumentException(
+				$"{type.Name} has no target_system/target_component fields and cannot be " +
+				"addressed. Use SendAsync.",
+				nameof(message));
+		}
+
+		if (targeted.TargetFieldsAreExtensions && version == MavlinkPacketVersion.V1)
+		{
+			throw new InvalidOperationException(BuildV1TargetingError(type.Name));
+		}
+
+		var stamped = targeted.WithTarget(message, targetSystem, targetComponent);
+
+		return _channel.SendFrameAsync(
+			stamped, info, NextSequence(), SystemId, ComponentId, version, ct);
 	}
 
 	private ValueTask SendToCoreAsync<T>(

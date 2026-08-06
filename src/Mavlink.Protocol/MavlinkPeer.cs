@@ -34,6 +34,16 @@ public sealed class MavlinkPeer
 			: _client.SendToAsync(message, _system, version, ct);
 	}
 
+	public ValueTask SendAsync(
+		IMavlinkMessage message,
+		MavlinkPacketVersion? version = null,
+		CancellationToken ct = default)
+	{
+		return _component != null
+			? _client.SendToAsync(message, _component, version, ct)
+			: _client.SendToAsync(message, _system, version, ct);
+	}
+
 	public IDisposable Subscribe<T>(
 		MavlinkMessageHandler<T> callback,
 		MavlinkPacketFilter? filter = null)
