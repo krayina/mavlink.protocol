@@ -1,0 +1,34 @@
+﻿using Mavlink.Common;
+using Mavlink.Common.Codecs.Metadata;
+
+namespace Mavlink.Dialects;
+
+public sealed class CommonDialect : IMavlinkDialect
+{
+#if NET5_0_OR_GREATER
+#pragma warning disable CA2255 // The 'ModuleInitializer' attribute should not be used in libraries
+	[System.Runtime.CompilerServices.ModuleInitializer]
+#pragma warning restore CA2255 // The 'ModuleInitializer' attribute should not be used in libraries
+	internal static void Register() => Infrastructure.MavlinkDialectRegistry.Register(Instance);
+#endif
+
+	public static readonly CommonDialect Instance = new CommonDialect();
+
+	private CommonDialect() { }
+
+	public string Name => "common";
+
+	public IMavlinkMessageInfo? GetInfo(uint msgId) => msgId switch
+	{
+		0 => HeartbeatMessageInfo.Instance,
+		76 => CommandLongMessageInfo.Instance,
+		_ => null
+	};
+
+	public IMavlinkMessageInfo? GetInfo(Type type)
+	{
+		if (type == typeof(HeartbeatMavlinkMessage)) return HeartbeatMessageInfo.Instance;
+		if (type == typeof(CommandLongMavlinkMessage)) return CommandLongMessageInfo.Instance;
+		return null;
+	}
+}
