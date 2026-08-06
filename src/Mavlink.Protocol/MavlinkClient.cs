@@ -182,11 +182,24 @@ public sealed partial class MavlinkClient : IDisposable, IAsyncDisposable
 				$"IMavlinkTargetedMessageInfo<{typeof(T).Name}>. Regenerate the dialect.");
 		}
 
+		if (targeted.TargetFieldsAreExtensions && version == MavlinkPacketVersion.V1)
+		{
+			throw new InvalidOperationException(BuildV1TargetingError(typeof(T).Name));
+		}
+
 		var stamped = targeted.WithTarget(in message, targetSystem, targetComponent);
 
 		return _channel.SendFrameAsync(
-			stamped, info, NextSequence(), SystemId, ComponentId, version, ct);
+			stamped, targeted, NextSequence(), SystemId, ComponentId, version, ct);
 	}
+
+	private static string BuildV1TargetingError(string messageName) =>
+		$"{messageName} declares target_system/target_component after <extensions/>, " +
+		"so a v1 frame ends before those bytes and cannot carry an address at all — " +
+		"the send would do something other than what was asked. Either send as v2 " +
+		"(pass MavlinkPacketVersion.V2, or clear DefaultSendVersion so auto-resolution " +
+		$"can pick it), or send it unaddressed via SendAsync — that is how v1 peers " +
+		$"have always exchanged {messageName}.";
 
 	public MavlinkPeer To(MavlinkSystemView target)
 	{
