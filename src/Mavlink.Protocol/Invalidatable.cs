@@ -1,15 +1,12 @@
-﻿#if NET8_0_OR_GREATER
+﻿#if NET7_0_OR_GREATER
 using System.Numerics;
 #endif
-#if NETCOREAPP3_1_OR_GREATER
+#if NET8_0_OR_GREATER
 using System.Text.Json.Serialization;
 #endif
 using System.Diagnostics;
-using System.Xml;
-using System.Xml.Schema;
-using System.Xml.Serialization;
 
-namespace System;
+namespace Mavlink.Protocol;
 
 /// <summary>
 /// Represents a value that can be in an invalid state.
@@ -18,15 +15,14 @@ namespace System;
 /// </summary>
 /// <remarks>
 /// This is a readonly struct to prevent heap allocations. A default instance is considered invalid.
-/// For XML serialization, it is recommended to use a surrogate property pattern on the containing class
-/// instead of relying on the default IXmlSerializable implementation, which has limitations with immutable structs.
+/// In JSON, a valid instance is written as its inner value and an invalid one as <c>null</c>.
 /// </remarks>
 /// <typeparam name="T">The type of the value to wrap.</typeparam>
 [DebuggerDisplay("{ToString(),nq}")]
-#if NETCOREAPP3_1_OR_GREATER
+#if NET8_0_OR_GREATER
 [JsonConverter(typeof(InvalidatableJsonConverterFactory))]
 #endif
-public readonly struct Invalidatable<T> : IEquatable<Invalidatable<T>>, IXmlSerializable
+public readonly struct Invalidatable<T> : IEquatable<Invalidatable<T>>
 #if NET7_0_OR_GREATER
 	, IEqualityOperators<Invalidatable<T>, Invalidatable<T>, bool>
 #endif
@@ -73,7 +69,7 @@ public readonly struct Invalidatable<T> : IEquatable<Invalidatable<T>>, IXmlSeri
 	/// <param name="value">The wrapped value if the instance is valid; otherwise, the default value for <typeparamref name="T"/>.</param>
 	/// <returns><c>true</c> if the instance is valid; otherwise, <c>false</c>.</returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
-	public bool TryGetValue([Diagnostics.CodeAnalysis.MaybeNullWhen(false)] out T value)
+	public bool TryGetValue([System.Diagnostics.CodeAnalysis.MaybeNullWhen(false)] out T value)
 #else
 	public bool TryGetValue(out T value)
 #endif
@@ -127,16 +123,4 @@ public readonly struct Invalidatable<T> : IEquatable<Invalidatable<T>>, IXmlSeri
 	public override string ToString() => _isValid ? _value?.ToString() ?? "null" : "[Invalid]";
 	public static bool operator ==(Invalidatable<T> left, Invalidatable<T> right) => left.Equals(right);
 	public static bool operator !=(Invalidatable<T> left, Invalidatable<T> right) => !left.Equals(right);
-
-	#region IXmlSerializable Implementation
-	XmlSchema? IXmlSerializable.GetSchema() => null;
-	void IXmlSerializable.ReadXml(XmlReader reader) => throw new NotSupportedException("Deserialization via IXmlSerializable is not supported for this immutable struct. Use a surrogate property on the containing class.");
-	void IXmlSerializable.WriteXml(XmlWriter writer)
-	{
-		if (IsValid)
-		{
-			new XmlSerializer(typeof(T)).Serialize(writer, Value);
-		}
-	}
-	#endregion
 }
