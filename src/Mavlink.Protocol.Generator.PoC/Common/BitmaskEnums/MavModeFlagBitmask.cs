@@ -1,5 +1,8 @@
 ﻿//using System.Collections.Concurrent;
 //using System.Collections.Immutable;
+//#if NET8_0_OR_GREATER
+//using System.Numerics;
+//#endif
 
 //namespace Mavlink.Common;
 
@@ -14,7 +17,7 @@
 ///// </example>
 //#if NET8_0_OR_GREATER
 //internal readonly struct MavModeFlagBitmask<TUnderlying> : EnumBitmask.IEnumBitmask<MavModeFlag, TUnderlying>
-//    where TUnderlying : struct, IBinaryInteger<TUnderlying>
+//	where TUnderlying : struct, IBinaryInteger<TUnderlying>
 //#else
 //public readonly struct MavModeFlagBitmask<TUnderlying> : EnumBitmask.IEnumBitmask<MavModeFlag, TUnderlying>
 //	where TUnderlying : struct
@@ -34,8 +37,8 @@
 //	public MavModeFlagBitmask(TUnderlying bitmask)
 //	{
 //#if NET8_0_OR_GREATER
-//        // MavModeFlag is a byte enum, so all flags fit within 0xFF.
-//        if ((bitmask & ~TUnderlying.CreateTruncating(0xFF)) != TUnderlying.Zero)
+//		// MavModeFlag is a byte enum, so all flags fit within 0xFF.
+//		if ((bitmask & ~TUnderlying.CreateTruncating(0xFF)) != TUnderlying.Zero)
 //#else
 //		if ((bitmask & ~(TUnderlying)Convert.ChangeType(0xFF, typeof(TUnderlying))) != default(TUnderlying))
 //#endif
@@ -44,7 +47,7 @@
 //		}
 
 //#if NET8_0_OR_GREATER
-//        _bitmask = bitmask & TUnderlying.CreateTruncating(0xFF);
+//		_bitmask = bitmask & TUnderlying.CreateTruncating(0xFF);
 //#else
 //		_bitmask = bitmask & (TUnderlying)Convert.ChangeType(0xFF, typeof(TUnderlying));
 //#endif
@@ -67,7 +70,7 @@
 //		get
 //		{
 //#if NET8_0_OR_GREATER
-//            return (MavModeFlag)TUnderlying.CreateTruncating(_bitmask);
+//			return (MavModeFlag)TUnderlying.CreateTruncating(_bitmask);
 //#else
 //			return (MavModeFlag)Convert.ToByte(_bitmask);
 //#endif
@@ -88,63 +91,63 @@
 //	private ImmutableArray<MavModeFlag> ComputeActiveFlags(TUnderlying bitmask)
 //	{
 //#if NET8_0_OR_GREATER
-//        if (bitmask == TUnderlying.Zero)
-//        {
-//            return ImmutableArray<MavModeFlag>.Empty;
-//        }
-//        int count = bitmask switch
-//        {
-//            byte b => BitOperations.PopCount(b),
-//            sbyte sb => BitOperations.PopCount((byte)sb),
-//            ushort us => BitOperations.PopCount(us),
-//            short s => BitOperations.PopCount((ushort)s),
-//            uint u => BitOperations.PopCount(u),
-//            int i => BitOperations.PopCount((uint)i),
-//            ulong ul => BitOperations.PopCount(ul),
-//            long l => BitOperations.PopCount((ulong)l),
-//            _ => throw new InvalidOperationException("Unsupported underlying type for PopCount.")
-//        };
-//        var builder = ImmutableArray.CreateBuilder<MavModeFlag>(count);
+//		if (bitmask == TUnderlying.Zero)
+//		{
+//			return ImmutableArray<MavModeFlag>.Empty;
+//		}
+//		int count = bitmask switch
+//		{
+//			byte b => BitOperations.PopCount(b),
+//			sbyte sb => BitOperations.PopCount((byte)sb),
+//			ushort us => BitOperations.PopCount(us),
+//			short s => BitOperations.PopCount((ushort)s),
+//			uint u => BitOperations.PopCount(u),
+//			int i => BitOperations.PopCount((uint)i),
+//			ulong ul => BitOperations.PopCount(ul),
+//			long l => BitOperations.PopCount((ulong)l),
+//			_ => throw new InvalidOperationException("Unsupported underlying type for PopCount.")
+//		};
+//		var builder = ImmutableArray.CreateBuilder<MavModeFlag>(count);
 
-//        if ((bitmask & TUnderlying.CreateTruncating((byte)MavModeFlag.SafetyArmed)) != TUnderlying.Zero) builder.Add(MavModeFlag.SafetyArmed);
-//        if ((bitmask & TUnderlying.CreateTruncating((byte)MavModeFlag.ManualInputEnabled)) != TUnderlying.Zero) builder.Add(MavModeFlag.ManualInputEnabled);
-//        if ((bitmask & TUnderlying.CreateTruncating((byte)MavModeFlag.HilEnabled)) != TUnderlying.Zero) builder.Add(MavModeFlag.HilEnabled);
-//        if ((bitmask & TUnderlying.CreateTruncating((byte)MavModeFlag.StabilizeEnabled)) != TUnderlying.Zero) builder.Add(MavModeFlag.StabilizeEnabled);
-//        if ((bitmask & TUnderlying.CreateTruncating((byte)MavModeFlag.GuidedEnabled)) != TUnderlying.Zero) builder.Add(MavModeFlag.GuidedEnabled);
-//        if ((bitmask & TUnderlying.CreateTruncating((byte)MavModeFlag.AutoEnabled)) != TUnderlying.Zero) builder.Add(MavModeFlag.AutoEnabled);
-//        if ((bitmask & TUnderlying.CreateTruncating((byte)MavModeFlag.TestEnabled)) != TUnderlying.Zero) builder.Add(MavModeFlag.TestEnabled);
-//        if ((bitmask & TUnderlying.CreateTruncating((byte)MavModeFlag.CustomModeEnabled)) != TUnderlying.Zero) builder.Add(MavModeFlag.CustomModeEnabled);
+//		if ((bitmask & TUnderlying.CreateTruncating((byte)MavModeFlag.SafetyArmed)) != TUnderlying.Zero) builder.Add(MavModeFlag.SafetyArmed);
+//		if ((bitmask & TUnderlying.CreateTruncating((byte)MavModeFlag.ManualInputEnabled)) != TUnderlying.Zero) builder.Add(MavModeFlag.ManualInputEnabled);
+//		if ((bitmask & TUnderlying.CreateTruncating((byte)MavModeFlag.HilEnabled)) != TUnderlying.Zero) builder.Add(MavModeFlag.HilEnabled);
+//		if ((bitmask & TUnderlying.CreateTruncating((byte)MavModeFlag.StabilizeEnabled)) != TUnderlying.Zero) builder.Add(MavModeFlag.StabilizeEnabled);
+//		if ((bitmask & TUnderlying.CreateTruncating((byte)MavModeFlag.GuidedEnabled)) != TUnderlying.Zero) builder.Add(MavModeFlag.GuidedEnabled);
+//		if ((bitmask & TUnderlying.CreateTruncating((byte)MavModeFlag.AutoEnabled)) != TUnderlying.Zero) builder.Add(MavModeFlag.AutoEnabled);
+//		if ((bitmask & TUnderlying.CreateTruncating((byte)MavModeFlag.TestEnabled)) != TUnderlying.Zero) builder.Add(MavModeFlag.TestEnabled);
+//		if ((bitmask & TUnderlying.CreateTruncating((byte)MavModeFlag.CustomModeEnabled)) != TUnderlying.Zero) builder.Add(MavModeFlag.CustomModeEnabled);
 
-//        return builder.MoveToImmutable();
+//		return builder.MoveToImmutable();
 //#elif NETCOREAPP3_0_OR_GREATER
-//        if (EqualityComparer<TUnderlying>.Default.Equals(bitmask, default))
-//        {
-//            return ImmutableArray<MavModeFlag>.Empty;
-//        }
-//        int count = bitmask switch
-//        {
-//            byte b => BitOperations.PopCount(b),
-//            sbyte sb => BitOperations.PopCount((byte)sb),
-//            ushort us => BitOperations.PopCount(us),
-//            short s => BitOperations.PopCount((ushort)s),
-//            uint u => BitOperations.PopCount(u),
-//            int i => BitOperations.PopCount((uint)i),
-//            ulong ul => BitOperations.PopCount(ul),
-//            long l => BitOperations.PopCount((ulong)l),
-//            _ => BitOperations.PopCount(Convert.ToUInt64(bitmask))
-//        };
-//        var builder = ImmutableArray.CreateBuilder<MavModeFlag>(count);
+//		if (EqualityComparer<TUnderlying>.Default.Equals(bitmask, default))
+//		{
+//			return ImmutableArray<MavModeFlag>.Empty;
+//		}
+//		int count = bitmask switch
+//		{
+//			byte b => BitOperations.PopCount(b),
+//			sbyte sb => BitOperations.PopCount((byte)sb),
+//			ushort us => BitOperations.PopCount(us),
+//			short s => BitOperations.PopCount((ushort)s),
+//			uint u => BitOperations.PopCount(u),
+//			int i => BitOperations.PopCount((uint)i),
+//			ulong ul => BitOperations.PopCount(ul),
+//			long l => BitOperations.PopCount((ulong)l),
+//			_ => BitOperations.PopCount(Convert.ToUInt64(bitmask))
+//		};
+//		var builder = ImmutableArray.CreateBuilder<MavModeFlag>(count);
 
-//        if (!EqualityComparer<TUnderlying>.Default.Equals((bitmask & (TUnderlying)Convert.ChangeType(MavModeFlag.SafetyArmed, typeof(TUnderlying))), default)) builder.Add(MavModeFlag.SafetyArmed);
-//        if (!EqualityComparer<TUnderlying>.Default.Equals((bitmask & (TUnderlying)Convert.ChangeType(MavModeFlag.ManualInputEnabled, typeof(TUnderlying))), default)) builder.Add(MavModeFlag.ManualInputEnabled);
-//        if (!EqualityComparer<TUnderlying>.Default.Equals((bitmask & (TUnderlying)Convert.ChangeType(MavModeFlag.HilEnabled, typeof(TUnderlying))), default)) builder.Add(MavModeFlag.HilEnabled);
-//        if (!EqualityComparer<TUnderlying>.Default.Equals((bitmask & (TUnderlying)Convert.ChangeType(MavModeFlag.StabilizeEnabled, typeof(TUnderlying))), default)) builder.Add(MavModeFlag.StabilizeEnabled);
-//        if (!EqualityComparer<TUnderlying>.Default.Equals((bitmask & (TUnderlying)Convert.ChangeType(MavModeFlag.GuidedEnabled, typeof(TUnderlying))), default)) builder.Add(MavModeFlag.GuidedEnabled);
-//        if (!EqualityComparer<TUnderlying>.Default.Equals((bitmask & (TUnderlying)Convert.ChangeType(MavModeFlag.AutoEnabled, typeof(TUnderlying))), default)) builder.Add(MavModeFlag.AutoEnabled);
-//        if (!EqualityComparer<TUnderlying>.Default.Equals((bitmask & (TUnderlying)Convert.ChangeType(MavModeFlag.TestEnabled, typeof(TUnderlying))), default)) builder.Add(MavModeFlag.TestEnabled);
-//        if (!EqualityComparer<TUnderlying>.Default.Equals((bitmask & (TUnderlying)Convert.ChangeType(MavModeFlag.CustomModeEnabled, typeof(TUnderlying))), default)) builder.Add(MavModeFlag.CustomModeEnabled);
+//		if (!EqualityComparer<TUnderlying>.Default.Equals((bitmask & (TUnderlying)Convert.ChangeType(MavModeFlag.SafetyArmed, typeof(TUnderlying))), default)) builder.Add(MavModeFlag.SafetyArmed);
+//		if (!EqualityComparer<TUnderlying>.Default.Equals((bitmask & (TUnderlying)Convert.ChangeType(MavModeFlag.ManualInputEnabled, typeof(TUnderlying))), default)) builder.Add(MavModeFlag.ManualInputEnabled);
+//		if (!EqualityComparer<TUnderlying>.Default.Equals((bitmask & (TUnderlying)Convert.ChangeType(MavModeFlag.HilEnabled, typeof(TUnderlying))), default)) builder.Add(MavModeFlag.HilEnabled);
+//		if (!EqualityComparer<TUnderlying>.Default.Equals((bitmask & (TUnderlying)Convert.ChangeType(MavModeFlag.StabilizeEnabled, typeof(TUnderlying))), default)) builder.Add(MavModeFlag.StabilizeEnabled);
+//		if (!EqualityComparer<TUnderlying>.Default.Equals((bitmask & (TUnderlying)Convert.ChangeType(MavModeFlag.GuidedEnabled, typeof(TUnderlying))), default)) builder.Add(MavModeFlag.GuidedEnabled);
+//		if (!EqualityComparer<TUnderlying>.Default.Equals((bitmask & (TUnderlying)Convert.ChangeType(MavModeFlag.AutoEnabled, typeof(TUnderlying))), default)) builder.Add(MavModeFlag.AutoEnabled);
+//		if (!EqualityComparer<TUnderlying>.Default.Equals((bitmask & (TUnderlying)Convert.ChangeType(MavModeFlag.TestEnabled, typeof(TUnderlying))), default)) builder.Add(MavModeFlag.TestEnabled);
+//		if (!EqualityComparer<TUnderlying>.Default.Equals((bitmask & (TUnderlying)Convert.ChangeType(MavModeFlag.CustomModeEnabled, typeof(TUnderlying))), default)) builder.Add(MavModeFlag.CustomModeEnabled);
 
-//        return builder.MoveToImmutable();
+//		return builder.MoveToImmutable();
 //#else
 //		if (EqualityComparer<TUnderlying>.Default.Equals(bitmask, default))
 //		{
