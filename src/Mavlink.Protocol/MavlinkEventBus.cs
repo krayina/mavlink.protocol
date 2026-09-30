@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using Mavlink.Dialects;
-using Mavlink.Protocol;
 
 namespace Mavlink;
 

@@ -1,6 +1,6 @@
 ﻿using Mavlink.Dialects;
 
-namespace Mavlink.Protocol;
+namespace Mavlink;
 
 internal sealed class MavlinkWildcardHandlerGroup : IMavlinkHandlerGroup
 {

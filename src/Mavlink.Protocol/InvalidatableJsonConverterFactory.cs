@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Mavlink.Protocol;
+namespace Mavlink;
 
 /// <summary>
 /// Supplies <see cref="InvalidatableJsonConverter{T}"/> for MAVLink primitive type arguments

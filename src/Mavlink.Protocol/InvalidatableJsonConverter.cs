@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
-namespace Mavlink.Protocol;
+namespace Mavlink;
 
 /// <summary>
 /// Converts <see cref="Invalidatable{T}"/> to and from JSON: a valid value is written as the inner

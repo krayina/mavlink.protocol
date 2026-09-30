@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 #endif
 using System.Diagnostics;
 
-namespace Mavlink.Protocol;
+namespace Mavlink;
 
 /// <summary>
 /// Represents a value that can be in an invalid state.
