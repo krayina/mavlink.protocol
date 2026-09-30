@@ -8,8 +8,8 @@ internal sealed class MavlinkNodeRegistry : IAsyncDisposable, IDisposable
 	private static readonly TimeSpan ScanInterval = TimeSpan.FromSeconds(1);
 
 	private readonly long _timeoutTicks;
-	private readonly ConcurrentDictionary<byte, MavlinkSystemView> _systems = new();
-	private readonly Func<byte, MavlinkSystemView> _systemFactory;
+	private readonly ConcurrentDictionary<byte, MavlinkSystem> _systems = new();
+	private readonly Func<byte, MavlinkSystem> _systemFactory;
 	private readonly CancellationTokenSource _cts = new();
 	private readonly Task _scanTask;
 	private int _disposed;
@@ -26,17 +26,17 @@ internal sealed class MavlinkNodeRegistry : IAsyncDisposable, IDisposable
 			throw new ArgumentNullException(nameof(eventBus));
 		}
 
-		_systemFactory = id => new MavlinkSystemView(id, eventBus);
+		_systemFactory = id => new MavlinkSystem(id, eventBus);
 		_timeoutTicks = systemTimeout.Ticks;
 		_scanTask = Task.Run(() => ScanLoopAsync(_cts.Token));
 	}
 
-	public event Action<MavlinkSystemView>? SystemDiscovered;
+	public event Action<MavlinkSystem>? SystemDiscovered;
 
-	public IReadOnlyCollection<MavlinkSystemView> Systems
-		=> (IReadOnlyCollection<MavlinkSystemView>)_systems.Values;
+	public IReadOnlyCollection<MavlinkSystem> Systems
+		=> (IReadOnlyCollection<MavlinkSystem>)_systems.Values;
 
-	public MavlinkSystemView GetSystem(byte systemId)
+	public MavlinkSystem GetSystem(byte systemId)
 		=> _systems.GetOrAdd(systemId, _systemFactory);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

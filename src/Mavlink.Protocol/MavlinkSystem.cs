@@ -3,11 +3,11 @@ using System.Runtime.CompilerServices;
 
 namespace Mavlink.Routing;
 
-public sealed class MavlinkSystemView
+public sealed class MavlinkSystem
 {
 	private readonly MavlinkEventBus _eventBus;
-	private readonly ConcurrentDictionary<byte, MavlinkComponentView> _components = new();
-	private readonly Func<byte, MavlinkComponentView> _componentFactory;
+	private readonly ConcurrentDictionary<byte, MavlinkComponent> _components = new();
+	private readonly Func<byte, MavlinkComponent> _componentFactory;
 
 	private long _lastSeenTicks;          // 0 = never seen
 	private int _seenV1;                  // 0/1, set-once
@@ -16,11 +16,11 @@ public sealed class MavlinkSystemView
 	private MavlinkSystemState _state = MavlinkSystemState.Unknown;
 	private bool _announced;
 
-	internal MavlinkSystemView(byte systemId, MavlinkEventBus eventBus)
+	internal MavlinkSystem(byte systemId, MavlinkEventBus eventBus)
 	{
 		SystemId = systemId;
 		_eventBus = eventBus;
-		_componentFactory = id => new MavlinkComponentView(systemId, id, eventBus);
+		_componentFactory = id => new MavlinkComponent(systemId, id, eventBus);
 	}
 
 	public byte SystemId { get; }
@@ -52,17 +52,17 @@ public sealed class MavlinkSystemView
 		}
 	}
 
-	public event Action<MavlinkSystemView, MavlinkSystemStateChange>? StateChanged;
+	public event Action<MavlinkSystem, MavlinkSystemStateChange>? StateChanged;
 
-	public IReadOnlyCollection<MavlinkComponentView> Components
+	public IReadOnlyCollection<MavlinkComponent> Components
 	{
 		get
 		{
-			return (IReadOnlyCollection<MavlinkComponentView>)_components.Values;
+			return (IReadOnlyCollection<MavlinkComponent>)_components.Values;
 		}
 	}
 
-	public MavlinkComponentView GetComponent(byte componentId)
+	public MavlinkComponent GetComponent(byte componentId)
 	{
 		return _components.GetOrAdd(componentId, _componentFactory);
 	}

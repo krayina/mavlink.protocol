@@ -2,12 +2,12 @@
 
 namespace Mavlink.Routing;
 
-public sealed class MavlinkComponentView
+public sealed class MavlinkComponent
 {
 	private readonly MavlinkEventBus _eventBus;
 	private long _lastSeenTicks;
 
-	internal MavlinkComponentView(byte systemId, byte componentId, MavlinkEventBus eventBus)
+	internal MavlinkComponent(byte systemId, byte componentId, MavlinkEventBus eventBus)
 	{
 		SystemId = systemId;
 		ComponentId = componentId;

@@ -135,7 +135,7 @@ public sealed partial class MavlinkChannel : IDisposable, IAsyncDisposable
 		remove => _connection.StateChanged -= value;
 	}
 
-	public event Action<MavlinkSystemView>? SystemDiscovered
+	public event Action<MavlinkSystem>? SystemDiscovered
 	{
 		add
 		{
@@ -151,15 +151,15 @@ public sealed partial class MavlinkChannel : IDisposable, IAsyncDisposable
 		}
 	}
 
-	public MavlinkSystemView GetSystem(byte systemId)
+	public MavlinkSystem GetSystem(byte systemId)
 	{
 		ThrowIfDisposed();
 		var reg = _registry ?? ThrowNoRegistry();
 		return reg.GetSystem(systemId);
 	}
 
-	public IReadOnlyCollection<MavlinkSystemView> Systems
-		=> _registry?.Systems ?? Array.Empty<MavlinkSystemView>();
+	public IReadOnlyCollection<MavlinkSystem> Systems
+		=> _registry?.Systems ?? Array.Empty<MavlinkSystem>();
 
 	private MavlinkNodeRegistry ThrowNoRegistry()
 	{

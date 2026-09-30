@@ -107,7 +107,7 @@ public sealed partial class MavlinkClient : IDisposable, IAsyncDisposable
 
 	private MavlinkPacketVersion ResolveVersion(
 		MavlinkPacketVersion? explicitVersion,
-		MavlinkSystemView? target)
+		MavlinkSystem? target)
 	{
 		if (explicitVersion.HasValue)
 		{
@@ -128,7 +128,7 @@ public sealed partial class MavlinkClient : IDisposable, IAsyncDisposable
 
 	public ValueTask SendToAsync(
 		IMavlinkMessage message,
-		MavlinkSystemView target,
+		MavlinkSystem target,
 		MavlinkPacketVersion? version = null,
 		CancellationToken ct = default)
 	{
@@ -142,7 +142,7 @@ public sealed partial class MavlinkClient : IDisposable, IAsyncDisposable
 
 	public ValueTask SendToAsync(
 		IMavlinkMessage message,
-		MavlinkComponentView target,
+		MavlinkComponent target,
 		MavlinkPacketVersion? version = null,
 		CancellationToken ct = default)
 	{
@@ -158,7 +158,7 @@ public sealed partial class MavlinkClient : IDisposable, IAsyncDisposable
 
 	public ValueTask SendToAsync<T>(
 		T message,
-		MavlinkSystemView target,
+		MavlinkSystem target,
 		MavlinkPacketVersion? version = null,
 		CancellationToken ct = default)
 		where T : struct, IMavlinkTargetedMessage
@@ -175,7 +175,7 @@ public sealed partial class MavlinkClient : IDisposable, IAsyncDisposable
 
 	public ValueTask SendToAsync<T>(
 		T message,
-		MavlinkComponentView target,
+		MavlinkComponent target,
 		MavlinkPacketVersion? version = null,
 		CancellationToken ct = default)
 		where T : struct, IMavlinkTargetedMessage
@@ -264,7 +264,7 @@ public sealed partial class MavlinkClient : IDisposable, IAsyncDisposable
 		$"can pick it), or send it unaddressed via SendAsync — that is how v1 peers " +
 		$"have always exchanged {messageName}.";
 
-	public MavlinkPeer To(MavlinkSystemView target)
+	public MavlinkPeer To(MavlinkSystem target)
 	{
 		if (target is null)
 		{
@@ -274,7 +274,7 @@ public sealed partial class MavlinkClient : IDisposable, IAsyncDisposable
 		return new MavlinkPeer(this, target, component: null);
 	}
 
-	public MavlinkPeer To(MavlinkComponentView target)
+	public MavlinkPeer To(MavlinkComponent target)
 	{
 		if (target is null)
 		{

@@ -5,19 +5,19 @@ namespace Mavlink;
 public sealed class MavlinkPeer
 {
 	private readonly MavlinkClient _client;
-	private readonly MavlinkSystemView _system;
-	private readonly MavlinkComponentView? _component;
+	private readonly MavlinkSystem _system;
+	private readonly MavlinkComponent? _component;
 
-	internal MavlinkPeer(MavlinkClient client, MavlinkSystemView system, MavlinkComponentView? component)
+	internal MavlinkPeer(MavlinkClient client, MavlinkSystem system, MavlinkComponent? component)
 	{
 		_client = client;
 		_system = system;
 		_component = component;
 	}
 
-	public MavlinkSystemView System => _system;
+	public MavlinkSystem System => _system;
 
-	public MavlinkComponentView? Component => _component;
+	public MavlinkComponent? Component => _component;
 
 	public MavlinkSystemState State => _system.State;
 
