@@ -1,6 +1,6 @@
 ﻿namespace Mavlink.Common.Codecs.Payload;
 
-public class CommandAckPayloadSerializer : IMavlinkPayloadSerializer<CommandAckMavlinkMessage>
+public sealed class CommandAckPayloadSerializer : IMavlinkPayloadSerializer<CommandAckMavlinkMessage>
 {
 	public CommandAckMavlinkMessage DeserializeV1(ReadOnlySpan<byte> payload)
 	{

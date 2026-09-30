@@ -1,4 +1,6 @@
-﻿namespace Mavlink.Common;
+﻿using Mavlink.Protocol;
+
+namespace Mavlink.Common;
 
 //[MavlinkGenerated(dialect: "common", xmlHash: "a1b2c3...")]
 public readonly record struct CommandLongMavlinkMessage : IMavlinkTargetRequiredMessage

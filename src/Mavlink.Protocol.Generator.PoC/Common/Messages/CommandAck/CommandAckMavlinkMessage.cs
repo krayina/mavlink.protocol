@@ -1,4 +1,6 @@
-﻿namespace Mavlink.Common;
+﻿using Mavlink.Protocol;
+
+namespace Mavlink.Common;
 
 public readonly record struct CommandAckMavlinkMessage : IMavlinkTargetedMessage
 {

@@ -22,6 +22,7 @@ public sealed class CommonDialect : IMavlinkDialect
 	{
 		0 => HeartbeatMessageInfo.Instance,
 		76 => CommandLongMessageInfo.Instance,
+		77 => CommandAckMessageInfo.Instance,
 		_ => null
 	};
 
@@ -29,6 +30,7 @@ public sealed class CommonDialect : IMavlinkDialect
 	{
 		if (type == typeof(HeartbeatMavlinkMessage)) return HeartbeatMessageInfo.Instance;
 		if (type == typeof(CommandLongMavlinkMessage)) return CommandLongMessageInfo.Instance;
+		if (type == typeof(CommandAckMavlinkMessage)) return CommandAckMessageInfo.Instance;
 		return null;
 	}
 }
