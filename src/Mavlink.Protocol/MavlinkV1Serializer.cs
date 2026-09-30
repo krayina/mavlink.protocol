@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Mavlink;
 
-public static class MavlinkV1Serializer
+internal static class MavlinkV1Serializer
 {
 	// ---------------------------------------------------------------------------
 	// V1 Header: STX(1) + LEN(1) + SEQ(1) + SYS(1) + COMP(1) + MSGID(1) = 6 bytes

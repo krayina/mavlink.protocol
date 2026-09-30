@@ -8,7 +8,7 @@ namespace Mavlink;
 /// <summary>
 /// Provides methods for calculating X.25 CRC checksums, commonly used in MAVLink protocol.
 /// </summary>
-public static class X25Crc
+internal static class X25Crc
 {
 	/// <summary>
 	/// The initial seed value for the CRC calculation.

@@ -1,11 +1,11 @@
 ﻿namespace Mavlink;
 
-public interface IMavlinkPacketListener
+internal interface IMavlinkPacketListener
 {
 	void OnPacketReceived(in MavlinkReceivedPacket packet);
 }
 
-public interface IMavlinkParserErrorListener
+internal interface IMavlinkParserErrorListener
 {
 	void OnParserError(MavlinkDeserializeResult result);
 
