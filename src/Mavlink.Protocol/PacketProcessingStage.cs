@@ -36,7 +36,7 @@ internal sealed class PacketProcessingStage : IMavlinkPacketListener, IMavlinkPa
 		}
 	}
 
-	public void OnParserError(MavlinkDeserializeResult result)
+	public void OnParserError(MavlinkPacketParseResult result)
 	{
 		_diagnostics.OnDeserializeError(result);
 	}

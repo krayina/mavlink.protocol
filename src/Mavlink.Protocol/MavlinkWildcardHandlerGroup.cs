@@ -143,7 +143,7 @@ internal sealed class MavlinkWildcardHandlerGroup : IMavlinkHandlerGroup
 
 				try
 				{
-					message = MavlinkDeserializer.Deserialize(in packet, info);
+					message = MavlinkPayloadDeserializer.Deserialize(in packet, info);
 				}
 				catch (Exception ex)
 				{

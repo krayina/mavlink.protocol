@@ -5,19 +5,16 @@ using System.Runtime.CompilerServices;
 
 namespace Mavlink;
 
-internal static class MavlinkV1Serializer
+internal static class MavlinkV1FrameWriter
 {
 	// ---------------------------------------------------------------------------
 	// V1 Header: STX(1) + LEN(1) + SEQ(1) + SYS(1) + COMP(1) + MSGID(1) = 6 bytes
 	// ---------------------------------------------------------------------------
 
-	/// <summary>
-	/// Serializes a message to MAVLink V1 packet (Typed version).
-	/// </summary>
 #if NETSTANDARD2_1_OR_GREATER
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-	public static int Serialize<T>(
+	public static int Write<T>(
 		T message,
 		IMavlinkMessageInfo<T> info,
 		byte sequence,
@@ -28,7 +25,7 @@ internal static class MavlinkV1Serializer
 		var payloadSpan = buffer.Slice(MavlinkConstants.HEADER_V1_LENGTH);
 		info.PayloadSerializer.SerializeV1(message, payloadSpan);
 
-		return AssemblePacket(
+		return AssembleFrame(
 			info.PayloadLength,
 			info.MessageId,
 			info.CrcExtra,
@@ -38,13 +35,10 @@ internal static class MavlinkV1Serializer
 			buffer);
 	}
 
-	/// <summary>
-	/// Serializes a message to MAVLink V1 packet (Untyped version).
-	/// </summary>
 #if NETSTANDARD2_1_OR_GREATER
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-	public static int Serialize(
+	public static int Write(
 		IMavlinkMessage message,
 		IMavlinkMessageInfo info,
 		byte sequence,
@@ -55,7 +49,7 @@ internal static class MavlinkV1Serializer
 		var payloadSpan = buffer.Slice(MavlinkConstants.HEADER_V1_LENGTH);
 		info.SerializePayloadV1(message, payloadSpan);
 
-		return AssemblePacket(
+		return AssembleFrame(
 			info.PayloadLength,
 			info.MessageId,
 			info.CrcExtra,
@@ -65,7 +59,7 @@ internal static class MavlinkV1Serializer
 			buffer);
 	}
 
-	private static int AssemblePacket(
+	private static int AssembleFrame(
 		int payloadLen,
 		uint msgId,
 		byte crcExtra,

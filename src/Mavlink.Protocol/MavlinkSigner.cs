@@ -63,20 +63,20 @@ public sealed class MavlinkSigner : IDisposable
 	}
 
 	/// <summary>
-	/// Signs a MAVLink packet.
+	/// Signs a MAVLink frame.
 	/// This method generates a new timestamp, writes the LinkID, Timestamp, and the 48-bit signature 
 	/// into the provided destination span.
 	/// </summary>
-	/// <param name="packetWithCrc">The packet data including CRC (header + payload + crc).</param>
+	/// <param name="frameWithCrc">The frame data including CRC (header + payload + crc).</param>
 	/// <param name="signatureBlock">The destination span for the 13-byte signature block.</param>
-	internal void SignPacket(ReadOnlySpan<byte> packetWithCrc, Span<byte> signatureBlock)
+	internal void SignFrame(ReadOnlySpan<byte> frameWithCrc, Span<byte> signatureBlock)
 	{
 		ulong timestamp = GetNextTimestamp();
 
 		signatureBlock[0] = LinkId;
 		Store48BitTimestamp(timestamp, signatureBlock.Slice(1));
 
-		ComputeSignature(packetWithCrc, timestamp, signatureBlock.Slice(7));
+		ComputeSignature(frameWithCrc, timestamp, signatureBlock.Slice(7));
 	}
 
 	private ulong GetNextTimestamp()
@@ -97,18 +97,18 @@ public sealed class MavlinkSigner : IDisposable
 		}
 	}
 
-	private void ComputeSignature(ReadOnlySpan<byte> packetWithoutSignature, ulong timestamp, Span<byte> output48bit)
+	private void ComputeSignature(ReadOnlySpan<byte> frameWithoutSignature, ulong timestamp, Span<byte> output48bit)
 	{
-		int totalLen = 32 + packetWithoutSignature.Length + 1 + 6;
+		int totalLen = 32 + frameWithoutSignature.Length + 1 + 6;
 
 		Span<byte> buffer = totalLen <= 512
 			? stackalloc byte[totalLen]
 			: new byte[totalLen];
 
 		_secretKey.CopyTo(buffer);
-		packetWithoutSignature.CopyTo(buffer.Slice(32));
-		buffer[32 + packetWithoutSignature.Length] = LinkId;
-		Store48BitTimestamp(timestamp, buffer.Slice(32 + packetWithoutSignature.Length + 1));
+		frameWithoutSignature.CopyTo(buffer.Slice(32));
+		buffer[32 + frameWithoutSignature.Length] = LinkId;
+		Store48BitTimestamp(timestamp, buffer.Slice(32 + frameWithoutSignature.Length + 1));
 
 #if NET6_0_OR_GREATER
 		Span<byte> sha256Output = stackalloc byte[32];

@@ -4,7 +4,7 @@ namespace Mavlink;
 
 internal static class MavlinkPacketParser
 {
-	public static MavlinkDeserializeResult TryParse(
+	public static MavlinkPacketParseResult TryParse(
 		ReadOnlySpan<byte> frameBytes,
 		MavlinkPacketVersion version,
 		IMavlinkDialect dialect,
@@ -15,7 +15,7 @@ internal static class MavlinkPacketParser
 		{
 			MavlinkPacketVersion.V2 => MavlinkV2PacketParser.TryParse(frameBytes, dialect, out packet),
 			MavlinkPacketVersion.V1 => MavlinkV1PacketParser.TryParse(frameBytes, dialect, out packet),
-			_ => MavlinkDeserializeResult.UnknownVersion
+			_ => MavlinkPacketParseResult.UnknownVersion
 		};
 	}
 }

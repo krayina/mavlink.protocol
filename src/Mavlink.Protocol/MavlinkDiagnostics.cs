@@ -77,20 +77,20 @@ public sealed class MavlinkDiagnostics
 	internal void OnSignatureFailure()
 		=> Interlocked.Increment(ref _signatureFailures);
 
-	internal void OnDeserializeError(MavlinkDeserializeResult result)
+	internal void OnDeserializeError(MavlinkPacketParseResult result)
 	{
 		switch (result)
 		{
-			case MavlinkDeserializeResult.CrcMismatch:
+			case MavlinkPacketParseResult.CrcMismatch:
 				Interlocked.Increment(ref _crcErrors);
 				break;
-			case MavlinkDeserializeResult.UnknownMessageId:
+			case MavlinkPacketParseResult.UnknownMessageId:
 				Interlocked.Increment(ref _unknownMessages);
 				break;
-			case MavlinkDeserializeResult.UnknownVersion:
-			case MavlinkDeserializeResult.InvalidFrameLength:
-			case MavlinkDeserializeResult.UnknownMagicByte:
-			case MavlinkDeserializeResult.UnsupportedIncompatFlags:
+			case MavlinkPacketParseResult.UnknownVersion:
+			case MavlinkPacketParseResult.InvalidFrameLength:
+			case MavlinkPacketParseResult.UnknownMagicByte:
+			case MavlinkPacketParseResult.UnsupportedIncompatFlags:
 				Interlocked.Increment(ref _badFrameErrors);
 				break;
 		}

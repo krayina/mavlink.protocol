@@ -138,7 +138,7 @@ internal sealed class MavlinkReceiver : IDisposable, IAsyncDisposable
 				// Spec: unknown incompatibility bits => the frame is incompatible, so we drop it.
 				if ((incompatFlags & ~(byte)MavlinkIncompatFlags.Signed) != 0)
 				{
-					_errorListener.OnParserError(MavlinkDeserializeResult.UnsupportedIncompatFlags);
+					_errorListener.OnParserError(MavlinkPacketParseResult.UnsupportedIncompatFlags);
 					reader.Advance(1);
 					continue;
 				}
@@ -179,7 +179,7 @@ internal sealed class MavlinkReceiver : IDisposable, IAsyncDisposable
 	{
 		var result = MavlinkPacketParser.TryParse(frame, version, _dialect, out var packet);
 
-		if (result != MavlinkDeserializeResult.Success)
+		if (result != MavlinkPacketParseResult.Success)
 		{
 			_errorListener.OnParserError(result);
 			return false;
@@ -209,7 +209,7 @@ internal sealed class MavlinkReceiver : IDisposable, IAsyncDisposable
 			var frame = _framer.RawBuffer.AsSpan(offset, length);
 			var result = MavlinkPacketParser.TryParse(frame, version, _dialect, out var packet);
 
-			if (result != MavlinkDeserializeResult.Success)
+			if (result != MavlinkPacketParseResult.Success)
 			{
 				_errorListener.OnParserError(result);
 				_framer.SkipByte();

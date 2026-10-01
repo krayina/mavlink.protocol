@@ -132,7 +132,7 @@ internal sealed class MavlinkTypedHandlerGroup<T> : IMavlinkHandlerGroup
 			{
 				try
 				{
-					message = MavlinkDeserializer.Deserialize(in packet, _info);
+					message = MavlinkPayloadDeserializer.Deserialize(in packet, _info);
 					deserialized = true;
 				}
 				catch (Exception ex)

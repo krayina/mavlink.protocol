@@ -4,7 +4,7 @@ namespace Mavlink;
 
 internal static class MavlinkV2PacketParser
 {
-	public static MavlinkDeserializeResult TryParse(
+	public static MavlinkPacketParseResult TryParse(
 		ReadOnlySpan<byte> raw,
 		IMavlinkDialect dialect,
 		out MavlinkReceivedPacket packet)
@@ -13,7 +13,7 @@ internal static class MavlinkV2PacketParser
 
 		if (raw.Length < MavlinkConstants.HEADER_V2_LENGTH + 2)
 		{
-			return MavlinkDeserializeResult.InvalidFrameLength;
+			return MavlinkPacketParseResult.InvalidFrameLength;
 		}
 
 		var frame = new MavlinkV2Frame(raw);
@@ -21,14 +21,14 @@ internal static class MavlinkV2PacketParser
 		var info = dialect.GetInfo(frame.MessageId);
 		if (info == null)
 		{
-			return MavlinkDeserializeResult.UnknownMessageId;
+			return MavlinkPacketParseResult.UnknownMessageId;
 		}
 
 		ushort computed = X25Crc.Calculate(frame.CrcRegion);
 		computed = X25Crc.Accumulate(computed, info.CrcExtra);
 		if (frame.ReceivedCrc != computed)
 		{
-			return MavlinkDeserializeResult.CrcMismatch;
+			return MavlinkPacketParseResult.CrcMismatch;
 		}
 
 		packet = new MavlinkReceivedPacket(
@@ -40,6 +40,6 @@ internal static class MavlinkV2PacketParser
 			frame.IsSigned,
 			frame.Payload);
 
-		return MavlinkDeserializeResult.Success;
+		return MavlinkPacketParseResult.Success;
 	}
 }

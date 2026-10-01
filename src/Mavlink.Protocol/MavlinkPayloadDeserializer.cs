@@ -1,6 +1,6 @@
 ﻿namespace Mavlink;
 
-internal static class MavlinkDeserializer
+internal static class MavlinkPayloadDeserializer
 {
 	public static T Deserialize<T>(
 		in MavlinkReceivedPacket packet,

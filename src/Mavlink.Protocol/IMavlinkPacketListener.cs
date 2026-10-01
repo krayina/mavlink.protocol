@@ -7,7 +7,7 @@ internal interface IMavlinkPacketListener
 
 internal interface IMavlinkParserErrorListener
 {
-	void OnParserError(MavlinkDeserializeResult result);
+	void OnParserError(MavlinkPacketParseResult result);
 
 	void OnReceiverFault(Exception exception);
 }

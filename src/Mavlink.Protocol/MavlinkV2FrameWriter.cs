@@ -5,19 +5,16 @@ using System.Runtime.CompilerServices;
 
 namespace Mavlink;
 
-internal static class MavlinkV2Serializer
+internal static class MavlinkV2FrameWriter
 {
 	// ----------------------------------------------------------------------------------------------
 	// V2 Header: STX(1) + LEN(1) + INC(1) + CMP(1) + SEQ(1) + SYS(1) + COMP(1) + MSGID(3) = 10 bytes
 	// ----------------------------------------------------------------------------------------------
 
-	/// <summary>
-	/// Serializes a message to MAVLink V2 packet (Typed version - Zero Boxing/Casting).
-	/// </summary>
 #if NETSTANDARD2_1_OR_GREATER
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-	public static int Serialize<T>(
+	public static int Write<T>(
 		T message,
 		IMavlinkMessageInfo<T> info,
 		byte sequence,
@@ -26,12 +23,12 @@ internal static class MavlinkV2Serializer
 		Span<byte> buffer,
 		MavlinkSigner? signer) where T : IMavlinkMessage
 	{
-		// 1. Serialize Payload directly
+		// 1. Write Payload directly
 		var payloadSpan = buffer.Slice(MavlinkConstants.HEADER_V2_LENGTH);
 		info.PayloadSerializer.SerializeV2(message, payloadSpan);
 
 		// 2. Assemble Packet (Header + CRC)
-		return AssemblePacket(
+		return AssembleFrame(
 			info.PayloadLength,
 			info.MessageId,
 			info.CrcExtra,
@@ -42,13 +39,10 @@ internal static class MavlinkV2Serializer
 			signer);
 	}
 
-	/// <summary>
-	/// Serializes a message to MAVLink V2 packet (Untyped version - Interface call).
-	/// </summary>
 #if NETSTANDARD2_1_OR_GREATER
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-	public static int Serialize(
+	public static int Write(
 		IMavlinkMessage message,
 		IMavlinkMessageInfo info,
 		byte sequence,
@@ -60,7 +54,7 @@ internal static class MavlinkV2Serializer
 		var payloadSpan = buffer.Slice(MavlinkConstants.HEADER_V2_LENGTH);
 		info.SerializePayloadV2(message, payloadSpan);
 
-		return AssemblePacket(
+		return AssembleFrame(
 			info.PayloadLength,
 			info.MessageId,
 			info.CrcExtra,
@@ -71,7 +65,7 @@ internal static class MavlinkV2Serializer
 			signer);
 	}
 
-	private static int AssemblePacket(
+	private static int AssembleFrame(
 		int maxPayloadLen,
 		uint msgId,
 		byte crcExtra,
@@ -122,7 +116,7 @@ internal static class MavlinkV2Serializer
 		{
 			var packetWithCrc = buffer.Slice(0, totalLength);
 			var signatureBlock = buffer.Slice(totalLength, 13);
-			signer!.SignPacket(packetWithCrc, signatureBlock);
+			signer!.SignFrame(packetWithCrc, signatureBlock);
 			totalLength += 13;
 		}
 		return totalLength;

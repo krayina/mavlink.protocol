@@ -47,7 +47,7 @@ internal sealed class MavlinkSender : IDisposable, IAsyncDisposable
 		{
 			ThrowIfDisposed();
 
-			int len = MavlinkSerializer.Serialize(
+			int len = MavlinkFrameWriter.Write(
 				message, info, sequence, systemId, componentId, _buffer, version, _signer);
 
 			await _connection.WriteAsync(_buffer.AsMemory(0, len), ct).ConfigureAwait(false);
@@ -79,7 +79,7 @@ internal sealed class MavlinkSender : IDisposable, IAsyncDisposable
 		{
 			ThrowIfDisposed();
 
-			int len = MavlinkSerializer.Serialize(
+			int len = MavlinkFrameWriter.Write(
 				message, info, sequence, systemId, componentId, _buffer, version, _signer);
 
 			await _connection.WriteAsync(_buffer.AsMemory(0, len), ct).ConfigureAwait(false);

@@ -32,7 +32,7 @@ public sealed class MavlinkSignatureVerifier : IDisposable
 	}
 
 	public MavlinkSignatureVerifyResult Verify(
-		ReadOnlySpan<byte> packetWithCrc,
+		ReadOnlySpan<byte> frameWithCrc,
 		ReadOnlySpan<byte> signatureBlock,
 		byte senderSystemId,
 		byte senderComponentId)
@@ -47,7 +47,7 @@ public sealed class MavlinkSignatureVerifier : IDisposable
 		}
 
 		Span<byte> expected = stackalloc byte[6];
-		ComputeSignature(packetWithCrc, linkId, timestamp, expected);
+		ComputeSignature(frameWithCrc, linkId, timestamp, expected);
 
 		if (!FixedTimeEquals(expected, signatureBlock.Slice(7, 6)))
 		{
@@ -90,18 +90,18 @@ public sealed class MavlinkSignatureVerifier : IDisposable
 	}
 
 	private void ComputeSignature(
-		ReadOnlySpan<byte> packetWithCrc, byte linkId, ulong timestamp, Span<byte> output48bit)
+		ReadOnlySpan<byte> frameWithCrc, byte linkId, ulong timestamp, Span<byte> output48bit)
 	{
-		int totalLen = 32 + packetWithCrc.Length + 1 + 6;
+		int totalLen = 32 + frameWithCrc.Length + 1 + 6;
 
 		Span<byte> buffer = totalLen <= 512
 			? stackalloc byte[totalLen]
 			: new byte[totalLen];
 
 		_secretKey.CopyTo(buffer);
-		packetWithCrc.CopyTo(buffer.Slice(32));
-		buffer[32 + packetWithCrc.Length] = linkId;
-		Store48BitTimestamp(timestamp, buffer.Slice(32 + packetWithCrc.Length + 1));
+		frameWithCrc.CopyTo(buffer.Slice(32));
+		buffer[32 + frameWithCrc.Length] = linkId;
+		Store48BitTimestamp(timestamp, buffer.Slice(32 + frameWithCrc.Length + 1));
 
 #if NET6_0_OR_GREATER
 		Span<byte> sha = stackalloc byte[32];

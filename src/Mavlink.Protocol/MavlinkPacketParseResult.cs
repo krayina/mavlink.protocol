@@ -1,6 +1,6 @@
 ﻿namespace Mavlink;
 
-public enum MavlinkDeserializeResult : byte
+public enum MavlinkPacketParseResult : byte
 {
 	Success = 0,
 	UnknownMessageId = 1,
