@@ -29,6 +29,8 @@ public sealed class MavlinkDiagnostics
 	/// </summary>
 	private const int MaxPlausibleSequenceGap = 128;
 
+	internal MavlinkDiagnostics() { }
+
 	public MavlinkDiagnosticsSnapshot GetSnapshot()
 	{
 		var lastTicks = Interlocked.Read(ref _lastPacketUtcTicks);

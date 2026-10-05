@@ -1,14 +1,14 @@
 ﻿namespace Mavlink;
 
 [Flags]
-public enum MavlinkIncompatFlags : byte
+internal enum MavlinkIncompatFlags : byte
 {
 	None = 0,
 	Signed = 0x01
 }
 
 [Flags]
-public enum MavlinkCompatFlags : byte
+internal enum MavlinkCompatFlags : byte
 {
 	None = 0
 }

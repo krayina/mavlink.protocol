@@ -31,7 +31,7 @@ public sealed class MavlinkSignatureVerifier : IDisposable
 		secretKey.AsSpan().CopyTo(_secretKey);
 	}
 
-	public MavlinkSignatureVerifyResult Verify(
+	internal MavlinkSignatureVerifyResult Verify(
 		ReadOnlySpan<byte> frameWithCrc,
 		ReadOnlySpan<byte> signatureBlock,
 		byte senderSystemId,

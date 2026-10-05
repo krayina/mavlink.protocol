@@ -1,8 +1,8 @@
 ﻿namespace Mavlink;
 
-public enum MavlinkSignatureVerifyResult
+internal enum MavlinkSignatureVerifyResult
 {
-	Valid = 0,
+	Valid,
 	BadSignature,
 	TimestampReplay,
 	NewStreamTimestampOutOfRange,

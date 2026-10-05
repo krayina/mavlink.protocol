@@ -1,6 +1,6 @@
 ﻿namespace Mavlink;
 
-public interface IMavlinkConnection : IAsyncDisposable
+internal interface IMavlinkConnection : IAsyncDisposable
 {
 	System.IO.Pipelines.PipeReader Input { get; }
 	MavlinkConnectionState State { get; }
