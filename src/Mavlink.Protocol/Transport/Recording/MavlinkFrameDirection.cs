@@ -1,4 +1,4 @@
-﻿namespace Mavlink;
+﻿namespace Mavlink.Transport;
 
 public enum MavlinkFrameDirection : byte
 {

@@ -1,5 +1,4 @@
 ﻿using System.Net.WebSockets;
-using System.Runtime.InteropServices;
 
 namespace Mavlink.Transport;
 
@@ -43,7 +42,7 @@ public sealed class MavlinkWebSocketPort : IMavlinkPort
 
 			return result.Count;
 #else
-			if (!MemoryMarshal.TryGetArray(
+			if (!System.Runtime.InteropServices.MemoryMarshal.TryGetArray(
 					(ReadOnlyMemory<byte>)buffer, out ArraySegment<byte> segment)
 				|| segment.Array is null)
 			{
@@ -57,7 +56,7 @@ public sealed class MavlinkWebSocketPort : IMavlinkPort
 				return 0; // EOF → reconnect loop
 			}
 
-			if (!MemoryMarshal.TryGetArray(
+			if (!System.Runtime.InteropServices.MemoryMarshal.TryGetArray(
 					(ReadOnlyMemory<byte>)buffer, out ArraySegment<byte> original)
 				|| !ReferenceEquals(original.Array, segment.Array))
 			{
@@ -83,7 +82,7 @@ public sealed class MavlinkWebSocketPort : IMavlinkPort
 			await _ws.SendAsync(data, WebSocketMessageType.Binary, endOfMessage: true, ct)
 				.ConfigureAwait(false);
 #else
-			if (!MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment)
+			if (!System.Runtime.InteropServices.MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment)
 				|| segment.Array is null)
 			{
 				segment = new ArraySegment<byte>(data.ToArray());

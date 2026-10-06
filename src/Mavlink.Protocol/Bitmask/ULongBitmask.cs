@@ -1,4 +1,4 @@
-﻿namespace Mavlink.Bitmask;
+﻿namespace Mavlink;
 
 /// <summary>
 /// 64-bit bitmask for <c>display="bitmask"</c> fields that have no enum.

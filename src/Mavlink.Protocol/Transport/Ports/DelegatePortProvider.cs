@@ -1,4 +1,4 @@
-﻿namespace Mavlink;
+﻿namespace Mavlink.Transport;
 
 public sealed class DelegatePortProvider : IMavlinkPortProvider
 {

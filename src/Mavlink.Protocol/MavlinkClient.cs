@@ -1,6 +1,4 @@
-﻿using Mavlink.Routing;
-
-namespace Mavlink;
+﻿namespace Mavlink;
 
 public sealed partial class MavlinkClient : IDisposable, IAsyncDisposable
 {

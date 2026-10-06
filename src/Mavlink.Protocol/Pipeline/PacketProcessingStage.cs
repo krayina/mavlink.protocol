@@ -1,6 +1,4 @@
-﻿using Mavlink.Routing;
-
-namespace Mavlink;
+﻿namespace Mavlink;
 
 internal sealed class PacketProcessingStage : IMavlinkPacketListener, IMavlinkParserErrorListener
 {

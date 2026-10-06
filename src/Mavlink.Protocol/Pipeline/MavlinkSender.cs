@@ -1,6 +1,7 @@
 ﻿#if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
 using System.Runtime.CompilerServices;
 #endif
+using Mavlink.Transport;
 
 namespace Mavlink;
 

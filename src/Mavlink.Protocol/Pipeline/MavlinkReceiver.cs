@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using Mavlink.Dialects;
+using Mavlink.Transport;
 
 namespace Mavlink;
 

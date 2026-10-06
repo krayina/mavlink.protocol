@@ -1,4 +1,4 @@
-﻿namespace Mavlink.Bitmask;
+﻿namespace Mavlink;
 
 /// <summary>
 /// Display metadata for one defined flag bit.

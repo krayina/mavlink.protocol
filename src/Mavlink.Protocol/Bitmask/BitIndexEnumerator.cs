@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Mavlink.Bitmask;
+namespace Mavlink;
 
 /// <summary>
 /// Zero-allocation enumeration of set bit indices. O(popcount).

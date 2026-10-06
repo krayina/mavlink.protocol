@@ -1,4 +1,5 @@
 ﻿using System.Net.Sockets;
+using Mavlink.Transport;
 
 namespace Mavlink;
 

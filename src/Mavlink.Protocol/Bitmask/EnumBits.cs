@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Mavlink.Bitmask;
+namespace Mavlink;
 
 /// <summary>
 /// Reinterpretation between an enum and its raw bits without boxing.

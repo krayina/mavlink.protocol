@@ -1,6 +1,4 @@
-﻿using Mavlink.Transport;
-
-namespace Mavlink;
+﻿namespace Mavlink.Transport;
 
 public sealed class TlogFrameRecorder : IMavlinkRawFrameListener
 {

@@ -1,6 +1,6 @@
 ﻿using System.Net.Sockets;
 
-namespace Mavlink;
+namespace Mavlink.Transport;
 
 public sealed class MavlinkUdpPort : IMavlinkPort, IAsyncDisposable, IDisposable
 {

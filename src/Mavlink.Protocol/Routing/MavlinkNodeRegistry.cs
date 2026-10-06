@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
-namespace Mavlink.Routing;
+namespace Mavlink;
 
 internal sealed class MavlinkNodeRegistry : IAsyncDisposable, IDisposable
 {

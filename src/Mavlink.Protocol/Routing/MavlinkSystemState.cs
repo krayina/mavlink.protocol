@@ -1,4 +1,4 @@
-﻿namespace Mavlink.Routing;
+﻿namespace Mavlink;
 
 public enum MavlinkSystemState : byte
 {

@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Mavlink.Routing;
+namespace Mavlink;
 
 public sealed class MavlinkComponent
 {

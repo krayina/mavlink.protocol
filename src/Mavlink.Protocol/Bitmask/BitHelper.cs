@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Numerics;
 #endif
 
-namespace Mavlink.Bitmask;
+namespace Mavlink;
 
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class BitHelper

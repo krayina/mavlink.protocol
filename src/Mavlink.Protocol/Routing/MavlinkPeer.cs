@@ -1,6 +1,4 @@
-﻿using Mavlink.Routing;
-
-namespace Mavlink;
+﻿namespace Mavlink;
 
 public sealed class MavlinkPeer
 {

@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 #endif
 
-namespace Mavlink.Bitmask;
+namespace Mavlink;
 
 /// <summary>
 /// Non-generic, allocation-free description of a bitmask value for UI, logging and diagnostics.
