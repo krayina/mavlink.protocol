@@ -15,7 +15,7 @@ internal static class MavlinkV1FrameWriter
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
 	public static int Write<T>(
-		T message,
+		in T message,
 		IMavlinkMessageInfo<T> info,
 		byte sequence,
 		byte systemId,
@@ -23,7 +23,7 @@ internal static class MavlinkV1FrameWriter
 		Span<byte> buffer) where T : IMavlinkMessage
 	{
 		var payloadSpan = buffer.Slice(MavlinkConstants.HEADER_V1_LENGTH);
-		info.PayloadSerializer.SerializeV1(message, payloadSpan);
+		info.PayloadSerializer.SerializeV1(in message, payloadSpan);
 
 		return AssembleFrame(
 			info.PayloadLength,

@@ -62,12 +62,12 @@ public sealed partial class MavlinkClient : IDisposable, IAsyncDisposable
 		return _channel.Subscribe(callback, filter);
 	}
 
-	public ValueTask SendAsync<T>(T message, CancellationToken ct = default)
+	public ValueTask SendAsync<T>(in T message, CancellationToken ct = default)
 	   where T : struct, IMavlinkMessage
-	   => SendAsync(message, version: null, ct);
+	   => SendAsync(in message, version: null, ct);
 
 	public ValueTask SendAsync<T>(
-		T message,
+		in T message,
 		MavlinkPacketVersion? version,
 		CancellationToken ct = default)
 		where T : struct, IMavlinkMessage
@@ -172,7 +172,7 @@ public sealed partial class MavlinkClient : IDisposable, IAsyncDisposable
 	}
 
 	public ValueTask SendToAsync<T>(
-		T message,
+		in T message,
 		MavlinkComponent target,
 		MavlinkPacketVersion? version = null,
 		CancellationToken ct = default)
@@ -186,7 +186,7 @@ public sealed partial class MavlinkClient : IDisposable, IAsyncDisposable
 		var system = _channel.GetSystem(target.SystemId);
 
 		return SendToCoreAsync(
-			message, target.SystemId, target.ComponentId,
+			in message, target.SystemId, target.ComponentId,
 			ResolveVersion(version, system), ct);
 	}
 
@@ -224,7 +224,7 @@ public sealed partial class MavlinkClient : IDisposable, IAsyncDisposable
 	}
 
 	private ValueTask SendToCoreAsync<T>(
-		T message,
+		in T message,
 		byte targetSystem,
 		byte targetComponent,
 		MavlinkPacketVersion version,

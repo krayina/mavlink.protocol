@@ -12,12 +12,12 @@ public sealed class CommandAckPayloadSerializer : IMavlinkPayloadSerializer<Comm
 		throw new NotImplementedException();
 	}
 
-	public int SerializeV1(CommandAckMavlinkMessage message, Span<byte> destination)
+	public int SerializeV1(in CommandAckMavlinkMessage message, Span<byte> destination)
 	{
 		throw new NotImplementedException();
 	}
 
-	public int SerializeV2(CommandAckMavlinkMessage message, Span<byte> destination)
+	public int SerializeV2(in CommandAckMavlinkMessage message, Span<byte> destination)
 	{
 		throw new NotImplementedException();
 	}

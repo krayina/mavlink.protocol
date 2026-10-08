@@ -145,7 +145,7 @@ internal sealed class MavlinkTypedHandlerGroup<T> : IMavlinkHandlerGroup
 
 			try
 			{
-				h.Callback(message, in packet);
+				h.Callback(in message, in packet);
 			}
 			catch (Exception ex)
 			{

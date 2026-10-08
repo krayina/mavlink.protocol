@@ -15,7 +15,7 @@ internal static class MavlinkV2FrameWriter
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
 	public static int Write<T>(
-		T message,
+		in T message,
 		IMavlinkMessageInfo<T> info,
 		byte sequence,
 		byte systemId,
@@ -25,7 +25,7 @@ internal static class MavlinkV2FrameWriter
 	{
 		// 1. Write Payload directly
 		var payloadSpan = buffer.Slice(MavlinkConstants.HEADER_V2_LENGTH);
-		info.PayloadSerializer.SerializeV2(message, payloadSpan);
+		info.PayloadSerializer.SerializeV2(in message, payloadSpan);
 
 		// 2. Assemble Packet (Header + CRC)
 		return AssembleFrame(

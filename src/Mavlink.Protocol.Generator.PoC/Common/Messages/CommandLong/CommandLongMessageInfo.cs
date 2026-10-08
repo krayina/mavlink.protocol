@@ -25,7 +25,7 @@ public sealed class CommandLongMessageInfo : IMavlinkTargetedMessageInfo<Command
 	{
 		if (message is CommandLongMavlinkMessage msg)
 		{
-			return PayloadSerializer.SerializeV1(msg, destination);
+			return PayloadSerializer.SerializeV1(in msg, destination);
 		}
 		throw new ArgumentException($"Incorrect message type. Expected {nameof(CommandLongMavlinkMessage)}, got {message.GetType().Name}");
 	}
@@ -34,7 +34,7 @@ public sealed class CommandLongMessageInfo : IMavlinkTargetedMessageInfo<Command
 	{
 		if (message is CommandLongMavlinkMessage msg)
 		{
-			return PayloadSerializer.SerializeV2(msg, destination);
+			return PayloadSerializer.SerializeV2(in msg, destination);
 		}
 		throw new ArgumentException($"Incorrect message type. Expected {nameof(CommandLongMavlinkMessage)}, got {message.GetType().Name}");
 	}
