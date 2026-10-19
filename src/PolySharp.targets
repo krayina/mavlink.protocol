@@ -16,6 +16,7 @@
       System.Runtime.CompilerServices.SkipLocalsInitAttribute;
       System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute;
       System.Runtime.CompilerServices.RequiredMemberAttribute;
+      System.Runtime.CompilerServices.CollectionBuilderAttribute;
     </PolySharpIncludeGeneratedTypes>
   </PropertyGroup>
 
@@ -25,6 +26,7 @@
       System.Runtime.CompilerServices.SkipLocalsInitAttribute;
       System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute;
       System.Runtime.CompilerServices.RequiredMemberAttribute;
+      System.Runtime.CompilerServices.CollectionBuilderAttribute;
       System.Diagnostics.CodeAnalysis.UnscopedRefAttribute;
     </PolySharpIncludeGeneratedTypes>
   </PropertyGroup>
