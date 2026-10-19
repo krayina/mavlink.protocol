@@ -256,9 +256,7 @@ public sealed partial class MavlinkChannel : IDisposable, IAsyncDisposable
 	{
 		if (args.NewState == MavlinkConnectionState.Connected)
 		{
-#if !NETSTANDARD2_1_OR_GREATER
 			_receiver?.RequestFramingReset();
-#endif
 			_diagnostics.ResetSequenceTracking();
 			_watchdog?.Start();
 		}

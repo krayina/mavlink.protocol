@@ -16,9 +16,13 @@ internal sealed class MavlinkReceiver : IDisposable, IAsyncDisposable
 	private readonly CancellationTokenSource _cts = new();
 	private Task? _task;
 	private int _disposed;
-#if !NETSTANDARD2_1_OR_GREATER
-	private readonly MavlinkFrameReader _framer = new();
 	private volatile bool _resetRequested;
+#if NETSTANDARD2_1_OR_GREATER
+	// Bytes left unconsumed in the pipe after the previous pass: the head of a
+	// frame that has not fully arrived yet. Touched only by the read loop.
+	private long _pendingLength;
+#else
+	private readonly MavlinkFrameReader _framer = new();
 #endif
 
 	public MavlinkReceiver(
@@ -49,12 +53,15 @@ internal sealed class MavlinkReceiver : IDisposable, IAsyncDisposable
 		_task = Task.Run(() => ReadLoopAsync(_cts.Token));
 	}
 
-#if !NETSTANDARD2_1_OR_GREATER
+	/// <summary>
+	/// Drops the partial frame left over from the previous link session. The tail
+	/// of a dead session must not be concatenated with the next one, otherwise
+	/// resync can stitch together frames that never existed on the wire.
+	/// </summary>
 	internal void RequestFramingReset()
 	{
 		_resetRequested = true;
 	}
-#endif
 
 	private async Task ReadLoopAsync(CancellationToken ct)
 	{
@@ -76,7 +83,15 @@ internal sealed class MavlinkReceiver : IDisposable, IAsyncDisposable
 
 				SequencePosition consumed;
 #if NETSTANDARD2_1_OR_GREATER
+				if (_resetRequested)
+				{
+					_resetRequested = false;
+					// The pipe outlives link sessions; skip exactly the stale head
+					// that the previous pass left unconsumed.
+					buffer = buffer.Slice(Math.Min(_pendingLength, buffer.Length));
+				}
 				consumed = EnqueueFramesFromSequence(buffer);
+				_pendingLength = buffer.Slice(consumed).Length;
 #else
 				if (_resetRequested)
 				{
@@ -85,7 +100,7 @@ internal sealed class MavlinkReceiver : IDisposable, IAsyncDisposable
 				}
 				consumed = EnqueueFramesFallback(buffer);
 #endif
-				_input.AdvanceTo(consumed, buffer.End);
+				_input.AdvanceTo(consumed, result.Buffer.End);
 			}
 		}
 		catch (OperationCanceledException)
