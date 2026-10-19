@@ -8,7 +8,7 @@ public sealed class MavlinkUdpPort : IMavlinkPort, IAsyncDisposable, IDisposable
 	private readonly bool _leaveOpen;
 	private int _disposed;
 
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 	public System.IO.Pipelines.PipeReader? Reader => null;
 #endif
 

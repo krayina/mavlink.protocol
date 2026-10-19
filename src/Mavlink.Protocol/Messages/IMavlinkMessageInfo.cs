@@ -1,6 +1,6 @@
 ﻿namespace Mavlink;
 
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 using System.ComponentModel;
 [EditorBrowsable(EditorBrowsableState.Never)]
 #endif
@@ -22,7 +22,7 @@ public interface IMavlinkMessageInfo
 	IMavlinkMessage DeserializePayloadV2(ReadOnlySpan<byte> payload);
 }
 
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 [EditorBrowsable(EditorBrowsableState.Never)]
 #endif
 public interface IMavlinkMessageInfo<T> : IMavlinkMessageInfo where T : IMavlinkMessage

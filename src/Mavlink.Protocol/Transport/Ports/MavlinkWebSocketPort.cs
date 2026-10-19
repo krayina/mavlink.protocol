@@ -12,7 +12,7 @@ public sealed class MavlinkWebSocketPort : IMavlinkPort
 	private readonly ClientWebSocket _ws;
 	private int _disposed;
 
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 	public System.IO.Pipelines.PipeReader? Reader => null;
 #endif
 
@@ -32,7 +32,7 @@ public sealed class MavlinkWebSocketPort : IMavlinkPort
 
 		try
 		{
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 			var result = await _ws.ReceiveAsync(buffer, ct).ConfigureAwait(false);
 
 			if (result.MessageType == WebSocketMessageType.Close)
@@ -78,7 +78,7 @@ public sealed class MavlinkWebSocketPort : IMavlinkPort
 
 		try
 		{
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 			await _ws.SendAsync(data, WebSocketMessageType.Binary, endOfMessage: true, ct)
 				.ConfigureAwait(false);
 #else

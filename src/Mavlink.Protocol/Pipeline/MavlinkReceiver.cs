@@ -17,7 +17,7 @@ internal sealed class MavlinkReceiver : IDisposable, IAsyncDisposable
 	private Task? _task;
 	private int _disposed;
 	private volatile bool _resetRequested;
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 	// Bytes left unconsumed in the pipe after the previous pass: the head of a
 	// frame that has not fully arrived yet. Touched only by the read loop.
 	private long _pendingLength;
@@ -82,7 +82,7 @@ internal sealed class MavlinkReceiver : IDisposable, IAsyncDisposable
 				}
 
 				SequencePosition consumed;
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 				if (_resetRequested)
 				{
 					_resetRequested = false;
@@ -123,7 +123,7 @@ internal sealed class MavlinkReceiver : IDisposable, IAsyncDisposable
 		}
 	}
 
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 	private static readonly byte[] _magics = { MavlinkConstants.MAGIC_V1, MavlinkConstants.MAGIC_V2 };
 	private SequencePosition EnqueueFramesFromSequence(ReadOnlySequence<byte> sequence)
 	{

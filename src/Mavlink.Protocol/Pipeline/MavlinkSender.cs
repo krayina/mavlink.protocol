@@ -111,7 +111,7 @@ internal sealed class MavlinkSender : IDisposable, IAsyncDisposable
 		}
 	}
 
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
 	private void ThrowIfDisposed()

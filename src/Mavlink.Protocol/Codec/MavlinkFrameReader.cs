@@ -1,6 +1,6 @@
 ﻿namespace Mavlink;
 
-#if !NETSTANDARD2_1_OR_GREATER
+#if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER)
 internal sealed class MavlinkFrameReader
 {
 	private byte[] _buffer;

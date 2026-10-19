@@ -1,5 +1,5 @@
 ﻿using System.Net.Sockets;
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 using System.IO.Pipelines;
 #else
 using System.Runtime.InteropServices;
@@ -15,7 +15,7 @@ public sealed class MavlinkStreamPort : IMavlinkPort
 	private readonly Action? _cancelHook;
 	private int _disposed;
 
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 	public System.IO.Pipelines.PipeReader? Reader { get; }
 #endif
 
@@ -31,7 +31,7 @@ public sealed class MavlinkStreamPort : IMavlinkPort
 		_owner = owner;
 		_cancelHook = cancelHook;
 
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 		if (exposeReader)
 		{
 			// leaveOpen: true intentionally — this port owns disposal of the
@@ -50,7 +50,7 @@ public sealed class MavlinkStreamPort : IMavlinkPort
 
 		try
 		{
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 			return await _stream.ReadAsync(buffer, ct).ConfigureAwait(false);
 #else
 			if (MemoryMarshal.TryGetArray((ReadOnlyMemory<byte>)buffer, out ArraySegment<byte> segment)
@@ -90,7 +90,7 @@ public sealed class MavlinkStreamPort : IMavlinkPort
 
 		try
 		{
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 			await _stream.WriteAsync(data, ct).ConfigureAwait(false);
 #else
 			if (MemoryMarshal.TryGetArray(data, out ArraySegment<byte> segment)
@@ -174,7 +174,7 @@ public sealed class MavlinkStreamPort : IMavlinkPort
 			return;
 		}
 
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 		try
 		{
 			Reader?.Complete();
@@ -216,7 +216,7 @@ public sealed class MavlinkStreamPort : IMavlinkPort
 			return;
 		}
 
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 		try
 		{
 			if (Reader is { } reader)

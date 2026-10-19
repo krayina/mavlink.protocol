@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_1_OR_GREATER
+﻿#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 using System.Runtime.CompilerServices;
 #endif
 using System.Text;
@@ -124,7 +124,7 @@ internal static class X25Crc
 	/// <param name="crc">The initial CRC value to start with.</param>
 	/// <param name="b">The byte to accumulate the CRC for.</param>
 	/// <returns>The updated CRC value after processing the input byte.</returns>
-#if NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
 	public static ushort Accumulate(ushort crc, byte data)
