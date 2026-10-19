@@ -101,6 +101,13 @@ internal sealed class MavlinkReceiver : IDisposable, IAsyncDisposable
 				consumed = EnqueueFramesFallback(buffer);
 #endif
 				_input.AdvanceTo(consumed, result.Buffer.End);
+
+				if (result.IsCompleted)
+				{
+					// Writer is done: a trailing partial frame can never complete,
+					// and reading again would return the same buffer forever.
+					break;
+				}
 			}
 		}
 		catch (OperationCanceledException)
