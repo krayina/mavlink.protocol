@@ -1,6 +1,4 @@
-﻿#if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
-using System.Runtime.CompilerServices;
-#endif
+﻿using System.Runtime.CompilerServices;
 using Mavlink.Transport;
 
 namespace Mavlink;
@@ -111,9 +109,7 @@ internal sealed class MavlinkSender : IDisposable, IAsyncDisposable
 		}
 	}
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
 	private void ThrowIfDisposed()
 	{
 		if (Volatile.Read(ref _disposed) != 0)

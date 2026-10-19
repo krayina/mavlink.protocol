@@ -1,7 +1,5 @@
 ﻿using System.Buffers.Binary;
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 using System.Runtime.CompilerServices;
-#endif
 
 namespace Mavlink;
 
@@ -11,9 +9,7 @@ internal static class MavlinkV2FrameWriter
 	// V2 Header: STX(1) + LEN(1) + INC(1) + CMP(1) + SEQ(1) + SYS(1) + COMP(1) + MSGID(3) = 10 bytes
 	// ----------------------------------------------------------------------------------------------
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
 	public static int Write<T>(
 		in T message,
 		IMavlinkMessageInfo<T> info,
@@ -39,9 +35,7 @@ internal static class MavlinkV2FrameWriter
 			signer);
 	}
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
 	public static int Write(
 		IMavlinkMessage message,
 		IMavlinkMessageInfo info,
