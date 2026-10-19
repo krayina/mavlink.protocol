@@ -18,6 +18,14 @@ internal static class MavlinkV2PacketParser
 
 		var frame = new MavlinkV2Frame(raw);
 
+		// Spec: a frame with an unknown incompatibility bit cannot be understood and
+		// must be dropped. The pipe framer pre-checks this; the netstandard2.0 framer
+		// does not, so the parser is the one place that covers both.
+		if ((frame.IncompatFlags & ~(byte)MavlinkIncompatFlags.Signed) != 0)
+		{
+			return MavlinkPacketParseResult.UnsupportedIncompatFlags;
+		}
+
 		var info = dialect.GetInfo(frame.MessageId);
 		if (info == null)
 		{

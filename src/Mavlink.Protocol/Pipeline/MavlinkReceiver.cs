@@ -128,7 +128,6 @@ internal sealed class MavlinkReceiver : IDisposable, IAsyncDisposable
 	private SequencePosition EnqueueFramesFromSequence(ReadOnlySequence<byte> sequence)
 	{
 		var reader = new SequenceReader<byte>(sequence);
-		// 10 + 255 + 2 + 13 = 280;
 		Span<byte> scratch = stackalloc byte[MavlinkConstants.MAX_FRAME_LENGTH];
 
 		while (true)

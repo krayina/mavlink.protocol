@@ -8,7 +8,7 @@ internal static class MavlinkFrameWriter
 		byte seq,
 		byte systemId,
 		byte componentId,
-		byte[] buffer,
+		Span<byte> buffer,
 		MavlinkPacketVersion version,
 		MavlinkSigner? signer = null)
 		where T : IMavlinkMessage

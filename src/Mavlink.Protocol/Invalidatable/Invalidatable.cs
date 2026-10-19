@@ -124,3 +124,23 @@ public readonly struct Invalidatable<T> : IEquatable<Invalidatable<T>>
 	public static bool operator ==(Invalidatable<T> left, Invalidatable<T> right) => left.Equals(right);
 	public static bool operator !=(Invalidatable<T> left, Invalidatable<T> right) => !left.Equals(right);
 }
+
+/// <summary>
+/// Factory methods for <see cref="Invalidatable{T}"/>, in the spirit of <see cref="Nullable"/>.
+/// </summary>
+public static class Invalidatable
+{
+	/// <summary>
+	/// Decodes a field that marks "no data" with a sentinel (the dialect's <c>invalid</c>
+	/// attribute): returns <see cref="Invalidatable{T}.Invalid"/> when <paramref name="value"/>
+	/// equals <paramref name="invalidValue"/>, otherwise a valid instance.
+	/// </summary>
+	/// <remarks>
+	/// Comparison uses <see cref="EqualityComparer{T}.Default"/>, so a NaN sentinel matches
+	/// every NaN bit pattern (<c>float.Equals</c> treats NaN as equal to NaN), and a zero
+	/// sentinel matches both +0.0 and -0.0. The inverse operation is
+	/// <see cref="Invalidatable{T}.GetValueOrDefault(T)"/> with the same sentinel.
+	/// </remarks>
+	public static Invalidatable<T> FromWire<T>(T value, T invalidValue)
+		=> EqualityComparer<T>.Default.Equals(value, invalidValue) ? default : Invalidatable<T>.From(value);
+}

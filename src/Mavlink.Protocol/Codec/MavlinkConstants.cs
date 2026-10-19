@@ -42,10 +42,9 @@ internal static class MavlinkConstants
 	public const int CRC_LENGTH = 2;
 	public const int SIGNATURE_LENGTH = 13;
 
-	public const int MAX_PAYLOAD_V1 = 255;
-	public const int MAX_PAYLOAD_V2 = 255;
+	// The LEN header byte bounds the payload identically in both versions.
+	public const int MAX_PAYLOAD_LENGTH = 255;
 
-	public const int MAX_PAYLOAD_ARRAY_POOL_SIZE = 512;
-
-	public const int MAX_FRAME_LENGTH = HEADER_V2_LENGTH + MAX_PAYLOAD_V2 + CRC_LENGTH + SIGNATURE_LENGTH;
+	// 10 + 255 + 2 + 13 = 280: the largest frame on the wire (signed MAVLink 2).
+	public const int MAX_FRAME_LENGTH = HEADER_V2_LENGTH + MAX_PAYLOAD_LENGTH + CRC_LENGTH + SIGNATURE_LENGTH;
 }

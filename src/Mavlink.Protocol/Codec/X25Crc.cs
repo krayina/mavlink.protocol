@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Mavlink;
 
@@ -50,33 +49,6 @@ internal static class X25Crc
 	};
 
 	/// <summary>
-	/// Calculates the CRC for a given byte array with optional extra bytes.
-	/// </summary>
-	/// <param name="data">The byte array to calculate the CRC for.</param>
-	/// <param name="start">The starting index in the array.</param>
-	/// <param name="length">The number of bytes to include in the calculation.</param>
-	/// <param name="extraBytes">Optional extra bytes to include at the end of the CRC calculation.</param>
-	/// <returns>The calculated CRC as a ushort.</returns>
-	public static ushort Calculate(byte[] data, int start, int length, params byte[] extraBytes)
-	{
-		ushort crc = CrcSeed;
-
-		// Accumulate CRC for the given data
-		for (int i = start; i < length; i++)
-		{
-			crc = Accumulate(crc, data[i]);
-		}
-
-		// If extra bytes are provided, include them in the CRC calculation
-		foreach (var extra in extraBytes)
-		{
-			crc = Accumulate(crc, extra);
-		}
-
-		return crc;
-	}
-
-	/// <summary>
 	/// Calculates the CRC for a span of bytes.
 	/// </summary>
 	public static ushort Calculate(ReadOnlySpan<byte> data)
@@ -90,33 +62,6 @@ internal static class X25Crc
 	}
 
 	/// <summary>
-	/// Calculates CRC for a generic ReadOnlySpan of char (String optimization).
-	/// MAVLink uses this for CRC_EXTRA calculation based on message names (ASCII).
-	/// </summary>
-	public static ushort Calculate(ReadOnlySpan<char> text)
-	{
-		ushort crc = CrcSeed;
-		foreach (char c in text)
-		{
-			// Mavlink definitions are ASCII, so simple cast is sufficient and faster than Encoding
-			crc = Accumulate(crc, (byte)c);
-		}
-		return crc;
-	}
-
-	/// <summary>
-	/// Accumulates the CRC checksum for a given string using the X.25 algorithm.
-	/// </summary>
-	/// <param name="s">The input string to accumulate the CRC for.</param>
-	/// <param name="crc">The initial CRC value to start with.</param>
-	/// <returns>The updated CRC value after processing the input string.</returns>
-	public static ushort Accumulate(ushort crc, string s)
-	{
-		var bytes = Encoding.GetEncoding(28591).GetBytes(s);
-		return bytes.Aggregate(crc, Accumulate);
-	}
-
-	/// <summary>
 	/// Accumulates the CRC checksum for a given byte using the X.25 algorithm.
 	/// </summary>
 	/// <param name="crc">The initial CRC value to start with.</param>
@@ -126,15 +71,5 @@ internal static class X25Crc
 	public static ushort Accumulate(ushort crc, byte data)
 	{
 		return (ushort)((crc >> 8) ^ _crcTable[(crc ^ data) & 0xFF]);
-	}
-
-	/// <summary>
-	/// Finalizes the CRC calculation and returns the final checksum value.
-	/// </summary>
-	/// <param name="crc">The accumulated CRC value.</param>
-	/// <returns>The final CRC checksum as a byte.</returns>
-	public static byte FinalizeCrc(ushort crc)
-	{
-		return (byte)((crc & 0xFF) ^ (crc >> 8));
 	}
 }

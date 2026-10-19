@@ -9,7 +9,7 @@ internal sealed class MavlinkSender : IDisposable, IAsyncDisposable
 	private readonly MavlinkDiagnostics _diagnostics;
 	private readonly MavlinkSigner? _signer;
 	private readonly IMavlinkRawFrameListener? _frameListener;
-	private readonly byte[] _buffer = new byte[MavlinkConstants.MAX_PAYLOAD_ARRAY_POOL_SIZE];
+	private readonly byte[] _buffer = new byte[MavlinkConstants.MAX_FRAME_LENGTH];
 	private readonly SemaphoreSlim _gate = new(1, 1);
 
 	private int _disposed;

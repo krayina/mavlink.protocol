@@ -10,8 +10,17 @@ public interface IMavlinkMessageInfo
 	string Name { get; }
 	Type MessageType { get; }
 
+	/// <summary>
+	/// Length of the base fields: the MAVLink 1 payload, and the minimum length of a MAVLink 2 one.
+	/// </summary>
 	int PayloadLength { get; }
+
+	/// <summary>
+	/// Length including extension fields: the untruncated MAVLink 2 payload.
+	/// Equals <see cref="PayloadLength"/> when the message has no extensions.
+	/// </summary>
 	int PayloadLengthWithExtensions { get; }
+
 	bool HasExtensions { get; }
 
 	int SerializePayloadV1(IMavlinkMessage message, Span<byte> destination);
