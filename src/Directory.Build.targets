@@ -17,8 +17,8 @@
     <Condition4 Condition="'$(Condition4)' == ''">false</Condition4>
 
     <!-- Define separate conditions for netstandard2.0 and netstandard2.1 -->
-    <IsNetStandard2_0Condition Condition="'$(Condition1)' == 'true' OR '$(Condition3)' == 'true'">true</IsNetStandard2_0Condition>
-    <IsNetStandard2_1Condition Condition="'$(Condition2)' == 'true' OR '$(Condition4)' == 'true'">true</IsNetStandard2_1Condition>
+    <IsNetStandard2_0Condition Condition="'$(TargetFramework)' == 'netstandard2.0'">true</IsNetStandard2_0Condition>
+    <IsNetStandard2_1Condition Condition="'$(TargetFramework)' == 'netstandard2.1'">true</IsNetStandard2_1Condition>
 
     <!-- Unified condition that checks for either netstandard2.0 or netstandard2.1 -->
     <IsNetStandardCondition Condition="'$(IsNetStandard2_0Condition)' == 'true' OR '$(IsNetStandard2_1Condition)' == 'true'">true</IsNetStandardCondition>
