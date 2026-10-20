@@ -40,7 +40,7 @@ public sealed class EscInfoPayloadSerializer
 
 		global::Mavlink.PayloadPrimitives.WriteUInt64(destination, 0, message.TimeUsec);
 
-		global::Mavlink.FixedArray4<uint> errorCount = message.ErrorCount;
+		global::Mavlink.Arrays.FixedArray4<uint> errorCount = message.ErrorCount;
 		global::Mavlink.PayloadPrimitives.WriteUInt32(destination, 8, errorCount[0]);
 		global::Mavlink.PayloadPrimitives.WriteUInt32(destination, 12, errorCount[1]);
 		global::Mavlink.PayloadPrimitives.WriteUInt32(destination, 16, errorCount[2]);
@@ -48,14 +48,14 @@ public sealed class EscInfoPayloadSerializer
 
 		global::Mavlink.PayloadPrimitives.WriteUInt16(destination, 24, message.Counter);
 
-		global::Mavlink.FixedArray4<global::Mavlink.Common.EscFailureFlagsBitmask> failureFlags = message.FailureFlags;
+		global::Mavlink.Arrays.FixedArray4<global::Mavlink.Common.EscFailureFlagsBitmask> failureFlags = message.FailureFlags;
 		global::Mavlink.PayloadPrimitives.WriteUInt16(destination, 26, failureFlags[0].Bits);
 		global::Mavlink.PayloadPrimitives.WriteUInt16(destination, 28, failureFlags[1].Bits);
 		global::Mavlink.PayloadPrimitives.WriteUInt16(destination, 30, failureFlags[2].Bits);
 		global::Mavlink.PayloadPrimitives.WriteUInt16(destination, 32, failureFlags[3].Bits);
 
 		// Per-element sentinel: an Invalid element goes out as INT16_MAX.
-		global::Mavlink.FixedArray4<global::Mavlink.Invalidatable<short>> temperature = message.Temperature;
+		global::Mavlink.Arrays.FixedArray4<global::Mavlink.Invalidatable<short>> temperature = message.Temperature;
 		global::Mavlink.PayloadPrimitives.WriteInt16(destination, 34, temperature[0].GetValueOrDefault(short.MaxValue));
 		global::Mavlink.PayloadPrimitives.WriteInt16(destination, 36, temperature[1].GetValueOrDefault(short.MaxValue));
 		global::Mavlink.PayloadPrimitives.WriteInt16(destination, 38, temperature[2].GetValueOrDefault(short.MaxValue));
@@ -81,18 +81,18 @@ public sealed class EscInfoPayloadSerializer
 		return new global::Mavlink.Common.EscInfoMavlinkMessage
 		{
 			TimeUsec = global::Mavlink.PayloadPrimitives.ReadUInt64(p, 0),
-			ErrorCount = new global::Mavlink.FixedArray4<uint>(
+			ErrorCount = new global::Mavlink.Arrays.FixedArray4<uint>(
 				global::Mavlink.PayloadPrimitives.ReadUInt32(p, 8),
 				global::Mavlink.PayloadPrimitives.ReadUInt32(p, 12),
 				global::Mavlink.PayloadPrimitives.ReadUInt32(p, 16),
 				global::Mavlink.PayloadPrimitives.ReadUInt32(p, 20)),
 			Counter = global::Mavlink.PayloadPrimitives.ReadUInt16(p, 24),
-			FailureFlags = new global::Mavlink.FixedArray4<global::Mavlink.Common.EscFailureFlagsBitmask>(
+			FailureFlags = new global::Mavlink.Arrays.FixedArray4<global::Mavlink.Common.EscFailureFlagsBitmask>(
 				global::Mavlink.Common.EscFailureFlagsBitmask.FromRaw(global::Mavlink.PayloadPrimitives.ReadUInt16(p, 26)),
 				global::Mavlink.Common.EscFailureFlagsBitmask.FromRaw(global::Mavlink.PayloadPrimitives.ReadUInt16(p, 28)),
 				global::Mavlink.Common.EscFailureFlagsBitmask.FromRaw(global::Mavlink.PayloadPrimitives.ReadUInt16(p, 30)),
 				global::Mavlink.Common.EscFailureFlagsBitmask.FromRaw(global::Mavlink.PayloadPrimitives.ReadUInt16(p, 32))),
-			Temperature = new global::Mavlink.FixedArray4<global::Mavlink.Invalidatable<short>>(
+			Temperature = new global::Mavlink.Arrays.FixedArray4<global::Mavlink.Invalidatable<short>>(
 				global::Mavlink.Invalidatable.FromWire(global::Mavlink.PayloadPrimitives.ReadInt16(p, 34), short.MaxValue),
 				global::Mavlink.Invalidatable.FromWire(global::Mavlink.PayloadPrimitives.ReadInt16(p, 36), short.MaxValue),
 				global::Mavlink.Invalidatable.FromWire(global::Mavlink.PayloadPrimitives.ReadInt16(p, 38), short.MaxValue),

@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Mavlink;
+namespace Mavlink.Arrays;
 
 /// <summary>
 /// Fixed-length array of 4 elements stored inline: the C# shape of a MAVLink <c>T[4]</c> field.

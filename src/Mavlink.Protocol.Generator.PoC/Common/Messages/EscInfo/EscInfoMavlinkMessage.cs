@@ -34,13 +34,13 @@ public readonly record struct EscInfoMavlinkMessage : IMavlinkMessage
 	/// <summary>
 	/// uint16_t[4], enum ESC_FAILURE_FLAGS (bitmask="true"): one generated bitmask per ESC.
 	/// </summary>
-	public FixedArray4<EscFailureFlagsBitmask> FailureFlags { get; init; }
+	public global::Mavlink.Arrays.FixedArray4<EscFailureFlagsBitmask> FailureFlags { get; init; }
 
-	public FixedArray4<uint> ErrorCount { get; init; }
+	public global::Mavlink.Arrays.FixedArray4<uint> ErrorCount { get; init; }
 
 	/// <summary>
 	/// Temperature of each ESC, cdegC. invalid="[INT16_MAX]" marks elements individually,
 	/// so each element is an <see cref="Invalidatable{T}"/>.
 	/// </summary>
-	public FixedArray4<Invalidatable<short>> Temperature { get; init; }
+	public global::Mavlink.Arrays.FixedArray4<Invalidatable<short>> Temperature { get; init; }
 }

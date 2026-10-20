@@ -32,19 +32,4 @@ public static class CodecThrowHelper
 		=> new ArgumentException(
 			$"Incorrect message type. Expected {expected.Name}, got {(actual is null ? "null" : actual.GetType().Name)}.",
 			"message");
-
-	/// <summary>
-	/// Index outside a fixed-length array.
-	/// </summary>
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	public static ArgumentOutOfRangeException IndexOutOfRange(int index, int length)
-		=> new ArgumentOutOfRangeException("index", index, $"Index must be in [0, {length}).");
-
-	/// <summary>
-	/// A fixed-length array was built from a span of the wrong length.
-	/// </summary>
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	public static ArgumentException LengthMismatch(int required, int actual)
-		=> new ArgumentException(
-			$"Exactly {required} elements are required; got {actual}.", "values");
 }

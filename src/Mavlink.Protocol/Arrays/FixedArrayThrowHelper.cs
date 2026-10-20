@@ -4,7 +4,7 @@
 #nullable enable
 using System.Runtime.CompilerServices;
 
-namespace Mavlink;
+namespace Mavlink.Arrays;
 
 /// <summary>
 /// Exception factories shared by the generated FixedArray types: <c>throw FixedArrayThrowHelper.X(...)</c>.
