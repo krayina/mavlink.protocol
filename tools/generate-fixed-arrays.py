@@ -538,12 +538,18 @@ def encode(text):
 
 
 def sync(path, content, check, changed):
+    # Line endings are not content: with core.autocrlf (Windows) git checks files out
+    # with CRLF. Compare without CR, and keep the file's existing line endings when
+    # rewriting it, so regenerating an unchanged file leaves it byte-identical.
     current = open(path, "rb").read() if os.path.exists(path) else None
-    if current != content:
-        changed.append(path)
-        if not check:
-            with open(path, "wb") as f:
-                f.write(content)
+    if current is not None and current.replace(b"\r\n", b"\n") == content:
+        return
+    changed.append(path)
+    if not check:
+        if current is not None and b"\r\n" in current:
+            content = content.replace(b"\n", b"\r\n")
+        with open(path, "wb") as f:
+            f.write(content)
 
 
 def main():
