@@ -61,6 +61,8 @@ public static class MavlinkDialects
 
 		public string Name => "auto";
 
+		public IReadOnlyList<IMavlinkDialect> Includes => Current.Includes;
+
 		private MavlinkDialectCompositor Current
 		{
 			get

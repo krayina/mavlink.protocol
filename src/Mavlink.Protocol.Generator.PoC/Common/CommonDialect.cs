@@ -18,6 +18,8 @@ public sealed class CommonDialect : IMavlinkDialect
 
 	public string Name => "common";
 
+	public IReadOnlyList<IMavlinkDialect> Includes => Array.Empty<IMavlinkDialect>();
+
 	public IMavlinkMessageInfo? GetInfo(uint msgId) => msgId switch
 	{
 		0 => HeartbeatMessageInfo.Instance,
