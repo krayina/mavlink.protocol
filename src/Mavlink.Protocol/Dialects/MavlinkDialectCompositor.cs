@@ -11,6 +11,11 @@ namespace Mavlink.Dialects;
 /// once, however many dialects include it), and lookups go through tables built
 /// from <see cref="IMavlinkDialect.Messages"/>.
 /// </summary>
+/// <remarks>
+/// After flattening, every message belongs to exactly one dialect, so an id or a type
+/// claimed by two different dialects is a real conflict (e.g. two vendor dialects that
+/// picked the same id) and is rejected instead of being resolved by order.
+/// </remarks>
 internal sealed class MavlinkDialectCompositor : IMavlinkDialect
 {
 	private readonly IMavlinkDialect[] _roots;
@@ -29,21 +34,27 @@ internal sealed class MavlinkDialectCompositor : IMavlinkDialect
 
 		var byId = new Dictionary<uint, IMavlinkMessageInfo>();
 		var byType = new Dictionary<Type, IMavlinkMessageInfo>();
+		var ownerById = new Dictionary<uint, IMavlinkDialect>();
+		var ownerByType = new Dictionary<Type, IMavlinkDialect>();
 
 		foreach (var dialect in Flatten(roots))
 		{
 			foreach (var info in dialect.Messages)
 			{
-				// Earlier dialects win on overlap.
-				if (!byId.TryGetValue(info.MessageId, out _))
+				if (ownerById.TryGetValue(info.MessageId, out var idOwner))
 				{
-					byId.Add(info.MessageId, info);
+					throw ConflictingMessageId(info.MessageId, idOwner, dialect);
 				}
 
-				if (!byType.TryGetValue(info.MessageType, out _))
+				if (ownerByType.TryGetValue(info.MessageType, out var typeOwner))
 				{
-					byType.Add(info.MessageType, info);
+					throw ConflictingMessageType(info.MessageType, typeOwner, dialect);
 				}
+
+				ownerById.Add(info.MessageId, dialect);
+				ownerByType.Add(info.MessageType, dialect);
+				byId.Add(info.MessageId, info);
+				byType.Add(info.MessageType, info);
 			}
 		}
 
@@ -70,35 +81,76 @@ internal sealed class MavlinkDialectCompositor : IMavlinkDialect
 
 	/// <summary>
 	/// Depth-first, pre-order: a dialect comes before the dialects it includes.
-	/// Each dialect instance is returned once; cycles are tolerated.
+	/// Each dialect instance is returned once; cycles are tolerated. Two different
+	/// instances with the same <see cref="IMavlinkDialect.Name"/> are rejected: that is
+	/// one dialect XML generated into two assemblies.
 	/// </summary>
 	private static List<IMavlinkDialect> Flatten(IMavlinkDialect[] roots)
 	{
 		var result = new List<IMavlinkDialect>();
 		var visited = new HashSet<IMavlinkDialect>(ReferenceComparer.Instance);
+		var byName = new Dictionary<string, IMavlinkDialect>(StringComparer.Ordinal);
 
 		foreach (var root in roots)
 		{
-			Visit(root ?? throw new ArgumentException("Dialects must not be null.", nameof(roots)), result, visited);
+			Visit(root ?? throw new ArgumentException("Dialects must not be null.", nameof(roots)), result, visited, byName);
 		}
 
 		return result;
 
-		static void Visit(IMavlinkDialect dialect, List<IMavlinkDialect> result, HashSet<IMavlinkDialect> visited)
+		static void Visit(
+			IMavlinkDialect dialect,
+			List<IMavlinkDialect> result,
+			HashSet<IMavlinkDialect> visited,
+			Dictionary<string, IMavlinkDialect> byName)
 		{
 			if (!visited.Add(dialect))
 			{
 				return;
 			}
 
+			// A nested compositor is transparent: only its roots matter.
+			if (dialect is MavlinkDialectCompositor nested)
+			{
+				foreach (var root in nested._roots)
+				{
+					Visit(root, result, visited, byName);
+				}
+
+				return;
+			}
+
+			if (byName.TryGetValue(dialect.Name, out var sameName))
+			{
+				throw DuplicateDialectName(sameName, dialect);
+			}
+
+			byName.Add(dialect.Name, dialect);
 			result.Add(dialect);
 
 			foreach (var include in dialect.Includes)
 			{
-				Visit(include, result, visited);
+				Visit(include, result, visited, byName);
 			}
 		}
 	}
+
+	private static ArgumentException ConflictingMessageId(uint messageId, IMavlinkDialect first, IMavlinkDialect second)
+		=> new ArgumentException(
+			$"Message id {messageId} is defined by both dialect '{first.Name}' and dialect '{second.Name}'.",
+			"dialects");
+
+	private static ArgumentException ConflictingMessageType(Type messageType, IMavlinkDialect first, IMavlinkDialect second)
+		=> new ArgumentException(
+			$"Message type {messageType.FullName} is registered by both dialect '{first.Name}' and dialect '{second.Name}'.",
+			"dialects");
+
+	private static ArgumentException DuplicateDialectName(IMavlinkDialect first, IMavlinkDialect second)
+		=> new ArgumentException(
+			$"Two different dialect instances are named '{first.Name}' " +
+			$"({first.GetType().AssemblyQualifiedName} and {second.GetType().AssemblyQualifiedName}). " +
+			"The same dialect XML is probably generated into two assemblies.",
+			"dialects");
 
 	private sealed class ReferenceComparer : IEqualityComparer<IMavlinkDialect>
 	{
