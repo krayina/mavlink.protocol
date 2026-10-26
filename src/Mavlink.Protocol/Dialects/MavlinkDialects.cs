@@ -63,6 +63,8 @@ public static class MavlinkDialects
 
 		public IReadOnlyList<IMavlinkDialect> Includes => Current.Includes;
 
+		public IReadOnlyList<IMavlinkMessageInfo> Messages => Current.Messages;
+
 		private MavlinkDialectCompositor Current
 		{
 			get

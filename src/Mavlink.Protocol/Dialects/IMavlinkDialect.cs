@@ -13,6 +13,11 @@ public interface IMavlinkDialect
 	/// </summary>
 	IReadOnlyList<IMavlinkDialect> Includes { get; }
 
+	/// <summary>
+	/// Messages defined by this dialect itself, without those of <see cref="Includes"/>.
+	/// </summary>
+	IReadOnlyList<IMavlinkMessageInfo> Messages { get; }
+
 	IMavlinkMessageInfo? GetInfo(uint msgId);
 	IMavlinkMessageInfo? GetInfo(Type type);
 }

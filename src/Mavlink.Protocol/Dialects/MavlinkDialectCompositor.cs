@@ -18,6 +18,8 @@ internal sealed class MavlinkDialectCompositor : IMavlinkDialect
 
 	public IReadOnlyList<IMavlinkDialect> Includes => _dialects;
 
+	public IReadOnlyList<IMavlinkMessageInfo> Messages => Array.Empty<IMavlinkMessageInfo>();
+
 	public IMavlinkMessageInfo? GetInfo(Type type)
 	{
 		if (_typeCache.TryGetValue(type, out var info))

@@ -20,6 +20,14 @@ public sealed class CommonDialect : IMavlinkDialect
 
 	public IReadOnlyList<IMavlinkDialect> Includes => Array.Empty<IMavlinkDialect>();
 
+	public IReadOnlyList<IMavlinkMessageInfo> Messages { get; } = new IMavlinkMessageInfo[]
+	{
+		HeartbeatMessageInfo.Instance,
+		CommandLongMessageInfo.Instance,
+		CommandAckMessageInfo.Instance,
+		EscInfoMessageInfo.Instance,
+	};
+
 	public IMavlinkMessageInfo? GetInfo(uint msgId) => msgId switch
 	{
 		0 => HeartbeatMessageInfo.Instance,
