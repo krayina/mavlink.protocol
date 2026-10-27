@@ -6,7 +6,7 @@ namespace Mavlink.Common;
 /// ESC_INFO (#290): ESC information for lower rate streaming. MAVLink 2 only (id &gt; 255).
 /// </summary>
 [global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
-public readonly record struct EscInfoMavlinkMessage : global::Mavlink.IMavlinkMessage
+public readonly partial record struct EscInfoMavlinkMessage : global::Mavlink.IMavlinkMessage
 {
 	/// <summary>
 	/// Index of the first ESC in this message (instance="true"). minValue = 0, maxValue = 60, increment = 4.

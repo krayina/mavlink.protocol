@@ -3,7 +3,7 @@
 namespace Mavlink.Minimal;
 
 [global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
-public readonly record struct HeartbeatMavlinkMessage : global::Mavlink.IMavlinkMessage
+public readonly partial record struct HeartbeatMavlinkMessage : global::Mavlink.IMavlinkMessage
 {
 	public global::Mavlink.Minimal.MavType Type { get; init; }
 	public global::Mavlink.Minimal.MavAutopilot Autopilot { get; init; }

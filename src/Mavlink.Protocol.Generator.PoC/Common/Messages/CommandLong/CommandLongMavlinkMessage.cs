@@ -3,7 +3,7 @@
 namespace Mavlink.Common;
 
 [global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
-public readonly record struct CommandLongMavlinkMessage : global::Mavlink.IMavlinkTargetRequiredMessage
+public readonly partial record struct CommandLongMavlinkMessage : global::Mavlink.IMavlinkTargetRequiredMessage
 {
 	public byte TargetSystem { get; init; }
 	public byte TargetComponent { get; init; }
