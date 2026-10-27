@@ -74,23 +74,4 @@ public sealed partial class MavlinkChannel
 			throw;
 		}
 	}
-
-	internal static IMavlinkDialect ResolveDialect(IMavlinkDialect? dialect)
-	{
-		if (dialect != null)
-		{
-			return dialect;
-		}
-
-#if NET5_0_OR_GREATER
-		return MavlinkDialects.Auto;
-#else
-		throw new ArgumentNullException(nameof(dialect),
-			"An explicit dialect is required on netstandard targets " +
-			"(automatic dialect discovery needs net5.0+). " +
-			"Pass a single dialect, e.g. CommonDialect.Instance, or merge several with " +
-			"MavlinkDialects.Combine(CommonDialect.Instance, MyCustomDialect.Instance) " +
-			"— earlier dialects win on message-id overlap.");
-#endif
-	}
 }

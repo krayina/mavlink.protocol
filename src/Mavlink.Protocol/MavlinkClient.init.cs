@@ -11,56 +11,55 @@ public sealed partial class MavlinkClient
 	/// could dispose it). For a shared channel with multiple client
 	/// identities, use <see cref="MavlinkChannel.CreateClient"/> instead —
 	/// those clients do NOT dispose the shared channel.
-	/// <c>dialect: null</c> → <see cref="MavlinkDialects.Auto"/> on net5.0+;
-	/// on netstandard an explicit dialect is required.
+	/// The channel resolves <paramref name="dialect"/> and every dialect it includes;
+	/// several dialects are merged with <see cref="MavlinkDialects.Combine"/>.
 	/// </summary>
 	public static MavlinkClient Create(
 		string connectionString,
+		IMavlinkDialect dialect,
 		byte systemId = 255,
 		byte componentId = 190,
-		IMavlinkDialect? dialect = null,
 		Action<MavlinkChannelOptions>? configure = null)
 	{
-		return Create(MavlinkEndpoint.Parse(connectionString), systemId, componentId, dialect, configure);
+		return Create(MavlinkEndpoint.Parse(connectionString), dialect, systemId, componentId, configure);
 	}
 
-	/// <inheritdoc cref="Create(string, byte, byte, IMavlinkDialect?, Action{MavlinkChannelOptions}?)"/>
+	/// <inheritdoc cref="Create(string, IMavlinkDialect, byte, byte, Action{MavlinkChannelOptions}?)"/>
 	public static MavlinkClient Create(
 		MavlinkEndpoint endpoint,
+		IMavlinkDialect dialect,
 		byte systemId = 255,
 		byte componentId = 190,
-		IMavlinkDialect? dialect = null,
 		Action<MavlinkChannelOptions>? configure = null)
 	{
-		var channel = MavlinkChannel.Create(
-			endpoint, MavlinkChannel.ResolveDialect(dialect), configure);
+		var channel = MavlinkChannel.Create(endpoint, dialect, configure);
 
 		return new MavlinkClient(
 			channel, systemId, componentId,
 			defaultSendVersion: null, ownsChannel: true);
 	}
 
-	/// <inheritdoc cref="Create(string, byte, byte, IMavlinkDialect?, Action{MavlinkChannelOptions}?)"/>
+	/// <inheritdoc cref="Create(string, IMavlinkDialect, byte, byte, Action{MavlinkChannelOptions}?)"/>
 	public static Task<MavlinkClient> ConnectAsync(
 		string connectionString,
+		IMavlinkDialect dialect,
 		byte systemId = 255,
 		byte componentId = 190,
-		IMavlinkDialect? dialect = null,
 		CancellationToken ct = default)
 	{
-		return ConnectAsync(MavlinkEndpoint.Parse(connectionString), systemId, componentId, dialect, null, ct);
+		return ConnectAsync(MavlinkEndpoint.Parse(connectionString), dialect, systemId, componentId, null, ct);
 	}
 
-	/// <inheritdoc cref="Create(string, byte, byte, IMavlinkDialect?, Action{MavlinkChannelOptions}?)"/>
+	/// <inheritdoc cref="Create(string, IMavlinkDialect, byte, byte, Action{MavlinkChannelOptions}?)"/>
 	public static async Task<MavlinkClient> ConnectAsync(
 		MavlinkEndpoint endpoint,
+		IMavlinkDialect dialect,
 		byte systemId = 255,
 		byte componentId = 190,
-		IMavlinkDialect? dialect = null,
 		Action<MavlinkChannelOptions>? configure = null,
 		CancellationToken ct = default)
 	{
-		var client = Create(endpoint, systemId, componentId, dialect, configure);
+		var client = Create(endpoint, dialect, systemId, componentId, configure);
 
 		try
 		{
