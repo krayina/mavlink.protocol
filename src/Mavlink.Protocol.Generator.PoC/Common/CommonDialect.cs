@@ -10,6 +10,7 @@
 
 namespace Mavlink.Dialects;
 
+[global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
 public sealed class CommonDialect : global::Mavlink.Dialects.IMavlinkDialect
 {
 	public static readonly CommonDialect Instance = new CommonDialect();

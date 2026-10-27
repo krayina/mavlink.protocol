@@ -4,6 +4,7 @@ namespace Mavlink.Minimal;
 
 [global::Mavlink.Dialects.Infrastructure.MavlinkEnum("MAV_MODE_FLAG")]
 [global::System.Flags]
+[global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
 public enum MavModeFlag : byte
 {
 	SafetyArmed = 128,

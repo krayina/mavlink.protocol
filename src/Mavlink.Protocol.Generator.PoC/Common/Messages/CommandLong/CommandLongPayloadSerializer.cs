@@ -5,6 +5,7 @@ namespace Mavlink.Common.Codecs.Payload;
 /// <summary>
 /// Payload codec for COMMAND_LONG (#76). Contract: <see cref="global::Mavlink.IMavlinkPayloadSerializer{T}"/>.
 /// </summary>
+[global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
 public sealed class CommandLongPayloadSerializer
 	: global::Mavlink.IMavlinkPayloadSerializer<global::Mavlink.Common.CommandLongMavlinkMessage>
 {

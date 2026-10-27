@@ -2,6 +2,7 @@
 #nullable enable
 namespace Mavlink.Common;
 
+[global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
 public readonly record struct CommandAckMavlinkMessage : global::Mavlink.IMavlinkTargetedMessage
 {
 	public global::Mavlink.Common.MavCmd Command { get; init; }

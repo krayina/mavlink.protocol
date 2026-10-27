@@ -3,6 +3,7 @@
 namespace Mavlink.Minimal;
 
 [global::Mavlink.Dialects.Infrastructure.MavlinkEnum("MAV_TYPE")]
+[global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
 public enum MavType : byte
 {
 	Generic = 0,

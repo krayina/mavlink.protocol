@@ -2,6 +2,7 @@
 #nullable enable
 namespace Mavlink.Minimal.Codecs.Metadata;
 
+[global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
 public sealed class HeartbeatMessageInfo : global::Mavlink.IMavlinkMessageInfo<global::Mavlink.Minimal.HeartbeatMavlinkMessage>
 {
 	public static readonly HeartbeatMessageInfo Instance = new HeartbeatMessageInfo();

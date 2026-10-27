@@ -9,6 +9,7 @@
 
 namespace Mavlink.Dialects;
 
+[global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
 public sealed class MinimalDialect : global::Mavlink.Dialects.IMavlinkDialect
 {
 	public static readonly MinimalDialect Instance = new MinimalDialect();

@@ -3,6 +3,7 @@
 namespace Mavlink.Common;
 
 [global::Mavlink.Dialects.Infrastructure.MavlinkEnum("MAV_RESULT")]
+[global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
 public enum MavResult : byte
 {
 	Accepted = 0,

@@ -9,6 +9,7 @@ namespace Mavlink.Common.Codecs.Payload;
 /// The id does not fit a MAVLink 1 header, which the frame writer enforces. The V1 methods
 /// still handle the (identical) base payload, so this layer stays free of framing rules.
 /// </remarks>
+[global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
 public sealed class EscInfoPayloadSerializer
 	: global::Mavlink.IMavlinkPayloadSerializer<global::Mavlink.Common.EscInfoMavlinkMessage>
 {

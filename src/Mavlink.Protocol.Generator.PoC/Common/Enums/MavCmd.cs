@@ -3,6 +3,7 @@
 namespace Mavlink.Common;
 
 [global::Mavlink.Dialects.Infrastructure.MavlinkEnum("MAV_CMD")]
+[global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
 public enum MavCmd : ushort
 {
 	NavWaypoint = 16,

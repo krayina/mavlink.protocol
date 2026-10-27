@@ -2,7 +2,7 @@
 #nullable enable
 namespace Mavlink.Minimal;
 
-//[MavlinkGenerated(dialect: "common", xmlHash: "a1b2c3...")]
+[global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
 public readonly record struct HeartbeatMavlinkMessage : global::Mavlink.IMavlinkMessage
 {
 	public global::Mavlink.Minimal.MavType Type { get; init; }

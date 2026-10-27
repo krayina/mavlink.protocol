@@ -5,6 +5,7 @@ namespace Mavlink.Minimal.Codecs.Payload;
 /// <summary>
 /// Payload codec for HEARTBEAT (#0). Contract: <see cref="global::Mavlink.IMavlinkPayloadSerializer{T}"/>.
 /// </summary>
+[global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
 public sealed class HeartbeatPayloadSerializer
 	: global::Mavlink.IMavlinkPayloadSerializer<global::Mavlink.Minimal.HeartbeatMavlinkMessage>
 {

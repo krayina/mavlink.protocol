@@ -6,6 +6,7 @@ namespace Mavlink.Common;
 /// Bitmask over <see cref="EscFailureFlags"/>. Unknown bits received from the wire are preserved;
 /// the wire width of a particular field is enforced by that field's serializer.
 /// </summary>
+[global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
 public readonly struct EscFailureFlagsBitmask : global::System.IEquatable<EscFailureFlagsBitmask>
 #if NET6_0_OR_GREATER
 	, global::System.ISpanFormattable

@@ -2,7 +2,7 @@
 #nullable enable
 namespace Mavlink.Common;
 
-//[MavlinkGenerated(dialect: "common", xmlHash: "a1b2c3...")]
+[global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
 public readonly record struct CommandLongMavlinkMessage : global::Mavlink.IMavlinkTargetRequiredMessage
 {
 	public byte TargetSystem { get; init; }

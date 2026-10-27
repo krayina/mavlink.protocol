@@ -2,6 +2,7 @@
 #nullable enable
 namespace Mavlink.Common.Codecs.Metadata;
 
+[global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
 public sealed class CommandAckMessageInfo : global::Mavlink.IMavlinkTargetedMessageInfo<global::Mavlink.Common.CommandAckMavlinkMessage>
 {
 	public static readonly CommandAckMessageInfo Instance = new CommandAckMessageInfo();
