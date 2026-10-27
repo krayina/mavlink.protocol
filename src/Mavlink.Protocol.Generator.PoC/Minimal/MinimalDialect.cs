@@ -1,9 +1,6 @@
-﻿using Mavlink.Minimal;
-using Mavlink.Minimal.Codecs.Metadata;
+﻿namespace Mavlink.Dialects;
 
-namespace Mavlink.Dialects;
-
-public sealed class MinimalDialect : IMavlinkDialect
+public sealed class MinimalDialect : global::Mavlink.Dialects.IMavlinkDialect
 {
 	public static readonly MinimalDialect Instance = new MinimalDialect();
 
@@ -11,22 +8,23 @@ public sealed class MinimalDialect : IMavlinkDialect
 
 	public string Name => "minimal";
 
-	public IReadOnlyList<IMavlinkDialect> Includes => Array.Empty<IMavlinkDialect>();
+	public global::System.Collections.Generic.IReadOnlyList<global::Mavlink.Dialects.IMavlinkDialect> Includes
+		=> global::System.Array.Empty<global::Mavlink.Dialects.IMavlinkDialect>();
 
-	public IReadOnlyList<IMavlinkMessageInfo> Messages { get; } = new IMavlinkMessageInfo[]
+	public global::System.Collections.Generic.IReadOnlyList<global::Mavlink.IMavlinkMessageInfo> Messages { get; } = new global::Mavlink.IMavlinkMessageInfo[]
 	{
-		HeartbeatMessageInfo.Instance,
+		global::Mavlink.Minimal.Codecs.Metadata.HeartbeatMessageInfo.Instance,
 	};
 
-	public IMavlinkMessageInfo? GetInfo(uint msgId) => msgId switch
+	public global::Mavlink.IMavlinkMessageInfo? GetInfo(uint msgId) => msgId switch
 	{
-		0 => HeartbeatMessageInfo.Instance,
+		0 => global::Mavlink.Minimal.Codecs.Metadata.HeartbeatMessageInfo.Instance,
 		_ => null
 	};
 
-	public IMavlinkMessageInfo? GetInfo(Type type)
+	public global::Mavlink.IMavlinkMessageInfo? GetInfo(global::System.Type type)
 	{
-		if (type == typeof(HeartbeatMavlinkMessage)) return HeartbeatMessageInfo.Instance;
+		if (type == typeof(global::Mavlink.Minimal.HeartbeatMavlinkMessage)) return global::Mavlink.Minimal.Codecs.Metadata.HeartbeatMessageInfo.Instance;
 		return null;
 	}
 }

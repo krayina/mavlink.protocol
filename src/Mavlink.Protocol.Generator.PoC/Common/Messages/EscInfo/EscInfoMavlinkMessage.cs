@@ -4,7 +4,7 @@
 /// ESC_INFO (#290): ESC information for lower rate streaming. MAVLink 2 only (id &gt; 255).
 /// </summary>
 //[MavlinkGenerated(dialect: "common", xmlHash: "a1b2c3...")]
-public readonly record struct EscInfoMavlinkMessage : IMavlinkMessage
+public readonly record struct EscInfoMavlinkMessage : global::Mavlink.IMavlinkMessage
 {
 	/// <summary>
 	/// Index of the first ESC in this message (instance="true"). minValue = 0, maxValue = 60, increment = 4.
@@ -24,17 +24,17 @@ public readonly record struct EscInfoMavlinkMessage : IMavlinkMessage
 	/// </summary>
 	public byte Count { get; init; }
 
-	public EscConnectionType ConnectionType { get; init; }
+	public global::Mavlink.Common.EscConnectionType ConnectionType { get; init; }
 
 	/// <summary>
 	/// Online/offline status of each ESC: display="bitmask" without an enum.
 	/// </summary>
-	public ByteBitmask Info { get; init; }
+	public global::Mavlink.ByteBitmask Info { get; init; }
 
 	/// <summary>
 	/// uint16_t[4], enum ESC_FAILURE_FLAGS (bitmask="true"): one generated bitmask per ESC.
 	/// </summary>
-	public global::Mavlink.Arrays.FixedArray4<EscFailureFlagsBitmask> FailureFlags { get; init; }
+	public global::Mavlink.Arrays.FixedArray4<global::Mavlink.Common.EscFailureFlagsBitmask> FailureFlags { get; init; }
 
 	public global::Mavlink.Arrays.FixedArray4<uint> ErrorCount { get; init; }
 
@@ -42,5 +42,5 @@ public readonly record struct EscInfoMavlinkMessage : IMavlinkMessage
 	/// Temperature of each ESC, cdegC. invalid="[INT16_MAX]" marks elements individually,
 	/// so each element is an <see cref="Invalidatable{T}"/>.
 	/// </summary>
-	public global::Mavlink.Arrays.FixedArray4<Invalidatable<short>> Temperature { get; init; }
+	public global::Mavlink.Arrays.FixedArray4<global::Mavlink.Invalidatable<short>> Temperature { get; init; }
 }

@@ -1,9 +1,6 @@
-﻿using Mavlink.Common;
-using Mavlink.Common.Codecs.Metadata;
+﻿namespace Mavlink.Dialects;
 
-namespace Mavlink.Dialects;
-
-public sealed class CommonDialect : IMavlinkDialect
+public sealed class CommonDialect : global::Mavlink.Dialects.IMavlinkDialect
 {
 	public static readonly CommonDialect Instance = new CommonDialect();
 
@@ -11,31 +8,31 @@ public sealed class CommonDialect : IMavlinkDialect
 
 	public string Name => "common";
 
-	public IReadOnlyList<IMavlinkDialect> Includes { get; } = new IMavlinkDialect[]
+	public global::System.Collections.Generic.IReadOnlyList<global::Mavlink.Dialects.IMavlinkDialect> Includes { get; } = new global::Mavlink.Dialects.IMavlinkDialect[]
 	{
-		MinimalDialect.Instance,
+		global::Mavlink.Dialects.MinimalDialect.Instance,
 	};
 
-	public IReadOnlyList<IMavlinkMessageInfo> Messages { get; } = new IMavlinkMessageInfo[]
+	public global::System.Collections.Generic.IReadOnlyList<global::Mavlink.IMavlinkMessageInfo> Messages { get; } = new global::Mavlink.IMavlinkMessageInfo[]
 	{
-		CommandLongMessageInfo.Instance,
-		CommandAckMessageInfo.Instance,
-		EscInfoMessageInfo.Instance,
+		global::Mavlink.Common.Codecs.Metadata.CommandLongMessageInfo.Instance,
+		global::Mavlink.Common.Codecs.Metadata.CommandAckMessageInfo.Instance,
+		global::Mavlink.Common.Codecs.Metadata.EscInfoMessageInfo.Instance,
 	};
 
-	public IMavlinkMessageInfo? GetInfo(uint msgId) => msgId switch
+	public global::Mavlink.IMavlinkMessageInfo? GetInfo(uint msgId) => msgId switch
 	{
-		76 => CommandLongMessageInfo.Instance,
-		77 => CommandAckMessageInfo.Instance,
-		290 => EscInfoMessageInfo.Instance,
+		76 => global::Mavlink.Common.Codecs.Metadata.CommandLongMessageInfo.Instance,
+		77 => global::Mavlink.Common.Codecs.Metadata.CommandAckMessageInfo.Instance,
+		290 => global::Mavlink.Common.Codecs.Metadata.EscInfoMessageInfo.Instance,
 		_ => null
 	};
 
-	public IMavlinkMessageInfo? GetInfo(Type type)
+	public global::Mavlink.IMavlinkMessageInfo? GetInfo(global::System.Type type)
 	{
-		if (type == typeof(CommandLongMavlinkMessage)) return CommandLongMessageInfo.Instance;
-		if (type == typeof(CommandAckMavlinkMessage)) return CommandAckMessageInfo.Instance;
-		if (type == typeof(EscInfoMavlinkMessage)) return EscInfoMessageInfo.Instance;
+		if (type == typeof(global::Mavlink.Common.CommandLongMavlinkMessage)) return global::Mavlink.Common.Codecs.Metadata.CommandLongMessageInfo.Instance;
+		if (type == typeof(global::Mavlink.Common.CommandAckMavlinkMessage)) return global::Mavlink.Common.Codecs.Metadata.CommandAckMessageInfo.Instance;
+		if (type == typeof(global::Mavlink.Common.EscInfoMavlinkMessage)) return global::Mavlink.Common.Codecs.Metadata.EscInfoMessageInfo.Instance;
 		return null;
 	}
 }

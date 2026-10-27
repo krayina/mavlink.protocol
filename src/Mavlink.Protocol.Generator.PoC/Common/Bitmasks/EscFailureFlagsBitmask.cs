@@ -6,11 +6,11 @@ namespace Mavlink.Common;
 /// Bitmask over <see cref="EscFailureFlags"/>. Unknown bits received from the wire are preserved;
 /// the wire width of a particular field is enforced by that field's serializer.
 /// </summary>
-public readonly struct EscFailureFlagsBitmask : IEquatable<EscFailureFlagsBitmask>
+public readonly struct EscFailureFlagsBitmask : global::System.IEquatable<EscFailureFlagsBitmask>
 #if NET6_0_OR_GREATER
-	, ISpanFormattable
+	, global::System.ISpanFormattable
 #else
-	, IFormattable
+	, global::System.IFormattable
 #endif
 {
 	/// <summary>
@@ -25,22 +25,22 @@ public readonly struct EscFailureFlagsBitmask : IEquatable<EscFailureFlagsBitmas
 
 	// One entry per set bit of DefinedMask, sorted by bit ascending.
 	// BitmaskDisplay relies on this ordering for O(1) lookup.
-	private static readonly BitmaskEntry[] Entries =
+	private static readonly global::Mavlink.BitmaskEntry[] Entries =
 	{
-		new(0, nameof(EscFailureFlags.OverCurrent), "ESC_FAILURE_OVER_CURRENT"),
-		new(1, nameof(EscFailureFlags.OverVoltage), "ESC_FAILURE_OVER_VOLTAGE"),
-		new(2, nameof(EscFailureFlags.OverTemperature), "ESC_FAILURE_OVER_TEMPERATURE"),
-		new(3, nameof(EscFailureFlags.OverRpm), "ESC_FAILURE_OVER_RPM"),
-		new(4, nameof(EscFailureFlags.InconsistentCmd), "ESC_FAILURE_INCONSISTENT_CMD"),
-		new(5, nameof(EscFailureFlags.MotorStuck), "ESC_FAILURE_MOTOR_STUCK"),
-		new(6, nameof(EscFailureFlags.Generic), "ESC_FAILURE_GENERIC"),
+		new(0, nameof(global::Mavlink.Common.EscFailureFlags.OverCurrent), "ESC_FAILURE_OVER_CURRENT"),
+		new(1, nameof(global::Mavlink.Common.EscFailureFlags.OverVoltage), "ESC_FAILURE_OVER_VOLTAGE"),
+		new(2, nameof(global::Mavlink.Common.EscFailureFlags.OverTemperature), "ESC_FAILURE_OVER_TEMPERATURE"),
+		new(3, nameof(global::Mavlink.Common.EscFailureFlags.OverRpm), "ESC_FAILURE_OVER_RPM"),
+		new(4, nameof(global::Mavlink.Common.EscFailureFlags.InconsistentCmd), "ESC_FAILURE_INCONSISTENT_CMD"),
+		new(5, nameof(global::Mavlink.Common.EscFailureFlags.MotorStuck), "ESC_FAILURE_MOTOR_STUCK"),
+		new(6, nameof(global::Mavlink.Common.EscFailureFlags.Generic), "ESC_FAILURE_GENERIC"),
 	};
 
 	private readonly ushort _bits;
 
 	private EscFailureFlagsBitmask(ushort bits) => _bits = bits;
 
-	public EscFailureFlagsBitmask(EscFailureFlags value) : this((ushort)value) { }
+	public EscFailureFlagsBitmask(global::Mavlink.Common.EscFailureFlags value) : this((ushort)value) { }
 
 	public static EscFailureFlagsBitmask Empty => default;
 
@@ -54,9 +54,9 @@ public readonly struct EscFailureFlagsBitmask : IEquatable<EscFailureFlagsBitmas
 	/// <summary>
 	/// Enum view of the mask (unknown bits included, as the enum is as wide as the storage).
 	/// </summary>
-	public EscFailureFlags Value => (EscFailureFlags)_bits;
+	public global::Mavlink.Common.EscFailureFlags Value => (global::Mavlink.Common.EscFailureFlags)_bits;
 
-	public int Count => BitHelper.PopCount((ulong)(_bits & DefinedMask));
+	public int Count => global::Mavlink.BitHelper.PopCount((ulong)(_bits & DefinedMask));
 	public bool IsEmpty => _bits == 0;
 	public ushort UnknownBits => (ushort)(_bits & ~DefinedMask);
 	public bool HasUnknownBits => UnknownBits != 0;
@@ -64,23 +64,23 @@ public readonly struct EscFailureFlagsBitmask : IEquatable<EscFailureFlagsBitmas
 	/// <summary>
 	/// True if every bit of <paramref name="flag"/> is set. Works for composite values too.
 	/// </summary>
-	public bool Has(EscFailureFlags flag)
+	public bool Has(global::Mavlink.Common.EscFailureFlags flag)
 	{
 		ushort f = (ushort)flag;
 		return f != 0 && (_bits & f) == f;
 	}
 
-	public bool HasAny(EscFailureFlags flags) => (_bits & (ushort)flags) != 0;
+	public bool HasAny(global::Mavlink.Common.EscFailureFlags flags) => (_bits & (ushort)flags) != 0;
 
-	public EscFailureFlagsBitmask With(EscFailureFlags flag, bool value) => value
+	public EscFailureFlagsBitmask With(global::Mavlink.Common.EscFailureFlags flag, bool value) => value
 		? new((ushort)(_bits | (ushort)flag))
 		: new((ushort)(_bits & ~(ushort)flag));
 
-	public FlagEnumerator<EscFailureFlags> GetEnumerator() => new((ulong)(_bits & DefinedMask));
+	public global::Mavlink.FlagEnumerator<global::Mavlink.Common.EscFailureFlags> GetEnumerator() => new((ulong)(_bits & DefinedMask));
 
-	public BitmaskDisplay ToDisplay() => BitmaskDisplay.Named(_bits, Width, DefinedMask, Entries);
+	public global::Mavlink.BitmaskDisplay ToDisplay() => global::Mavlink.BitmaskDisplay.Named(_bits, Width, DefinedMask, Entries);
 
-	public static implicit operator EscFailureFlagsBitmask(EscFailureFlags value) => new(value);
+	public static implicit operator EscFailureFlagsBitmask(global::Mavlink.Common.EscFailureFlags value) => new(value);
 
 	public static EscFailureFlagsBitmask operator |(EscFailureFlagsBitmask l, EscFailureFlagsBitmask r) => new((ushort)(l._bits | r._bits));
 	public static EscFailureFlagsBitmask operator &(EscFailureFlagsBitmask l, EscFailureFlagsBitmask r) => new((ushort)(l._bits & r._bits));
@@ -98,11 +98,11 @@ public readonly struct EscFailureFlagsBitmask : IEquatable<EscFailureFlagsBitmas
 	public static bool operator !=(EscFailureFlagsBitmask l, EscFailureFlagsBitmask r) => l._bits != r._bits;
 
 	public override string ToString() => ToDisplay().ToString();
-	public string ToString(string? format, IFormatProvider? provider) => ToDisplay().ToString(format, provider);
+	public string ToString(string? format, global::System.IFormatProvider? provider) => ToDisplay().ToString(format, provider);
 
 #if NET6_0_OR_GREATER
-	public bool TryFormat(Span<char> destination, out int charsWritten,
-		ReadOnlySpan<char> format, IFormatProvider? provider) =>
+	public bool TryFormat(global::System.Span<char> destination, out int charsWritten,
+		global::System.ReadOnlySpan<char> format, global::System.IFormatProvider? provider) =>
 		ToDisplay().TryFormat(destination, out charsWritten, format, provider);
 #endif
 }

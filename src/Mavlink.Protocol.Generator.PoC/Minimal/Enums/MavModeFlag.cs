@@ -1,6 +1,6 @@
 ﻿namespace Mavlink.Minimal;
 
-[Flags]
+[global::System.Flags]
 public enum MavModeFlag : byte
 {
 	SafetyArmed = 128,

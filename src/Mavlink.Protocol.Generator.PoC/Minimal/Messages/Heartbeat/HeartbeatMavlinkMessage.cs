@@ -1,17 +1,17 @@
 ﻿namespace Mavlink.Minimal;
 
 //[MavlinkGenerated(dialect: "common", xmlHash: "a1b2c3...")]
-public readonly record struct HeartbeatMavlinkMessage : IMavlinkMessage
+public readonly record struct HeartbeatMavlinkMessage : global::Mavlink.IMavlinkMessage
 {
-	public MavType Type { get; init; }
-	public MavAutopilot Autopilot { get; init; }
+	public global::Mavlink.Minimal.MavType Type { get; init; }
+	public global::Mavlink.Minimal.MavAutopilot Autopilot { get; init; }
 
 	// display="bitmask" + MAV_MODE_FLAG bitmask="true" -> generated enum bitmask.
 	// MavModeFlag converts implicitly, so `BaseMode = MavModeFlag.SafetyArmed | ...` still works.
-	public MavModeFlagBitmask BaseMode { get; init; }
+	public global::Mavlink.Minimal.MavModeFlagBitmask BaseMode { get; init; }
 
 	public uint CustomMode { get; init; }
-	public MavState SystemStatus { get; init; }
+	public global::Mavlink.Minimal.MavState SystemStatus { get; init; }
 
 	/// <summary>
 	/// MAVLink version of the sender (uint8_t_mavlink_version). Read-only for users: the

@@ -1,7 +1,7 @@
 ﻿namespace Mavlink.Common;
 
 // Underlying type = widest wire type the enum is used with (ESC_INFO.failure_flags: uint16_t[4]).
-[Flags]
+[global::System.Flags]
 public enum EscFailureFlags : ushort
 {
 	None = 0,
