@@ -1,4 +1,4 @@
-﻿namespace Mavlink.Common;
+﻿namespace Mavlink.Minimal;
 
 public enum MavAutopilot : byte
 {

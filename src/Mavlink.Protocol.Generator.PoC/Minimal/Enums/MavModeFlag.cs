@@ -1,4 +1,4 @@
-﻿namespace Mavlink.Common;
+﻿namespace Mavlink.Minimal;
 
 [Flags]
 public enum MavModeFlag : byte

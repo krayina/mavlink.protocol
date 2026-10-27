@@ -1,4 +1,4 @@
-﻿namespace Mavlink.Common;
+﻿namespace Mavlink.Minimal;
 
 //[MavlinkGenerated(dialect: "common", xmlHash: "a1b2c3...")]
 public readonly record struct HeartbeatMavlinkMessage : IMavlinkMessage

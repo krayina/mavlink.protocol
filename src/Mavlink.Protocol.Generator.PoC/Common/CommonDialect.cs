@@ -1,5 +1,7 @@
 ﻿using Mavlink.Common;
 using Mavlink.Common.Codecs.Metadata;
+using Mavlink.Minimal;
+using Mavlink.Minimal.Codecs.Metadata;
 
 namespace Mavlink.Dialects;
 
