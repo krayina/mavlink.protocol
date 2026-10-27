@@ -2,6 +2,7 @@
 #nullable enable
 namespace Mavlink.Minimal;
 
+[global::Mavlink.Dialects.Infrastructure.MavlinkEnum("MAV_STATE")]
 public enum MavState : byte
 {
 	Uninit = 0,

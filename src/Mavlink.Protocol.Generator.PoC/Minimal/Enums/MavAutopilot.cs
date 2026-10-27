@@ -2,6 +2,7 @@
 #nullable enable
 namespace Mavlink.Minimal;
 
+[global::Mavlink.Dialects.Infrastructure.MavlinkEnum("MAV_AUTOPILOT")]
 public enum MavAutopilot : byte
 {
 	Generic = 0,

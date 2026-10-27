@@ -2,6 +2,7 @@
 #nullable enable
 namespace Mavlink.Common;
 
+[global::Mavlink.Dialects.Infrastructure.MavlinkEnum("MAV_RESULT")]
 public enum MavResult : byte
 {
 	Accepted = 0,

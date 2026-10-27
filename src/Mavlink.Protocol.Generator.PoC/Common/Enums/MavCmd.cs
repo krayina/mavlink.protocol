@@ -2,6 +2,7 @@
 #nullable enable
 namespace Mavlink.Common;
 
+[global::Mavlink.Dialects.Infrastructure.MavlinkEnum("MAV_CMD")]
 public enum MavCmd : ushort
 {
 	NavWaypoint = 16,

@@ -2,6 +2,7 @@
 #nullable enable
 namespace Mavlink.Ardupilotmega;
 
+[global::Mavlink.Dialects.Infrastructure.MavlinkEnum("MAV_CMD")]
 public enum MavCmd : ushort
 {
 	NavWaypoint = (ushort)global::Mavlink.Common.MavCmd.NavWaypoint,

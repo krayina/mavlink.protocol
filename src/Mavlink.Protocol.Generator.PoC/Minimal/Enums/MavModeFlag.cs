@@ -2,6 +2,7 @@
 #nullable enable
 namespace Mavlink.Minimal;
 
+[global::Mavlink.Dialects.Infrastructure.MavlinkEnum("MAV_MODE_FLAG")]
 [global::System.Flags]
 public enum MavModeFlag : byte
 {

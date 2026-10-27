@@ -2,6 +2,7 @@
 #nullable enable
 namespace Mavlink.Common;
 
+[global::Mavlink.Dialects.Infrastructure.MavlinkEnum("ESC_CONNECTION_TYPE")]
 public enum EscConnectionType : byte
 {
 	Ppm = 0,

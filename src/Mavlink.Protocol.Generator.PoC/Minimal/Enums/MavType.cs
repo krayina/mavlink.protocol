@@ -2,6 +2,7 @@
 #nullable enable
 namespace Mavlink.Minimal;
 
+[global::Mavlink.Dialects.Infrastructure.MavlinkEnum("MAV_TYPE")]
 public enum MavType : byte
 {
 	Generic = 0,
