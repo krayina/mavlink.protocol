@@ -53,9 +53,9 @@ public readonly struct MavModeFlagBitmask : global::System.IEquatable<MavModeFla
 	public byte Bits => _bits;
 
 	/// <summary>
-	/// Enum view of the mask. Bits outside the enum's width are dropped; see <see cref="UnknownBits"/>.
+	/// Enum view of the mask (unknown bits included, as the enum is as wide as the storage).
 	/// </summary>
-	public global::Mavlink.Minimal.MavModeFlag Value => (global::Mavlink.Minimal.MavModeFlag)unchecked((byte)_bits);
+	public global::Mavlink.Minimal.MavModeFlag Value => (global::Mavlink.Minimal.MavModeFlag)_bits;
 
 	public int Count => global::Mavlink.BitHelper.PopCount((ulong)(_bits & DefinedMask));
 	public bool IsEmpty => _bits == 0;
