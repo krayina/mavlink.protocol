@@ -5,8 +5,8 @@ namespace Mavlink.Transport;
 /// <summary>
 /// A strongly-typed, transport-specific description of where and how to connect.
 ///
-/// Tier 1 (simplest):  MavlinkChannel.Create("udp://:14550")
-/// Tier 2 (typed):     MavlinkChannel.Create(new UdpEndpoint(14550))
+/// Tier 1 (simplest):  MavlinkChannel.Create("udp://:14550", CommonDialect.Instance)
+/// Tier 2 (typed):     MavlinkChannel.Create(new UdpEndpoint(14550), CommonDialect.Instance)
 /// Tier 3 (full):      MavlinkChannel.Create(new MavlinkChannelOptions { PortProvider = ... })
 ///
 /// This base type only tokenizes the string (scheme / body / query) and routes
