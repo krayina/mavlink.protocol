@@ -18,8 +18,9 @@ public static class MavlinkDialects
 			throw new ArgumentException("At least one dialect is required.", nameof(dialects));
 		}
 
-		return dialects.Length == 1
-			? dialects[0]
+		// A single dialect without includes already resolves everything by itself.
+		return dialects.Length == 1 && dialects[0] is { Includes.Count: 0 } single
+			? single
 			: new MavlinkDialectCompositor(dialects);
 	}
 
