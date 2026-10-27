@@ -1,11 +1,11 @@
 ﻿namespace Mavlink.Ardupilotmega;
 
-public enum MavCmd : uint
+public enum MavCmd : ushort
 {
-	NavWaypoint = (uint)Common.MavCmd.NavWaypoint,
-	NavReturnToLaunch = (uint)Common.MavCmd.NavReturnToLaunch,
-	NavTakeoff = (uint)Common.MavCmd.NavTakeoff,
-	ComponentArmDisarm = (uint)Common.MavCmd.ComponentArmDisarm,
-	RequestMessage = (uint)Common.MavCmd.RequestMessage,
+	NavWaypoint = (ushort)Common.MavCmd.NavWaypoint,
+	NavReturnToLaunch = (ushort)Common.MavCmd.NavReturnToLaunch,
+	NavTakeoff = (ushort)Common.MavCmd.NavTakeoff,
+	ComponentArmDisarm = (ushort)Common.MavCmd.ComponentArmDisarm,
+	RequestMessage = (ushort)Common.MavCmd.RequestMessage,
 	DoParachute = 208
 }
