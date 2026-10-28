@@ -38,6 +38,12 @@
     <None Include="Legacy/**" />
   </ItemGroup>
 
+  <!-- Release tracking for the generator's diagnostics (RS2008). -->
+  <ItemGroup>
+    <AdditionalFiles Include="Diagnostics/AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="Diagnostics/AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Mavlink.Protocol.Generator.Tests" />
   </ItemGroup>
