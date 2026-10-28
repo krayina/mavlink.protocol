@@ -28,6 +28,7 @@ public sealed class CommonDialect : global::Mavlink.Dialects.IMavlinkDialect
 	{
 		global::Mavlink.Common.Codecs.Metadata.CommandLongMessageInfo.Instance,
 		global::Mavlink.Common.Codecs.Metadata.CommandAckMessageInfo.Instance,
+		global::Mavlink.Common.Codecs.Metadata.StatustextMessageInfo.Instance,
 		global::Mavlink.Common.Codecs.Metadata.EscInfoMessageInfo.Instance,
 	};
 
@@ -35,6 +36,7 @@ public sealed class CommonDialect : global::Mavlink.Dialects.IMavlinkDialect
 	{
 		76 => global::Mavlink.Common.Codecs.Metadata.CommandLongMessageInfo.Instance,
 		77 => global::Mavlink.Common.Codecs.Metadata.CommandAckMessageInfo.Instance,
+		253 => global::Mavlink.Common.Codecs.Metadata.StatustextMessageInfo.Instance,
 		290 => global::Mavlink.Common.Codecs.Metadata.EscInfoMessageInfo.Instance,
 		_ => null
 	};
@@ -43,6 +45,7 @@ public sealed class CommonDialect : global::Mavlink.Dialects.IMavlinkDialect
 	{
 		if (type == typeof(global::Mavlink.Common.CommandLongMavlinkMessage)) return global::Mavlink.Common.Codecs.Metadata.CommandLongMessageInfo.Instance;
 		if (type == typeof(global::Mavlink.Common.CommandAckMavlinkMessage)) return global::Mavlink.Common.Codecs.Metadata.CommandAckMessageInfo.Instance;
+		if (type == typeof(global::Mavlink.Common.StatustextMavlinkMessage)) return global::Mavlink.Common.Codecs.Metadata.StatustextMessageInfo.Instance;
 		if (type == typeof(global::Mavlink.Common.EscInfoMavlinkMessage)) return global::Mavlink.Common.Codecs.Metadata.EscInfoMessageInfo.Instance;
 		return null;
 	}
