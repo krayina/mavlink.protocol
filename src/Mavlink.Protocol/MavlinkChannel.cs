@@ -58,6 +58,10 @@ public sealed partial class MavlinkChannel : IDisposable, IAsyncDisposable
 
 		options.Validate();
 
+		// Resolve includes once: a dialect passed directly also resolves the messages
+		// of the dialects it includes.
+		var dialect = MavlinkDialects.Combine(options.Dialect);
+
 		var provider = options.PortProvider;
 		var connection = new MavlinkConnection(
 			provider,
@@ -70,7 +74,7 @@ public sealed partial class MavlinkChannel : IDisposable, IAsyncDisposable
 		ConnectionWatchdog? watchdog = null;
 		MavlinkNodeRegistry? registry = null;
 
-		var eventBus = new MavlinkEventBus(options.Dialect);
+		var eventBus = new MavlinkEventBus(dialect);
 		var diagnostics = new MavlinkDiagnostics();
 
 		if (provider.CanWrite)
@@ -105,12 +109,12 @@ public sealed partial class MavlinkChannel : IDisposable, IAsyncDisposable
 				: null;
 
 			receiver = new MavlinkReceiver(
-				connection.Input, options.Dialect, diagnostics, stage, stage, options.FrameListener, verifier);
+				connection.Input, dialect, diagnostics, stage, stage, options.FrameListener, verifier);
 		}
 
 		return new MavlinkChannel(
 			connection,
-			options.Dialect,
+			dialect,
 			sender,
 			receiver,
 			dispatcher,

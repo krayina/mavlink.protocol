@@ -2,6 +2,7 @@
 #nullable enable
 namespace Mavlink.Common.Codecs.Metadata;
 
+[global::System.CodeDom.Compiler.GeneratedCode("Mavlink.Protocol.Generator", "1.0.0")]
 public sealed class EscInfoMessageInfo : global::Mavlink.IMavlinkMessageInfo<global::Mavlink.Common.EscInfoMavlinkMessage>
 {
 	public static readonly EscInfoMessageInfo Instance = new EscInfoMessageInfo();
