@@ -74,4 +74,23 @@ public sealed partial class MavlinkChannel
 			throw;
 		}
 	}
+
+	/// <summary>
+	/// Creates a channel for several dialects and everything they include; the same as passing
+	/// <see cref="MavlinkDialects.Combine"/> of them.
+	/// </summary>
+	public static MavlinkChannel Create(string connectionString, params IMavlinkDialect[] dialects)
+		=> Create(MavlinkEndpoint.Parse(connectionString), MavlinkDialects.Combine(dialects));
+
+	/// <inheritdoc cref="Create(string, IMavlinkDialect[])"/>
+	public static MavlinkChannel Create(MavlinkEndpoint endpoint, params IMavlinkDialect[] dialects)
+		=> Create(endpoint, MavlinkDialects.Combine(dialects));
+
+	/// <inheritdoc cref="Create(string, IMavlinkDialect[])"/>
+	public static Task<MavlinkChannel> ConnectAsync(string connectionString, params IMavlinkDialect[] dialects)
+		=> ConnectAsync(MavlinkEndpoint.Parse(connectionString), MavlinkDialects.Combine(dialects));
+
+	/// <inheritdoc cref="Create(string, IMavlinkDialect[])"/>
+	public static Task<MavlinkChannel> ConnectAsync(MavlinkEndpoint endpoint, params IMavlinkDialect[] dialects)
+		=> ConnectAsync(endpoint, MavlinkDialects.Combine(dialects));
 }
