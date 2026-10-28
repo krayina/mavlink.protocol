@@ -29,6 +29,11 @@
     <None Include="Golden/*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <!-- Official dialect XMLs the golden data was produced from. -->
+  <ItemGroup>
+    <None Include="..\Shmyndra.Mavlink.Protocol.v3_0\Xml\*.xml" Link="Xml\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
