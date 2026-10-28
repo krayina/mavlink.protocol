@@ -34,6 +34,12 @@
     </ItemGroup>
   </Target>
 
+  <!-- The previous pipeline, kept as reference while the new one is built; not compiled. -->
+  <ItemGroup>
+    <Compile Remove="Legacy/**" />
+    <None Include="Legacy/**" />
+  </ItemGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Mavlink.Protocol.Generator.Tests" />
   </ItemGroup>
