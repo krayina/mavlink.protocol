@@ -15,8 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mavlink.Protocol", "Mavlink
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mavlink.Protocol.Generator", "Mavlink.Protocol.Generator\Mavlink.Protocol.Generator.csproj", "{7BE92373-0D92-919D-9736-CDE857C2C38A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mavlink.Protocol.Generator.Tests", "Mavlink.Protocol.Generator.Tests\Mavlink.Protocol.Generator.Tests.csproj", "{632CE8D9-5510-6FB2-2027-D6122D6AC0FA}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shmyndra.Mavlink", "Shmyndra.Mavlink\Shmyndra.Mavlink.csproj", "{7FC95F61-14D8-AD18-1319-F460BF48DCB1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shmyndra.Mavlink.Protocol.v3_0", "Shmyndra.Mavlink.Protocol.v3_0\Shmyndra.Mavlink.Protocol.v3_0.csproj", "{E976BDBB-210C-8D9C-B580-A46AC74CD3CE}"
@@ -39,10 +37,6 @@ Global
 		{7BE92373-0D92-919D-9736-CDE857C2C38A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BE92373-0D92-919D-9736-CDE857C2C38A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BE92373-0D92-919D-9736-CDE857C2C38A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{632CE8D9-5510-6FB2-2027-D6122D6AC0FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{632CE8D9-5510-6FB2-2027-D6122D6AC0FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{632CE8D9-5510-6FB2-2027-D6122D6AC0FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{632CE8D9-5510-6FB2-2027-D6122D6AC0FA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7FC95F61-14D8-AD18-1319-F460BF48DCB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7FC95F61-14D8-AD18-1319-F460BF48DCB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7FC95F61-14D8-AD18-1319-F460BF48DCB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
