@@ -72,4 +72,24 @@ public sealed partial class MavlinkClient
 			throw;
 		}
 	}
+
+	/// <summary>
+	/// Creates a client that owns its channel, for several dialects and everything they include,
+	/// with the default identity (system 255, component 190); the same as passing
+	/// <see cref="MavlinkDialects.Combine"/> of them.
+	/// </summary>
+	public static MavlinkClient Create(string connectionString, params IMavlinkDialect[] dialects)
+		=> Create(connectionString, MavlinkDialects.Combine(dialects));
+
+	/// <inheritdoc cref="Create(string, IMavlinkDialect[])"/>
+	public static MavlinkClient Create(MavlinkEndpoint endpoint, params IMavlinkDialect[] dialects)
+		=> Create(endpoint, MavlinkDialects.Combine(dialects));
+
+	/// <inheritdoc cref="Create(string, IMavlinkDialect[])"/>
+	public static Task<MavlinkClient> ConnectAsync(string connectionString, params IMavlinkDialect[] dialects)
+		=> ConnectAsync(connectionString, MavlinkDialects.Combine(dialects));
+
+	/// <inheritdoc cref="Create(string, IMavlinkDialect[])"/>
+	public static Task<MavlinkClient> ConnectAsync(MavlinkEndpoint endpoint, params IMavlinkDialect[] dialects)
+		=> ConnectAsync(endpoint, MavlinkDialects.Combine(dialects));
 }
