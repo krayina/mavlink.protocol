@@ -1,0 +1,67 @@
+{
+  "source": "AVSSUAS.xml",
+  "generator": "pymavlink 2.4.50",
+  "messages": [
+    {
+      "id": 60050,
+      "name": "AVSS_PRS_SYS_STATUS",
+      "crcExtra": 220,
+      "baseLength": 14,
+      "extendedLength": 14,
+      "fields": [
+        {"name": "time_boot_ms", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "error_status", "type": "uint32_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "battery_status", "type": "uint32_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "arm_status", "type": "uint8_t", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "charge_status", "type": "uint8_t", "arrayLength": 0, "offset": 13, "extension": false}
+      ]
+    },
+    {
+      "id": 60051,
+      "name": "AVSS_DRONE_POSITION",
+      "crcExtra": 245,
+      "baseLength": 24,
+      "extendedLength": 24,
+      "fields": [
+        {"name": "time_boot_ms", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "lat", "type": "int32_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "lon", "type": "int32_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "alt", "type": "int32_t", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "ground_alt", "type": "float", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "barometer_alt", "type": "float", "arrayLength": 0, "offset": 20, "extension": false}
+      ]
+    },
+    {
+      "id": 60052,
+      "name": "AVSS_DRONE_IMU",
+      "crcExtra": 101,
+      "baseLength": 44,
+      "extendedLength": 44,
+      "fields": [
+        {"name": "time_boot_ms", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "q1", "type": "float", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "q2", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "q3", "type": "float", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "q4", "type": "float", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "xacc", "type": "float", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "yacc", "type": "float", "arrayLength": 0, "offset": 24, "extension": false},
+        {"name": "zacc", "type": "float", "arrayLength": 0, "offset": 28, "extension": false},
+        {"name": "xgyro", "type": "float", "arrayLength": 0, "offset": 32, "extension": false},
+        {"name": "ygyro", "type": "float", "arrayLength": 0, "offset": 36, "extension": false},
+        {"name": "zgyro", "type": "float", "arrayLength": 0, "offset": 40, "extension": false}
+      ]
+    },
+    {
+      "id": 60053,
+      "name": "AVSS_DRONE_OPERATION_MODE",
+      "crcExtra": 45,
+      "baseLength": 6,
+      "extendedLength": 6,
+      "fields": [
+        {"name": "time_boot_ms", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "M300_operation_mode", "type": "uint8_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "horsefly_operation_mode", "type": "uint8_t", "arrayLength": 0, "offset": 5, "extension": false}
+      ]
+    }
+  ]
+}

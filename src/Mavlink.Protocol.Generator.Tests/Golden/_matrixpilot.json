@@ -1,0 +1,466 @@
+{
+  "source": "_matrixpilot.xml",
+  "generator": "pymavlink 2.4.50",
+  "messages": [
+    {
+      "id": 150,
+      "name": "FLEXIFUNCTION_SET",
+      "crcExtra": 181,
+      "baseLength": 2,
+      "extendedLength": 2,
+      "fields": [
+        {"name": "target_system", "type": "uint8_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "target_component", "type": "uint8_t", "arrayLength": 0, "offset": 1, "extension": false}
+      ]
+    },
+    {
+      "id": 151,
+      "name": "FLEXIFUNCTION_READ_REQ",
+      "crcExtra": 26,
+      "baseLength": 6,
+      "extendedLength": 6,
+      "fields": [
+        {"name": "read_req_type", "type": "int16_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "data_index", "type": "int16_t", "arrayLength": 0, "offset": 2, "extension": false},
+        {"name": "target_system", "type": "uint8_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "target_component", "type": "uint8_t", "arrayLength": 0, "offset": 5, "extension": false}
+      ]
+    },
+    {
+      "id": 152,
+      "name": "FLEXIFUNCTION_BUFFER_FUNCTION",
+      "crcExtra": 101,
+      "baseLength": 58,
+      "extendedLength": 58,
+      "fields": [
+        {"name": "func_index", "type": "uint16_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "func_count", "type": "uint16_t", "arrayLength": 0, "offset": 2, "extension": false},
+        {"name": "data_address", "type": "uint16_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "data_size", "type": "uint16_t", "arrayLength": 0, "offset": 6, "extension": false},
+        {"name": "target_system", "type": "uint8_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "target_component", "type": "uint8_t", "arrayLength": 0, "offset": 9, "extension": false},
+        {"name": "data", "type": "int8_t", "arrayLength": 48, "offset": 10, "extension": false}
+      ]
+    },
+    {
+      "id": 153,
+      "name": "FLEXIFUNCTION_BUFFER_FUNCTION_ACK",
+      "crcExtra": 109,
+      "baseLength": 6,
+      "extendedLength": 6,
+      "fields": [
+        {"name": "func_index", "type": "uint16_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "result", "type": "uint16_t", "arrayLength": 0, "offset": 2, "extension": false},
+        {"name": "target_system", "type": "uint8_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "target_component", "type": "uint8_t", "arrayLength": 0, "offset": 5, "extension": false}
+      ]
+    },
+    {
+      "id": 155,
+      "name": "FLEXIFUNCTION_DIRECTORY",
+      "crcExtra": 12,
+      "baseLength": 53,
+      "extendedLength": 53,
+      "fields": [
+        {"name": "target_system", "type": "uint8_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "target_component", "type": "uint8_t", "arrayLength": 0, "offset": 1, "extension": false},
+        {"name": "directory_type", "type": "uint8_t", "arrayLength": 0, "offset": 2, "extension": false},
+        {"name": "start_index", "type": "uint8_t", "arrayLength": 0, "offset": 3, "extension": false},
+        {"name": "count", "type": "uint8_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "directory_data", "type": "int8_t", "arrayLength": 48, "offset": 5, "extension": false}
+      ]
+    },
+    {
+      "id": 156,
+      "name": "FLEXIFUNCTION_DIRECTORY_ACK",
+      "crcExtra": 218,
+      "baseLength": 7,
+      "extendedLength": 7,
+      "fields": [
+        {"name": "result", "type": "uint16_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "target_system", "type": "uint8_t", "arrayLength": 0, "offset": 2, "extension": false},
+        {"name": "target_component", "type": "uint8_t", "arrayLength": 0, "offset": 3, "extension": false},
+        {"name": "directory_type", "type": "uint8_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "start_index", "type": "uint8_t", "arrayLength": 0, "offset": 5, "extension": false},
+        {"name": "count", "type": "uint8_t", "arrayLength": 0, "offset": 6, "extension": false}
+      ]
+    },
+    {
+      "id": 157,
+      "name": "FLEXIFUNCTION_COMMAND",
+      "crcExtra": 133,
+      "baseLength": 3,
+      "extendedLength": 3,
+      "fields": [
+        {"name": "target_system", "type": "uint8_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "target_component", "type": "uint8_t", "arrayLength": 0, "offset": 1, "extension": false},
+        {"name": "command_type", "type": "uint8_t", "arrayLength": 0, "offset": 2, "extension": false}
+      ]
+    },
+    {
+      "id": 158,
+      "name": "FLEXIFUNCTION_COMMAND_ACK",
+      "crcExtra": 208,
+      "baseLength": 4,
+      "extendedLength": 4,
+      "fields": [
+        {"name": "command_type", "type": "uint16_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "result", "type": "uint16_t", "arrayLength": 0, "offset": 2, "extension": false}
+      ]
+    },
+    {
+      "id": 170,
+      "name": "SERIAL_UDB_EXTRA_F2_A",
+      "crcExtra": 103,
+      "baseLength": 61,
+      "extendedLength": 61,
+      "fields": [
+        {"name": "sue_time", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "sue_latitude", "type": "int32_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "sue_longitude", "type": "int32_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "sue_altitude", "type": "int32_t", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "sue_waypoint_index", "type": "uint16_t", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "sue_rmat0", "type": "int16_t", "arrayLength": 0, "offset": 18, "extension": false},
+        {"name": "sue_rmat1", "type": "int16_t", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "sue_rmat2", "type": "int16_t", "arrayLength": 0, "offset": 22, "extension": false},
+        {"name": "sue_rmat3", "type": "int16_t", "arrayLength": 0, "offset": 24, "extension": false},
+        {"name": "sue_rmat4", "type": "int16_t", "arrayLength": 0, "offset": 26, "extension": false},
+        {"name": "sue_rmat5", "type": "int16_t", "arrayLength": 0, "offset": 28, "extension": false},
+        {"name": "sue_rmat6", "type": "int16_t", "arrayLength": 0, "offset": 30, "extension": false},
+        {"name": "sue_rmat7", "type": "int16_t", "arrayLength": 0, "offset": 32, "extension": false},
+        {"name": "sue_rmat8", "type": "int16_t", "arrayLength": 0, "offset": 34, "extension": false},
+        {"name": "sue_cog", "type": "uint16_t", "arrayLength": 0, "offset": 36, "extension": false},
+        {"name": "sue_sog", "type": "int16_t", "arrayLength": 0, "offset": 38, "extension": false},
+        {"name": "sue_cpu_load", "type": "uint16_t", "arrayLength": 0, "offset": 40, "extension": false},
+        {"name": "sue_air_speed_3DIMU", "type": "uint16_t", "arrayLength": 0, "offset": 42, "extension": false},
+        {"name": "sue_estimated_wind_0", "type": "int16_t", "arrayLength": 0, "offset": 44, "extension": false},
+        {"name": "sue_estimated_wind_1", "type": "int16_t", "arrayLength": 0, "offset": 46, "extension": false},
+        {"name": "sue_estimated_wind_2", "type": "int16_t", "arrayLength": 0, "offset": 48, "extension": false},
+        {"name": "sue_magFieldEarth0", "type": "int16_t", "arrayLength": 0, "offset": 50, "extension": false},
+        {"name": "sue_magFieldEarth1", "type": "int16_t", "arrayLength": 0, "offset": 52, "extension": false},
+        {"name": "sue_magFieldEarth2", "type": "int16_t", "arrayLength": 0, "offset": 54, "extension": false},
+        {"name": "sue_svs", "type": "int16_t", "arrayLength": 0, "offset": 56, "extension": false},
+        {"name": "sue_hdop", "type": "int16_t", "arrayLength": 0, "offset": 58, "extension": false},
+        {"name": "sue_status", "type": "uint8_t", "arrayLength": 0, "offset": 60, "extension": false}
+      ]
+    },
+    {
+      "id": 171,
+      "name": "SERIAL_UDB_EXTRA_F2_B",
+      "crcExtra": 245,
+      "baseLength": 108,
+      "extendedLength": 108,
+      "fields": [
+        {"name": "sue_time", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "sue_flags", "type": "uint32_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "sue_barom_press", "type": "int32_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "sue_barom_alt", "type": "int32_t", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "sue_pwm_input_1", "type": "int16_t", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "sue_pwm_input_2", "type": "int16_t", "arrayLength": 0, "offset": 18, "extension": false},
+        {"name": "sue_pwm_input_3", "type": "int16_t", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "sue_pwm_input_4", "type": "int16_t", "arrayLength": 0, "offset": 22, "extension": false},
+        {"name": "sue_pwm_input_5", "type": "int16_t", "arrayLength": 0, "offset": 24, "extension": false},
+        {"name": "sue_pwm_input_6", "type": "int16_t", "arrayLength": 0, "offset": 26, "extension": false},
+        {"name": "sue_pwm_input_7", "type": "int16_t", "arrayLength": 0, "offset": 28, "extension": false},
+        {"name": "sue_pwm_input_8", "type": "int16_t", "arrayLength": 0, "offset": 30, "extension": false},
+        {"name": "sue_pwm_input_9", "type": "int16_t", "arrayLength": 0, "offset": 32, "extension": false},
+        {"name": "sue_pwm_input_10", "type": "int16_t", "arrayLength": 0, "offset": 34, "extension": false},
+        {"name": "sue_pwm_input_11", "type": "int16_t", "arrayLength": 0, "offset": 36, "extension": false},
+        {"name": "sue_pwm_input_12", "type": "int16_t", "arrayLength": 0, "offset": 38, "extension": false},
+        {"name": "sue_pwm_output_1", "type": "int16_t", "arrayLength": 0, "offset": 40, "extension": false},
+        {"name": "sue_pwm_output_2", "type": "int16_t", "arrayLength": 0, "offset": 42, "extension": false},
+        {"name": "sue_pwm_output_3", "type": "int16_t", "arrayLength": 0, "offset": 44, "extension": false},
+        {"name": "sue_pwm_output_4", "type": "int16_t", "arrayLength": 0, "offset": 46, "extension": false},
+        {"name": "sue_pwm_output_5", "type": "int16_t", "arrayLength": 0, "offset": 48, "extension": false},
+        {"name": "sue_pwm_output_6", "type": "int16_t", "arrayLength": 0, "offset": 50, "extension": false},
+        {"name": "sue_pwm_output_7", "type": "int16_t", "arrayLength": 0, "offset": 52, "extension": false},
+        {"name": "sue_pwm_output_8", "type": "int16_t", "arrayLength": 0, "offset": 54, "extension": false},
+        {"name": "sue_pwm_output_9", "type": "int16_t", "arrayLength": 0, "offset": 56, "extension": false},
+        {"name": "sue_pwm_output_10", "type": "int16_t", "arrayLength": 0, "offset": 58, "extension": false},
+        {"name": "sue_pwm_output_11", "type": "int16_t", "arrayLength": 0, "offset": 60, "extension": false},
+        {"name": "sue_pwm_output_12", "type": "int16_t", "arrayLength": 0, "offset": 62, "extension": false},
+        {"name": "sue_imu_location_x", "type": "int16_t", "arrayLength": 0, "offset": 64, "extension": false},
+        {"name": "sue_imu_location_y", "type": "int16_t", "arrayLength": 0, "offset": 66, "extension": false},
+        {"name": "sue_imu_location_z", "type": "int16_t", "arrayLength": 0, "offset": 68, "extension": false},
+        {"name": "sue_location_error_earth_x", "type": "int16_t", "arrayLength": 0, "offset": 70, "extension": false},
+        {"name": "sue_location_error_earth_y", "type": "int16_t", "arrayLength": 0, "offset": 72, "extension": false},
+        {"name": "sue_location_error_earth_z", "type": "int16_t", "arrayLength": 0, "offset": 74, "extension": false},
+        {"name": "sue_osc_fails", "type": "int16_t", "arrayLength": 0, "offset": 76, "extension": false},
+        {"name": "sue_imu_velocity_x", "type": "int16_t", "arrayLength": 0, "offset": 78, "extension": false},
+        {"name": "sue_imu_velocity_y", "type": "int16_t", "arrayLength": 0, "offset": 80, "extension": false},
+        {"name": "sue_imu_velocity_z", "type": "int16_t", "arrayLength": 0, "offset": 82, "extension": false},
+        {"name": "sue_waypoint_goal_x", "type": "int16_t", "arrayLength": 0, "offset": 84, "extension": false},
+        {"name": "sue_waypoint_goal_y", "type": "int16_t", "arrayLength": 0, "offset": 86, "extension": false},
+        {"name": "sue_waypoint_goal_z", "type": "int16_t", "arrayLength": 0, "offset": 88, "extension": false},
+        {"name": "sue_aero_x", "type": "int16_t", "arrayLength": 0, "offset": 90, "extension": false},
+        {"name": "sue_aero_y", "type": "int16_t", "arrayLength": 0, "offset": 92, "extension": false},
+        {"name": "sue_aero_z", "type": "int16_t", "arrayLength": 0, "offset": 94, "extension": false},
+        {"name": "sue_barom_temp", "type": "int16_t", "arrayLength": 0, "offset": 96, "extension": false},
+        {"name": "sue_bat_volt", "type": "int16_t", "arrayLength": 0, "offset": 98, "extension": false},
+        {"name": "sue_bat_amp", "type": "int16_t", "arrayLength": 0, "offset": 100, "extension": false},
+        {"name": "sue_bat_amp_hours", "type": "int16_t", "arrayLength": 0, "offset": 102, "extension": false},
+        {"name": "sue_desired_height", "type": "int16_t", "arrayLength": 0, "offset": 104, "extension": false},
+        {"name": "sue_memory_stack_free", "type": "int16_t", "arrayLength": 0, "offset": 106, "extension": false}
+      ]
+    },
+    {
+      "id": 172,
+      "name": "SERIAL_UDB_EXTRA_F4",
+      "crcExtra": 191,
+      "baseLength": 10,
+      "extendedLength": 10,
+      "fields": [
+        {"name": "sue_ROLL_STABILIZATION_AILERONS", "type": "uint8_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "sue_ROLL_STABILIZATION_RUDDER", "type": "uint8_t", "arrayLength": 0, "offset": 1, "extension": false},
+        {"name": "sue_PITCH_STABILIZATION", "type": "uint8_t", "arrayLength": 0, "offset": 2, "extension": false},
+        {"name": "sue_YAW_STABILIZATION_RUDDER", "type": "uint8_t", "arrayLength": 0, "offset": 3, "extension": false},
+        {"name": "sue_YAW_STABILIZATION_AILERON", "type": "uint8_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "sue_AILERON_NAVIGATION", "type": "uint8_t", "arrayLength": 0, "offset": 5, "extension": false},
+        {"name": "sue_RUDDER_NAVIGATION", "type": "uint8_t", "arrayLength": 0, "offset": 6, "extension": false},
+        {"name": "sue_ALTITUDEHOLD_STABILIZED", "type": "uint8_t", "arrayLength": 0, "offset": 7, "extension": false},
+        {"name": "sue_ALTITUDEHOLD_WAYPOINT", "type": "uint8_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "sue_RACING_MODE", "type": "uint8_t", "arrayLength": 0, "offset": 9, "extension": false}
+      ]
+    },
+    {
+      "id": 173,
+      "name": "SERIAL_UDB_EXTRA_F5",
+      "crcExtra": 54,
+      "baseLength": 16,
+      "extendedLength": 16,
+      "fields": [
+        {"name": "sue_YAWKP_AILERON", "type": "float", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "sue_YAWKD_AILERON", "type": "float", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "sue_ROLLKP", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "sue_ROLLKD", "type": "float", "arrayLength": 0, "offset": 12, "extension": false}
+      ]
+    },
+    {
+      "id": 174,
+      "name": "SERIAL_UDB_EXTRA_F6",
+      "crcExtra": 54,
+      "baseLength": 20,
+      "extendedLength": 20,
+      "fields": [
+        {"name": "sue_PITCHGAIN", "type": "float", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "sue_PITCHKD", "type": "float", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "sue_RUDDER_ELEV_MIX", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "sue_ROLL_ELEV_MIX", "type": "float", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "sue_ELEVATOR_BOOST", "type": "float", "arrayLength": 0, "offset": 16, "extension": false}
+      ]
+    },
+    {
+      "id": 175,
+      "name": "SERIAL_UDB_EXTRA_F7",
+      "crcExtra": 171,
+      "baseLength": 24,
+      "extendedLength": 24,
+      "fields": [
+        {"name": "sue_YAWKP_RUDDER", "type": "float", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "sue_YAWKD_RUDDER", "type": "float", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "sue_ROLLKP_RUDDER", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "sue_ROLLKD_RUDDER", "type": "float", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "sue_RUDDER_BOOST", "type": "float", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "sue_RTL_PITCH_DOWN", "type": "float", "arrayLength": 0, "offset": 20, "extension": false}
+      ]
+    },
+    {
+      "id": 176,
+      "name": "SERIAL_UDB_EXTRA_F8",
+      "crcExtra": 142,
+      "baseLength": 28,
+      "extendedLength": 28,
+      "fields": [
+        {"name": "sue_HEIGHT_TARGET_MAX", "type": "float", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "sue_HEIGHT_TARGET_MIN", "type": "float", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "sue_ALT_HOLD_THROTTLE_MIN", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "sue_ALT_HOLD_THROTTLE_MAX", "type": "float", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "sue_ALT_HOLD_PITCH_MIN", "type": "float", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "sue_ALT_HOLD_PITCH_MAX", "type": "float", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "sue_ALT_HOLD_PITCH_HIGH", "type": "float", "arrayLength": 0, "offset": 24, "extension": false}
+      ]
+    },
+    {
+      "id": 177,
+      "name": "SERIAL_UDB_EXTRA_F13",
+      "crcExtra": 249,
+      "baseLength": 14,
+      "extendedLength": 14,
+      "fields": [
+        {"name": "sue_lat_origin", "type": "int32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "sue_lon_origin", "type": "int32_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "sue_alt_origin", "type": "int32_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "sue_week_no", "type": "int16_t", "arrayLength": 0, "offset": 12, "extension": false}
+      ]
+    },
+    {
+      "id": 178,
+      "name": "SERIAL_UDB_EXTRA_F14",
+      "crcExtra": 123,
+      "baseLength": 17,
+      "extendedLength": 17,
+      "fields": [
+        {"name": "sue_TRAP_SOURCE", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "sue_RCON", "type": "int16_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "sue_TRAP_FLAGS", "type": "int16_t", "arrayLength": 0, "offset": 6, "extension": false},
+        {"name": "sue_osc_fail_count", "type": "int16_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "sue_WIND_ESTIMATION", "type": "uint8_t", "arrayLength": 0, "offset": 10, "extension": false},
+        {"name": "sue_GPS_TYPE", "type": "uint8_t", "arrayLength": 0, "offset": 11, "extension": false},
+        {"name": "sue_DR", "type": "uint8_t", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "sue_BOARD_TYPE", "type": "uint8_t", "arrayLength": 0, "offset": 13, "extension": false},
+        {"name": "sue_AIRFRAME", "type": "uint8_t", "arrayLength": 0, "offset": 14, "extension": false},
+        {"name": "sue_CLOCK_CONFIG", "type": "uint8_t", "arrayLength": 0, "offset": 15, "extension": false},
+        {"name": "sue_FLIGHT_PLAN_TYPE", "type": "uint8_t", "arrayLength": 0, "offset": 16, "extension": false}
+      ]
+    },
+    {
+      "id": 179,
+      "name": "SERIAL_UDB_EXTRA_F15",
+      "crcExtra": 7,
+      "baseLength": 60,
+      "extendedLength": 60,
+      "fields": [
+        {"name": "sue_ID_VEHICLE_MODEL_NAME", "type": "uint8_t", "arrayLength": 40, "offset": 0, "extension": false},
+        {"name": "sue_ID_VEHICLE_REGISTRATION", "type": "uint8_t", "arrayLength": 20, "offset": 40, "extension": false}
+      ]
+    },
+    {
+      "id": 180,
+      "name": "SERIAL_UDB_EXTRA_F16",
+      "crcExtra": 222,
+      "baseLength": 110,
+      "extendedLength": 110,
+      "fields": [
+        {"name": "sue_ID_LEAD_PILOT", "type": "uint8_t", "arrayLength": 40, "offset": 0, "extension": false},
+        {"name": "sue_ID_DIY_DRONES_URL", "type": "uint8_t", "arrayLength": 70, "offset": 40, "extension": false}
+      ]
+    },
+    {
+      "id": 181,
+      "name": "ALTITUDES",
+      "crcExtra": 55,
+      "baseLength": 28,
+      "extendedLength": 28,
+      "fields": [
+        {"name": "time_boot_ms", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "alt_gps", "type": "int32_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "alt_imu", "type": "int32_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "alt_barometric", "type": "int32_t", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "alt_optical_flow", "type": "int32_t", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "alt_range_finder", "type": "int32_t", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "alt_extra", "type": "int32_t", "arrayLength": 0, "offset": 24, "extension": false}
+      ]
+    },
+    {
+      "id": 182,
+      "name": "AIRSPEEDS",
+      "crcExtra": 154,
+      "baseLength": 16,
+      "extendedLength": 16,
+      "fields": [
+        {"name": "time_boot_ms", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "airspeed_imu", "type": "int16_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "airspeed_pitot", "type": "int16_t", "arrayLength": 0, "offset": 6, "extension": false},
+        {"name": "airspeed_hot_wire", "type": "int16_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "airspeed_ultrasonic", "type": "int16_t", "arrayLength": 0, "offset": 10, "extension": false},
+        {"name": "aoa", "type": "int16_t", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "aoy", "type": "int16_t", "arrayLength": 0, "offset": 14, "extension": false}
+      ]
+    },
+    {
+      "id": 183,
+      "name": "SERIAL_UDB_EXTRA_F17",
+      "crcExtra": 175,
+      "baseLength": 12,
+      "extendedLength": 12,
+      "fields": [
+        {"name": "sue_feed_forward", "type": "float", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "sue_turn_rate_nav", "type": "float", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "sue_turn_rate_fbw", "type": "float", "arrayLength": 0, "offset": 8, "extension": false}
+      ]
+    },
+    {
+      "id": 184,
+      "name": "SERIAL_UDB_EXTRA_F18",
+      "crcExtra": 41,
+      "baseLength": 20,
+      "extendedLength": 20,
+      "fields": [
+        {"name": "angle_of_attack_normal", "type": "float", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "angle_of_attack_inverted", "type": "float", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "elevator_trim_normal", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "elevator_trim_inverted", "type": "float", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "reference_speed", "type": "float", "arrayLength": 0, "offset": 16, "extension": false}
+      ]
+    },
+    {
+      "id": 185,
+      "name": "SERIAL_UDB_EXTRA_F19",
+      "crcExtra": 87,
+      "baseLength": 8,
+      "extendedLength": 8,
+      "fields": [
+        {"name": "sue_aileron_output_channel", "type": "uint8_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "sue_aileron_reversed", "type": "uint8_t", "arrayLength": 0, "offset": 1, "extension": false},
+        {"name": "sue_elevator_output_channel", "type": "uint8_t", "arrayLength": 0, "offset": 2, "extension": false},
+        {"name": "sue_elevator_reversed", "type": "uint8_t", "arrayLength": 0, "offset": 3, "extension": false},
+        {"name": "sue_throttle_output_channel", "type": "uint8_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "sue_throttle_reversed", "type": "uint8_t", "arrayLength": 0, "offset": 5, "extension": false},
+        {"name": "sue_rudder_output_channel", "type": "uint8_t", "arrayLength": 0, "offset": 6, "extension": false},
+        {"name": "sue_rudder_reversed", "type": "uint8_t", "arrayLength": 0, "offset": 7, "extension": false}
+      ]
+    },
+    {
+      "id": 186,
+      "name": "SERIAL_UDB_EXTRA_F20",
+      "crcExtra": 144,
+      "baseLength": 25,
+      "extendedLength": 25,
+      "fields": [
+        {"name": "sue_trim_value_input_1", "type": "int16_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "sue_trim_value_input_2", "type": "int16_t", "arrayLength": 0, "offset": 2, "extension": false},
+        {"name": "sue_trim_value_input_3", "type": "int16_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "sue_trim_value_input_4", "type": "int16_t", "arrayLength": 0, "offset": 6, "extension": false},
+        {"name": "sue_trim_value_input_5", "type": "int16_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "sue_trim_value_input_6", "type": "int16_t", "arrayLength": 0, "offset": 10, "extension": false},
+        {"name": "sue_trim_value_input_7", "type": "int16_t", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "sue_trim_value_input_8", "type": "int16_t", "arrayLength": 0, "offset": 14, "extension": false},
+        {"name": "sue_trim_value_input_9", "type": "int16_t", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "sue_trim_value_input_10", "type": "int16_t", "arrayLength": 0, "offset": 18, "extension": false},
+        {"name": "sue_trim_value_input_11", "type": "int16_t", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "sue_trim_value_input_12", "type": "int16_t", "arrayLength": 0, "offset": 22, "extension": false},
+        {"name": "sue_number_of_inputs", "type": "uint8_t", "arrayLength": 0, "offset": 24, "extension": false}
+      ]
+    },
+    {
+      "id": 187,
+      "name": "SERIAL_UDB_EXTRA_F21",
+      "crcExtra": 134,
+      "baseLength": 12,
+      "extendedLength": 12,
+      "fields": [
+        {"name": "sue_accel_x_offset", "type": "int16_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "sue_accel_y_offset", "type": "int16_t", "arrayLength": 0, "offset": 2, "extension": false},
+        {"name": "sue_accel_z_offset", "type": "int16_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "sue_gyro_x_offset", "type": "int16_t", "arrayLength": 0, "offset": 6, "extension": false},
+        {"name": "sue_gyro_y_offset", "type": "int16_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "sue_gyro_z_offset", "type": "int16_t", "arrayLength": 0, "offset": 10, "extension": false}
+      ]
+    },
+    {
+      "id": 188,
+      "name": "SERIAL_UDB_EXTRA_F22",
+      "crcExtra": 91,
+      "baseLength": 12,
+      "extendedLength": 12,
+      "fields": [
+        {"name": "sue_accel_x_at_calibration", "type": "int16_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "sue_accel_y_at_calibration", "type": "int16_t", "arrayLength": 0, "offset": 2, "extension": false},
+        {"name": "sue_accel_z_at_calibration", "type": "int16_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "sue_gyro_x_at_calibration", "type": "int16_t", "arrayLength": 0, "offset": 6, "extension": false},
+        {"name": "sue_gyro_y_at_calibration", "type": "int16_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "sue_gyro_z_at_calibration", "type": "int16_t", "arrayLength": 0, "offset": 10, "extension": false}
+      ]
+    }
+  ]
+}

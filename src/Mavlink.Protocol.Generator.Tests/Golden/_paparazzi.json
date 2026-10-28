@@ -1,0 +1,64 @@
+{
+  "source": "_paparazzi.xml",
+  "generator": "pymavlink 2.4.50",
+  "messages": [
+    {
+      "id": 180,
+      "name": "SCRIPT_ITEM",
+      "crcExtra": 231,
+      "baseLength": 54,
+      "extendedLength": 54,
+      "fields": [
+        {"name": "seq", "type": "uint16_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "target_system", "type": "uint8_t", "arrayLength": 0, "offset": 2, "extension": false},
+        {"name": "target_component", "type": "uint8_t", "arrayLength": 0, "offset": 3, "extension": false},
+        {"name": "name", "type": "char", "arrayLength": 50, "offset": 4, "extension": false}
+      ]
+    },
+    {
+      "id": 181,
+      "name": "SCRIPT_REQUEST",
+      "crcExtra": 129,
+      "baseLength": 4,
+      "extendedLength": 4,
+      "fields": [
+        {"name": "seq", "type": "uint16_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "target_system", "type": "uint8_t", "arrayLength": 0, "offset": 2, "extension": false},
+        {"name": "target_component", "type": "uint8_t", "arrayLength": 0, "offset": 3, "extension": false}
+      ]
+    },
+    {
+      "id": 182,
+      "name": "SCRIPT_REQUEST_LIST",
+      "crcExtra": 115,
+      "baseLength": 2,
+      "extendedLength": 2,
+      "fields": [
+        {"name": "target_system", "type": "uint8_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "target_component", "type": "uint8_t", "arrayLength": 0, "offset": 1, "extension": false}
+      ]
+    },
+    {
+      "id": 183,
+      "name": "SCRIPT_COUNT",
+      "crcExtra": 186,
+      "baseLength": 4,
+      "extendedLength": 4,
+      "fields": [
+        {"name": "count", "type": "uint16_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "target_system", "type": "uint8_t", "arrayLength": 0, "offset": 2, "extension": false},
+        {"name": "target_component", "type": "uint8_t", "arrayLength": 0, "offset": 3, "extension": false}
+      ]
+    },
+    {
+      "id": 184,
+      "name": "SCRIPT_CURRENT",
+      "crcExtra": 40,
+      "baseLength": 2,
+      "extendedLength": 2,
+      "fields": [
+        {"name": "seq", "type": "uint16_t", "arrayLength": 0, "offset": 0, "extension": false}
+      ]
+    }
+  ]
+}

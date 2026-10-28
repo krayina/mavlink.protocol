@@ -1,0 +1,41 @@
+{
+  "source": "icarous.xml",
+  "generator": "pymavlink 2.4.50",
+  "messages": [
+    {
+      "id": 42000,
+      "name": "ICAROUS_HEARTBEAT",
+      "crcExtra": 227,
+      "baseLength": 1,
+      "extendedLength": 1,
+      "fields": [
+        {"name": "status", "type": "uint8_t", "arrayLength": 0, "offset": 0, "extension": false}
+      ]
+    },
+    {
+      "id": 42001,
+      "name": "ICAROUS_KINEMATIC_BANDS",
+      "crcExtra": 239,
+      "baseLength": 46,
+      "extendedLength": 46,
+      "fields": [
+        {"name": "min1", "type": "float", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "max1", "type": "float", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "min2", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "max2", "type": "float", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "min3", "type": "float", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "max3", "type": "float", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "min4", "type": "float", "arrayLength": 0, "offset": 24, "extension": false},
+        {"name": "max4", "type": "float", "arrayLength": 0, "offset": 28, "extension": false},
+        {"name": "min5", "type": "float", "arrayLength": 0, "offset": 32, "extension": false},
+        {"name": "max5", "type": "float", "arrayLength": 0, "offset": 36, "extension": false},
+        {"name": "numBands", "type": "int8_t", "arrayLength": 0, "offset": 40, "extension": false},
+        {"name": "type1", "type": "uint8_t", "arrayLength": 0, "offset": 41, "extension": false},
+        {"name": "type2", "type": "uint8_t", "arrayLength": 0, "offset": 42, "extension": false},
+        {"name": "type3", "type": "uint8_t", "arrayLength": 0, "offset": 43, "extension": false},
+        {"name": "type4", "type": "uint8_t", "arrayLength": 0, "offset": 44, "extension": false},
+        {"name": "type5", "type": "uint8_t", "arrayLength": 0, "offset": 45, "extension": false}
+      ]
+    }
+  ]
+}

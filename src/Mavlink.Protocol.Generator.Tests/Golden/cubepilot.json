@@ -1,0 +1,74 @@
+{
+  "source": "cubepilot.xml",
+  "generator": "pymavlink 2.4.50",
+  "messages": [
+    {
+      "id": 50001,
+      "name": "CUBEPILOT_RAW_RC",
+      "crcExtra": 246,
+      "baseLength": 32,
+      "extendedLength": 32,
+      "fields": [
+        {"name": "rc_raw", "type": "uint8_t", "arrayLength": 32, "offset": 0, "extension": false}
+      ]
+    },
+    {
+      "id": 50002,
+      "name": "HERELINK_VIDEO_STREAM_INFORMATION",
+      "crcExtra": 181,
+      "baseLength": 246,
+      "extendedLength": 246,
+      "fields": [
+        {"name": "framerate", "type": "float", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "bitrate", "type": "uint32_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "resolution_h", "type": "uint16_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "resolution_v", "type": "uint16_t", "arrayLength": 0, "offset": 10, "extension": false},
+        {"name": "rotation", "type": "uint16_t", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "camera_id", "type": "uint8_t", "arrayLength": 0, "offset": 14, "extension": false},
+        {"name": "status", "type": "uint8_t", "arrayLength": 0, "offset": 15, "extension": false},
+        {"name": "uri", "type": "char", "arrayLength": 230, "offset": 16, "extension": false}
+      ]
+    },
+    {
+      "id": 50003,
+      "name": "HERELINK_TELEM",
+      "crcExtra": 62,
+      "baseLength": 19,
+      "extendedLength": 19,
+      "fields": [
+        {"name": "rf_freq", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "link_bw", "type": "uint32_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "link_rate", "type": "uint32_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "snr", "type": "int16_t", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "cpu_temp", "type": "int16_t", "arrayLength": 0, "offset": 14, "extension": false},
+        {"name": "board_temp", "type": "int16_t", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "rssi", "type": "uint8_t", "arrayLength": 0, "offset": 18, "extension": false}
+      ]
+    },
+    {
+      "id": 50004,
+      "name": "CUBEPILOT_FIRMWARE_UPDATE_START",
+      "crcExtra": 240,
+      "baseLength": 10,
+      "extendedLength": 10,
+      "fields": [
+        {"name": "size", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "crc", "type": "uint32_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "target_system", "type": "uint8_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "target_component", "type": "uint8_t", "arrayLength": 0, "offset": 9, "extension": false}
+      ]
+    },
+    {
+      "id": 50005,
+      "name": "CUBEPILOT_FIRMWARE_UPDATE_RESP",
+      "crcExtra": 152,
+      "baseLength": 6,
+      "extendedLength": 6,
+      "fields": [
+        {"name": "offset", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "target_system", "type": "uint8_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "target_component", "type": "uint8_t", "arrayLength": 0, "offset": 5, "extension": false}
+      ]
+    }
+  ]
+}

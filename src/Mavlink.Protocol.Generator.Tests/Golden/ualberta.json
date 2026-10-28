@@ -1,0 +1,49 @@
+{
+  "source": "ualberta.xml",
+  "generator": "pymavlink 2.4.50",
+  "messages": [
+    {
+      "id": 220,
+      "name": "NAV_FILTER_BIAS",
+      "crcExtra": 34,
+      "baseLength": 32,
+      "extendedLength": 32,
+      "fields": [
+        {"name": "usec", "type": "uint64_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "accel_0", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "accel_1", "type": "float", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "accel_2", "type": "float", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "gyro_0", "type": "float", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "gyro_1", "type": "float", "arrayLength": 0, "offset": 24, "extension": false},
+        {"name": "gyro_2", "type": "float", "arrayLength": 0, "offset": 28, "extension": false}
+      ]
+    },
+    {
+      "id": 221,
+      "name": "RADIO_CALIBRATION",
+      "crcExtra": 71,
+      "baseLength": 42,
+      "extendedLength": 42,
+      "fields": [
+        {"name": "aileron", "type": "uint16_t", "arrayLength": 3, "offset": 0, "extension": false},
+        {"name": "elevator", "type": "uint16_t", "arrayLength": 3, "offset": 6, "extension": false},
+        {"name": "rudder", "type": "uint16_t", "arrayLength": 3, "offset": 12, "extension": false},
+        {"name": "gyro", "type": "uint16_t", "arrayLength": 2, "offset": 18, "extension": false},
+        {"name": "pitch", "type": "uint16_t", "arrayLength": 5, "offset": 22, "extension": false},
+        {"name": "throttle", "type": "uint16_t", "arrayLength": 5, "offset": 32, "extension": false}
+      ]
+    },
+    {
+      "id": 222,
+      "name": "UALBERTA_SYS_STATUS",
+      "crcExtra": 15,
+      "baseLength": 3,
+      "extendedLength": 3,
+      "fields": [
+        {"name": "mode", "type": "uint8_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "nav_mode", "type": "uint8_t", "arrayLength": 0, "offset": 1, "extension": false},
+        {"name": "pilot", "type": "uint8_t", "arrayLength": 0, "offset": 2, "extension": false}
+      ]
+    }
+  ]
+}

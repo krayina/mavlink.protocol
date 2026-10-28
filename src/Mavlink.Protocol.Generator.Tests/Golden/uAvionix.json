@@ -1,0 +1,58 @@
+{
+  "source": "uAvionix.xml",
+  "generator": "pymavlink 2.4.50",
+  "messages": [
+    {
+      "id": 10001,
+      "name": "UAVIONIX_ADSB_OUT_CFG",
+      "crcExtra": 209,
+      "baseLength": 20,
+      "extendedLength": 20,
+      "fields": [
+        {"name": "ICAO", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "stallSpeed", "type": "uint16_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "callsign", "type": "char", "arrayLength": 9, "offset": 6, "extension": false},
+        {"name": "emitterType", "type": "uint8_t", "arrayLength": 0, "offset": 15, "extension": false},
+        {"name": "aircraftSize", "type": "uint8_t", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "gpsOffsetLat", "type": "uint8_t", "arrayLength": 0, "offset": 17, "extension": false},
+        {"name": "gpsOffsetLon", "type": "uint8_t", "arrayLength": 0, "offset": 18, "extension": false},
+        {"name": "rfSelect", "type": "uint8_t", "arrayLength": 0, "offset": 19, "extension": false}
+      ]
+    },
+    {
+      "id": 10002,
+      "name": "UAVIONIX_ADSB_OUT_DYNAMIC",
+      "crcExtra": 186,
+      "baseLength": 41,
+      "extendedLength": 41,
+      "fields": [
+        {"name": "utcTime", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "gpsLat", "type": "int32_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "gpsLon", "type": "int32_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "gpsAlt", "type": "int32_t", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "baroAltMSL", "type": "int32_t", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "accuracyHor", "type": "uint32_t", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "accuracyVert", "type": "uint16_t", "arrayLength": 0, "offset": 24, "extension": false},
+        {"name": "accuracyVel", "type": "uint16_t", "arrayLength": 0, "offset": 26, "extension": false},
+        {"name": "velVert", "type": "int16_t", "arrayLength": 0, "offset": 28, "extension": false},
+        {"name": "velNS", "type": "int16_t", "arrayLength": 0, "offset": 30, "extension": false},
+        {"name": "VelEW", "type": "int16_t", "arrayLength": 0, "offset": 32, "extension": false},
+        {"name": "state", "type": "uint16_t", "arrayLength": 0, "offset": 34, "extension": false},
+        {"name": "squawk", "type": "uint16_t", "arrayLength": 0, "offset": 36, "extension": false},
+        {"name": "gpsFix", "type": "uint8_t", "arrayLength": 0, "offset": 38, "extension": false},
+        {"name": "numSats", "type": "uint8_t", "arrayLength": 0, "offset": 39, "extension": false},
+        {"name": "emergencyStatus", "type": "uint8_t", "arrayLength": 0, "offset": 40, "extension": false}
+      ]
+    },
+    {
+      "id": 10003,
+      "name": "UAVIONIX_ADSB_TRANSCEIVER_HEALTH_REPORT",
+      "crcExtra": 4,
+      "baseLength": 1,
+      "extendedLength": 1,
+      "fields": [
+        {"name": "rfHealth", "type": "uint8_t", "arrayLength": 0, "offset": 0, "extension": false}
+      ]
+    }
+  ]
+}

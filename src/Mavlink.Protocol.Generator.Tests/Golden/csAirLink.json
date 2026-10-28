@@ -1,0 +1,71 @@
+{
+  "source": "csAirLink.xml",
+  "generator": "pymavlink 2.4.50",
+  "messages": [
+    {
+      "id": 52000,
+      "name": "AIRLINK_AUTH",
+      "crcExtra": 13,
+      "baseLength": 100,
+      "extendedLength": 100,
+      "fields": [
+        {"name": "login", "type": "char", "arrayLength": 50, "offset": 0, "extension": false},
+        {"name": "password", "type": "char", "arrayLength": 50, "offset": 50, "extension": false}
+      ]
+    },
+    {
+      "id": 52001,
+      "name": "AIRLINK_AUTH_RESPONSE",
+      "crcExtra": 239,
+      "baseLength": 1,
+      "extendedLength": 1,
+      "fields": [
+        {"name": "resp_type", "type": "uint8_t", "arrayLength": 0, "offset": 0, "extension": false}
+      ]
+    },
+    {
+      "id": 52002,
+      "name": "AIRLINK_EYE_GS_HOLE_PUSH_REQUEST",
+      "crcExtra": 24,
+      "baseLength": 1,
+      "extendedLength": 1,
+      "fields": [
+        {"name": "resp_type", "type": "uint8_t", "arrayLength": 0, "offset": 0, "extension": false}
+      ]
+    },
+    {
+      "id": 52003,
+      "name": "AIRLINK_EYE_GS_HOLE_PUSH_RESPONSE",
+      "crcExtra": 166,
+      "baseLength": 26,
+      "extendedLength": 26,
+      "fields": [
+        {"name": "ip_port", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "resp_type", "type": "uint8_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "ip_version", "type": "uint8_t", "arrayLength": 0, "offset": 5, "extension": false},
+        {"name": "ip_address_4", "type": "uint8_t", "arrayLength": 4, "offset": 6, "extension": false},
+        {"name": "ip_address_6", "type": "uint8_t", "arrayLength": 16, "offset": 10, "extension": false}
+      ]
+    },
+    {
+      "id": 52004,
+      "name": "AIRLINK_EYE_HP",
+      "crcExtra": 39,
+      "baseLength": 1,
+      "extendedLength": 1,
+      "fields": [
+        {"name": "resp_type", "type": "uint8_t", "arrayLength": 0, "offset": 0, "extension": false}
+      ]
+    },
+    {
+      "id": 52005,
+      "name": "AIRLINK_EYE_TURN_INIT",
+      "crcExtra": 145,
+      "baseLength": 1,
+      "extendedLength": 1,
+      "fields": [
+        {"name": "resp_type", "type": "uint8_t", "arrayLength": 0, "offset": 0, "extension": false}
+      ]
+    }
+  ]
+}

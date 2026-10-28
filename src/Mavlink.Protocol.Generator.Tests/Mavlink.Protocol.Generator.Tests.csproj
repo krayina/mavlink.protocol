@@ -24,6 +24,11 @@
     <ProjectReference Include="..\Mavlink.Protocol\Mavlink.Protocol.csproj" />
   </ItemGroup>
 
+  <!-- Reference wire metadata from pymavlink: tools/golden/dump_metadata.py -->
+  <ItemGroup>
+    <None Include="Golden/*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>

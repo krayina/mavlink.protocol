@@ -1,0 +1,342 @@
+{
+  "source": "ASLUAV.xml",
+  "generator": "pymavlink 2.4.50",
+  "messages": [
+    {
+      "id": 223,
+      "name": "COMMAND_INT_STAMPED",
+      "crcExtra": 119,
+      "baseLength": 47,
+      "extendedLength": 47,
+      "fields": [
+        {"name": "vehicle_timestamp", "type": "uint64_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "utc_time", "type": "uint32_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "param1", "type": "float", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "param2", "type": "float", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "param3", "type": "float", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "param4", "type": "float", "arrayLength": 0, "offset": 24, "extension": false},
+        {"name": "x", "type": "int32_t", "arrayLength": 0, "offset": 28, "extension": false},
+        {"name": "y", "type": "int32_t", "arrayLength": 0, "offset": 32, "extension": false},
+        {"name": "z", "type": "float", "arrayLength": 0, "offset": 36, "extension": false},
+        {"name": "command", "type": "uint16_t", "arrayLength": 0, "offset": 40, "extension": false},
+        {"name": "target_system", "type": "uint8_t", "arrayLength": 0, "offset": 42, "extension": false},
+        {"name": "target_component", "type": "uint8_t", "arrayLength": 0, "offset": 43, "extension": false},
+        {"name": "frame", "type": "uint8_t", "arrayLength": 0, "offset": 44, "extension": false},
+        {"name": "current", "type": "uint8_t", "arrayLength": 0, "offset": 45, "extension": false},
+        {"name": "autocontinue", "type": "uint8_t", "arrayLength": 0, "offset": 46, "extension": false}
+      ]
+    },
+    {
+      "id": 224,
+      "name": "COMMAND_LONG_STAMPED",
+      "crcExtra": 102,
+      "baseLength": 45,
+      "extendedLength": 45,
+      "fields": [
+        {"name": "vehicle_timestamp", "type": "uint64_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "utc_time", "type": "uint32_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "param1", "type": "float", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "param2", "type": "float", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "param3", "type": "float", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "param4", "type": "float", "arrayLength": 0, "offset": 24, "extension": false},
+        {"name": "param5", "type": "float", "arrayLength": 0, "offset": 28, "extension": false},
+        {"name": "param6", "type": "float", "arrayLength": 0, "offset": 32, "extension": false},
+        {"name": "param7", "type": "float", "arrayLength": 0, "offset": 36, "extension": false},
+        {"name": "command", "type": "uint16_t", "arrayLength": 0, "offset": 40, "extension": false},
+        {"name": "target_system", "type": "uint8_t", "arrayLength": 0, "offset": 42, "extension": false},
+        {"name": "target_component", "type": "uint8_t", "arrayLength": 0, "offset": 43, "extension": false},
+        {"name": "confirmation", "type": "uint8_t", "arrayLength": 0, "offset": 44, "extension": false}
+      ]
+    },
+    {
+      "id": 8002,
+      "name": "SENS_POWER",
+      "crcExtra": 218,
+      "baseLength": 16,
+      "extendedLength": 16,
+      "fields": [
+        {"name": "adc121_vspb_volt", "type": "float", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "adc121_cspb_amp", "type": "float", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "adc121_cs1_amp", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "adc121_cs2_amp", "type": "float", "arrayLength": 0, "offset": 12, "extension": false}
+      ]
+    },
+    {
+      "id": 8003,
+      "name": "SENS_MPPT",
+      "crcExtra": 231,
+      "baseLength": 41,
+      "extendedLength": 41,
+      "fields": [
+        {"name": "mppt_timestamp", "type": "uint64_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "mppt1_volt", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "mppt1_amp", "type": "float", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "mppt2_volt", "type": "float", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "mppt2_amp", "type": "float", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "mppt3_volt", "type": "float", "arrayLength": 0, "offset": 24, "extension": false},
+        {"name": "mppt3_amp", "type": "float", "arrayLength": 0, "offset": 28, "extension": false},
+        {"name": "mppt1_pwm", "type": "uint16_t", "arrayLength": 0, "offset": 32, "extension": false},
+        {"name": "mppt2_pwm", "type": "uint16_t", "arrayLength": 0, "offset": 34, "extension": false},
+        {"name": "mppt3_pwm", "type": "uint16_t", "arrayLength": 0, "offset": 36, "extension": false},
+        {"name": "mppt1_status", "type": "uint8_t", "arrayLength": 0, "offset": 38, "extension": false},
+        {"name": "mppt2_status", "type": "uint8_t", "arrayLength": 0, "offset": 39, "extension": false},
+        {"name": "mppt3_status", "type": "uint8_t", "arrayLength": 0, "offset": 40, "extension": false}
+      ]
+    },
+    {
+      "id": 8004,
+      "name": "ASLCTRL_DATA",
+      "crcExtra": 172,
+      "baseLength": 98,
+      "extendedLength": 98,
+      "fields": [
+        {"name": "timestamp", "type": "uint64_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "h", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "hRef", "type": "float", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "hRef_t", "type": "float", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "PitchAngle", "type": "float", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "PitchAngleRef", "type": "float", "arrayLength": 0, "offset": 24, "extension": false},
+        {"name": "q", "type": "float", "arrayLength": 0, "offset": 28, "extension": false},
+        {"name": "qRef", "type": "float", "arrayLength": 0, "offset": 32, "extension": false},
+        {"name": "uElev", "type": "float", "arrayLength": 0, "offset": 36, "extension": false},
+        {"name": "uThrot", "type": "float", "arrayLength": 0, "offset": 40, "extension": false},
+        {"name": "uThrot2", "type": "float", "arrayLength": 0, "offset": 44, "extension": false},
+        {"name": "nZ", "type": "float", "arrayLength": 0, "offset": 48, "extension": false},
+        {"name": "AirspeedRef", "type": "float", "arrayLength": 0, "offset": 52, "extension": false},
+        {"name": "YawAngle", "type": "float", "arrayLength": 0, "offset": 56, "extension": false},
+        {"name": "YawAngleRef", "type": "float", "arrayLength": 0, "offset": 60, "extension": false},
+        {"name": "RollAngle", "type": "float", "arrayLength": 0, "offset": 64, "extension": false},
+        {"name": "RollAngleRef", "type": "float", "arrayLength": 0, "offset": 68, "extension": false},
+        {"name": "p", "type": "float", "arrayLength": 0, "offset": 72, "extension": false},
+        {"name": "pRef", "type": "float", "arrayLength": 0, "offset": 76, "extension": false},
+        {"name": "r", "type": "float", "arrayLength": 0, "offset": 80, "extension": false},
+        {"name": "rRef", "type": "float", "arrayLength": 0, "offset": 84, "extension": false},
+        {"name": "uAil", "type": "float", "arrayLength": 0, "offset": 88, "extension": false},
+        {"name": "uRud", "type": "float", "arrayLength": 0, "offset": 92, "extension": false},
+        {"name": "aslctrl_mode", "type": "uint8_t", "arrayLength": 0, "offset": 96, "extension": false},
+        {"name": "SpoilersEngaged", "type": "uint8_t", "arrayLength": 0, "offset": 97, "extension": false}
+      ]
+    },
+    {
+      "id": 8005,
+      "name": "ASLCTRL_DEBUG",
+      "crcExtra": 251,
+      "baseLength": 38,
+      "extendedLength": 38,
+      "fields": [
+        {"name": "i32_1", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "f_1", "type": "float", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "f_2", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "f_3", "type": "float", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "f_4", "type": "float", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "f_5", "type": "float", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "f_6", "type": "float", "arrayLength": 0, "offset": 24, "extension": false},
+        {"name": "f_7", "type": "float", "arrayLength": 0, "offset": 28, "extension": false},
+        {"name": "f_8", "type": "float", "arrayLength": 0, "offset": 32, "extension": false},
+        {"name": "i8_1", "type": "uint8_t", "arrayLength": 0, "offset": 36, "extension": false},
+        {"name": "i8_2", "type": "uint8_t", "arrayLength": 0, "offset": 37, "extension": false}
+      ]
+    },
+    {
+      "id": 8006,
+      "name": "ASLUAV_STATUS",
+      "crcExtra": 97,
+      "baseLength": 14,
+      "extendedLength": 14,
+      "fields": [
+        {"name": "Motor_rpm", "type": "float", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "LED_status", "type": "uint8_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "SATCOM_status", "type": "uint8_t", "arrayLength": 0, "offset": 5, "extension": false},
+        {"name": "Servo_status", "type": "uint8_t", "arrayLength": 8, "offset": 6, "extension": false}
+      ]
+    },
+    {
+      "id": 8007,
+      "name": "EKF_EXT",
+      "crcExtra": 64,
+      "baseLength": 32,
+      "extendedLength": 32,
+      "fields": [
+        {"name": "timestamp", "type": "uint64_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "Windspeed", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "WindDir", "type": "float", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "WindZ", "type": "float", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "Airspeed", "type": "float", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "beta", "type": "float", "arrayLength": 0, "offset": 24, "extension": false},
+        {"name": "alpha", "type": "float", "arrayLength": 0, "offset": 28, "extension": false}
+      ]
+    },
+    {
+      "id": 8008,
+      "name": "ASL_OBCTRL",
+      "crcExtra": 234,
+      "baseLength": 33,
+      "extendedLength": 33,
+      "fields": [
+        {"name": "timestamp", "type": "uint64_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "uElev", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "uThrot", "type": "float", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "uThrot2", "type": "float", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "uAilL", "type": "float", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "uAilR", "type": "float", "arrayLength": 0, "offset": 24, "extension": false},
+        {"name": "uRud", "type": "float", "arrayLength": 0, "offset": 28, "extension": false},
+        {"name": "obctrl_status", "type": "uint8_t", "arrayLength": 0, "offset": 32, "extension": false}
+      ]
+    },
+    {
+      "id": 8009,
+      "name": "SENS_ATMOS",
+      "crcExtra": 144,
+      "baseLength": 16,
+      "extendedLength": 16,
+      "fields": [
+        {"name": "timestamp", "type": "uint64_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "TempAmbient", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "Humidity", "type": "float", "arrayLength": 0, "offset": 12, "extension": false}
+      ]
+    },
+    {
+      "id": 8010,
+      "name": "SENS_BATMON",
+      "crcExtra": 155,
+      "baseLength": 41,
+      "extendedLength": 41,
+      "fields": [
+        {"name": "batmon_timestamp", "type": "uint64_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "temperature", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "safetystatus", "type": "uint32_t", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "operationstatus", "type": "uint32_t", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "voltage", "type": "uint16_t", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "current", "type": "int16_t", "arrayLength": 0, "offset": 22, "extension": false},
+        {"name": "batterystatus", "type": "uint16_t", "arrayLength": 0, "offset": 24, "extension": false},
+        {"name": "serialnumber", "type": "uint16_t", "arrayLength": 0, "offset": 26, "extension": false},
+        {"name": "cellvoltage1", "type": "uint16_t", "arrayLength": 0, "offset": 28, "extension": false},
+        {"name": "cellvoltage2", "type": "uint16_t", "arrayLength": 0, "offset": 30, "extension": false},
+        {"name": "cellvoltage3", "type": "uint16_t", "arrayLength": 0, "offset": 32, "extension": false},
+        {"name": "cellvoltage4", "type": "uint16_t", "arrayLength": 0, "offset": 34, "extension": false},
+        {"name": "cellvoltage5", "type": "uint16_t", "arrayLength": 0, "offset": 36, "extension": false},
+        {"name": "cellvoltage6", "type": "uint16_t", "arrayLength": 0, "offset": 38, "extension": false},
+        {"name": "SoC", "type": "uint8_t", "arrayLength": 0, "offset": 40, "extension": false}
+      ]
+    },
+    {
+      "id": 8011,
+      "name": "FW_SOARING_DATA",
+      "crcExtra": 20,
+      "baseLength": 102,
+      "extendedLength": 102,
+      "fields": [
+        {"name": "timestamp", "type": "uint64_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "timestampModeChanged", "type": "uint64_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "xW", "type": "float", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "xR", "type": "float", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "xLat", "type": "float", "arrayLength": 0, "offset": 24, "extension": false},
+        {"name": "xLon", "type": "float", "arrayLength": 0, "offset": 28, "extension": false},
+        {"name": "VarW", "type": "float", "arrayLength": 0, "offset": 32, "extension": false},
+        {"name": "VarR", "type": "float", "arrayLength": 0, "offset": 36, "extension": false},
+        {"name": "VarLat", "type": "float", "arrayLength": 0, "offset": 40, "extension": false},
+        {"name": "VarLon", "type": "float", "arrayLength": 0, "offset": 44, "extension": false},
+        {"name": "LoiterRadius", "type": "float", "arrayLength": 0, "offset": 48, "extension": false},
+        {"name": "LoiterDirection", "type": "float", "arrayLength": 0, "offset": 52, "extension": false},
+        {"name": "DistToSoarPoint", "type": "float", "arrayLength": 0, "offset": 56, "extension": false},
+        {"name": "vSinkExp", "type": "float", "arrayLength": 0, "offset": 60, "extension": false},
+        {"name": "z1_LocalUpdraftSpeed", "type": "float", "arrayLength": 0, "offset": 64, "extension": false},
+        {"name": "z2_DeltaRoll", "type": "float", "arrayLength": 0, "offset": 68, "extension": false},
+        {"name": "z1_exp", "type": "float", "arrayLength": 0, "offset": 72, "extension": false},
+        {"name": "z2_exp", "type": "float", "arrayLength": 0, "offset": 76, "extension": false},
+        {"name": "ThermalGSNorth", "type": "float", "arrayLength": 0, "offset": 80, "extension": false},
+        {"name": "ThermalGSEast", "type": "float", "arrayLength": 0, "offset": 84, "extension": false},
+        {"name": "TSE_dot", "type": "float", "arrayLength": 0, "offset": 88, "extension": false},
+        {"name": "DebugVar1", "type": "float", "arrayLength": 0, "offset": 92, "extension": false},
+        {"name": "DebugVar2", "type": "float", "arrayLength": 0, "offset": 96, "extension": false},
+        {"name": "ControlMode", "type": "uint8_t", "arrayLength": 0, "offset": 100, "extension": false},
+        {"name": "valid", "type": "uint8_t", "arrayLength": 0, "offset": 101, "extension": false}
+      ]
+    },
+    {
+      "id": 8012,
+      "name": "SENSORPOD_STATUS",
+      "crcExtra": 54,
+      "baseLength": 16,
+      "extendedLength": 16,
+      "fields": [
+        {"name": "timestamp", "type": "uint64_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "free_space", "type": "uint16_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "visensor_rate_1", "type": "uint8_t", "arrayLength": 0, "offset": 10, "extension": false},
+        {"name": "visensor_rate_2", "type": "uint8_t", "arrayLength": 0, "offset": 11, "extension": false},
+        {"name": "visensor_rate_3", "type": "uint8_t", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "visensor_rate_4", "type": "uint8_t", "arrayLength": 0, "offset": 13, "extension": false},
+        {"name": "recording_nodes_count", "type": "uint8_t", "arrayLength": 0, "offset": 14, "extension": false},
+        {"name": "cpu_temp", "type": "uint8_t", "arrayLength": 0, "offset": 15, "extension": false}
+      ]
+    },
+    {
+      "id": 8013,
+      "name": "SENS_POWER_BOARD",
+      "crcExtra": 222,
+      "baseLength": 46,
+      "extendedLength": 46,
+      "fields": [
+        {"name": "timestamp", "type": "uint64_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "pwr_brd_system_volt", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "pwr_brd_servo_volt", "type": "float", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "pwr_brd_digital_volt", "type": "float", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "pwr_brd_mot_l_amp", "type": "float", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "pwr_brd_mot_r_amp", "type": "float", "arrayLength": 0, "offset": 24, "extension": false},
+        {"name": "pwr_brd_analog_amp", "type": "float", "arrayLength": 0, "offset": 28, "extension": false},
+        {"name": "pwr_brd_digital_amp", "type": "float", "arrayLength": 0, "offset": 32, "extension": false},
+        {"name": "pwr_brd_ext_amp", "type": "float", "arrayLength": 0, "offset": 36, "extension": false},
+        {"name": "pwr_brd_aux_amp", "type": "float", "arrayLength": 0, "offset": 40, "extension": false},
+        {"name": "pwr_brd_status", "type": "uint8_t", "arrayLength": 0, "offset": 44, "extension": false},
+        {"name": "pwr_brd_led_status", "type": "uint8_t", "arrayLength": 0, "offset": 45, "extension": false}
+      ]
+    },
+    {
+      "id": 8014,
+      "name": "GSM_LINK_STATUS",
+      "crcExtra": 200,
+      "baseLength": 14,
+      "extendedLength": 14,
+      "fields": [
+        {"name": "timestamp", "type": "uint64_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "gsm_modem_type", "type": "uint8_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "gsm_link_type", "type": "uint8_t", "arrayLength": 0, "offset": 9, "extension": false},
+        {"name": "rssi", "type": "uint8_t", "arrayLength": 0, "offset": 10, "extension": false},
+        {"name": "rsrp_rscp", "type": "uint8_t", "arrayLength": 0, "offset": 11, "extension": false},
+        {"name": "sinr_ecio", "type": "uint8_t", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "rsrq", "type": "uint8_t", "arrayLength": 0, "offset": 13, "extension": false}
+      ]
+    },
+    {
+      "id": 8015,
+      "name": "SATCOM_LINK_STATUS",
+      "crcExtra": 23,
+      "baseLength": 24,
+      "extendedLength": 24,
+      "fields": [
+        {"name": "timestamp", "type": "uint64_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "last_heartbeat", "type": "uint64_t", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "failed_sessions", "type": "uint16_t", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "successful_sessions", "type": "uint16_t", "arrayLength": 0, "offset": 18, "extension": false},
+        {"name": "signal_quality", "type": "uint8_t", "arrayLength": 0, "offset": 20, "extension": false},
+        {"name": "ring_pending", "type": "uint8_t", "arrayLength": 0, "offset": 21, "extension": false},
+        {"name": "tx_session_pending", "type": "uint8_t", "arrayLength": 0, "offset": 22, "extension": false},
+        {"name": "rx_session_pending", "type": "uint8_t", "arrayLength": 0, "offset": 23, "extension": false}
+      ]
+    },
+    {
+      "id": 8016,
+      "name": "SENSOR_AIRFLOW_ANGLES",
+      "crcExtra": 149,
+      "baseLength": 18,
+      "extendedLength": 18,
+      "fields": [
+        {"name": "timestamp", "type": "uint64_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "angleofattack", "type": "float", "arrayLength": 0, "offset": 8, "extension": false},
+        {"name": "sideslip", "type": "float", "arrayLength": 0, "offset": 12, "extension": false},
+        {"name": "angleofattack_valid", "type": "uint8_t", "arrayLength": 0, "offset": 16, "extension": false},
+        {"name": "sideslip_valid", "type": "uint8_t", "arrayLength": 0, "offset": 17, "extension": false}
+      ]
+    }
+  ]
+}

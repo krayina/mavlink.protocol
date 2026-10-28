@@ -1,0 +1,35 @@
+{
+  "source": "minimal.xml",
+  "generator": "pymavlink 2.4.50",
+  "messages": [
+    {
+      "id": 0,
+      "name": "HEARTBEAT",
+      "crcExtra": 50,
+      "baseLength": 9,
+      "extendedLength": 9,
+      "fields": [
+        {"name": "custom_mode", "type": "uint32_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "type", "type": "uint8_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "autopilot", "type": "uint8_t", "arrayLength": 0, "offset": 5, "extension": false},
+        {"name": "base_mode", "type": "uint8_t", "arrayLength": 0, "offset": 6, "extension": false},
+        {"name": "system_status", "type": "uint8_t", "arrayLength": 0, "offset": 7, "extension": false},
+        {"name": "mavlink_version", "type": "uint8_t", "arrayLength": 0, "offset": 8, "extension": false}
+      ]
+    },
+    {
+      "id": 300,
+      "name": "PROTOCOL_VERSION",
+      "crcExtra": 217,
+      "baseLength": 22,
+      "extendedLength": 22,
+      "fields": [
+        {"name": "version", "type": "uint16_t", "arrayLength": 0, "offset": 0, "extension": false},
+        {"name": "min_version", "type": "uint16_t", "arrayLength": 0, "offset": 2, "extension": false},
+        {"name": "max_version", "type": "uint16_t", "arrayLength": 0, "offset": 4, "extension": false},
+        {"name": "spec_version_hash", "type": "uint8_t", "arrayLength": 8, "offset": 6, "extension": false},
+        {"name": "library_version_hash", "type": "uint8_t", "arrayLength": 8, "offset": 14, "extension": false}
+      ]
+    }
+  ]
+}
