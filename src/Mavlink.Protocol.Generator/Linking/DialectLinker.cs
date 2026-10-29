@@ -8,7 +8,9 @@ namespace Mavlink.Protocol.Generator.Linking;
 /// <summary>
 /// Builds the include graph of the project's own dialect files. Every include must be an own
 /// file or a dialect from a referenced assembly (MAVGEN002); cycles are errors (MAVGEN003);
-/// two own files with the same name are errors (MAVGEN014).
+/// two own files with the same name are errors (MAVGEN014). An own file that a reference
+/// already provides is ignored in favour of the reference, with a warning when both come from
+/// the same XML (MAVGEN102) and an error when they do not (MAVGEN010).
 /// </summary>
 internal static class DialectLinker
 {
@@ -45,6 +47,24 @@ internal static class DialectLinker
 			{
 				references.Add(dialect.Name, dialect);
 			}
+		}
+
+		// Each XML has exactly one owner: a dialect compiled into a reference wins over a local
+		// copy, so the project never declares the same types twice.
+		foreach (var name in own.Keys.ToList())
+		{
+			if (!references.TryGetValue(name, out var owner))
+			{
+				continue;
+			}
+
+			var file = own[name].File;
+			diagnostics.Add(DiagnosticInfo.Create(
+				owner.XmlHash == file.Hash ? DiagnosticDescriptors.LocalCopyIgnored : DiagnosticDescriptors.LocalCopyDiffers,
+				new LocationInfo(file.Path, default, default),
+				owner.Name,
+				owner.Assembly));
+			own.Remove(name);
 		}
 
 		var ownNames = own.Keys.OrderBy(n => n, StringComparer.Ordinal).ToList();
@@ -199,7 +219,7 @@ internal static class DialectLinker
 			}
 
 			// A compiled dialect includes only compiled dialects; one missing from the
-			// references cannot be followed and is reported when references are read.
+			// references cannot be followed (MAVGEN106 is reported when references are read).
 			foreach (var include in references[current.Name].Includes)
 			{
 				if (references.TryGetValue(include, out var target))

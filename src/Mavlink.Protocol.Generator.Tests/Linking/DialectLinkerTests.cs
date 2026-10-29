@@ -146,6 +146,37 @@ public sealed class DialectLinkerTests
 		Link(files).Should().Be(Link(files.Reverse().ToArray()));
 	}
 
+	[Fact]
+	public void Link_LocalCopyOfAReferencedDialect_IsIgnoredWithAWarning()
+	{
+		var minimal = Xml("/x/minimal.xml");
+		var graph = DialectLinker.Link(
+			ImmutableArray.Create(Xml("/x/custom.xml", "minimal.xml"), minimal),
+			ImmutableArray.Create(Manifest("minimal") with { XmlHash = minimal.Hash }),
+			CancellationToken.None);
+
+		var diagnostic = graph.Diagnostics.Should().ContainSingle().Subject;
+		diagnostic.Descriptor.Should().Be(DiagnosticDescriptors.LocalCopyIgnored);
+		diagnostic.Location!.FilePath.Should().Be("/x/minimal.xml");
+		diagnostic.MessageArgs.Should().Equal("minimal", "Mavlink.Dialects.Minimal");
+
+		graph.Dialects.Select(d => d.Name).Should().Equal("custom");
+		graph.Dialects[0].Includes.Should().Equal(Referenced("minimal"));
+	}
+
+	[Fact]
+	public void Link_DifferentLocalCopyOfAReferencedDialect_IsAnError()
+	{
+		var graph = DialectLinker.Link(
+			ImmutableArray.Create(Xml("/x/custom.xml", "minimal.xml"), Xml("/x/minimal.xml")),
+			ImmutableArray.Create(Manifest("minimal") with { XmlHash = "0000" }),
+			CancellationToken.None);
+
+		graph.Diagnostics.Should().ContainSingle().Which.Descriptor.Should().Be(DiagnosticDescriptors.LocalCopyDiffers);
+		graph.Dialects.Select(d => d.Name).Should().Equal("custom");
+		graph.Dialects[0].Includes.Should().Equal(Referenced("minimal"));
+	}
+
 	private static ReferencedDialect Manifest(string name, params string[] includes)
 	{
 		var pascal = char.ToUpperInvariant(name[0]) + name.Substring(1);
