@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using Mavlink.Protocol.Generator.Common;
+﻿using Mavlink.Protocol.Generator.Common;
 using Mavlink.Protocol.Generator.Diagnostics;
 using Mavlink.Protocol.Generator.Linking;
 using Microsoft.CodeAnalysis;
@@ -22,13 +21,20 @@ public sealed class MavlinkSourceGenerator : IIncrementalGenerator
 			.Select(static (file, cancellationToken) => DialectFiles.Read(file, cancellationToken))
 			.WithTrackingName(TrackingNames.Parse);
 
-		// Referenced dialects are read from the compilation in a later step.
+		// Runs on every compilation change, but the result is equatable, so the steps after it
+		// only rerun when the referenced dialects change.
+		var references = context.CompilationProvider
+			.Select(static (compilation, cancellationToken) => ReferencedDialectReader.Read(compilation, cancellationToken))
+			.WithTrackingName(TrackingNames.References);
+
 		var graph = files
 			.Collect()
-			.Select(static (files, cancellationToken) => DialectLinker.Link(files, ImmutableArray<ReferencedDialect>.Empty, cancellationToken))
+			.Combine(references)
+			.Select(static (input, cancellationToken) => DialectLinker.Link(input.Left, input.Right.Dialects.AsImmutableArray(), cancellationToken))
 			.WithTrackingName(TrackingNames.Link);
 
 		context.RegisterSourceOutput(files, static (context, file) => Report(context, file.Diagnostics));
+		context.RegisterSourceOutput(references, static (context, references) => Report(context, references.Diagnostics));
 		context.RegisterSourceOutput(graph, static (context, graph) => Report(context, graph.Diagnostics));
 	}
 
@@ -47,5 +53,6 @@ public sealed class MavlinkSourceGenerator : IIncrementalGenerator
 internal static class TrackingNames
 {
 	public const string Parse = nameof(Parse);
+	public const string References = nameof(References);
 	public const string Link = nameof(Link);
 }

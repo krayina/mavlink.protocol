@@ -1,6 +1,8 @@
 ﻿using AwesomeAssertions;
 using Mavlink.Protocol.Generator.Linking;
+using Mavlink.Protocol.Generator.Parsing;
 using Mavlink.Protocol.Generator.Tests.Harness;
+using Mavlink.Protocol.Generator.Tests.Linking;
 using Microsoft.CodeAnalysis;
 
 namespace Mavlink.Protocol.Generator.Tests;
@@ -87,6 +89,53 @@ public sealed class GeneratorDiagnosticsTests
 			[IncrementalStepRunReason.Cached, IncrementalStepRunReason.Modified]);
 		Reasons(rerun, TrackingNames.Link).Should().Equal(IncrementalStepRunReason.Modified);
 	}
+
+	[Fact]
+	public void Run_IncludeOfAReferencedDialect_IsResolved()
+	{
+		var run = GeneratorHarness.Run(new GeneratorInput()
+			.WithReference(MinimalAssembly())
+			.WithXml("/x/common.xml", Common, Own));
+
+		run.GeneratorDiagnostics.Should().BeEmpty();
+	}
+
+	[Fact]
+	public void Run_LocalCopyOfAReferencedDialect_Warns()
+	{
+		var run = GeneratorHarness.Run(new GeneratorInput()
+			.WithReference(MinimalAssembly())
+			.WithXml("/x/common.xml", Common, Own)
+			.WithXml("/x/minimal.xml", Minimal, Own));
+
+		var diagnostic = run.GeneratorDiagnostics.Should().ContainSingle().Subject;
+		diagnostic.Id.Should().Be("MAVGEN102");
+		diagnostic.Severity.Should().Be(DiagnosticSeverity.Warning);
+		diagnostic.Location.GetLineSpan().Path.Should().Be("/x/minimal.xml");
+	}
+
+	[Fact]
+	public void AddSource_KeepsTheGraphCached()
+	{
+		var run = GeneratorHarness.Run(new GeneratorInput()
+			.WithReference(MinimalAssembly())
+			.WithXml("/x/common.xml", Common, Own));
+
+		var rerun = run.AddSource("namespace Test { public static class Edited { } }");
+
+		// The references are read again for the new compilation, but nothing about them changed.
+		Reasons(rerun, TrackingNames.References).Should().Equal(IncrementalStepRunReason.Unchanged);
+		Reasons(rerun, TrackingNames.Link).Should().Equal(IncrementalStepRunReason.Cached);
+	}
+
+	private static MetadataReference MinimalAssembly()
+		=> ReferencedDialectReaderTests.Compile("Mavlink.Dialects.Minimal", $$"""
+			[assembly: global::Mavlink.Dialects.Infrastructure.MavlinkDialectManifest(
+				1, "minimal", "Mavlink.Minimal", typeof(global::Mavlink.Dialects.MinimalDialect),
+				XmlHash = "{{XmlContentHash.Compute(Minimal)}}")]
+
+			namespace Mavlink.Dialects { public sealed class MinimalDialect { } }
+			""");
 
 	private static IEnumerable<IncrementalStepRunReason> Reasons(GeneratorRun run, string step)
 		=> run.Result.TrackedSteps[step].SelectMany(s => s.Outputs).Select(o => o.Reason);
