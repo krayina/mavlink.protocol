@@ -22,6 +22,8 @@
     <ProjectReference Include="..\Mavlink.Protocol.Generator\Mavlink.Protocol.Generator.csproj" />
     <!-- Generated code is compiled against Core to check that it builds. -->
     <ProjectReference Include="..\Mavlink.Protocol\Mavlink.Protocol.csproj" />
+    <!-- Hand-written target output with real manifests; removed together with the PoC (D18). -->
+    <ProjectReference Include="..\Mavlink.Protocol.Generator.PoC\Mavlink.Protocol.Generator.PoC.csproj" />
   </ItemGroup>
 
   <!-- Reference wire metadata from pymavlink: tools/golden/dump_metadata.py -->
