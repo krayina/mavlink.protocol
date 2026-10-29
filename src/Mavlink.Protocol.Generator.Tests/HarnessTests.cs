@@ -56,6 +56,18 @@ public sealed class HarnessTests
 	}
 
 	[Fact]
+	public void AddSource_CompilesTheNewSource()
+	{
+		var run = GeneratorHarness.Run(new GeneratorInput().WithSource("namespace Test { public static class A { } }"));
+
+		var rerun = run.AddSource("namespace Test { public static class B { public static string Name => nameof(A); } }");
+
+		rerun.Result.Exception.Should().BeNull();
+		rerun.CompilationDiagnostics.Should().BeEmpty();
+		rerun.OutputCompilation.GetTypeByMetadataName("Test.B").Should().NotBeNull();
+	}
+
+	[Fact]
 	public void ReplaceXml_RunsAgainWithNewContent()
 	{
 		var run = GeneratorHarness.Run(new GeneratorInput().WithXml("/dialects/minimal.xml", MinimalXml));

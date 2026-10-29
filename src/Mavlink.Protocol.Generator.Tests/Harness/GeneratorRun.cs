@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Mavlink.Protocol.Generator.Tests.Harness;
 
@@ -11,17 +12,20 @@ internal sealed class GeneratorRun
 {
 	private readonly GeneratorDriver _driver;
 	private readonly Compilation _inputCompilation;
+	private readonly CSharpParseOptions _parseOptions;
 	private readonly ImmutableArray<AdditionalText> _additionalTexts;
 
 	private GeneratorRun(
 		GeneratorDriver driver,
 		Compilation inputCompilation,
+		CSharpParseOptions parseOptions,
 		ImmutableArray<AdditionalText> additionalTexts,
 		Compilation outputCompilation,
 		ImmutableArray<Diagnostic> generatorDiagnostics)
 	{
 		_driver = driver;
 		_inputCompilation = inputCompilation;
+		_parseOptions = parseOptions;
 		_additionalTexts = additionalTexts;
 		OutputCompilation = outputCompilation;
 		GeneratorDiagnostics = generatorDiagnostics;
@@ -56,7 +60,17 @@ internal sealed class GeneratorRun
 	/// <summary>
 	/// Runs the generator again on unchanged input, to check what was served from the cache.
 	/// </summary>
-	public GeneratorRun RunAgain() => Execute(_driver, _inputCompilation, _additionalTexts);
+	public GeneratorRun RunAgain() => Execute(_driver, _inputCompilation, _parseOptions, _additionalTexts);
+
+	/// <summary>
+	/// Runs the generator again with one more source file, as an edit of the project's code would.
+	/// </summary>
+	public GeneratorRun AddSource(string code)
+		=> Execute(
+			_driver,
+			_inputCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code, _parseOptions)),
+			_parseOptions,
+			_additionalTexts);
 
 	/// <summary>
 	/// Runs the generator again with one XML file's content replaced.
@@ -66,7 +80,7 @@ internal sealed class GeneratorRun
 		var old = _additionalTexts.Single(t => t.Path == path);
 		var replacement = new TestAdditionalText(path, content);
 		var driver = _driver.ReplaceAdditionalText(old, replacement);
-		return Execute(driver, _inputCompilation, _additionalTexts.Replace(old, replacement));
+		return Execute(driver, _inputCompilation, _parseOptions, _additionalTexts.Replace(old, replacement));
 	}
 
 	/// <summary>
@@ -89,9 +103,10 @@ internal sealed class GeneratorRun
 	internal static GeneratorRun Execute(
 		GeneratorDriver driver,
 		Compilation inputCompilation,
+		CSharpParseOptions parseOptions,
 		ImmutableArray<AdditionalText> additionalTexts)
 	{
 		driver = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out var output, out var diagnostics);
-		return new GeneratorRun(driver, inputCompilation, additionalTexts, output, diagnostics);
+		return new GeneratorRun(driver, inputCompilation, parseOptions, additionalTexts, output, diagnostics);
 	}
 }

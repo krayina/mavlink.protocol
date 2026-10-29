@@ -39,7 +39,7 @@ internal static class GeneratorHarness
 			optionsProvider,
 			new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true));
 
-		return GeneratorRun.Execute(driver, compilation, additionalTexts);
+		return GeneratorRun.Execute(driver, compilation, parseOptions, additionalTexts);
 	}
 
 	private static ImmutableArray<MetadataReference> LoadDefaultReferences()
