@@ -4,12 +4,6 @@ using Mavlink.Protocol.Generator.Parsing;
 
 namespace Mavlink.Protocol.Generator.Linking;
 
-/// <summary>
-/// A dialect compiled into a referenced assembly, as its manifest describes it.
-/// </summary>
-/// <param name="Includes">Names of the dialects it includes directly.</param>
-internal sealed record ReferencedDialect(string Name, EquatableArray<string> Includes);
-
 internal enum DialectOrigin
 {
 	/// <summary>A <c>MavlinkDialect</c> item of this project.</summary>

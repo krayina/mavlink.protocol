@@ -82,8 +82,8 @@ public sealed class DialectLinkerTests
 		var graph = DialectLinker.Link(
 			ImmutableArray.Create(Xml("/x/custom.xml", "common.xml")),
 			ImmutableArray.Create(
-				new ReferencedDialect("common", ImmutableArray.Create("minimal").ToEquatableArray()),
-				new ReferencedDialect("minimal", EquatableArray<string>.Empty)),
+				Manifest("common", "minimal"),
+				Manifest("minimal")),
 			CancellationToken.None);
 
 		graph.Diagnostics.Should().BeEmpty();
@@ -144,6 +144,19 @@ public sealed class DialectLinkerTests
 		};
 
 		Link(files).Should().Be(Link(files.Reverse().ToArray()));
+	}
+
+	private static ReferencedDialect Manifest(string name, params string[] includes)
+	{
+		var pascal = char.ToUpperInvariant(name[0]) + name.Substring(1);
+		return new ReferencedDialect(
+			name,
+			"Mavlink." + pascal,
+			$"global::Mavlink.Dialects.{pascal}Dialect",
+			includes.ToEquatableArray(),
+			null,
+			"Mavlink.Dialects." + pascal,
+			EquatableArray<EnumFacts>.Empty);
 	}
 
 	private static DialectGraph Link(params ParsedFile[] files)
