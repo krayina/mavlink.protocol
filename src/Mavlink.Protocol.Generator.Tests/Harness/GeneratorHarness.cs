@@ -45,13 +45,16 @@ internal static class GeneratorHarness
 	private static ImmutableArray<MetadataReference> LoadDefaultReferences()
 	{
 		// The test host runs on the same runtime the generated code targets here (net10.0).
-		var trustedAssemblies = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!)
-			.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+		// Only the shared framework is taken: the test's own dependencies (Roslyn, xunit, dialect
+		// assemblies) must not leak into the compilations under test.
+		var frameworkDirectory = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
+		var framework = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!)
+			.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+			.Where(path => string.Equals(Path.GetDirectoryName(path), frameworkDirectory, StringComparison.OrdinalIgnoreCase));
 
 		var core = typeof(global::Mavlink.Dialects.IMavlinkDialect).Assembly.Location;
 
-		return trustedAssemblies
-			.Where(path => !string.Equals(path, core, StringComparison.OrdinalIgnoreCase))
+		return framework
 			.Append(core)
 			.Select(path => (MetadataReference)MetadataReference.CreateFromFile(path))
 			.ToImmutableArray();
